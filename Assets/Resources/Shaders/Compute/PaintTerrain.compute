@@ -1,0 +1,78 @@
+﻿#pragma kernel Paint
+#pragma kernel Set
+RWTexture2D<float4> _PaintTexture;
+
+struct Wren{
+  float3 pos;
+  float3 vel;
+  float l1;
+  float r1;
+  float hue1;
+  float hue2;
+  float hue3;
+  float hue4;
+};
+
+RWStructuredBuffer<Wren> _WrenBuffer;
+
+int _NumWrens;
+int _TextureSize;
+
+#include "../Chunks/hash.cginc"
+#include "../Chunks/terrainData.cginc"
+[numthreads(32,32,1)]                            
+void Paint (uint2 id : SV_DispatchThreadID){
+
+    float2 pos = float2(float(id.x)/float(_TextureSize) , float(id.y)/float(_TextureSize));
+
+   // ((pos.xz+_MapSize.x/2)) / _MapSize.x)
+
+
+for( int i = 0;  i < _NumWrens; i ++ ){
+    Wren w1 = _WrenBuffer[i];
+
+    float3 normalizedPos =   float3(((w1.pos.x+_MapSize.x/2) / _MapSize.x) , w1.pos.y / _MapSize.y ,  (w1.pos.z+_MapSize.z/2) / _MapSize.z);
+
+    float d = length(pos.xy - normalizedPos.xz);
+
+    float hDif = terrainHeight(w1.pos); 
+    
+   
+   float4 input = _PaintTexture[id.xy];
+
+  float minDist  =.000001;
+  float maxDist = .005;
+
+  float minHeight = 1;
+  float maxHeight = 400;
+
+  float h = saturate((hDif - minHeight)/(maxHeight-minHeight));
+  h = h*h;
+  h = 1 -h;
+
+  minDist *= ((1-h)*3+1);
+  maxDist *= ((1-h)*3+1);
+
+  float v = saturate((d - minDist) / (maxDist-minDist));
+  v = 1-v;
+  float opacity = .1 * v / (1+(1-h)*100);// ((w1.l1 + w1.r1 ) *.001 / d);
+  // if( opacity < .01 ){ opacity = 0;}
+  float hue = lerp( input.x , w1.hue1 , saturate(opacity * 20));
+   float newOpacity = saturate(input.z + opacity);
+
+   newOpacity -= .01;
+   newOpacity = saturate(newOpacity);
+
+  
+
+
+    _PaintTexture[id.xy] = float4(hue,0, newOpacity, 1);//colors[id.x + id.y * 256];
+}
+
+}
+
+
+[numthreads(32,32,1)]                            
+void Set (uint2 id : SV_DispatchThreadID){
+  _PaintTexture[id.xy] = 0;
+}

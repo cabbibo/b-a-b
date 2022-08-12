@@ -1,0 +1,42 @@
+First install the Post Processing Stack v2.0 as shown in Image included (Install figure 1).
+
+Then add the effect in the stack effects and override its parameters in the Post Process Volume
+to adjust it. Note that "Sun Transform" override should be active (checkbox pressed on the left
+of property). Make sure to save the instamtiated profile after the activation, otherwise it may
+reset when enter play mode. 
+
+If Sky Master ULTIMATE is used, the script "connectSuntoSunShaftsPOSTFX" can be added 
+to the PostProcessing Volume object and assign the sun light to the effect properly.
+Drag the "Sun" object transform from Sky Master ULTIMATE sun light to the slot and will update
+the sun position at run time to properly display sun rays based on sun positioning.
+
+Note that this may not be compatible with any other weather systems, as Sky Master ULTIMATE
+uses a correct sun positioning with proper calculations for sun position, thus the sun will 
+be in the correct position and orientation at all times. It is reocmmended to use with Sky Master
+ULTIMATE system for easy setup and maximum and correct effect.
+
+The effect is sun position based, thus will require a system like Sky Master ULTIMATE to display
+correctly (is based on real sun positioning in sky based on earth center) and has been extensively
+tested with it.
+
+Scripting the asset requires to access the post processing stack and change its values at run time.
+The script "connectSuntoSunShaftsPOSTFX" that provides the sun placement to the system has also
+functionality to change the effect properties and can be used as base template for programming the
+system to change values at run time.
+
+Note that the system currently only supports Stack v2.0, thus is working up to Unity 2018 versions of
+LWRP and HDRP. The 2019 version will be in the works when LWRP and HDRP effect stack has been finilized
+for Unity 2019 (there is no guarantee when this happens as is Unity programmers work, thus there is 
+no way to know when and if the system will be Unity 2019 compatible).
+
+NOTE 1:
+For Unity 2018.3 and HDRP, make sure to download and install the latest Stack v2.0 version, as described in the links below
+
+1. Download the latest version
+https://github.com/Unity-Technologies/PostProcessing/releases
+
+2. Unzip the folder and Press + Sign in Package Manager to add it (find .json file in the folder)
+https://github.com/Unity-Technologies/PostProcessing/issues/683
+https://forum.unity.com/threads/r8_srgb-is-not-supported.636058/
+
+NOTE: The effect is compatible with stack v2.0 and is a requirement for it to work properly.
