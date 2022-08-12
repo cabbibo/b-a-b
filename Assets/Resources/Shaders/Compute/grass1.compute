@@ -1,0 +1,170 @@
+
+#pragma kernel Grass
+
+#include "../Chunks/safeID.cginc" 
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
+#include "../Chunks/hash.cginc"
+
+
+
+struct Particle{
+  float3 pos;
+  float3 nor;
+  float life;
+  float id;
+};
+
+RWStructuredBuffer<Particle> _ParticleBuffer;
+
+#include "../Chunks/terrainData.cginc"
+
+#include "../Chunks/cubicCurve.cginc"
+#include "../Chunks/CubicValues.cginc"
+
+
+
+int _Count;
+
+float3 _CameraPosition;
+float3 _CameraRight;
+float3 _CameraForward;
+
+
+float3 _WrenPosition;
+
+
+float4x4 _CameraViewMatrix;
+float4x4 _CameraViewMatrixInverse;
+float4x4 _CameraProjectionMatrix;
+float4x4 _CameraProjectionMatrixInverse;
+
+
+
+Texture2D<float4> _PaintTexture;
+SamplerState sampler_PaintTexture;
+float4 paintColor( float3 pos ){
+  return  _PaintTexture.SampleLevel(sampler_PaintTexture, (((pos.xz+_MapSize.x/2)) / _MapSize.x) , 1);
+}
+
+
+float _Time;
+//#include "../Chunks/nanCheckFeather.cginc"
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Grass(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID) {
+
+
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
+    
+    Particle particle = _ParticleBuffer[pID];
+
+    // Check if inside view frustum
+    // if not in view frustum, respwan
+    // when respawn, trace terrain from screen space ray
+    // place there and than be checking every frame to see if need to respawn
+
+
+
+        // gets our current screen space position
+    float4 currentViewPosition =mul( _CameraViewMatrix , float4(particle.pos, 1.0));
+    float4 currentScreenSpacePosition =mul( _CameraProjectionMatrix , currentViewPosition);
+    currentScreenSpacePosition /= currentScreenSpacePosition.w;
+
+    currentScreenSpacePosition /= 2.;
+    currentScreenSpacePosition += .5;
+
+    particle.life -= .01 * hash( float(pID * 20));
+
+
+
+
+    float3 fNor = particle.nor;
+    float3 fPos = particle.pos;
+
+    // respawn
+    if( particle.life < 0 || currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || currentScreenSpacePosition.y < 0 || currentScreenSpacePosition.y > 1){
+
+
+    float2 coordinates = float2(hash( float(pID) + _Time ),hash( float(pID+10 + _Time) ));
+    // uses project matrix to project forward
+    float4 viewSpacePosition = mul(_CameraProjectionMatrixInverse , float4(coordinates * 2.0 - 1.0, 1.0, 1.0));
+    viewSpacePosition /= viewSpacePosition.w;
+
+    viewSpacePosition.xyz *= (-3 / viewSpacePosition.z);
+
+    float3 worldPosition = mul(_CameraViewMatrixInverse ,viewSpacePosition).xyz;
+
+    float3 ro = worldPosition.xyz;
+    float3 rd = worldPosition.xyz - _CameraPosition; 
+
+    float3 pos;
+    float hit = 0;
+    float d = 0;
+    for( float i = 0; i < 200; i++ ){
+        d = (i / 200) * 300;
+        pos = ro + rd * d;
+
+        float h = terrainHeight( pos);
+        
+
+        // TODO linearly interpolate
+        if( h < 0 ){ 
+            hit = 1;
+            GetTerrainData( pos , fPos , fNor);
+            break;  
+            }
+
+    }
+/*
+    float3 p =  (hash( float(pID) ) -.5) * 1000 * _CameraForward;
+    p += (hash( float(pID+10) ) -.5) * 1000 * _CameraRight;
+    p += _CameraPosition;
+    p = terrainPos( p);
+*/
+
+
+
+
+
+    
+     if( hit == 1 ){
+
+        float4 color =  paintColor( fPos);
+
+        if( color.z > .6){
+
+            float3 wrenD = _WrenPosition - fPos;
+            float3 ffff = normalize(lerp( fNor , normalize(cross(wrenD ,float3(0,1,0))),saturate(1/length(wrenD))));//float3(1,0,1)
+
+            fPos +=5* curlNoise( fPos * 20 );
+    
+            particle.pos = fPos;//worldPosition;
+            particle.nor =ffff;//worldPosition;
+            particle.life =1;
+            particle.id = color.z -.3;
+
+        }
+
+
+
+
+    }
+
+    }  
+    
+
+   /* float3 fPos1 = fPos;
+    GetTerrainData( fPos1 , fPos , fNor);
+    
+             float3 wrenD = _WrenPosition - fPos;
+  //float3 ffff = normalize(lerp( fNor , normalize(cross(wrenD ,float3(0,1,0))),saturate(1/length(wrenD))));//float3(1,0,1)
+    float3 ffff = fNor;// normalize(lerp( fNor , normalize(cross(wrenD ,float3(0,1,0))),.5*saturate(100/length(wrenD))));//float3(1,0,1)
+ 
+   
+    particle.nor = ffff;//lerp( particle.nor , ffff , .05 );*/
+
+    _ParticleBuffer[pID] = particle;
+ 
+}
+

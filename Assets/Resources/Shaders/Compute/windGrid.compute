@@ -1,0 +1,266 @@
+﻿
+#pragma kernel WindPoints
+
+#include "../Chunks/safeID.cginc" 
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
+#include "../Chunks/hash.cginc"
+
+
+
+struct Grid{
+  float3 pos;
+  float3 normal;
+  float2 debug;
+};
+
+
+struct windZone{
+    float4x4 wtl;
+    float4x4 ltw;
+};
+
+RWStructuredBuffer<Grid> _GridBuffer;
+RWStructuredBuffer<windZone> _WindZoneBuffer;
+
+int _WindZoneBufferCount;
+
+
+float4x4 _LTW;
+float4x4 _WTL;
+
+int _Count;
+float _DT;
+
+float _Size;
+
+float _FurthestHeight;
+float _ClosestForce;
+Texture2D<float4> _HeightMap;
+SamplerState sampler_HeightMap;
+float3 _MapSize;
+
+float3 terrainPos( float3 pos ){
+  return float3( pos.x , _HeightMap.SampleLevel(sampler_HeightMap, (((pos.xz+_MapSize.xz/2)) / _MapSize.xz) , 1).x * _MapSize.y*2 , pos.z);
+}
+
+
+float terrainHeight( float3 pos ){
+   float h =  _HeightMap.SampleLevel(sampler_HeightMap, (((pos.xz+_MapSize.xz/2)) / _MapSize.xz) , 1).x * _MapSize.y * 2;
+   return pos.y - h;
+}
+
+float3 normalizedTerrainPos( float3 pos ){
+  
+return float3(((pos.x+_MapSize.x/2) / _MapSize.x) , pos.y / _MapSize.y ,  (pos.z+_MapSize.z/2) / _MapSize.z);
+
+}
+void GetTerrainData( float3 pos , out float3  fPos, out float3 fNor){
+
+    float3 eps = float3(1.1,0,0);
+    fPos = terrainPos( pos );
+
+    float3 l = terrainPos( pos + eps.xyy);
+    float3 r = terrainPos( pos - eps.xyy);
+    float3 u = terrainPos( pos + eps.yyx);
+    float3 d = terrainPos( pos - eps.yyx);
+
+    fNor = -normalize(cross(l-r,u-d));
+
+}
+
+
+bool RaycastTerrain( float3 ro , float3 rd , out float dist , out float3 pos , out float3 nor ){
+
+
+    float oldH = 1000000;
+    bool hit = false;
+
+    nor = float3(1,0,0);
+    for( float i = 0; i < 100; i++){
+        float d = (i / 100) * 100;
+
+        float3 p = ro + d * rd;
+
+        float h = terrainHeight( p );
+
+        if( h < 0 ){
+
+            GetTerrainData( p , pos , nor );
+            dist = d;
+            hit = true;
+            break;
+
+        }
+
+    }
+
+
+    return hit;
+}
+
+float3 SphericalToCartesian(float polar, float elevation ){
+        float a = 1 * cos(elevation);
+
+
+        float x = a * cos(polar);
+        float y = 1 * sin(elevation);
+        float z = a * sin(polar);
+
+        return normalize(float3( x,y,z));
+    }
+
+
+float4 GetGroundInfo(float3 pos){
+  float tmpDist;
+float3 tmpDir;
+float3 tmpNorm;
+
+tmpNorm = float3(0,1,0);
+tmpDir = -float3(0,1,0);
+
+tmpDist = 1000000;
+
+
+bool hitVal = false;
+
+for( int i = 0; i< 10; i++){
+for( int j = 0; j< 10; j++){
+
+    float a1 = ((float)i)/10;
+    float a2 = ((float)j)/10;
+
+    a2 *= 3.14159 *2;
+    a1 *= 3.14159 *2;
+
+
+
+    float3 dir = SphericalToCartesian( a1,a2);
+
+float3 rd = dir;
+float3 ro = pos;
+
+
+    float3 pos;
+    float dist;
+    float3 nor;
+
+    bool rayHit = RaycastTerrain(ro , rd , dist , pos , nor);
+    if ( rayHit ) {
+
+    
+            hitVal = true;
+        if( dist < tmpDist){
+            tmpDist = dist ;
+            tmpNorm = nor;
+            tmpDir = dir;
+        }
+
+
+    }else{
+        //debugger.SetLine( i + 2 + j * 10 , transform.position , transform.position  );
+    }
+
+}
+}
+
+ 
+ // if we haven't hit anything assign defaults
+
+if( !hitVal ){
+    tmpDist = 3000;
+    tmpNorm = float3(1,0,0);
+    tmpDir = -float3(0,1,0);
+}
+
+float distToGround =  tmpDist ;
+float3 groundNormal =  tmpNorm ;
+float3 groundDirection =  tmpDir;
+
+
+float furthestHeight =_FurthestHeight;
+float closestHeight = 0;
+float furthestForce = 0;
+float closestForce = _ClosestForce;
+
+// Originally was making it so that you can be
+// further away from cliff sides before you hit the updraft
+// but it felt a bit to bananas
+float fFurthestHeight = furthestHeight * 10 * (1.1-dot( float3(0,1,0) , groundNormal ));
+
+fFurthestHeight = furthestHeight;
+
+
+float distToGroundVal;
+// This is getting our smooth step from the closest and furthest heights
+distToGroundVal = (distToGround - closestHeight)/ (fFurthestHeight-closestHeight);
+distToGroundVal = saturate(distToGroundVal);
+distToGroundVal = distToGroundVal * distToGroundVal * (3 - 2 * distToGroundVal);
+distToGroundVal = (furthestForce + closestForce-furthestForce) * (1-distToGroundVal);
+
+// Making it so that there is more upwards force the more vertical
+// the slope you are next to is
+distToGroundVal *=  (3-2*dot( float3(0,1,0) , groundNormal )) / 3;
+
+if( terrainHeight( pos ) < -4 ){
+    distToGroundVal = 0;
+}
+
+return float4( groundNormal , distToGroundVal );
+
+}
+
+float3 GetWindPower( float3 pos ){
+
+    float3 fPos; float3 groundPos; float3 groundNor;
+    GetTerrainData( fPos , groundPos , groundNor );
+    return float3(0,0,0);
+}
+
+int _NumGridPoints;
+float3 _GridPos;
+//#include "../Chunks/nanCheckFeather.cginc"
+#define NR_THREADS 32
+[numthreads(NR_THREADS,1,1)]
+void WindPoints(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID) {
+
+
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
+    float x = float(pID % _NumGridPoints) /_NumGridPoints;
+    float y = float((pID/_NumGridPoints) % _NumGridPoints) /_NumGridPoints;
+    float z = float(pID/(_NumGridPoints*_NumGridPoints)) /_NumGridPoints;
+
+
+    Grid p = _GridBuffer[pID];
+    float3 lPos = float3(x,y,z) - .5;
+
+    lPos  *= _Size;
+
+    float3 fPos =  lPos + _GridPos;//mul(_LTW , float4( lPos ,1)).xyz;
+
+    float4 windInfo = GetGroundInfo(fPos);
+
+
+    for(int i = 0; i < _WindZoneBufferCount; i++ ){
+        windZone b = _WindZoneBuffer[i];
+
+        float3 localPos = mul(b.wtl, float4(fPos,1)).xyz;
+
+        if( abs(localPos.x) < .5f && abs(localPos.y) < .5f && abs(localPos.z) <.5f    ){
+
+
+            float3 dir = mul( b.ltw , float4(0,0,1,0));
+            windInfo += float4(normalize(dir) *20,40);
+        }
+    }
+
+
+    p.pos = fPos;
+    p.normal = normalize(windInfo.xyz);
+    p.debug.x = windInfo.w;
+    p.debug.y = terrainPos(fPos).y;
+
+   _GridBuffer[pID] = p;
+
+}
+

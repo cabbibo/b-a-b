@@ -1,0 +1,185 @@
+
+#pragma kernel RaceParticles
+
+#include "../Chunks/safeID.cginc" 
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
+#include "../Chunks/hash.cginc"
+
+
+
+struct Particle{
+  float3 pos;
+  float3 vel;
+  float life;
+  float id;
+};
+
+
+struct Ring{
+  float3 pos;
+  float3 fwd;
+  float life;
+  float id;
+};
+
+RWStructuredBuffer<Ring> _RingBuffer;
+RWStructuredBuffer<Particle> _ParticleBuffer;
+
+float _InRaceValue;
+int _RingBufferCount;
+
+
+#include "../Chunks/cubicCurve.cginc"
+#include "../Chunks/CubicValues.cginc"
+
+
+
+
+float3 cubicFromRings( float val , int id){   
+            float3 p1 = _RingBuffer[id].pos;
+            float3 f1 = _RingBuffer[id].fwd;
+            float3 p2 = _RingBuffer[id+1].pos;
+            float3 f2 = _RingBuffer[id+1].fwd;
+    
+            float d = length(p1-p2);
+            
+            float3 c0 = p1;
+            float3 c1 = p1 + d*f1/3;
+            float3 c2 = p2 - d*f2/3;
+            float3 c3 = p2;
+
+            return cubicCurve( val , c0,c1,c2,c3);
+
+
+}
+
+
+
+float3 cubicFromVals( float val , float3 p1 , float3 f1 , float3 p2 , float3 f2 ){   
+    
+    float d = length(p1-p2);
+    
+    float3 c0 = p1;
+    float3 c1 = p1 + d*f1/3;
+    float3 c2 = p2 - d*f2/3;
+    float3 c3 = p2;
+
+    return cubicCurve( val , c0,c1,c2,c3);
+
+
+}
+
+int _Count;
+float _DT;
+
+float _StreamWidth;
+float _StreamHeight;
+
+//#include "../Chunks/nanCheckFeather.cginc"
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void RaceParticles(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID) {
+
+
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
+
+    float value = _InRaceValue * float(_RingBufferCount);
+    int currFloor = floor(value);
+    int currCeil = ceil(value);
+
+    if( currCeil == currFloor){
+        currCeil += 1;
+    }
+    int downFloor = currFloor - 1;
+    int upCeil  = currCeil + 1;
+
+    int upAmount = abs(min(downFloor,0)); 
+    downFloor += upAmount;
+    currFloor += upAmount;
+    currCeil += upAmount;
+    upCeil += upAmount;
+
+    int downAmount = -max( 0 , upCeil - _RingBufferCount );
+   // downFloor -= upAmount;
+   // currFloor -= upAmount;
+   // currCeil -= upAmount;
+   // upCeil -= upAmount;
+    
+   float3 pos[4] = {
+       _RingBuffer[downFloor].pos,
+       _RingBuffer[currFloor].pos,
+       _RingBuffer[currCeil].pos,
+       _RingBuffer[upCeil].pos
+   };
+
+
+
+    float3 fwd[4] = {
+       _RingBuffer[downFloor].fwd,
+       _RingBuffer[currFloor].fwd,
+       _RingBuffer[currCeil].fwd,
+       _RingBuffer[upCeil].fwd
+   };
+
+
+
+    float v = float(pID) / float(_Count);
+    
+
+    float3 fPos = cubicFromValue4( v , pos);
+
+
+    Particle particle =_ParticleBuffer[pID];
+
+    particle.life -= .003 * ( hash(2*float(pID)) * 2 + 2);
+
+    if( particle.life == 0 ){
+        particle.life = -hash(float(pID));
+    }
+
+
+    float inRing = hash(float(pID));
+
+    int which = int( hash( float(pID * 3030 )) * 3);
+
+
+    
+    float inRow = hash(float(pID  * 20));
+    float inCol = hash(float(pID  * 40));
+      //  float3 targetPos = cubicFromRings( inRing , downFloor );
+      //  float3 targetVel = cubicFromRings( inRing+.01 , downFloor )- targetPos;
+      //  float3 targetLeft = normalize(cross(targetVel , float3(0,1,0)));//cubicFromRings( inRing+.01 , downFloor )- targetPos;
+       // float3 targetLeft = cubicFromRings( inRing+.01 , downFloor )- targetPos;
+
+
+    float3 targetPos = cubicFromVals( inRing , pos[which] , fwd[which] ,pos[which+1] , fwd[which+1] );
+    float3 targetVel = cubicFromVals( inRing+.01 , pos[which] , fwd[which] ,pos[which+1] , fwd[which+1] )- targetPos;
+    float3 targetLeft = normalize(cross(targetVel , float3(0,1,0)));
+
+    if( particle.life < 0 ){
+        particle.life += 1;
+        
+
+        particle.pos = targetPos + targetLeft * (inRow-.5) * _StreamWidth + float3(0,1,0) * (inCol-.5) * _StreamHeight;
+        particle.vel = 0;
+
+    }else{
+
+
+        particle.vel += 1*curlNoise( particle.pos );
+        particle.vel += targetVel;
+        particle.pos += particle.vel * .01;
+        particle.vel *= .9;
+
+    }
+
+
+
+    Ring ring = _RingBuffer[floor(_InRaceValue * float(_RingBufferCount))];
+
+
+    _ParticleBuffer[pID] = particle;
+ 
+}
+

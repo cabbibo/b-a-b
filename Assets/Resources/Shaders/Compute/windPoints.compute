@@ -1,0 +1,96 @@
+
+#pragma kernel WindPoints
+
+#include "../Chunks/safeID.cginc" 
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
+#include "../Chunks/hash.cginc"
+
+
+
+struct Grid{
+  float3 pos;
+  float3 nor;
+  float2 debug;
+};
+
+
+
+
+struct Point{
+  float3 pos;
+  float3 vel;
+  float2 debug;
+};
+
+
+
+RWStructuredBuffer<Grid> _GridBuffer;
+RWStructuredBuffer<Point> _PointBuffer;
+
+
+float4x4 _LTW;
+float4x4 _WTL;
+
+int _Count;
+float _DT;
+float3 _WrenVel;
+float _Size;
+float3 _GridPos;
+float _Time;
+
+#include "../Chunks/terrainData.cginc"
+
+//#include "../Chunks/nanCheckFeather.cginc"
+#define NR_THREADS 64
+[numthreads(NR_THREADS,1,1)]
+void WindPoints(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID) {
+
+
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
+    
+    Point p = _PointBuffer[pID];
+
+
+    if( p.debug.y < 0 ){
+        float x = (hash(float(pID * 12) + _Time ) - .5);
+        float y = (hash(float(pID * 3)  + _Time ) - .5);
+        float z = (hash(float(pID * 31) + _Time ) - .5);
+        p.pos = _Size * float3(x,y,z) + _GridPos;
+        
+        //p.debug.y = 1;
+        p.vel = 0;
+    }
+
+
+    p.debug.y -= (hash(pID * 2) * .9 + .2 ) * .02;
+    p.debug.y -= (hash(pID * 7) * .9 + .2 ) * .02;
+
+    float3 lPos =  (p.pos - _GridPos ) / _Size;// ul(_WTL,float4(p.pos,1)).xyz;
+    lPos += .5;
+    lPos = saturate(lPos);
+
+    int gridID = floor((lPos.z) * 32) * 32 * 32  + floor((lPos.y) * 32) * 32+ (lPos.x) * 32;
+
+    Grid g = _GridBuffer[gridID];
+
+    p.debug.x = g.debug.x;
+
+    if( g.debug.x > 0 && p.debug.y < 0 ){
+      p.debug.y = 1;
+    }
+
+    p.vel +=  g.nor * g.debug.x * .1;
+   //p.vel += float3(0,1,0) ;
+    p.pos += p.vel * .004;
+    p.vel *= .99;
+
+    /*p.oPos[0] = p.pos;
+    for( int i = 63; i > 0; i -- ){
+      p.oPos[i] = p.oPos[i-1];
+    }*/
+
+   _PointBuffer[pID] = p;
+
+}
+

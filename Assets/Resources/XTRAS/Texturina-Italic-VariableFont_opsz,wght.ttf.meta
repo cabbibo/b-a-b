@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 6aa5ca99badf6a042b20bf830427faea
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Texturina
+  fontNames:
+  - Texturina
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 20c8b70d804f85a4faa719697b49c5bf, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

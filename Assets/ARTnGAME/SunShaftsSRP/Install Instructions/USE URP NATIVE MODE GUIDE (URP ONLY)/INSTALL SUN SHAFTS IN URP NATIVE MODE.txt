@@ -1,0 +1,30 @@
+In this new mode for URP, there is no requirement to use the Post Processing Stack v2.0 to
+enable the effect in URP.
+
+This guide showcases how to setup the effect on the camera. There will be reference in the
+included images.
+
+Image 1.
+URP uses a pipeline system to enable rendering, thus a pipeline must be assigned to the slot shown in the image in "Scriptable render pipeline settings"
+
+Image 2.
+The same pipelines must also be assigned to the Quality section, in rendering.
+
+Image 3.
+The actual rendering happens using a Forward renderer module, as shown in the image in the
+"Renderer List", here a sample renderer that has the Sun Shafts effect applied is already assigned in my sample pipeline.
+
+Image 4. 
+The setup of the forward renderer with the Sun Shafts effect is shown in the image, the
+"Blit Sun Shafts SRP" renderer feature must be added and be setup with the material shown 
+"SunShafts SRP_FORWARD_URP". Another option is to alter the "Event" to any event where the 
+effect is needed to appear, e.g. if after transparents is used the effect will appear above particles or transparent materials. The rest of the option are controlled by a script on the camera, so changing them wont affect the outcome.
+
+Image 5.
+The script that controls the effect must be assigned to the Main Camera and is named "ConnectSunToSunShaftsURP". Note that this camera must also have assigned the forward renderer that has the sun shafts renderer feature we added in step 4, in the Rendering -> Renderer section. In order to function properly the scene sun must be assign in the control script in the "Sun" slot. Also note that the system uses the real sun position as well as rotation, so
+the sun must be in a physically correct position (like in Sky Master ULTIMATE Time of Day system - http://u3d.as/agN) to direct properly the sun rays.
+
+Image 6.
+The camera with the control script is assigned the forward renderer that has the sun shafts renderer feature we added in step 4, in the Rendering -> Renderer section, as shown in the image.
+
+After this base setup the effect can be regulated by changing the scene sun position and rotation and the parameters in the control script, like intensity and ray length. Note the effect is screen space based, thus is requires that the sun in within or near the field of view of the camera to display the rays.

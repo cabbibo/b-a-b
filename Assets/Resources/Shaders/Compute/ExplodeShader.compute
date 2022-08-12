@@ -1,0 +1,82 @@
+﻿
+#pragma kernel Shatter
+
+#include "../Chunks/safeID.cginc" 
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
+#include "../Chunks/hash.cginc"
+
+
+
+
+struct Point{
+  float3 pos;
+  float3 vel;
+  float3 nor;
+  float3 tan;
+  float  life;
+  float3 debug;
+};
+
+
+RWStructuredBuffer<Point> _PointBuffer;
+
+
+float4x4 _LTW;
+float4x4 _WTL;
+
+int _Count;
+float _DT;
+
+float _Time;
+
+float _ExplodeTime;
+
+#include "../Chunks/terrainData.cginc"
+
+//#include "../Chunks/nanCheckFeather.cginc"
+#define NR_THREADS 64
+[numthreads(NR_THREADS,1,1)]
+void Shatter(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID) {
+
+
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
+    
+    Point p = _PointBuffer[pID];
+    float x = hash(pID * 123)-.5;
+    float y = hash(pID * 26)-.5;
+    float z = hash(pID * 38)-.5;
+    float3 startDir = normalize(float3(x,y,z));
+
+    if( _ExplodeTime == 0 ){    
+
+  
+        p.pos = mul( _LTW , float4(startDir*.1,1)).xyz;
+        p.vel = 0;
+        p.life = 1;
+
+    }
+
+    float3 force = 0;
+
+    float nSimTime = clamp(_ExplodeTime,0,1);
+
+    float iSimTime = 1 - nSimTime;
+
+    force += startDir * pow(iSimTime, 6) * 40;
+    force += startDir * pow(iSimTime, 1) * 8;
+
+    force += curlNoise( p.pos * .01) * 5;
+
+
+    p.vel +=  force;
+    p.pos += p.vel * .004;
+    p.vel *= .9 * (1-pow(nSimTime,10));
+
+    p.life = iSimTime;
+
+
+   _PointBuffer[pID] = p;
+
+}
+

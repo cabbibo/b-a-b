@@ -1,0 +1,137 @@
+
+#pragma kernel Feathers
+
+float4x4 transform; 
+
+#include "../Chunks/safeID.cginc" 
+#include "../Chunks/Matrix.cginc"
+#include "../Chunks/rotationMatrix.cginc"
+#include "../Chunks/translationMatrix.cginc"
+#include "../Chunks/scaleMatrix.cginc"
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
+#include "../Chunks/hash.cginc"
+
+
+
+struct Feather{
+  float3 pos;
+  float3 vel;
+  float featherType;
+  float locked;
+  float4x4 ltw;
+  float3 ogPos;
+  float3 ogNor;
+  float touchingGround;
+  float debug;
+};
+
+
+RWStructuredBuffer<Feather> _FeatherBuffer;
+RWStructuredBuffer<Feather> _BaseBuffer;
+float _Time;
+float _DT;
+float _Locked;
+int _TotalBaseFeathers;
+
+int _Emitting;
+
+#include "../Chunks/terrainData.cginc"
+#include "../Chunks/nanCheckFeather.cginc"
+#define NR_THREADS 128
+
+
+
+struct Wren{
+  float3 pos;
+  float3 vel;
+  float l1;
+  float r1;
+  float hue1;
+  float hue2;
+  float hue3;
+  float hue4;
+};
+
+RWStructuredBuffer<Wren> _WrenBuffer;
+
+int _NumWrens;
+
+float3 VecToRay( float3 ro , float3 rd, float3 pos ){
+  
+  float3 p2 = ro - rd * 200;
+  float3 pa = pos - ro;
+  float3 ba = ro - p2;
+  float h =  dot(pa,ba)/dot(ba,ba);
+  float3 pOnLine = h * rd* 200 +ro;
+
+  float3 inLine = pos - pOnLine;
+
+  return  inLine;//normalize(inLine) * force *  (1 - clamp( length(inLine) / radius , 0 , 1));
+}
+
+
+[numthreads(NR_THREADS,1,1)]
+void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID) {
+
+
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
+
+    Feather feather = _FeatherBuffer[pID];
+
+    Feather base =_BaseBuffer[pID%_TotalBaseFeathers];
+
+    float3 basePos = base.pos;
+
+    if( feather.debug == 0 ){
+        feather.debug = hash(pID);
+    }
+
+    if( feather.debug < 0 ){
+        feather.pos = basePos + mul(base.ltw, float4(0,0,-.2 * hash(pID),0)).xyz;
+        feather.vel = 0;
+        feather.debug =1;
+    }
+
+
+    feather.vel += curlNoise( feather.pos * .1 );
+    //feather.vel -= float3(0,100,0);
+
+
+for( int i = 0; i < _NumWrens; i++ ){
+
+    Wren w = _WrenBuffer[i];
+
+    float3 delta = w.pos - feather.pos;
+    float3 outVec = VecToRay( w.pos , w.vel , feather.pos);// w.pos - projPoint;
+    //feather.vel += normalize(outVec) * 300 / length(delta);//saturate((1-feather.debug)* 10) *1000 * normalize(delta) / length(delta);
+
+    if( feather.debug < .95 ){
+        feather.vel +=10* length(w.vel)* normalize(cross(w.vel , outVec))  / length(delta);//saturate((1-feather.debug)* 10) *1000 * normalize(delta) / length(delta);
+    }
+}
+
+
+    float dH = terrainHeight(feather.pos);
+    if(dH< 2 ){
+        //feather.pos.y = dH + feather.pos.y;
+        feather.vel = 0;
+        feather.touchingGround = 1;
+    }else{
+        feather.touchingGround =0;
+    }
+
+    feather.pos += feather.vel * .0001;
+
+  
+
+    feather.vel *= .99;
+
+  if(_Emitting){
+    feather.debug -=  .001f *  hash(float(pID+_Time));
+  }
+    nanCheck( feather );
+    _FeatherBuffer[pID] = feather;
+ 
+}
+

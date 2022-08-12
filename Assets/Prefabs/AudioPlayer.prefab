@@ -1,0 +1,238 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2041784070060584144
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2041784070060584145}
+  m_Layer: 0
+  m_Name: SourceHolder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2041784070060584145
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2041784070060584144}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7682836041982475679}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2041784071023140606
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2041784071023140607}
+  m_Layer: 0
+  m_Name: LoopHolder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2041784071023140607
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2041784071023140606}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7682836041982475679}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2041784071065775725
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2041784071065775722}
+  - component: {fileID: 2041784071065775723}
+  m_Layer: 0
+  m_Name: backgroundAudio
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2041784071065775722
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2041784071065775725}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1411.8196, y: 517.31244, z: 3724.4224}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7682836041982475679}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2041784071065775723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2041784071065775725}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 557b51877bc81af44a1cb1f2b8ccc540, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 10
+  speedRandomness: 0.4
+  volume: 1
+  volumeRandomness: 0.4
+--- !u!1 &7682836041982475664
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7682836041982475679}
+  - component: {fileID: 7682836041982475678}
+  - component: {fileID: 2041784069782126243}
+  m_Layer: 0
+  m_Name: AudioPlayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7682836041982475679
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7682836041982475664}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 2041784071065775722}
+  - {fileID: 2041784071023140607}
+  - {fileID: 2041784070060584145}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7682836041982475678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7682836041982475664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a2aca4897f524c46bfa1f58750f5a4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultMixer: {fileID: 24100000, guid: ad7752ff55a9c0f47ae9ff57f307a7b7, type: 2}
+  playID: 0
+  oPlayID: 0
+  numSources: 200
+  sourceHolder: {fileID: 2041784070060584144}
+  loopPlayID: 0
+  loopOPlayID: 0
+  loopNumSources: 20
+  loopHolder: {fileID: 2041784071023140606}
+  objects: []
+  sources: []
+  loopObjects: []
+  loopSources: []
+  loopPlaying: 
+--- !u!114 &2041784069782126243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7682836041982475664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06ba6ba04ff252f4ca525e854de9208a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ringHitSounds:
+  - {fileID: 8300000, guid: 8635f01ced7dba348afd4aafafef8fe1, type: 3}
+  - {fileID: 8300000, guid: 1fb9bbdbc418a6a4ab64362a84f28e46, type: 3}
+  - {fileID: 8300000, guid: 3451e600c5018c04fbf49d4a054442a7, type: 3}
+  - {fileID: 8300000, guid: 440309d9c0ed4e34591924c74ee8ce06, type: 3}
+  pointCollectedSounds:
+  - {fileID: 8300000, guid: 250947d649445274e993c8f3640d98cb, type: 3}
+  - {fileID: 8300000, guid: 0ec105da232ad72469f06c448f8d6536, type: 3}
+  - {fileID: 8300000, guid: ced16cf60092b3348998d51896c8f613, type: 3}
+  - {fileID: 8300000, guid: 7e7eb353e49c64a4d867ea9691005b46, type: 3}
+  collectableCollected: {fileID: 8300000, guid: 2c39d2e5707da4c4da603555f20645d9,
+    type: 3}
+  enterPlatform: {fileID: 8300000, guid: f548f20736133954e80669ab59057846, type: 3}
+  exitPlatform: {fileID: 8300000, guid: b66a7bfdc45977c4a81300c43a78eb4f, type: 3}
+  scoreSound: {fileID: 8300000, guid: 8f6b37063b2038f4a86a09c5da120ccb, type: 3}
+  collectableDroppedSounds:
+  - {fileID: 8300000, guid: f46bffc09a9a4a74abb33a47c7673030, type: 3}
+  - {fileID: 8300000, guid: 498cfdbbb7c1b33479ce5c591b442459, type: 3}
+  - {fileID: 8300000, guid: 292caf744e3483c4a8f5983ece7a84f3, type: 3}
+  collectablePickedUpSounds:
+  - {fileID: 8300000, guid: f46bffc09a9a4a74abb33a47c7673030, type: 3}
+  - {fileID: 8300000, guid: 498cfdbbb7c1b33479ce5c591b442459, type: 3}
+  - {fileID: 8300000, guid: 292caf744e3483c4a8f5983ece7a84f3, type: 3}
+  raceEndSound: {fileID: 8300000, guid: 14f048e3fb5c664448a6916ccde2fd79, type: 3}
+  backgroundSounds:
+  - {fileID: 8300000, guid: b7f57a96dff58124c9fa92b9a81cba19, type: 3}
+  - {fileID: 8300000, guid: 677b50d57cb70ad43a7728d2c93ef125, type: 3}
+  - {fileID: 8300000, guid: 3406f98dc69608247b7808d51b45f735, type: 3}
+  - {fileID: 8300000, guid: d1139846443f7674991c8525f582de88, type: 3}
+  - {fileID: 8300000, guid: f99af7daac6b4b3429186d0eb9a7e0db, type: 3}
+  enterRacePlatformClip: {fileID: 8300000, guid: 14f048e3fb5c664448a6916ccde2fd79,
+    type: 3}
+  racePlatformWaitingLoop: {fileID: 8300000, guid: 70d436fc0ca4fa445a93850a505f8cc4,
+    type: 3}
+  enterRaceClip: {fileID: 8300000, guid: 397ab296765b9ae449193e1c1f14a7d9, type: 3}
+  raceFinishLoop: {fileID: 8300000, guid: 02200b58611edaa44ac5bb0b5ab5c701, type: 3}
+  hurtClip: {fileID: 0}
+  hitGroundClip: {fileID: 8300000, guid: 2240ac94149d4114d84ebac1aeee3cc3, type: 3}
+  takeoffClip: {fileID: 8300000, guid: cab7dfc95979e8f499fa9bcf7d5153da, type: 3}
+  toggleMenuClip: {fileID: 8300000, guid: 64a4c14c9103a734b87ead265870cc52, type: 3}
+  menuSelectClip: {fileID: 8300000, guid: 64a4c14c9103a734b87ead265870cc52, type: 3}
+  teleportClip: {fileID: 8300000, guid: 64a4c14c9103a734b87ead265870cc52, type: 3}
+  dropParticlesLoop: {fileID: 8300000, guid: e6d04106562b53d46911fff090c604c6, type: 3}
+  flapSounds: []
+  waterFillingLoop: {fileID: 8300000, guid: ba88e76d65724f345ac879929115877f, type: 3}
+  waterFilledSound: {fileID: 8300000, guid: 440309d9c0ed4e34591924c74ee8ce06, type: 3}
+  carryingWaterLoop: {fileID: 8300000, guid: bb1d2b89356b5d24bb2568cc85e857d6, type: 3}
+  waterDroppedSound: {fileID: 8300000, guid: eed25dd185ffaa14fbecd51648ebfd40, type: 3}
+  waterHitSound: {fileID: 8300000, guid: 3451e600c5018c04fbf49d4a054442a7, type: 3}
+  maxHealthReachedClip: {fileID: 0}
+  healthRegainedClip: {fileID: 0}
+  maxStaminaReachedClip: {fileID: 0}
+  deathClip: {fileID: 0}
+  rebirthLoop: {fileID: 0}
+  CollectablePointCollected: {fileID: 0}
+  CollectableCollected: {fileID: 0}

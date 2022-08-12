@@ -1,0 +1,146 @@
+
+#pragma kernel Grass
+
+#include "../Chunks/safeID.cginc" 
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
+#include "../Chunks/hash.cginc"
+
+
+
+struct Particle{
+  float3 pos;
+  float3 nor;
+  float life;
+  float id;
+};
+
+RWStructuredBuffer<Particle> _ParticleBuffer;
+
+#include "../Chunks/terrainData.cginc"
+
+#include "../Chunks/cubicCurve.cginc"
+#include "../Chunks/CubicValues.cginc"
+
+
+
+int _Count;
+
+float3 _CameraPosition;
+float3 _CameraRight;
+float3 _CameraForward;
+
+
+float3 _WrenPosition;
+
+
+float4x4 _CameraViewMatrix;
+float4x4 _CameraViewMatrixInverse;
+float4x4 _CameraProjectionMatrix;
+float4x4 _CameraProjectionMatrixInverse;
+
+
+
+Texture2D<float4> _PaintTexture;
+SamplerState sampler_PaintTexture;
+float4 paintColor( float3 pos ){
+  return  _PaintTexture.SampleLevel(sampler_PaintTexture, (((pos.xz+_MapSize.x/2)) / _MapSize.x) , 1);
+}
+
+
+float _Time;
+//#include "../Chunks/nanCheckFeather.cginc"
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Grass(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID) {
+
+
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
+    
+    Particle particle = _ParticleBuffer[pID];
+
+    // Check if inside view frustum
+    // if not in view frustum, respwan
+    // when respawn, trace terrain from screen space ray
+    // place there and than be checking every frame to see if need to respawn
+
+
+    float d = length(particle.pos - _WrenPosition);
+
+
+
+  if(particle.life ==  0 ){ particle.life = hash(float(pID * 2314));}
+      
+
+    particle.life -= .001 * (hash( float(pID * 24124)) * .7 +.3);
+
+
+
+
+    float3 fNor = particle.nor;
+    float3 fPos = particle.pos;
+
+    float redrawDist = 1000;
+    // respawn
+    if( particle.life < 0 || d > redrawDist ){
+
+
+    float3 randDir = float3( hash(float(pID * 1000) + _Time) -.5 , 0 , hash(float(pID * 330) + _Time)-.5);
+
+    randDir = normalize(randDir);
+
+    float randLength = hash(float(pID * 3031) + _Time );
+  
+
+    float3 pos =  _WrenPosition + randDir * randLength * redrawDist * .1;
+    
+    GetTerrainData( pos , fPos , fNor);
+/*
+    float3 p =  (hash( float(pID) ) -.5) * 1000 * _CameraForward;
+    p += (hash( float(pID+10) ) -.5) * 1000 * _CameraRight;
+    p += _CameraPosition;
+    p = terrainPos( p);
+*/
+
+
+
+        float4 color =  paintColor( fPos);
+
+        if( color.z > .3){
+
+            float3 wrenD = _WrenPosition - fPos;
+            float3 ffff = normalize(lerp( fNor , normalize(cross(wrenD ,float3(0,1,0))),saturate(1/length(wrenD))));//float3(1,0,1)
+            fPos +=1* curlNoise( fPos * 20 );
+            particle.pos = fPos;//worldPosition;
+            particle.nor =ffff;//worldPosition;
+            particle.life = 1 ;
+            particle.id = color.z -.3;
+
+        }
+
+
+
+
+    }else{
+
+      float4 color =  paintColor( fPos);
+      particle.id = color.z-.3;
+    }
+/*
+    }
+    
+
+   /* float3 fPos1 = fPos;
+    GetTerrainData( fPos1 , fPos , fNor);
+    
+             float3 wrenD = _WrenPosition - fPos;
+  //float3 ffff = normalize(lerp( fNor , normalize(cross(wrenD ,float3(0,1,0))),saturate(1/length(wrenD))));//float3(1,0,1)
+    float3 ffff = fNor;// normalize(lerp( fNor , normalize(cross(wrenD ,float3(0,1,0))),.5*saturate(100/length(wrenD))));//float3(1,0,1)
+ 
+   
+    particle.nor = ffff;//lerp( particle.nor , ffff , .05 );*/
+
+    _ParticleBuffer[pID] = particle;
+ 
+}
+
