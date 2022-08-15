@@ -34,12 +34,18 @@ public class FullInterface : MonoBehaviour
     public void Toggle( bool onOff ){
 
 
+        print("now we toglling");
+        print( onOff );
+
         gameObject.SetActive( onOff );
 
         activeInterface = 1;
         targetDegrees = 0;
         rotator.rotation = transform.localRotation * Quaternion.AngleAxis( targetDegrees , Vector3.up);
+
         if( onOff ){
+
+            print("turrnign on intreface");
             invertInterface.UpdateValues();;
             mapInterface.SetCenter();    
             mapInterface.Activate();
@@ -50,8 +56,8 @@ public class FullInterface : MonoBehaviour
 
     }
 
-    bool odRight;
-    bool odLeft;
+    public bool odRight;
+    public bool odLeft;
     
 
     // Update is called once per frame
@@ -82,13 +88,17 @@ public class FullInterface : MonoBehaviour
 
         float closestDegree = targetDegrees;
 
+   
 
-        rotator.localRotation = Quaternion.Slerp( rotator.localRotation ,  Quaternion.AngleAxis( targetDegrees , Vector3.up) , .05f);
+
+      //  rotator.localRotation = Quaternion.Slerp( rotator.localRotation ,  Quaternion.AngleAxis( targetDegrees , Vector3.up) , .05f);
        
     }
 
 
     void NextInterface(int addition){
+
+        print("Trying to change interface");
         
         activeInterface += addition;
         if( activeInterface == -1 ){ activeInterface += 3; }
@@ -96,6 +106,8 @@ public class FullInterface : MonoBehaviour
 
         targetDegrees += (360/3) * (float)addition;
 
+
+        print( activeInterface );
 
 
         if( activeInterface == 1 ){

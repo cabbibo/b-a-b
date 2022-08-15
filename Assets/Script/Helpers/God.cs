@@ -26,7 +26,7 @@ public class God : MonoBehaviour
     public List<RingSet> _races;
     public ControllerTest _input;
 
-    public BaseInterface _groundInterface;    
+    public FullInterface _groundInterface;    
     public BaseInterface _airInterface;
 
 
@@ -132,6 +132,12 @@ public class God : MonoBehaviour
 
     public static Terrain terrain{
         get{
+
+            if( instance._terrain == null ){
+                print("FINDING TERRAIN");
+                instance._terrain = (Terrain)FindObjectOfType(typeof(Terrain));
+                print(instance._terrain);
+            }
             return instance._terrain;
         }   
     }
@@ -142,7 +148,7 @@ public class God : MonoBehaviour
         }
     }
     
-    public static BaseInterface groundInterface{
+    public static FullInterface groundInterface{
         get{
             return instance._groundInterface;
         }

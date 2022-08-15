@@ -97,12 +97,17 @@ public GameObject sourceHolder;
 
     public void BasePlay( AudioClip clip ){
 
-        sources[playID].clip = clip;
-        sources[playID].Play();
+        
+        if( sources.Length>playID){
 
-        oPlayID = playID;
-        playID ++;
-        playID %= numSources;
+            sources[playID].clip = clip;
+            sources[playID].Play();
+
+            oPlayID = playID;
+            playID ++;
+            playID %= numSources;
+
+        }
 
     }
 
@@ -110,15 +115,18 @@ public GameObject sourceHolder;
     //Reset to the default values!
     public void Reset(){
 
-        sources[playID].volume = 1;
-        sources[playID].pitch = 1;
-        sources[playID].time = 0.00000001f;
-        sources[playID].transform.position = Vector3.zero;
-        sources[playID].spatialize=false;
-        sources[playID].spatialBlend = 0;
-        sources[playID].dopplerLevel = 0;
-        sources[playID].outputAudioMixerGroup = defaultMixerGroup;
-    
+
+            if( sources.Length>playID){
+                sources[playID].volume = 1;
+                sources[playID].pitch = 1;
+                sources[playID].time = 0.00000001f;
+                sources[playID].transform.position = Vector3.zero;
+                sources[playID].spatialize=false;
+                sources[playID].spatialBlend = 0;
+                sources[playID].dopplerLevel = 0;
+                sources[playID].outputAudioMixerGroup = defaultMixerGroup;
+            }
+        
     }
 
     public void Play( AudioClip clip ){

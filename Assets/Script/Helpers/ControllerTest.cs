@@ -65,6 +65,8 @@ public bool invertY;
 
     public bool swapLR;
 
+    public bool menuPressed;
+
     // Start is called before the first frame update
     void OnEnable()
     {
@@ -128,6 +130,10 @@ public bool invertY;
 
         x = player.GetButton("X");
         xPressed = player.GetButtonDown("X");
+
+
+        
+        menuPressed = player.GetButtonDown("Menu");
 
     
 

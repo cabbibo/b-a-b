@@ -28,7 +28,11 @@ public class MenuController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        TurnMenuOn();
+        //TurnMenuOn();
+
+           //  God.audio.Play( menuCloseSound );
+           DeactivateMenu();
+        God.fade.FadeIn(.1f);  
         
       //  God.sceneController.HardStart();
     }
@@ -37,10 +41,9 @@ public class MenuController : MonoBehaviour
     void Update()
     {
 
-        print( God.sceneController.sceneLoaded );
 
         // can only do this if we aren't in the middle of fading!
-        if( God.input.circlePressed && God.fade.fading == false ){
+        if( God.input.menuPressed && God.fade.fading == false ){
 
 
             // if our menu is off, we turn it on!
@@ -85,7 +88,7 @@ public class MenuController : MonoBehaviour
     public void TurnMenuOff(){
 
         God.audio.Play( menuCloseSound );
-        God.fade.FadeIn(.5f );      
+        God.fade.FadeIn(.1f );      
        // DeactivateMenu();
 
    
@@ -109,7 +112,6 @@ public class MenuController : MonoBehaviour
 
     public void TurnMenuOn(){
 
-        print("turning menu On");
         God.fade.FadeOut(Color.white,.5f, () => { ActivateMainMenu(); return 0; });        
         God.audio.Play( menuOpenSound );
         if( God.wren != null ){

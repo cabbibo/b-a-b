@@ -28,7 +28,7 @@ public class MenuSelector : OptionsMenu
 
      
         if( gameStarted == 1 ){
-            print("GAME HAS BEEN STARTED");
+//            print("GAME HAS BEEN STARTED");
             options.Add(continueGame);            
             continueGame.gameObject.SetActive(true);
 

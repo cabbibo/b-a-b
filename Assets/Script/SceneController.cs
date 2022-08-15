@@ -159,8 +159,8 @@ public class SceneController : MonoBehaviour
 
 
     public void OnEnable(){
-        print("DEFAULT MAIN SCENE");
-        print( currentMainScene);
+//        print("DEFAULT MAIN SCENE");
+//        print( currentMainScene);
        // OnStart();
         SceneManager.sceneLoaded += OnSceneLoaded;
        SceneManager.sceneUnloaded += OnSceneUnloaded;
