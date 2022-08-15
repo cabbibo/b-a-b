@@ -84,6 +84,23 @@ public class FourRingInterface : WrenInterface
 
     public void OnDisable(){
         active = false;
+        gameObject.SetActive(false);
+    }
+
+    public override void Activate()
+    {
+
+        active = true;
+        gameObject.SetActive(true);
+
+    }
+
+    public override void Deactivate()
+    {
+
+        active = false;
+        gameObject.SetActive(false);
+
     }
 
     // Update is called once per frame
@@ -91,8 +108,9 @@ public class FourRingInterface : WrenInterface
     {
 
 
-         transform.position = Camera.main.transform.position + Camera.main.transform.forward * 10 - Camera.main.transform.up * 1;
-         transform.LookAt( Camera.main.transform.position);
+         //transform.position = Camera.main.transform.position + Camera.main.transform.forward * 10 - Camera.main.transform.up * 1;
+         //transform.LookAt( Camera.main.transform.position);
+        
         if(active){
             UpdateInterface();
         }

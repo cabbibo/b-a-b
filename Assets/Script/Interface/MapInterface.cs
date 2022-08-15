@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine; 
 
-[ExecuteAlways]
+//[ExecuteAlways]
 public class MapInterface : WrenInterface
 {
 
@@ -38,6 +38,7 @@ MaterialPropertyBlock mpb;
  public override void Activate(){
     active = true;
     BuildRaces();
+    gameObject.SetActive(true);
 
 
     // Get our current position and show it on that map
@@ -56,6 +57,7 @@ MaterialPropertyBlock mpb;
 
  public override void Deactivate(){
     active = false;
+    gameObject.SetActive(false);
  }
 
  public void Update(){
@@ -103,12 +105,12 @@ public void SubMenuSelect( int i ){
         mapSize = new Vector2( Mathf.Clamp( mapSize.x , .04f, 1 ),  
                             Mathf.Clamp( mapSize.y , .04f, 1 ));
                             
-        zoomVel *= .98f;
+        zoomVel *= .9f;
 
         locationVel += God.input.alwaysRight * new Vector2(1,1) * .00001f* panSpeedMultiplier;
 
         mapCenter += locationVel;
-        locationVel *= .98f;
+        locationVel *= .9f;
 
 
 /*
@@ -222,22 +224,22 @@ public void SubMenuSelect( int i ){
  Vector3 GetMapPos( Vector3  p){
      Vector3 pos = p;
 
+     
+     //pos.x += God.terrainData.size.x;
+     //pos.z += God.terrainData.size.z;
      pos.y = God.terrain.SampleHeight(p);
      Vector3 s = God.terrainData.size;
     
-     pos =  new Vector3( pos.x / s.x ,  pos.z / s.z,pos.y / s.y );// p , 1.0f / God.terrainData.size);
+     pos =  new Vector3( pos.x / s.x ,  pos.z / s.z,pos.y / s.y );
 
     
 
-    float x = pos.x - (mapCenter.x-.5f);//((pos.x * .5f)+1);
+    float x = pos.x - (mapCenter.x-.5f);
     x /= mapSize.x;
 
-    float y  = pos.y- (mapCenter.y-.5f);//((pos.y * .5f)+1);
+    float y  = pos.y - (mapCenter.y-.5f);
     y /= mapSize.y;
 
-
-    //x -= mapCenter.x;
-    //y -= mapCenter.y;
     pos = new Vector3( -x , y , pos.z *  mapDepth * .5f );
     pos.x = Mathf.Clamp(pos.x , -.5f,.5f);
     pos.y = Mathf.Clamp(pos.y , -.5f,.5f);
@@ -246,24 +248,26 @@ public void SubMenuSelect( int i ){
  }
 
   Vector3 GetMapPosHideSides( Vector3  p){
+
      Vector3 pos = p;
+     
+     //pos.x += God.terrainData.size.x;
+     //pos.z += God.terrainData.size.z;
 
      pos.y = God.terrain.SampleHeight(p);
      Vector3 s = God.terrainData.size;
     
-     pos =  new Vector3( pos.x / s.x ,  pos.z / s.z,pos.y / s.y );// p , 1.0f / God.terrainData.size);
+     pos =  new Vector3( pos.x / s.x ,  pos.z / s.z,pos.y / s.y );
 
     
 
-    float x = pos.x - (mapCenter.x-.5f);//((pos.x * .5f)+1);
+    float x = pos.x - (mapCenter.x-.5f);
     x /= mapSize.x;
 
-    float y  = pos.y- (mapCenter.y-.5f);//((pos.y * .5f)+1);
+    float y  = pos.y- (mapCenter.y-.5f);
     y /= mapSize.y;
 
 
-    //x -= mapCenter.x;
-    //y -= mapCenter.y;
     pos = new Vector3( -x , y , pos.z *  mapDepth * .5f );
     pos.x = Mathf.Clamp(pos.x , -.5f,.5f);
     pos.y = Mathf.Clamp(pos.y , -.5f,.5f);

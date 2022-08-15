@@ -45,6 +45,7 @@ public class WrenBeacon : MonoBehaviour
 
     public void UpdateColors(){
 
+
     }
 
 

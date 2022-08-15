@@ -30,9 +30,23 @@ public bool active;
     // Get our current position and show it on that map
  }
 
- public void OnDisable(){
-    active = false;
- }
+  public override void Activate()
+    {
+
+        active = true;
+        gameObject.SetActive(true);
+
+    }
+
+    public override void Deactivate()
+    {
+
+        active = false;
+        gameObject.SetActive(false);
+
+    }
+
+
 
     // Update is called once per frame
     void UpdateInterface()
@@ -48,8 +62,8 @@ public bool active;
    
 
     public void Update(){
-         transform.position = Camera.main.transform.position + Camera.main.transform.forward * 10;
-         transform.LookAt( Camera.main.transform.position);
+        // transform.position = Camera.main.transform.position + Camera.main.transform.forward * 10;
+        // transform.LookAt( Camera.main.transform.position);
          UpdateInterface();
     }
 

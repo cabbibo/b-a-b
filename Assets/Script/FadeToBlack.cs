@@ -110,6 +110,13 @@ public class FadeToBlack : MonoBehaviour
             float v = (Time.unscaledTime - fadeStartTime) / fadeSpeed;
             if (v >= 1)
             {
+
+                v = 1;
+                
+                // Always finish doing the fade
+                currentOpacity = Mathf.Lerp(fadeOpacity, startOpacity, FadeCurve.Evaluate(v));
+                _material.SetColor("_Color", new Color(fadeColor.r, fadeColor.g, fadeColor.b, currentOpacity));
+            
                 fading = false;
                 if( onCompleteFunction != null ){
                     onCompleteFunction();

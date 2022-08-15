@@ -48,7 +48,7 @@ public class Wren : MonoBehaviour
 
     public Collection collection;
 
-    public BaseInterface fullInterface;
+    public  FullInterface fullInterface;
     public BaseInterface  airInterface;
 
 
@@ -189,9 +189,11 @@ void Update(){
 
         input.SetInput();
 
-        state.inInterface = God.menu.menuOn;
+       // state.inInterface = God.menu.menuOn;
 
-        if(canMove && !state.inInterface){     
+      
+        
+        if(canMove ){     
 
 
             // Only drop items in air ( is that correct? )
@@ -208,12 +210,14 @@ void Update(){
 
 
 
-            /*  if(input.o_circle < .5 && input.circle > .5  ){
-                state.inInterface = !state.inInterface;//true;
+
+ 
+             if(input.o_circle < .5 && input.circle > .5  ){
+                print("TIEM TO TOGGI");
+                state.inInterface = !state.inInterface;
+                print("We are togging : " + state.inInterface);
                 ToggleInterface(state.inInterface);
-            }*/
-
-
+            }
 
         
 
@@ -276,6 +280,7 @@ void Update(){
                 ray.direction = Camera.main.transform.forward;
                 RaycastHit hit;
                 if (Physics.Raycast (ray, out hit , 10000)) {
+                    print(hit.collider.gameObject.name);
                     beacon.PlaceBeacon( hit.point );
                 }
             
@@ -344,7 +349,7 @@ void Update(){
 }
     void FixedUpdate(){
 
-        if( state.isLocal && canMove  && !state.inInterface ){
+        if( state.isLocal && canMove  ){
             physics.UpdatePhysics();    
         }
 
@@ -378,9 +383,14 @@ public void ToggleInterface( bool onOff){
 
    //physics.rb.isKinematic = onOff;
 
+
+     print("TOGGLING ON OFF: " + onOff);    
+     state.inInterface = onOff;//true;
     
     if( physics.onGround ){
-       if( fullInterface ){ fullInterface.Toggle( onOff); }
+       if( fullInterface ){ 
+        
+        fullInterface.Toggle( onOff); }
     }else{
        if( airInterface ){ airInterface.Toggle( onOff ); }
         //compass.gameObject.SetActive(onOff);//.Toggle( onOff);
