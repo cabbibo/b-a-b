@@ -375,7 +375,14 @@ col *= (floor(lMap * 4 ) /4 + .3);
 
 
 
+/*
 
+
+
+  ROCK ROCK ROCK ROCK ROCK ROCK ROCK ROCK ROCK ROCK ROCK ROCK ROCK ROCK ROCK ROCK ROCK 
+
+
+*/
 
 
 
@@ -397,11 +404,13 @@ lMap *= shadow;
 float3 col = .3;//float3(.4,.5,.2);//float3(0,0,0);//float3(1,1,.3);
 
 float fV = 0;
+
+float3 gemCol = 0;
   for( int i =0; i < 3; i++){
 
     float fi = float(i+1);
    
-    float3 fPos = pos - normalize(eye) * fi *3;
+    float3 fPos = pos - normalize(eye) * fi *5;
     float3 lightPos = fPos - _WorldSpaceLightPos0.xyz ;
 
     float v = triNoise3D( fPos * .01 + fi * 113.3 + vertness*.1, 0 , _Time.y)  * fi/5;
@@ -410,13 +419,15 @@ float fV = 0;
 
   //float4 tMap = tex2D(_Splat2, rotateUV(fPos.y * .004, fPos.xz * .01)+ fi * .1) * .2;
   float4 tMap =0;// tex2D(_Splat1, fPos.xz * .04 + fi * .1) * .2;
-   tMap += tex2D(_Splat1,  rotateUV(fPos.y * .001 ,fPos.xz * .03 + fi * .1)) * .2;
+   tMap += tex2D(_Splat1,  rotateUV(pos.y * .001 + nor.y * .003 ,fPos.xz * .01 + fi * .1)) * .2;
 
   fV  += tMap.a * .2;
   fV += tMap.r * .5;
-      col += pow(tMap.g ,2)* float3(.5,.5,.5) * 500;//tex2D(_Splat2, (fPos.xyz -10*nor).xz * .03+ fi * .1) * .2;
+      //col += pow(tMap.g ,2)* float3(.5,.5,.5) * 500;//tex2D(_Splat2, (fPos.xyz -10*nor).xz * .03+ fi * .1) * .2;
+    col += pow(tMap.g ,2)* float3(fi/4,.5,.5) * 50;//tex2D(_Splat2, (fPos.xyz -10*nor).xz * .03+ fi * .1) * .2;
       //col += pow(tMap.r,2) * float3(.6,.4,.4) * .2;//tex2D(_Splat2, (fPos.xyz -10*nor).xz * .03+ fi * .1) * .2;
 
+gemCol += hsv(tMap.r * .4+ fi/10 + .5, 1,tMap.r * 3);
 
 float delta = saturate(-1*(v2-v));
     //fV += saturate(-1*(v2-v)) * 40;
@@ -439,25 +450,36 @@ float delta = saturate(-1*(v2-v));
   col = floor( col * 4)/4;
   col *= .1;
   col += .5;
+  
+
+  //col = fV/2;
 
   //col *= 20;
 
 
 
-float rainExtra = floor( (triNoise3D( pos  * .0005 ,1,_Time.y * .01)+1) * 1000 ) /1000;
+float rainExtra = floor( (triNoise3D( pos  * .0005 ,1,_Time.y * .0)+1) * 1000 ) /1000;
+rainExtra -=   .5 * floor( (triNoise3D( pos  * .003,1,_Time.y * .0)+1) * 1000 ) /1000;
+
+rainExtra /=.5;
+
 
 col *= (floor(triNoise3D( pos * .001,0,0) * 6) / 6) *1 + .4;
 
+  // meadow;
   if( baseVert > .95 ){
-    col *= 4*float3(.3,1,.1);
+    col *= (m4+.5)*float3(.4,1,.2);//4*float3(.3,1,.1);
   }
 
-  if(rainExtra < 1.1 ){
-    col = hsv( m4 * .01 + .3 , 1,m4* .1);//brightnessContrast(col, .3 , 11);
+  // Gemstones?
+  if(rainExtra < .85 ){
+
+    float fade = rainExtra-.85;
+    col = gemCol *-fade * 10;//brightnessContrast(col, .3 , 11);
   }
 
 
-
+  // snow
   if( pos.y + triNoise3D(pos * .004,0,0) * 200 - lMapB * 100 > 400 &&  ( baseVert  + pos.y * .0001> .5 )){
     col = 1;
   }
@@ -722,6 +744,10 @@ col += color1 * control.r;
 col += color2 * control.g;
 col += color3 * control.b;
 col += color4 * control.a;
+
+
+float lVal = 1/(.2*pow(length(v.worldPos - _WrenPos) * .3,4)+1);
+col += (col * .8 )* lVal;
 
 //col = color3;
 

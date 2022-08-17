@@ -32,13 +32,19 @@ public LineRenderer toClosest;
 
 public FullInterface fullInterface;
 
+public GameObject activeInterfaceIndicator;
+
 
 MaterialPropertyBlock mpb;
 
  public override void Activate(){
     active = true;
+    enabled = true;
+    activeInterfaceIndicator.SetActive(true);
     BuildRaces();
-    gameObject.SetActive(true);
+         UpdateInterface();
+         UpdateRaces();
+    //gameObject.SetActive(true);
 
 
     // Get our current position and show it on that map
@@ -57,7 +63,10 @@ MaterialPropertyBlock mpb;
 
  public override void Deactivate(){
     active = false;
-    gameObject.SetActive(false);
+    enabled = false;
+    
+        activeInterfaceIndicator.SetActive(false);
+    //gameObject.SetActive(false);
  }
 
  public void Update(){

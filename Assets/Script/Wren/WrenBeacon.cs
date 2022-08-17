@@ -17,6 +17,8 @@ public class WrenBeacon : MonoBehaviour
 
     public GameObject nest;
 
+    public float forceAmount = 10;
+
 
     public void OnEnable(){
 

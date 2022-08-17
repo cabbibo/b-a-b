@@ -150,11 +150,13 @@ float4 frag (varyings v) : COLOR {
 
 
 
-float lightness = m * ( shadow * .5 + .5);
-lightness = floor(lightness*3) / 2;
-   // float3 col= float3(v.data1.x,v.data1.y,1.);//(1-tCol.x) * hsv(m * .3 + v.feather * .2, 1,1) * shadow;
-    float3 col= hsv(v.hue , _Saturation,lightness);// * lerp(1,tCol ,1-shadow);
 
+   // float3 col= float3(v.data1.x,v.data1.y,1.);//(1-tCol.x) * hsv(m * .3 + v.feather * .2, 1,1) * shadow;
+    float3 col= hsv(v.hue , _Saturation,1);// * lerp(1,tCol ,1-shadow);
+float lightness = m * ( shadow * .5 + .5);
+lightness = floor(lightness*2) / 2;
+
+col *= lightness + .4;
     //col = v.nor * .5 +.5;
     return float4(col,1);
 }

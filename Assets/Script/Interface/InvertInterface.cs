@@ -22,6 +22,8 @@ public class InvertInterface : WrenInterface
 
 public bool active;
 
+public GameObject activeInterfaceIndicator;
+
  public void OnEnable(){
     UpdateValues();
     active = true;
@@ -34,7 +36,9 @@ public bool active;
     {
 
         active = true;
-        gameObject.SetActive(true);
+        enabled = true;
+        UpdateValues();
+        activeInterfaceIndicator.SetActive(true);
 
     }
 
@@ -42,7 +46,9 @@ public bool active;
     {
 
         active = false;
-        gameObject.SetActive(false);
+        enabled = false;
+        
+        activeInterfaceIndicator.SetActive(false);
 
     }
 
