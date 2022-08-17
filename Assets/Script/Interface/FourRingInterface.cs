@@ -7,6 +7,8 @@ using UnityEngine;
 public class FourRingInterface : WrenInterface
 {
 
+    public GameObject activeInterfaceIndicator;
+
     public BaseInterface fullInterface;
 
     public bool active;
@@ -55,6 +57,11 @@ public class FourRingInterface : WrenInterface
     public void OnEnable()
     {   
         
+        SetUpInterface();
+
+    }
+
+    void SetUpInterface(){
         
         selection = 1;
         oSelection = 1;
@@ -77,29 +84,31 @@ public class FourRingInterface : WrenInterface
 
         UpdateInterface();
 
-        active = true;
-
     }
 
 
     public void OnDisable(){
-        active = false;
-        gameObject.SetActive(false);
     }
 
     public override void Activate()
     {
 
+
         active = true;
-        gameObject.SetActive(true);
+        enabled = true;
+
+        activeInterfaceIndicator.SetActive(true);
+        SetUpInterface();
 
     }
 
     public override void Deactivate()
     {
 
+        activeInterfaceIndicator.SetActive(false);
         active = false;
-        gameObject.SetActive(false);
+        enabled = false;
+       // gameObject.SetActive(false);
 
     }
 
