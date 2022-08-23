@@ -72,9 +72,9 @@ public class RippleRenderer : MonoBehaviour {
 
   public void Update() {
 
-    if( God.wren != null ){
+    /*if( God.wren != null ){
       rippler = God.wren.transform;
-    }
+    }*/
 
     //  print("hi");
     
