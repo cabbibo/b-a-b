@@ -5,40 +5,39 @@ using UnityEngine;
 public class WrenStats : WrenInterface
 {
 
+    public float forwardAmount;
+    public float upAmount;
+    public float rightAmount;
+    public float scale;
+
     public GameObject healthBar;
-    public LineRenderer healthLR;
     public GameObject staminaBar;
-    public LineRenderer staminaLR;
+    public GameObject fullnessBar;
+    public GameObject awakenessBar;
+    public GameObject drynessBar;
+    public GameObject ageBar;
 
 
-
-
-    public bool active = false;
-    public override void Activate()
-    {
-        active = true;
-    }
-
-    public override void Deactivate()
-    {
-        active = false;
-    }
 
     public void OnEnable(){
-        healthLR = healthBar.GetComponent<LineRenderer>();
-        staminaLR = staminaBar.GetComponent<LineRenderer>();
+        
     }
 
 
     public void  Update(){
+            transform.position = God.camera.transform.position;
+            transform.position += God.camera.transform.forward * forwardAmount;
+            transform.position += God.camera.transform.up * upAmount;
+            transform.position += God.camera.transform.right* rightAmount;
 
-        if( active ){
+            transform.localScale = Vector3.one * scale;
 
             healthBar.transform.localScale = new Vector3( .1f , 6 * God.wren.state.health/God.wren.state.maxHealth , .1f);
-            healthLR.SetPosition(0,Vector3.up * -3 * God.wren.state.health/God.wren.state.maxHealth );
-            healthLR.SetPosition(1,Vector3.up * 3 * God.wren.state.health/God.wren.state.maxHealth );
             staminaBar.transform.localScale = new Vector3( .1f , 6 * God.wren.state.stamina/God.wren.state.maxStamina , .1f);
-        }
+            fullnessBar.transform.localScale = new Vector3( .1f , 6 * God.wren.state.fullness/God.wren.state.maxFullness , .1f);
+            awakenessBar.transform.localScale = new Vector3( .1f , 6 * God.wren.state.awakeness/God.wren.state.maxAwakeness , .1f);
+            drynessBar.transform.localScale = new Vector3( .1f , 6 * God.wren.state.dryness/God.wren.state.maxDryness , .1f);
+            ageBar.transform.localScale = new Vector3( .1f , 6 * God.wren.state.age/God.wren.state.maxAge , .1f);
 
     }
 

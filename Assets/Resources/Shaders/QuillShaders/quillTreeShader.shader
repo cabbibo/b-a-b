@@ -152,7 +152,7 @@ float4 frag (varyings v) : COLOR {
     float3 col;
 
 
-  float noiseVal2 = snoise(v.worldPos * 11.3);
+  float noiseVal2 = snoise(v.worldPos * 1.3);
 
   
   float camDist = length(v.worldPos - _WorldSpaceCameraPos);
@@ -160,6 +160,8 @@ float4 frag (varyings v) : COLOR {
 
     col = v.color;
 
+    float m3 = saturate(dot( normalize(_WorldSpaceLightPos0.xyz), v.nor));
+  col *= (floor((m3+1) *2 )/4)* .8 + .2;
 
    // Discards around bird!
 

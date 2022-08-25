@@ -4,4 +4,10 @@ using UnityEngine;
 
 
 public class AirInterface : BaseInterface
-{}
+{
+
+    public Wren wren;
+
+    
+
+}

@@ -53,6 +53,8 @@ public class Sounds : MonoBehaviour
     public AudioClip healthRegainedClip;
     public AudioClip maxStaminaReachedClip;
 
+    public AudioClip newAgeClip;
+
 
     public AudioClip deathClip;
     public AudioClip rebirthLoop;

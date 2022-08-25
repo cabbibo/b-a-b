@@ -260,7 +260,7 @@ float3 nT3D( float3 pos ){
 
      float3 _MapSize;
             float terrainHeight( float3 pos ){
-                float height = tex2Dlod( _HeightMap , float4(((pos.xz)) / _MapSize.xz, 0 ,0)).x;// , 1).x * 4000
+                float height = tex2Dlod( _HeightMap , float4(((pos.xz)) / _MapSize.xz + .5, 0 ,0)).x;// , 1).x * 4000
                 return height * _MapSize.y;//float3( pos.x ,height * 4000 , pos.z);
                 //return float3( pos.x ,pos.y, pos.z);
             }
