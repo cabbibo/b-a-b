@@ -64,6 +64,8 @@ public class Wren : MonoBehaviour
 
     public bool canMove;
 
+    public WrenGrowthManager growth;
+
 
    void OnEnable(){
 
@@ -476,7 +478,7 @@ void Crash(Collision c){
         if (state.isLocal) {
             carrying.GroundHit(Carryable.DropSettings.FromCrash(c));
         }
-        state.HurtCollision(c);
+        growth.HurtCollision(c);
     //}
 
        // state.TakeOff();

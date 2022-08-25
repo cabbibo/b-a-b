@@ -41,10 +41,19 @@ public uint playerID;
 public bool dead;
 
 
-public float health;
-public float stamina;
+public float health; // this goes to 0 and you die
+public float stamina; // this goes to 0 you can't flap? also your health starts going down?
+public float fullness; // this goes to 0 and you fly very slowly ( health also goes down? )
+public float dryness; // this goes to 0 and gravity is harder ( health also goes down? )
+public float awakeness; //this goes to 0 and you need to land ( health also goes down? ) 
+public float age; // this is a general 'progression' where you get faster and can turn better the older you are?
+
 public float maxHealth;
 public float maxStamina;
+public float maxFullness;
+public float maxDryness;
+public float maxAwakeness;
+public float maxAge;
 
 public void TransportToPosition( Vector3 pos , Vector3 vel ){
     wren.bird.Explode();
@@ -97,7 +106,7 @@ public void HitGround(){
 
 
 //TODO: do we need to pass state on this one?
-public void HurtCollision(Collision c){
+/*public void HurtCollision(Collision c){
 
 
     if( isLocal){
@@ -110,7 +119,7 @@ public void HurtCollision(Collision c){
             OnDie();
         }
     }
-}
+}*/
 
 
 
@@ -122,6 +131,15 @@ public void HealthAdd( float healthAddAmount ){
         health = maxHealth;
         God.audio.Play( God.sounds.maxHealthReachedClip );
     }
+
+    
+    if( health < 0 ){
+        OnDie();
+    }
+
+    
+    health = Mathf.Clamp( health , 0 , maxHealth );
+    
     
 }
 
@@ -135,13 +153,100 @@ public void StaminaAdd( float staminaAddAmount ){
         stamina = maxStamina;
         God.audio.Play( God.sounds.maxStaminaReachedClip );
     }
+
+    
+    stamina = Mathf.Clamp( stamina , 0 , maxStamina );
     
 }
+
+
+public void DrynessAdd( float drynessAddAmount ){
+
+
+    bool alreadyMax = dryness == maxDryness;
+    dryness += drynessAddAmount;
+    if( dryness > maxDryness && !alreadyMax ){
+        dryness = maxDryness;
+        God.audio.Play( God.sounds.maxStaminaReachedClip );
+    }
+
+    
+    dryness = Mathf.Clamp( dryness , 0 , maxDryness );
+    
+}
+
+
+public void FullnessAdd( float fullnessAddAmount ){
+
+
+    bool alreadyMax = fullness == maxFullness;
+    fullness += fullnessAddAmount;
+    if( fullness > maxFullness && !alreadyMax ){
+        fullness = maxFullness;
+        God.audio.Play( God.sounds.maxStaminaReachedClip );
+    }
+
+    
+    fullness = Mathf.Clamp( fullness , 0 , maxFullness );
+    
+}
+
+
+public void awakenessAdd( float awakenessAddAmount ){
+
+
+    bool alreadyMax = awakeness == maxAwakeness;
+    awakeness += awakenessAddAmount;
+    if( awakeness > maxAwakeness && !alreadyMax ){
+        awakeness = maxAwakeness;
+        God.audio.Play( God.sounds.maxStaminaReachedClip );
+    }
+
+    
+    awakeness = Mathf.Clamp( awakeness , 0 , maxAwakeness );
+    
+}
+
+
+public void AgeAdd( float AgeAddAmount ){
+
+
+
+     bool alreadyMax = age == maxAge;
+    age += AgeAddAmount;
+    if( age > maxAge && !alreadyMax ){
+        age = maxAge;
+
+        //TODO SOMETHING V V SPECIAL!
+
+    }
+
+
+
+    God.audio.Play( God.sounds.newAgeClip );
+
+
+    
+}
+
+
+
+
+
+
+
 public void OnDie(){
 
-    //health = maxHealth;
-    //stamina = maxStamina;
-    //wren.FullReset();
+    print("DEATH");
+
+    health = maxHealth;
+    stamina = maxStamina;
+    awakeness = maxAwakeness;
+    fullness = maxFullness;
+    age = 0;
+
+
+    wren.FullReset();
 
     // WHAT IS DEAD MAY NEVER DIE
     if( !dead ){
@@ -315,10 +420,27 @@ public void CheckForOriginals(){
     hue3 = PlayerPrefs.GetFloat("_Hue3" , Random.Range(0.00001f, .9999f) );
     hue4 = PlayerPrefs.GetFloat("_Hue4" , Random.Range(0.00001f, .9999f) );
 
-    maxStamina = PlayerPrefs.GetFloat("_MaxStamina" , 100 );
-    maxHealth = PlayerPrefs.GetFloat("_MaxHealth" , 1000 );
+   
+    maxHealth = PlayerPrefs.GetFloat("_MaxHealth" , 1 );
     health = PlayerPrefs.GetFloat("_Health" , maxHealth );
+
+    maxStamina = PlayerPrefs.GetFloat("_MaxStamina" , 1 );
     stamina = PlayerPrefs.GetFloat("_Stamina" , maxStamina );
+
+    
+    maxFullness = PlayerPrefs.GetFloat("_MaxFullness" , 1 );
+    fullness = PlayerPrefs.GetFloat("_Fullness" , maxFullness );
+
+    
+    maxDryness = PlayerPrefs.GetFloat("_MaxDryness" , 1 );
+    dryness = PlayerPrefs.GetFloat("_Dryness" , maxDryness );
+
+    
+    maxAwakeness = PlayerPrefs.GetFloat("_MaxAwakeness" , 1 );
+    awakeness = PlayerPrefs.GetFloat("_Awakeness" , maxAwakeness );
+
+    maxAge = PlayerPrefs.GetFloat("_MaxAge" , 1 );
+    age = PlayerPrefs.GetFloat("_Age" , 0 );
 
 
 
