@@ -15,6 +15,8 @@ using Unity.Mathematics;
 public class RibbonAlongCurve : MonoBehaviour
 {
 
+    public bool flipRighthandedness;
+
     public bool twoSided;
     public Curve curve;
     public int lengthSegments = 50;
@@ -75,12 +77,24 @@ public class RibbonAlongCurve : MonoBehaviour
                 int id3 = baseID + widthSegments;
                 int id4 = baseID + widthSegments + 1;
 
-                triangles[index++] = id1;
-                triangles[index++] = id2;
-                triangles[index++] = id4;
-                triangles[index++] = id1;
-                triangles[index++] = id4;
-                triangles[index++] = id3;
+
+                if(!flipRighthandedness ){
+                    triangles[index++] = id1;
+                    triangles[index++] = id2;
+                    triangles[index++] = id4;
+                    triangles[index++] = id1;
+                    triangles[index++] = id4;
+                    triangles[index++] = id3;
+                }else{
+                    triangles[index++] = id1;
+                    triangles[index++] = id4;
+                    triangles[index++] = id2;
+                    triangles[index++] = id1;
+                    triangles[index++] = id3;
+                    triangles[index++] = id4;
+                }
+
+                
 
                 if( twoSided ){
                     triangles[index++] = id1 + (totalVertCount/2);

@@ -14,7 +14,7 @@ public class HealthMapper : MonoBehaviour
         var camera = God.camera;
         if( God.wren ){
 
-            float val = God.wren.state.health / God.wren.state.maxHealth;
+            float val = God.wren.stats.health / God.wren.stats.maxHealth;
 
             var frustumHeight = 2.0f *camera.nearClipPlane * 2.0f * Mathf.Tan(camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
             var frustumWidth = frustumHeight * camera.aspect;

@@ -72,7 +72,7 @@ public class WrenBeacon : MonoBehaviour
             }
 
             if(!w.state.onGround){
-                w.physics.rb.AddForce( Vector3.up * upForce );
+                w.physics.rb.AddForce( Vector3.up * upForce * forceAmount );
             }
 
         }

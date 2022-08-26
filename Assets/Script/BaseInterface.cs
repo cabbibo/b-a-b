@@ -23,7 +23,7 @@ public class BaseInterface : MonoBehaviour
 
         activeInterface = 1;
         if( onOff ){
-            NextInterface(1);
+            NextInterface(0);
         }
 
 

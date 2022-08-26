@@ -21,9 +21,11 @@ public class BugSpawner : MonoBehaviour
 
     public float oldSpawnTime;
 
+    public float spawnRange;
+    public Vector2 heightRange;
 
 
-     public float speed;
+    public float speed;
     public float drag;
     public float osscilationSize;
     public float life;
@@ -32,6 +34,10 @@ public class BugSpawner : MonoBehaviour
 
     public float maxSpeed;
     public float maxScale;
+
+    public ParticleSystem gotAteParticleSystem;
+    public float bugFullnessAdd;
+    public float bugStaminaAdd;
 
 
     // Start is called before the first frame update
@@ -70,11 +76,16 @@ public class BugSpawner : MonoBehaviour
 
             if( Cage != null ){
                 fPos = new Vector3(
-                                Random.Range( -.5f,.5f) * Cage.lossyScale.x,
-                                Random.Range( -.5f,.5f) * Cage.lossyScale.y,
-                                Random.Range( -.5f,.5f) * Cage.lossyScale.z
+                                Random.Range( -spawnRange,spawnRange) * Cage.lossyScale.x,
+                                Random.Range( .9f,1) * Cage.lossyScale.y,
+                                Random.Range( -spawnRange,spawnRange) * Cage.lossyScale.z
                             );
                 fPos += Cage.transform.position;
+
+                RaycastHit hit;
+                if( Physics.Raycast( fPos , Vector3.up * -1 , out hit)){
+                    fPos = hit.point + Vector3.up * Random.Range( heightRange.x , heightRange.y);
+                }
             }
 
 
@@ -106,17 +117,15 @@ public class BugSpawner : MonoBehaviour
         
     }
 
-
-    public ParticleSystem gotAteParticleSystem;
-    public float bugHealthAdd;
     public void BugGotAte( Bug b ){
 
 
         gotAteParticleSystem.Play();
         gotAteParticleSystem.transform.position = b.transform.position;
-        print("GOtAteSpawner");
+   
 
-        God.wren.state.HealthAdd( bugHealthAdd );
+        God.wren.stats.FullnessAdd( bugFullnessAdd );
+        God.wren.stats.StaminaAdd( bugStaminaAdd );
 
     }
 }

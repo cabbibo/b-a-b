@@ -16,10 +16,13 @@ public class ClosedCurveFlatMesh : MonoBehaviour
 {
 
     public bool twoSided;
+    public bool flipRighthandedness;
     public Curve curve;
     public int lengthSegments = 50;
     public int widthSegments = 8;
     public float width = 1;
+
+    public float verticalOffset;
 
 
     public Transform centerObject;
@@ -86,12 +89,22 @@ public class ClosedCurveFlatMesh : MonoBehaviour
                 id3 %= totalVertCount;
                 id4 %= totalVertCount;
 
-                triangles[index++] = id1;
-                triangles[index++] = id4;
-                triangles[index++] = id2;
-                triangles[index++] = id1;
-                triangles[index++] = id3;
-                triangles[index++] = id4;
+                if(!flipRighthandedness ){
+                    triangles[index++] = id1;
+                    triangles[index++] = id2;
+                    triangles[index++] = id4;
+                    triangles[index++] = id1;
+                    triangles[index++] = id4;
+                    triangles[index++] = id3;
+                }else{
+                    triangles[index++] = id1;
+                    triangles[index++] = id4;
+                    triangles[index++] = id2;
+                    triangles[index++] = id1;
+                    triangles[index++] = id3;
+                    triangles[index++] = id4;
+                }
+
 
                 if( twoSided ){
                     triangles[index++] = id1 + (totalVertCount/2);
@@ -116,17 +129,20 @@ public class ClosedCurveFlatMesh : MonoBehaviour
             edgePositions[i] =  curve.GetPositionFromValueAlongCurve( lengthAlongTube );
             center += edgePositions[i];
         }
+
         
         center /= (float)lengthSegments;
 
 
         float3 lCenter = centerObject.InverseTransformPoint( center );
+        lCenter.y += verticalOffset;
+        center = centerObject.TransformPoint(lCenter);
 
         for( int i = 0; i< lengthSegments; i++ ){
 
 
             float3 lEP = centerObject.InverseTransformPoint( edgePositions[i] );
-            lEP.z = lCenter.z;
+            lEP.y = lCenter.y;
             edgePositions[i] = centerObject.TransformPoint( lEP );
         
         }
