@@ -116,8 +116,8 @@ public class WrenDeathAnimation : MonoBehaviour
         print( tmpTarget );
         lerpTo.RemoveLookTarget();
         lerpTo.target = tmpTarget;
-        wren.state.health  = wren.state.maxHealth;
-        wren.state.stamina = wren.state.maxStamina;
+        wren.stats.health  = wren.stats.maxHealth;
+        wren.stats.stamina = wren.stats.maxStamina;
         //wren.FullReset();
         
          lerpTo.lerpSpeed = tmpLerpSpeed;

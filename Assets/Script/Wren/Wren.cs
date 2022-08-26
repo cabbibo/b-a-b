@@ -36,6 +36,7 @@ public class Wren : MonoBehaviour
     public WrenParams parameters;
 
     public WrenState state;
+    public WrenStats stats;
 
     public WrenMaker maker;
 
@@ -241,7 +242,7 @@ void Update(){
             }*/
 
 
-
+/*
             float d = Mathf.Abs( input.o_left2 - input.left2);
             state.stamina -= d;
 
@@ -272,7 +273,7 @@ void Update(){
             }
 
 
-
+*/
 
         
             if( input.dLeft > .5f && input.o_dLeft <= .5f ){
@@ -471,7 +472,7 @@ void OnCollisionEnter( Collision c ){
 void Crash(Collision c){
     if( !state.onGround ){
     //if( c.impulse.magnitude != 0 ){
-        ToggleInterface(false);
+        //ToggleInterface(false);
         God.audio.Play( God.sounds.hitGroundClip );
         state.HitGround(c);
 

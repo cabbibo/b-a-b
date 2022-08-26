@@ -14,7 +14,7 @@ public class staminaMapper : MonoBehaviour
 
 var camera = God.camera;
         if( God.wren ){
-            float val = God.wren.state.stamina / God.wren.state.maxStamina;
+            float val = God.wren.stats.stamina / God.wren.stats.maxStamina;
 
  var frustumHeight = 2.0f *camera.nearClipPlane * 2.0f * Mathf.Tan(camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
  var frustumWidth = frustumHeight * camera.aspect;

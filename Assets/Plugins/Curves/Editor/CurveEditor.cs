@@ -100,10 +100,11 @@ public class CurveEditor : Editor
     float3 currentScale;
 
 
+    Ray mouseRay;
     void Input()
     {
         Event guiEvent = Event.current;
-        Ray mouseRay = HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition);
+        mouseRay = HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition);
 
         if (guiEvent.type == EventType.MouseDown  && guiEvent.button == 0)
         {
@@ -305,6 +306,20 @@ public class CurveEditor : Editor
                 
                 if( newPos != pos ){
                     Undo.RecordObject(curve,"Move");
+
+                    if( curve.intersectOnMove ){
+
+
+                         RaycastHit hit;
+                        // Does the ray intersect any objects excluding the player layer
+                        if (Physics.Raycast( mouseRay , out hit, Mathf.Infinity))
+                        {
+                        
+                        //placing
+                                        newPos = hit.point;// = hit.distance;
+                        }
+
+                    }
                     curve.positions[i] = newPos;
                     hasChanged = true;
                     curve.selectedPoint=i;

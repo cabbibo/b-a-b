@@ -153,7 +153,7 @@ using System;
 
         public void SetWrenVals( GameObject g  , bool connected ){
             
-                
+                g.SetActive(true);
                 Wren w =  g.GetComponent<Wren>();
 
                 w.SetLocal( connected );

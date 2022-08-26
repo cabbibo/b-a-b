@@ -40,6 +40,9 @@ public class Curve : MonoBehaviour
 
     public bool haveFun;
 
+    public bool intersectOnPlace;
+    public bool intersectOnMove;
+
     public Font labelFont;
 
 
@@ -183,6 +186,8 @@ public class Curve : MonoBehaviour
       oStepLength = stepLength;
       oStepResolution = stepResolution;
     }
+
+
     public void DeletePoint(){
 
       if( positions.Count > 2 ){
@@ -211,6 +216,8 @@ public class Curve : MonoBehaviour
       selectedPoint = v;
       playClip(selectNodeClip);
     }
+
+    
     public void AddPoint(float v){
 
      
@@ -276,7 +283,21 @@ public class Curve : MonoBehaviour
 
     public void AddPointAtEnd( Ray ray ){
 
+      
+
       float dist = length(positions[selectedPoint] - ray.origin);
+
+      if( intersectOnPlace){
+        
+        RaycastHit hit;
+        // Does the ray intersect any objects excluding the player layer
+        if (Physics.Raycast( ray , out hit, Mathf.Infinity))
+        {
+            dist = hit.distance;
+            print("HIT");
+        }
+
+      }
       float3 newPos = ray.origin + ray.direction * dist;
       float3 dir = newPos - (float3)positions[selectedPoint];
       Quaternion q = Quaternion.LookRotation( dir , rotations[selectedPoint] * float3(0,1,0));// rotations[ selectedPoint ];

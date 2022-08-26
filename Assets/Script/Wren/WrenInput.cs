@@ -116,7 +116,7 @@ public void GetInput(){
     fDebug = finalExtraNetworkData.localPosition.z;
 
 
-    if( wren.state.stamina <= 0 ){
+    if( wren.stats.stamina <= 0 ){
         left2  = 0;
         right2 = 0;
     }
@@ -160,7 +160,7 @@ public void SetInput(){
     right2 = controller.r2;
     
 
-    if( wren.state.stamina <= 0 ){
+    if( wren.stats.stamina <= 0 ){
         left2  = 0;
         right2 = 0;
     }

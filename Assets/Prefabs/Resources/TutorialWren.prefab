@@ -15500,7 +15500,7 @@ MonoBehaviour:
   collection: {fileID: 5052756159241391916}
   beaconRenderer: {fileID: 6205685770998220668}
   nest: {fileID: 2202487955255834930}
-  forceAmount: 10
+  forceAmount: 0.01
 --- !u!1 &5002319709692007586
 GameObject:
   m_ObjectHideFlags: 0
@@ -25125,6 +25125,7 @@ GameObject:
   - component: {fileID: 3650603334615375535}
   - component: {fileID: 7998969256004650699}
   - component: {fileID: 1447400220214749194}
+  - component: {fileID: 6744424082612651983}
   m_Layer: 10
   m_Name: TutorialWren
   m_TagString: Wren
@@ -25182,6 +25183,7 @@ MonoBehaviour:
   compass: {fileID: 0}
   parameters: {fileID: 5119402594301017824}
   state: {fileID: 9156686790671013125}
+  stats: {fileID: 6744424082612651983}
   maker: {fileID: 0}
   beacon: {fileID: 1499124320774614241}
   colors: {fileID: 3856516255870990745}
@@ -25462,18 +25464,7 @@ MonoBehaviour:
   uniqueID: 
   playerID: 0
   dead: 0
-  health: 0
-  stamina: 0
-  fullness: 0
-  dryness: 0
-  awakeness: 0
-  age: 0
-  maxHealth: 1
-  maxStamina: 1
-  maxFullness: 1
-  maxDryness: 1
-  maxAwakeness: 1
-  maxAge: 1
+  stats: {fileID: 6744424082612651983}
 --- !u!114 &2641606511133191620
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25660,11 +25651,85 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wren: {fileID: 9160943688313912041}
-  networkInfo: {fileID: 4674583356821415298}
-  hurtCollisionMultiplier: 0.001
-  hurtCollisionCutoff: 0
+  networkInfo: {fileID: 0}
   state: {fileID: 9156686790671013125}
-  affectFlight: 0
+  stats: {fileID: 6744424082612651983}
+  hurtCollisionMultiplier: 0.01
+  hurtCollisionCutoff: 0
+  flapStaminaSubtractor: 0.02
+  flapStaminaSubtractorMin: 0
+  flapStaminaSubtractorMax: 0
+  staminaCooldownTime: 3
+  staminaCooldownTimeMin: 0
+  staminaCooldownTimeMax: 1000
+  staminaRefillSpeed: 0.0003
+  staminaRefillSpeedMin: 0
+  staminaRefillSpeedMax: 0.01
+  healthRefillSpeed: 0.001
+  healthRefillSpeedMin: 0
+  healthRefillSpeedMax: 0.01
+  hungerGrowSpeed: 0.00003
+  hungerGrowSpeedMin: 0
+  hungerGrowSpeedMax: 0.01
+  wetnessGrowSpeed: 0
+  wetnessGrowSpeedMin: 0
+  wetnessGrowSpeedMax: 0.01
+  wetnessRefillSpeed: 0
+  wetnessRefillSpeedMin: 0
+  wetnessRefillSpeedMax: 0.01
+  sleepGrowSpeed: 0
+  sleepGrowSpeedMin: 0
+  sleepGrowSpeedMax: 0.01
+  sleepRefillSpeed: 0
+  sleepRefillSpeedMin: 0
+  sleepRefillSpeedMax: 0.01
+  thirstGrowSpeed: 0.00003
+  thirstGrowSpeedMin: 0
+  thirstGrowSpeedMax: 0.01
+  sadnessGrowSpeed: 0
+  sadnessGrowSpeedMin: 0
+  sadnessGrowSpeedMax: 0
+  boredomGrowSpeed: 0
+  boredomGrowSpeedMin: 0
+  boredomGrowSpeedMax: 0
+  hungryHealthSubtractor: 0.0003
+  thirstyHealthSubtractor: 0.0003
+  tiredHealthSubtractor: 0.0003
+  sadnessHealthSubtractor: 0
+  boredomHealthSubtractor: 0
+  satisfiedHealthAdder: 0.0003
+--- !u!114 &6744424082612651983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9160943688313912046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06171c55a91e3924bb506623b585b8c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wren: {fileID: 9160943688313912041}
+  state: {fileID: 9156686790671013125}
+  health: 0
+  stamina: 0
+  fullness: 0
+  dryness: 0
+  awakeness: 0
+  quenchedness: 0
+  happiness: 0
+  excitment: 0
+  age: 0
+  maxHealth: 0
+  maxStamina: 0
+  maxFullness: 0
+  maxDryness: 0
+  maxAwakeness: 0
+  maxHappiness: 0
+  maxExcitment: 0
+  maxQuenchedness: 0
+  maxAge: 0
 --- !u!1 &9160943688594033059
 GameObject:
   m_ObjectHideFlags: 0
