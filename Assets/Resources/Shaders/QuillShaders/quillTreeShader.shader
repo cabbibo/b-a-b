@@ -8,6 +8,11 @@ Shader "Quill/quillTreeShader" {
     _Size ("Size", float) = .01
     _Fade ("Fade", float) = 1
     _FadeLocation ("_FadeLocation",Vector) = (0,0,0)
+    _WindDirection ("_WindDirection",Vector) = (1,0,0)
+    _WindAmount ("_WindAmount",float) = 1
+    _WindChangeSpeed ("_WindChangeSpeed",float) = 1
+    _WindChangeSize ("_WindChangeSize",float) = 1
+
     
          _MainTex ("Base (RGB) Trans (A)", 2D) = "white" {}
 
@@ -88,7 +93,10 @@ struct appdata_full2 {
 
 uniform float4x4 _Transform;
 uniform int _NumberMeshes;
-
+float3 _WindDirection;
+float _WindAmount;
+float _WindChangeSpeed;
+float _WindChangeSize;
 
 #include "../Chunks/snoise3D.cginc"
 
@@ -108,14 +116,14 @@ int instanceID = 0;
 #ifdef INSTANCING_ON
     instanceID = vert.instanceID;
 #endif
-    float flooredTime = floor(_Time.y *3 + float(vert.instanceID) * .4)/2;
+    float flooredTime = floor(_Time.y *_WindChangeSpeed + float(vert.instanceID) * .4);
 
 
     float3 windDirection = float3(1,0,0);
 
-    float3 windAmount = snoise( wPos * .1 + windDirection * flooredTime);
+    float3 noiseVal = snoise( wPos * _WindChangeSize + windDirection * flooredTime);
 
-          o.worldPos = wPos + windDirection * windAmount;
+          o.worldPos = wPos + _WindDirection * noiseVal * _WindAmount;//windAmount;
       
       o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
       o.eye = _WorldSpaceCameraPos - o.worldPos;
