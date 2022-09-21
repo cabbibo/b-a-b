@@ -70,7 +70,7 @@ Material:
     - _CenterOrbFalloffSharpness: 1
     - _CenterOrbImportance: 0.3
     - _ColorFalloff: 0.8
-    - _ColorMultiplier: 1
+    - _ColorMultiplier: 0.58
     - _Cutoff: 0.5
     - _DeltaStepSize: 1
     - _DetailNormalMapScale: 1
@@ -78,7 +78,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _HueSize: 0.01
+    - _HueSize: 1.24
     - _IndexOfRefraction: 1
     - _Metallic: 0
     - _Mode: 0
@@ -99,12 +99,12 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _StartHue: 0.4
+    - _StartHue: -0.78
     - _StepRefractionMultiplier: 0
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.03529412, g: 0.5019608, b: 0.37415314, a: 1}
+    - _BaseColor: {r: 0.4039216, g: 0.4666667, b: 0.5686275, a: 1}
     - _CenterOrbColor: {r: 0, g: 0, b: 0, a: 1}
     - _CenterOrbOffset: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
@@ -114,4 +114,5 @@ Material:
     - _NoiseColor: {r: 0, g: 1, b: 0.47404766, a: 1}
     - _NoiseOffset: {r: 0, g: 0, b: 0, a: 1}
     - _ReflectionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SurfaceColor: {r: 0.5372549, g: 0.5882353, b: 0.69803923, a: 1}
   m_BuildTextureStacks: []

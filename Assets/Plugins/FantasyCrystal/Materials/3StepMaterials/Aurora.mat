@@ -2,20 +2,24 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Aurora
   m_Shader: {fileID: 4800000, guid: 2e52284780a9b174f842835c01f86f73, type: 3}
-  m_ShaderKeywords: 
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -55,6 +59,7 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
     - _BumpScale: 1
     - _CenterOrbFalloff: 15.07
@@ -77,17 +82,18 @@ Material:
     - _IndexOfRefraction: 0.9
     - _Metallic: 0
     - _Mode: 0
-    - _NoiseImportance: 5.6
+    - _NoiseImportance: 11
     - _NoiseSharpness: 2.37
-    - _NoiseSize: 6.5
+    - _NoiseSize: 4.33
+    - _NoiseSpeed: 1
     - _NoiseSubtractor: 0
-    - _NumSteps: 3
+    - _NumSteps: 5
     - _OcclusionStrength: 1
     - _OffsetMultiplier: 0
     - _Opaqueness: 0.8
     - _Parallax: 0.02
     - _ReflectionMultiplier: 1.23
-    - _ReflectionSharpness: 4.7
+    - _ReflectionSharpness: 2.81
     - _RefractionBackgroundSampleExtraStep: 1
     - _Size: -1
     - _SmoothnessTextureChannel: 0
@@ -105,4 +111,5 @@ Material:
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _NoiseColor: {r: 0.33490568, g: 0.7664553, b: 1, a: 1}
     - _NoiseOffset: {r: 0, g: 57.8, b: 0, a: 1}
-    - _ReflectionColor: {r: 0.5327433, g: 0.36320752, b: 1, a: 1}
+    - _ReflectionColor: {r: 0.49689043, g: 0.3150943, b: 1, a: 1}
+  m_BuildTextureStacks: []
