@@ -1,6 +1,34 @@
 Shader "Unlit/quillTerrain"{
     Properties {
 
+
+      _MeadowColor("_MeadowColor", Color) = (1,1,1,1)
+      _MossColor1("_MossColor1", Color) = (1,1,1,1)
+      _MossColor2("_MossColor2", Color) = (1,1,1,1)
+
+ _SandFresnelColor("_SandFresnelColor",Color) = (1,1,1,1)
+
+ _SandBaseColor("_SandBaseColor",Color) = (1,1,1,1)
+ _SandSpecularColor1("_SandSpecularColor1",Color) = (1,1,1,1)
+
+ _SandSpecularColor2("_SandSpecularColor2",Color) = (1,1,1,1)
+ _SandStriationColorLight("_SandStriationColorLight",Color) = (1,1,1,1)
+ _SandStriationColorDark("_SandStriationColorDark",Color) = (1,1,1,1)
+ _SandStriationSize("_SandStriationSize", Vector) = (1,1,1)
+ _SandStriationColorSteps("_SandStriationColorSteps",float) = 4
+ _SandStriationVerticalCutoff("_SandStriationVerticalCutoff",float) = .5
+
+
+ _SandSaturation("_SandSaturation",float) = 1
+ _SandBrightness("_SandBrightness",float) = 1
+ _SandMatchMultiplier("_SandMatchMultiplier",float) = 1 
+ _SandShadowBase("_SandShadowBase",float) = 1
+ _SandSpecularPower1("_SandSpecularPower1",float) = 1
+ _SandSpecularPower2("_SandSpecularPower2",float) = 1
+ _SandSpecularPower2("_SandSpecularPower2",float) = 1
+
+
+
     /*_Color ("Color", Color) = (1,1,1,1)
     _BackfaceColor("BackfaceColor", Color )= (1,1,1,1)
     _Size ("Size", float) = .01
@@ -63,7 +91,6 @@ Shader "Unlit/quillTerrain"{
 
             #include "../Chunks/hsv.cginc"
             #include "../Chunks/noise.cginc"
-
 
 
 
@@ -290,8 +317,26 @@ float3 brightnessContrast(float3 value, float brightness, float contrast)
 
 
 
+float _SandMatchMultiplier; 
+float _SandShadowBase;
+float4 _SandFresnelColor;
+
+float _SandSaturation;
+float _SandBrightness;
+
+float4 _SandBaseColor;
+float4 _SandSpecularColor1;
+float _SandSpecularPower1;
+
+float4 _SandSpecularColor2;
+float _SandSpecularPower2;
 
 
+float4 _SandStriationColorLight;
+float4 _SandStriationColorDark;
+float3 _SandStriationSize;
+float _SandStriationColorSteps;
+float _SandStriationVerticalCutoff;
 
 /*
 
@@ -304,9 +349,9 @@ sanddddd
 
 float3 DoSandColor(float3 pos, float3 baseNor, float3 nor, float3 eye ,float shadow){
 
-  float3 col = float3(1, .6,.3);
 
 
+  float3 col = _SandBaseColor;
 float3 refl = normalize(reflect( -eye, nor  ));
 
 
@@ -318,7 +363,7 @@ float3 refl = normalize(reflect( -eye, nor  ));
 
 
   float3 spec = dot(refl, _WorldSpaceLightPos0.xyz); 
-  col +=  float3(1,.4,.3)  * floor( pow(spec,10) * 3) * 1.3;
+  col +=  _SandSpecularColor1  * floor( pow(spec,10) * 3) * _SandSpecularPower1;
 
 
   float m = saturate( dot( normalize(eye), baseNor));
@@ -338,16 +383,23 @@ float3 refl = normalize(reflect( -eye, nor  ));
  // col += col * floor( pow(spec,100) * 3) *3;
 
 
-col += float3(1,.3,.1)* floor( pow(spec,100) * 3) *10;
+col += _SandSpecularColor2  *  floor( pow(spec,100) * 3) * _SandSpecularPower2;
 
 
 
 
   // canyon
- if( dot( nor , float3(0,1,0)) < .5 ){
+ if( dot( nor , float3(0,1,0)) < _SandStriationVerticalCutoff ){
 
     col = float3(1,.3,.1);
-    col *= floor(noise( float3(pos.xz,pos.y* 30) * .1 /*+noise( float3(pos.xz * 1,pos.y* 100)) * 1*/)*4)/4;
+
+
+    float noiseVal = noise( pos * _SandStriationSize);//snoise( pos * _SandStriationSize );
+
+    noiseVal = floor( ((noiseVal +1 )/2) * _SandStriationColorSteps ) / _SandStriationColorSteps;
+
+    col = lerp( _SandStriationColorLight , _SandStriationColorDark , noiseVal);
+    //col *= floor(noise( float3(pos.xz,pos.y* 30) * .1 /*+noise( float3(pos.xz * 1,pos.y* 100)) * 1*/)*4)/4;
     //col *= floor(noise( float3(pos.xz,pos.y* 30) * .1 )*4)/4;
 
   }
@@ -357,12 +409,15 @@ col += float3(1,.3,.1)* floor( pow(spec,100) * 3) *10;
 lMap *= shadow;
 
 
-col *= (floor(lMap * 4 ) /4 + .3);
+col *= ((floor(lMap * 4 ) /4 ) * _SandMatchMultiplier + _SandShadowBase);
 
 
 
 
-  col += float3(1,.6,.3)*2*floor(pow(saturate((1-m)),10) * 4)/4;
+  col += _SandFresnelColor*2*floor(pow(saturate((1-m)),10) * 4)/4;
+
+  col = col * _SandSaturation + 1-_SandSaturation;
+  col *= _SandBrightness;
 
 
   col = saturate(col) * .95;
@@ -385,7 +440,7 @@ col *= (floor(lMap * 4 ) /4 + .3);
 */
 
 
-
+float4 _MeadowColor;
 
 float3 DoRockColor(float3 pos,float3 baseNor, float3 nor, float3 eye ,float shadow){
 
@@ -468,7 +523,7 @@ col *= (floor(triNoise3D( pos * .001,0,0) * 6) / 6) *1 + .4;
 
   // meadow;
   if( baseVert > .95 ){
-    col *= (m4+.5)*float3(.4,1,.2);//4*float3(.3,1,.1);
+    col *= (m4+.5)*_MeadowColor;//4*float3(.3,1,.1);
   }
 
   // Gemstones?
@@ -612,7 +667,8 @@ col *= (floor(lMap * 4 ) /4  + .3);
 
 
 
-
+float4 _MossColor1;
+float4 _MossColor2;
 
 
 
@@ -650,8 +706,8 @@ float delta = saturate(-1*(v2-v));
 
   fV  += tMap.a * .2;
   fV += tMap.r * .5;
-      col += tMap.a * float3(.2,1,.1) * .1;//tex2D(_Splat2, (fPos.xyz -10*nor).xz * .03+ fi * .1) * .2;
-      col += tMap.r * float3(.2,1,.3) * .2;//tex2D(_Splat2, (fPos.xyz -10*nor).xz * .03+ fi * .1) * .2;
+      col += tMap.a * _MossColor1 ;//tex2D(_Splat2, (fPos.xyz -10*nor).xz * .03+ fi * .1) * .2;
+      col += tMap.r * _MossColor2 ;//tex2D(_Splat2, (fPos.xyz -10*nor).xz * .03+ fi * .1) * .2;
 
 
     //fV += saturate(-1*(v2-v)) * 40;

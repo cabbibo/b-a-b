@@ -27,6 +27,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Control:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -51,11 +55,43 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Normal0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat3:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -81,6 +117,14 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _SandBrightness: 0.6
+    - _SandMatchMultiplier: 3
+    - _SandSaturation: 1
+    - _SandShadowBase: 1.29
+    - _SandSpecularPower1: 1
+    - _SandSpecularPower2: 3
+    - _SandStriationColorSteps: 6
+    - _SandStriationVerticalCutoff: 0.5
     - _Size: 0.01
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -93,5 +137,15 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
+    - _MeadowColor: {r: 0.6861064, g: 0.754717, b: 0.5660378, a: 1}
+    - _MossColor1: {r: 0.34080678, g: 0.41568628, b: 0.32941177, a: 1}
+    - _MossColor2: {r: 0.33228016, g: 0.5377358, b: 0.4241945, a: 1}
+    - _SandBaseColor: {r: 0.46226418, g: 0.36647293, b: 0.26383945, a: 1}
+    - _SandFresnelColor: {r: 0.8867924, g: 0.6384693, b: 0.53123885, a: 1}
+    - _SandSpecularColor1: {r: 0.7830189, g: 0.55913746, b: 0.44691172, a: 1}
+    - _SandSpecularColor2: {r: 1, g: 0.6339623, b: 0.5424528, a: 1}
+    - _SandStriationColorDark: {r: 0.26415092, g: 0.24072622, b: 0.1704521, a: 1}
+    - _SandStriationColorLight: {r: 0.7960785, g: 0.7294118, b: 0.52156866, a: 1}
+    - _SandStriationSize: {r: 0.1, g: 6, b: 0.1, a: 1}
     - _TriplanarMultiplier: {r: 0.1, g: 0.1, b: 0.1, a: 100}
   m_BuildTextureStacks: []

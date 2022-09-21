@@ -6,6 +6,7 @@ Shader "Volumetric/traceWithWater"
     Properties {
 
     _BaseColor ("BaseColor", Color) = (1,1,1,1)
+    _SurfaceColor ("Surfac_SurfaceColor", Color) = (1,1,1,1)
     
     _NumSteps("Num Trace Steps",int) = 10
     _DeltaStepSize("DeltaStepSize",float) = .01
@@ -77,6 +78,7 @@ CGPROGRAM
 			sampler2D _CameraDepthTexture;
 			sampler2D _FoamMap;
     float4 _BaseColor;
+    float4 _SurfaceColor;
     float4 _CenterOrbColor;
     float4 _NoiseColor;
     int _NumSteps;
@@ -352,7 +354,7 @@ float4 backgroundCol = tex2Dproj(_BackgroundTexture, refractedPos);
  col = hsv( _StartHue + float(stepBroken) * _HueSize , _Saturation,(1- nBroken* _ColorFalloff) );;
 col = float(stepBroken) * .01;
 
-col =lerp(  backgroundCol * float3(.4,.5,.6) , float3(.1,.2,.4) , float(stepBroken)/_NumSteps);
+col =lerp(  backgroundCol * _SurfaceColor , _BaseColor , float(stepBroken)/_NumSteps);
 
 float upMatch = 1-dot(normalize(v.nor) ,float3(0,1,0));
 
