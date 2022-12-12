@@ -130,7 +130,7 @@ public class RibbonAlongCurve : MonoBehaviour
                 float w = curve.GetWidthFromValueAlongCurve(lengthAlongTube);
                 float3 fPos = curve.GetOffsetPositionFromValueAlongCurve( lengthAlongTube , ((float)widthness-.5f)*w*width, 0 );
                 float3 normal = u1;//curve.GetUpFromLengthAlongCurve(lengthAlongTube);
-                float4 tangent = float4(r1,1);//float4(cross(normal,forward),1);
+                float4 tangent = float4(normalize(r1),1);//float4(cross(normal,forward),1);
                 float2 uv = float2( lengthAlongTube, widthness);
                 if( i < 10  && j== 0){
                     print(normal);
