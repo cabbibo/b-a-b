@@ -742,6 +742,7 @@ if( baseVert > .8 && baseVert < .9){
 
 
 
+
 //col = floor((fV * 4)/4) * float3(.3,1,.5) * 1;
 
 //col +=float3(.6,1,.5) * .4;
@@ -749,6 +750,9 @@ if( baseVert > .8 && baseVert < .9){
 col *= (floor(lMap * 4 ) /4  + .3);
 
 
+if( baseVert < .3 ){
+  col = DoRockColor(pos,baseNor, nor, eye ,shadow);
+}
 
   return col;
 };
@@ -792,7 +796,11 @@ float3 color4;
  if( control.a < .1 ){ color4 = 0; }else{ color4 = DoForestColor(v.worldPos,v.nor,fNor,eye,shadow); }
 
 
-control = pow(control,2);
+
+//float max = 
+
+control = pow(control,30);
+
 control = normalize( control);
 
 col = 0;

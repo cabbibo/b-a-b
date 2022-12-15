@@ -134,8 +134,6 @@ CGPROGRAM
       };
 
 
-            sampler2D _BackgroundTexture;
-
 
              struct appdata
             {
