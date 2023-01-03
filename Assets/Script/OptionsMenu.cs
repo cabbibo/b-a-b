@@ -75,7 +75,6 @@ public class OptionsMenu : MonoBehaviour
     public void ActivateOption( int id){
         
         God.audio.Play(activateOptionSound);
-
         options[id].Activate();
 
     }

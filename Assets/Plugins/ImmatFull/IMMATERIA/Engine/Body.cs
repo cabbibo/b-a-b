@@ -19,7 +19,6 @@ public class Body : Cycle {
 
   public override void _Create(){
 
-    print("run SEcOND");
     if( mpb == null ){ mpb = new MaterialPropertyBlock(); }
     
 

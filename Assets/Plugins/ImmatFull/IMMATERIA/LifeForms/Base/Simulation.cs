@@ -46,7 +46,6 @@ public class Simulation : Cycle
 
   public override void Activate(){
 
-      print("reactivating");
 
         /*Reset();
         _Destroy(); 

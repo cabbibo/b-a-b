@@ -18,6 +18,8 @@ public class Wren : MonoBehaviour
         References
 
     */
+
+    public bool inEther;
     
     public TextMesh title;
     public FullBird bird;
@@ -70,7 +72,9 @@ public class Wren : MonoBehaviour
 
    void OnEnable(){
 
-       canMove = true;
+        canMove = false;
+        inEther = true;
+        
 
         // Makes our beacon ( aka nest ) link to us
         if( beacon ){ beacon.Create(); }
@@ -214,14 +218,8 @@ void Update(){
 
 
 
- 
-             if(input.o_circle < .5 && input.circle > .5  ){
-                print("TIEM TO TOGGI");
-                state.inInterface = !state.inInterface;
-                print("We are togging : " + state.inInterface);
-                ToggleInterface(state.inInterface);
-            }
 
+      
         
 
         /* if( input.left1 > .1f &&  !physics.onGround ){
@@ -273,51 +271,61 @@ void Update(){
             }
 
 
-*/
+*/      
 
-        
-            if( input.dLeft > .5f && input.o_dLeft <= .5f ){
-        
-                Ray ray = new Ray();  
-                ray.origin = Camera.main.transform.position;
-                ray.direction = Camera.main.transform.forward;
-                RaycastHit hit;
-                if (Physics.Raycast (ray, out hit , 10000)) {
-                    print(hit.collider.gameObject.name);
-                    beacon.PlaceBeacon( hit.point );
+            // ONLY do interface stuff when we aren't 
+            // in the ether!
+
+            if( !inEther ){
+                if(input.o_circle < .5 && input.circle > .5  ){
+                    state.inInterface = !state.inInterface;
+                    ToggleInterface(state.inInterface);
+                }
+   
+
+            
+                if( input.dLeft > .5f && input.o_dLeft <= .5f ){
+            
+                    Ray ray = new Ray();  
+                    ray.origin = Camera.main.transform.position;
+                    ray.direction = Camera.main.transform.forward;
+                    RaycastHit hit;
+                    if (Physics.Raycast (ray, out hit , 10000)) {
+                        print(hit.collider.gameObject.name);
+                        beacon.PlaceBeacon( hit.point );
+                    }
+                
                 }
             
-            }
+                if(input.o_dUp < .5 && input.dUp > .5 ){
 
+                    if(state.beaconOn == true ){
 
-            if(input.o_dUp < .5 && input.dUp > .5 ){
+                        
+                        Crash(startingPosition.position);
+                        ToggleInterface(false);
+                        state.HitGround();
+                        state.LookAt( transform.position + beacon.transform.forward );
+                        physics.Reset();
+                        bird.ResetAtLocation(beacon.nest.transform.position);
+                        
+                        cameraWork.Reset();
 
-                if(state.beaconOn == true ){
+                //   God.AbortCurrentRace();
 
+                //   // If we are in a race, end it!
+                //   if( God.wren.state.inRace != -1 ){
+                //       print("WREN IN RACE: " + God.wren.state.inRace);
+                //       God.races[God.wren.state.inRace].AbortRace();
+                //   }
+
+                //   God.localWrenState.inRace
+
+                        //if( state.SetInRace )
                     
-                    Crash(startingPosition.position);
-                    ToggleInterface(false);
-                    state.HitGround();
-                    state.LookAt( transform.position + beacon.transform.forward );
-                    physics.Reset();
-                    bird.ResetAtLocation(beacon.nest.transform.position);
+                    }
                     
-                    cameraWork.Reset();
-
-            //   God.AbortCurrentRace();
-
-            //   // If we are in a race, end it!
-            //   if( God.wren.state.inRace != -1 ){
-            //       print("WREN IN RACE: " + God.wren.state.inRace);
-            //       God.races[God.wren.state.inRace].AbortRace();
-            //   }
-
-            //   God.localWrenState.inRace
-
-                    //if( state.SetInRace )
-                
                 }
-                
             }
 
         }
@@ -354,6 +362,10 @@ void Update(){
 
         if( state.isLocal && canMove  ){
             physics.UpdatePhysics();    
+        }
+
+        if( !inEther ){
+            growth.updateGrowth();
         }
 
     }
@@ -479,7 +491,11 @@ void Crash(Collision c){
         if (state.isLocal) {
             carrying.GroundHit(Carryable.DropSettings.FromCrash(c));
         }
-        growth.HurtCollision(c);
+
+        if( !inEther ){
+            growth.HurtCollision(c);
+        }
+
     //}
 
        // state.TakeOff();

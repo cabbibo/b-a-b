@@ -12,7 +12,13 @@ public class AddRebuildFunctionality {
 [MenuItem("IMMATERIA/Rebuid Scene %b")]
 static void RebuildScene()
 {
-  GameObject.Find("SceneGod").GetComponent<God>().Rebuild();
+  GameObject sceneGod = GameObject.Find("SceneGod");
+
+  if( sceneGod ){
+    GameObject.Find("SceneGod").GetComponent<God>().Rebuild();
+  }
+
+  
 }
 
 

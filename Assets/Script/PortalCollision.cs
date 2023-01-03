@@ -13,7 +13,8 @@ public class PortalCollision : MonoBehaviour
 
     public Collider collider;
 
-    public bool toEther;
+
+    public int biome;
     
    
 
@@ -23,9 +24,16 @@ public class PortalCollision : MonoBehaviour
 
 
         if( c.collider.attachedRigidbody == God.wren.physics.rb && hasFired == false){
+
             hasFired = true;
-            successParticles.Play();
+            //successParticles.Play();
+            God.sceneController.biome = biome;
             God.sceneController.LoadScene(sceneID);
+            if( sceneID == 0 ){
+                God.wren.inEther = true;
+            }else{
+                God.wren.inEther = false;
+            }
 
             
             //God.wren.physics.rb.position += transform.forward * 2;

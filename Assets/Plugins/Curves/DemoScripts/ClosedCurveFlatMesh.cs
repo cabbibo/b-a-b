@@ -25,6 +25,9 @@ public class ClosedCurveFlatMesh : MonoBehaviour
     public float verticalOffset;
 
 
+    public int flatnessDirection;
+
+
     public Transform centerObject;
 
 
@@ -142,7 +145,17 @@ public class ClosedCurveFlatMesh : MonoBehaviour
 
 
             float3 lEP = centerObject.InverseTransformPoint( edgePositions[i] );
-            lEP.y = lCenter.y;
+
+            if( flatnessDirection == -1 ){
+
+            }else if(flatnessDirection == 0){
+                lEP.x = lCenter.x + verticalOffset;
+            }else if(flatnessDirection ==1){
+                lEP.y = lCenter.y + verticalOffset;
+            }else if(flatnessDirection ==2){
+                lEP.z = lCenter.z + verticalOffset;
+            }
+           // lEP.y = lCenter.y;
             edgePositions[i] = centerObject.TransformPoint( lEP );
         
         }

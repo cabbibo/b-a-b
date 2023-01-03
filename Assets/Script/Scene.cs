@@ -29,22 +29,23 @@ public class Scene : MonoBehaviour
 
          RenderSettings.skybox = skyboxMaterial;
 
-         print( God.wren );
-         print( physicsParameters );
 
-         print("SETTING UP Position HERE!");
 
         
         God.wren.parameters.Load(physicsParameters);
 
-        print( God.sceneController.oldScene );
-        if( God.sceneController.oldScene < startPositions.Length){
+
+        // return / spawn at gate that is our current biome!
+        // when bird dies, we respawn at our first starting position
+        God.wren.startingPosition = startPositions[God.sceneController.biome+1];
+      /*  if( God.sceneController.oldScene < startPositions.Length){
             God.wren.startingPosition = startPositions[God.sceneController.oldScene];
         }else{
             God.wren.startingPosition = startPositions[0];
-        }
-        print(God.wren.startingPosition);
+        }*/
 
+
+       
         God.wren.FullReset();
 
         LerpTo lt = Camera.main.GetComponent<LerpTo>();
@@ -54,6 +55,10 @@ public class Scene : MonoBehaviour
         OnLoadEvent.Invoke();
 
     }
+
+
+
+    
 
     
 
