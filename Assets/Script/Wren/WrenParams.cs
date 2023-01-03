@@ -262,6 +262,8 @@ public MechanicParams GetWrenMechanics()
     DirectoryInfo dir = new DirectoryInfo(baseName());
     FileInfo[] info = dir.GetFiles("*.*");
     List<string> paramNames = new List<string>();///sting paramNames = new string[ info.Length ];
+
+    //print("LOADING");
     foreach (FileInfo f in info) 
     {
 

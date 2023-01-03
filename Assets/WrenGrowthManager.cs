@@ -118,7 +118,7 @@ public class WrenGrowthManager : MonoBehaviour
 
 
     float lastFlapTime;
-    public void Update(){
+    public void updateGrowth(){
 
 
             float d = Mathf.Abs( wren.input.o_left2 - wren.input.left2);

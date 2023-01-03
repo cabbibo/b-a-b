@@ -16,7 +16,7 @@ public class InvertInterface : WrenInterface
     public Color activeColor;
     public Color inactiveColor;
 
-    public BaseInterface fullInterface;
+    public FullInterface fullInterface;
 
     private bool oX;
 

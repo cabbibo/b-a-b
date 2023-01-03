@@ -4,7 +4,6 @@ using UnityEngine;
 
 
 
-[ExecuteAlways]
 public class AllPoser : MonoBehaviour
 {
 

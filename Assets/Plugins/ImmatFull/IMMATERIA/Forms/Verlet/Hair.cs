@@ -20,8 +20,7 @@ public class Hair: Form {
 
   public override void SetCount(){
 
-    print("IT ME TOO");
-    print( baseForm.count );
+
 
 
     if( lineMPB == null ){ lineMPB = new MaterialPropertyBlock(); }

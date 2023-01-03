@@ -146,7 +146,7 @@ public override void WhileDebug(){
 
 
  //   print("texture");
-    print(_texture);
+    //print(_texture);
     //return _texture;
 
   }

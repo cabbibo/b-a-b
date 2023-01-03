@@ -19,12 +19,23 @@ public class SceneController : MonoBehaviour
 
     int loadedScene = -1;
 
+    public int biome = 0; 
+    
+    // mountain
+    // temple
+    // desert
+    // forest
+    // lighthouse
+    // cave
+    // city
+
+
     public UnityEngine.SceneManagement.Scene currentMainScene;
 
     public void LoadScene(int id ){        
-        print(";poading");
-        print(id);
-        God.fade.FadeOut(Color.white, 2 , () => {HardLoad(id); return 0;});
+
+        HardLoad(id);//
+       // God.fade.FadeOut(Color.white, 2 , () => {HardLoad(id); return 0;});
     }
 
     public void HardLoad(int id){
@@ -34,34 +45,34 @@ public class SceneController : MonoBehaviour
         sceneLoaded = true;     
 
 
-        print("HARD LOADING");
 
-        print( SceneManager.sceneCount);
-        print(SceneManager.GetActiveScene().name);
 
 
         if( dontLoadOnStart == false ){
-       // bool needsNewLoad
-        // Only unload a scene if we have one to unload!
-        if( currentMainScene.name != null ){
+            // bool needsNewLoad
+            // Only unload a scene if we have one to unload!
+           /* if( currentMainScene.name != null ){
 
-            //if( currentSceneID != id ){
-                print("UNLOADING SCENE");
-                print(scenes[currentSceneID]);
-                print(currentMainScene);
-                print( currentMainScene.name);
+                //if( currentSceneID != id ){
+                    print("UNLOADING SCENE");
+                    print(scenes[currentSceneID]);
+                    print(currentMainScene);
+                    print( currentMainScene.name);
 
-        
-                //currentMainScene = SceneManager.GetSceneByName(scenes[currentSceneID]);
-                SceneManager.UnloadScene(currentMainScene);
-           /// }
+            
+                    currentMainScene = SceneManager.GetSceneByName(scenes[currentSceneID]);
+                    SceneManager.UnloadScene(currentMainScene);
+            /// }
 
-        }else{
-          print("NO SCEEN UNLOADING");
-        }
+            }else{
+            print("NO SCEEN UNLOADING");
+            }
 
+            
 
-        SceneManager.LoadScene(scenes[id],LoadSceneMode.Additive);
+            SceneManager.LoadScene(scenes[id],LoadSceneMode.Additive);*/
+
+            StartCoroutine(SceneSwitch( id, currentSceneID));
 
         }else{
             OnSceneLoaded();
@@ -69,14 +80,13 @@ public class SceneController : MonoBehaviour
 
 
         PlayerPrefs.SetInt("_CurrentScene",id);
+        PlayerPrefs.SetInt("_CurrentBiome",biome);
         oldScene = currentSceneID;
         currentSceneID = id;
         loadedScene = currentSceneID;
 
         currentMainScene = SceneManager.GetSceneByName(scenes[id]);
-        print(scenes[currentSceneID]);
-        print(currentMainScene);
-
+ 
 
     
     
@@ -84,6 +94,78 @@ public class SceneController : MonoBehaviour
 
        
     }
+
+
+
+    IEnumerator SceneSwitch(int newScene, int oldScene)
+    {
+        print("hi");
+        print( "SCENE COUNT : " + SceneManager.sceneCount);
+      //  print( "Loaded COUNT : " + SceneManager.loadedSceneCount);
+        print( "Hmm " + newScene + "||" + oldScene);
+
+       // AsyncOperation load = SceneManager.LoadSceneAsync(scenes[newScene], LoadSceneMode.Additive);
+        //var sceneStatus = SceneManager.LoadSceneAsync("SceneName", LoadSceneMode.Additive);
+      //  load.completed += (e) =˃ Debug.Log("Scene Loaded");
+        
+        var progress = SceneManager.LoadSceneAsync(scenes[newScene], LoadSceneMode.Additive);
+
+            while (!progress.isDone)
+            {
+
+                print("HIIII");
+                // Check each frame if the scene has completed.
+                // For more information about yield in C# see: https://youtu.be/bsZjfuTrPSA
+                yield return null;
+            }
+
+            
+        //SceneManager.LoadScene(scenes[newScene], LoadSceneMode.Additive);
+        //yield return null;
+        print("hi2");
+        print( "Hmm2  " + newScene + "||" + oldScene);
+        print( "SCENE COUNT : " + SceneManager.sceneCount);
+        print( scenes[oldScene]);
+   //     print( "Loaded COUNT : " + SceneManager.loadedSceneCount);
+         var progress2= SceneManager.UnloadSceneAsync(scenes[oldScene]);
+        // unload.completed += (e) =˃ Debug.Log("Scene undnsn Loaded");
+
+
+             while (!progress2.isDone)
+            {
+
+                print("HIIII2");
+                // Check each frame if the scene has completed.
+                // For more information about yield in C# see: https://youtu.be/bsZjfuTrPSA
+                yield return null;
+            } 
+
+        print("OLD : " + scenes[oldScene]);
+       Scene scene =  SceneManager.GetSceneByName(scenes[oldScene]);
+       print( scene.isLoaded );
+       print(scene.path);
+       print( scene.name);
+            print("NOW ITS DEAD");
+            Camera.main.gameObject.GetComponent<LerpTo>().enabled = true;
+
+        if( scene.isLoaded  && oldScene != newScene ){
+            var progress3=  SceneManager.UnloadSceneAsync(scene);    
+            while (!progress3.isDone)
+            {
+
+                print("HIIII2");
+                // Check each frame if the scene has completed.
+                // For more information about yield in C# see: https://youtu.be/bsZjfuTrPSA
+                yield return null;
+            } 
+
+            Camera.main.gameObject.GetComponent<LerpTo>().enabled = true;
+
+        }
+
+            
+    }
+
 
 
     public void NewGame(){
@@ -94,7 +176,8 @@ public class SceneController : MonoBehaviour
     public void ResetSave(){
         PlayerPrefs.DeleteAll();
         currentSceneID = PlayerPrefs.GetInt("_CurrentScene",0);
-    
+        biome = PlayerPrefs.GetInt("_CurrentBiome",-1);
+
         int gameStarted = PlayerPrefs.GetInt("_GameStarted",0);
         if( gameStarted == 0){
             gameStarted = 1;
@@ -105,10 +188,11 @@ public class SceneController : MonoBehaviour
 
     public void HardStart(){
 
-        print("hard STart");
         if( useStartScene == false ){
             currentSceneID = PlayerPrefs.GetInt("_CurrentScene",0);
         }
+    
+        biome = PlayerPrefs.GetInt("_CurrentBiome",-1);
 
         int gameStarted = PlayerPrefs.GetInt("_GameStarted",0);
         if( gameStarted == 0){
@@ -124,7 +208,7 @@ public class SceneController : MonoBehaviour
 
         print( "onStart");
             currentSceneID = PlayerPrefs.GetInt("_CurrentScene",0);
-         
+            biome = PlayerPrefs.GetInt("_CurrentBiome",-1);
 
             int gameStarted = PlayerPrefs.GetInt("_GameStarted",0);
             if( gameStarted == 0){
@@ -159,15 +243,15 @@ public class SceneController : MonoBehaviour
 
 
     public void OnEnable(){
-//        print("DEFAULT MAIN SCENE");
-//        print( currentMainScene);
-       // OnStart();
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        //        print("DEFAULT MAIN SCENE");
+        //        print( currentMainScene);
+      //  OnStart();
+       SceneManager.sceneLoaded += OnSceneLoaded;
        SceneManager.sceneUnloaded += OnSceneUnloaded;
     }
 
-        public void OnDisable(){
-       // OnStart();
+    public void OnDisable(){
+       //OnStart();
 
        SceneManager.sceneLoaded -= OnSceneLoaded;
        SceneManager.sceneUnloaded -= OnSceneUnloaded;
@@ -179,15 +263,17 @@ public class SceneController : MonoBehaviour
 
     void OnSceneUnloaded( UnityEngine.SceneManagement.Scene  s  ){
         print("SCENE : " + s.name + " UNLOADED " );
+        print("hi3");
+      //  print( "Hmm3  " + newScene + "||" + oldScene);
+        print( "SCENE COUNT : " + SceneManager.sceneCount);
+      //  print( "Loaded COUNT : " + SceneManager.loadedSceneCount);
 
-        OnSceneLoadEvent.Invoke();
+       // OnSceneLoadEvent.Invoke();
     }
 
    void OnSceneLoaded(UnityEngine.SceneManagement.Scene  scene, LoadSceneMode mode)
     {
-        Debug.Log("OnSceneLoaded: " + scene.name);
-        Debug.Log(mode);
-        
+     
         OnSceneLoadEvent.Invoke();
     }
 
@@ -196,19 +282,19 @@ public class SceneController : MonoBehaviour
         OnSceneLoadEvent.Invoke();
     }
  
-        bool isScene_CurrentlyLoaded(string sceneName_no_extention, out UnityEngine.SceneManagement.Scene sceneFound ) {
-           
-            sceneFound = SceneManager.GetSceneAt(0);
-            for(int i = 0; i<SceneManager.sceneCount; ++i) {
-                UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt(i);
+    bool isScene_CurrentlyLoaded(string sceneName_no_extention, out UnityEngine.SceneManagement.Scene sceneFound ) {
+        
+        sceneFound = SceneManager.GetSceneAt(0);
+        for(int i = 0; i<SceneManager.sceneCount; ++i) {
+            UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt(i);
 
-                if(scene.name == sceneName_no_extention) {
-                    //the scene is already loaded
-                    sceneFound = scene;
-                    return true;
-                }
+            if(scene.name == sceneName_no_extention) {
+                //the scene is already loaded
+                sceneFound = scene;
+                return true;
             }
- 
-          return false;//scene not currently loaded in the hierarchy
-     }
+        }
+
+        return false;//scene not currently loaded in the hierarchy
+    }
 }

@@ -43,8 +43,7 @@ public class MeshVerts : Form {
     Vector2[] uvs   = mesh.uv;
     Vector3[] nors  = mesh.normals;
     Vector4[] tans  = mesh.tangents;
-    DebugThis("" +mesh.tangents.Length );
-    DebugThis("" +mesh.vertices.Length );
+    
 
     bool hasTan = false;
     if( tans.Length == verts.Length ){ hasTan = true; }

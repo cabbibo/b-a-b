@@ -31,8 +31,8 @@ public class MenuController : MonoBehaviour
         //TurnMenuOn();
 
            //  God.audio.Play( menuCloseSound );
-           DeactivateMenu();
-        God.fade.FadeIn(.1f);  
+        //DeactivateMenu();
+        //God.fade.FadeIn(.1f);  
         
       //  God.sceneController.HardStart();
     }
@@ -102,7 +102,9 @@ public class MenuController : MonoBehaviour
         God.audio.Play( menuCloseSound );
         God.fade.FadeIn(l);      
        // DeactivateMenu();
-
+        if( God.wren != null ){
+            God.wren.canMove = true;
+        }
    
        // God.fade.FadeIn(.5f);
     }
@@ -115,6 +117,7 @@ public class MenuController : MonoBehaviour
         God.fade.FadeOut(Color.white,.5f, () => { ActivateMainMenu(); return 0; });        
         God.audio.Play( menuOpenSound );
         if( God.wren != null ){
+            God.wren.canMove = false;
             God.SetWrenSavedPosition( God.wren.transform.position );
         }
       

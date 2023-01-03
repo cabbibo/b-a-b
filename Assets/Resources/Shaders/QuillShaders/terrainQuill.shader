@@ -790,16 +790,16 @@ float3 color2;
 float3 color3;
 float3 color4;
 
- if( control.r < .1 ){ color1= 0;  }else{ color1 = DoSandColor( v.worldPos, v.nor,fNor,eye,shadow); }
- if( control.g < .1 ){ color2 = 0; }else{ color2 = DoRockColor(v.worldPos,v.nor,fNor,eye,shadow); }
- if( control.b < .1 ){ color3 = 0; }else{ color3 = DoMeadowColor(v.worldPos,v.nor,fNor,eye,shadow); }
- if( control.a < .1 ){ color4 = 0; }else{ color4 = DoForestColor(v.worldPos,v.nor,fNor,eye,shadow); }
+if( control.r < .1 ){ color1 = 0;  }else{ color1 = DoSandColor( v.worldPos, v.nor,fNor,eye,shadow); }
+if( control.g < .1 ){ color2 = 0;  }else{ color2 = DoRockColor(v.worldPos,v.nor,fNor,eye,shadow); }
+if( control.b < .1 ){ color3 = 0;  }else{ color3 = DoMeadowColor(v.worldPos,v.nor,fNor,eye,shadow); }
+if( control.a < .1 ){ color4 = 0;  }else{ color4 = DoForestColor(v.worldPos,v.nor,fNor,eye,shadow); }
 
 
 
 //float max = 
 
-control = pow(control,30);
+//control = pow(control,30);
 
 control = normalize( control);
 
@@ -821,6 +821,31 @@ if( control.b > control.r){
   col = color3;
 }*/
 
+
+float max = 0;
+float maxID = 0;
+float max2 = 0;
+float maxID2 = 0;
+
+for( int i= 0; i < 4; i++ ){
+
+  if( control[i] > max){
+    max = control[i];
+    maxID = i;
+  }
+
+  if( control[i] < max && control[i]> max2 ){
+    max2 = control[i];
+    maxID2 = i;
+  }
+}
+
+
+float d = max - max2;
+
+if( d < .4 ){
+  col = float3(1,0,0);
+}
 
 
 //col = fNor ;

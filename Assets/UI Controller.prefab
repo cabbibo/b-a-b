@@ -1185,7 +1185,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 128209209878927131}
-  - component: {fileID: 128209209878927128}
   m_Layer: 0
   m_Name: UI Controller
   m_TagString: Untagged
@@ -1227,41 +1226,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &128209209878927128
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 128209209878927130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3113705a9812b9f4d9534d438c441469, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  c: {fileID: 0}
-  x: {fileID: 128209209003761500}
-  circle: {fileID: 128209208597080703}
-  square: {fileID: 128209209860229982}
-  triangle: {fileID: 128209210347472275}
-  dLeft: {fileID: 128209210415740135}
-  dRight: {fileID: 128209208496590048}
-  dDown: {fileID: 128209209193730893}
-  dUp: {fileID: 128209209993106686}
-  leftStick: {fileID: 128209209528206991}
-  l3: {fileID: 128209208572200898}
-  l2: {fileID: 128209208758283454}
-  l1: {fileID: 128209210324577502}
-  rightStick: {fileID: 128209209228759928}
-  r3: {fileID: 128209208738310337}
-  r2: {fileID: 128209209324395137}
-  r1: {fileID: 128209209193068610}
-  amountDown: -0.1
-  moveSize: 0.5
-  r1Start: 0
-  r2Start: 0
-  l1Start: 0
-  l2Start: 0
 --- !u!1 &128209209993106686
 GameObject:
   m_ObjectHideFlags: 0
