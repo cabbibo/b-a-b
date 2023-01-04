@@ -24,6 +24,7 @@ public class Curve : MonoBehaviour
     public bool showCurveMovementBasis;
     public bool showPointArrows;
 
+
     public bool showBakedPoints;
   
 
@@ -90,6 +91,7 @@ public class Curve : MonoBehaviour
     [HideInInspector] public Vector3[] bakedTangents;
     [HideInInspector] public Vector3[] bakedDirections;
     [HideInInspector] public Vector3[] bakedNormals;
+    [HideInInspector] public Vector2[] bakedIDs;
     [HideInInspector] public float[] bakedWidths;
     [HideInInspector] public Matrix4x4[] bakedMatrices;
 
@@ -117,8 +119,8 @@ public class Curve : MonoBehaviour
 
 
          
-     float3 p;  float3 d;  float3 t;  float w; 
-     float3 p2;  float3 d2;  float3 t2;  float w2; 
+     float3 p;  float3 d;  float3 t;  float w; float2 id1;
+     float3 p2;  float3 d2;  float3 t2;  float w2; float2 id2;
     float3 u; float3 r; 
 
     // Start is called before the first frame update
@@ -221,30 +223,35 @@ public class Curve : MonoBehaviour
     public void AddPoint(float v){
 
      
+    float2 id;
+      GetDataFromValueAlongCurve( v , out p , out d, out u ,out r, out w , out id);
+      
+      //for( int i = 0; i < positions.Count; i++ ){
 
-      for( int i = 0; i < positions.Count; i++ ){
 
         // see if this is where we should be creating the positions
-        if( v > (float)i/((float)positions.Count-1)  && v <= ((float)i+1)/((float)positions.Count-1) ){
 
+        int id1 = (int)id.x;
+        int id2 = (id1+1)%positions.Count;
+        int id3 = id1+2%positions.Count;
 
-          print("POINT: "+  i );
-          GetDataFromValueAlongCurve( v , out p , out d, out u ,out r, out w);
-
+            float c = closed ?  0:1;
+        //float fCount = 
+     
     
-          positions.Insert(i+1, p);
-          rotations.Insert(i+1,Quaternion.LookRotation( d , -cross(d,t) ));
-          powers.Insert(i+1,new Vector3(1,1,w));
+          positions.Insert(id2, p);
+          rotations.Insert(id2,Quaternion.LookRotation( d , -cross(d,t) ));
+          powers.Insert(id2,new Vector3(1,1,w));
 
-          selectedPoint = i+1;
+          selectedPoint = id2;
 
           //TODO calculate powers
           //powers[i].position
 
-          Vector3 p1  = positions[i];
-          Vector3 p2  = positions[i] + ( rotations[i] * float3(0,0,1) * powers[i].x );
-          Vector3 p3  = positions[i+2] - ( rotations[i+2] * float3(0,0,1) * powers[i+2].y );
-          Vector3 p4  = positions[i+2];
+          Vector3 p1  = positions[id1];
+          Vector3 p2  = positions[id1] + ( rotations[id1] * float3(0,0,1) * powers[id1].x );
+          Vector3 p3  = positions[id3] - ( rotations[id3] * float3(0,0,1) * powers[id3].y );
+          Vector3 p4  = positions[id3];
 
           Vector3 b1 = (p1 + p2)/2;
           Vector3 b2 = (p2+p3)/2;
@@ -254,22 +261,19 @@ public class Curve : MonoBehaviour
           Vector3 t2 = (b2 + b3)/2;
 
           float pow1 = (p1-b1).magnitude;
-          float pow2 = (t1-positions[i+1]).magnitude;
-          float pow3 = (t2-positions[i+1]).magnitude;
+          float pow2 = (t1-positions[id2]).magnitude;
+          float pow3 = (t2-positions[id2]).magnitude;
           float pow4 = (p4-b3).magnitude;
 
-          ChangePowerX( i , pow1 );
-          ChangePowerY(i+1, pow2 );
-          ChangePowerX(i+1, pow3 );
-          ChangePowerY(i+2, pow4 );
+          ChangePowerX(id1, pow1 );
+          ChangePowerY(id2, pow2 );
+          ChangePowerX(id2, pow3 );
+          ChangePowerY(id3, pow4 );
 
           FullBake();
-        
-          break;
-        
-        }
 
-      }
+
+      //}
 
 
 
@@ -395,7 +399,7 @@ public class Curve : MonoBehaviour
 
         float3 pos; float3 tang; float3 dir; float width;
 
-        GetCubicInformation( v, out pos, out tang, out dir , out  width);
+        GetCubicInformation( v, out pos, out tang, out dir , out  width , out float2 id1);
         return pos;
 
     }
@@ -411,7 +415,7 @@ public class Curve : MonoBehaviour
     powers[i] = new Vector3( powers[i].x , powers[i].y , v);
   }
 
-  public void GetCubicInformation( float val , out float3 position , out float3 direction , out float3 tangent ,out float width){
+  public void GetCubicInformation( float val , out float3 position , out float3 direction , out float3 tangent ,out float width , out float2 id){
 
         
             float3 p0 = 0;
@@ -435,6 +439,7 @@ public class Curve : MonoBehaviour
             float3 up = float3(0,1,0);
 
 
+            id = new float2((float)baseUp, (float)baseDown);
 
             if( baseUp == baseDown  || (baseVal% 1) == 0){
 
@@ -525,16 +530,18 @@ float3 cubicCurve( float t , float3  c0 , float3 c1 , float3 c2 , float3 c3 ){
     List<float3> evenDirections   = new List<float3>();
     List<float3> evenTangents     = new List<float3>();
     List<float>  evenWidths       = new List<float>();
+    List<float2>  evenIDs       = new List<float2>();
 
 
   
-    GetCubicInformation(0 , out p , out d , out t , out w );
+    GetCubicInformation(0 , out p , out d , out t , out w , out id1 );
         
     segmentLocations.Add(0);
     evenPoints.Add(p);
     evenDirections.Add(d);
     evenTangents.Add(t);
     evenWidths.Add(w);
+    evenIDs.Add( id1 );
 
     float3 prevPoint = p;
 
@@ -555,7 +562,7 @@ float3 cubicCurve( float t , float3  c0 , float3 c1 , float3 c2 , float3 c3 ){
         val += delta;
 
         // Get our new Position
-        GetCubicInformation( val , out p , out d , out t , out w );
+        GetCubicInformation( val , out p , out d , out t , out w, out id1 );
 
 
         float dist = length(p - prevPoint);
@@ -584,13 +591,14 @@ float3 cubicCurve( float t , float3  c0 , float3 c1 , float3 c2 , float3 c3 ){
           float newVal = lastPoint + delta * amount;
 
           // and then going forward by our new 'delta' amount
-          GetCubicInformation( newVal, out p2 , out d2 , out t2 , out w2 );
+          GetCubicInformation( newVal, out p2 , out d2 , out t2 , out w2 , out id2);
 
           segmentLocations.Add( newVal );
           evenPoints.Add(p2);
           evenDirections.Add(d2);
           evenTangents.Add(t2);
           evenWidths.Add(w2);
+          evenIDs.Add(id2);
 
           totalCurveLength += stepLength;
           
@@ -625,6 +633,7 @@ float3 cubicCurve( float t , float3  c0 , float3 c1 , float3 c2 , float3 c3 ){
       bakedNormals    = new Vector3[evenPoints.Count];
       bakedWidths     = new float[evenPoints.Count];
       bakedMatrices   = new Matrix4x4[evenPoints.Count];
+      bakedIDs = new Vector2[evenPoints.Count];
       int id = 0;
       
       foreach( float3 v  in evenPoints ){
@@ -641,6 +650,7 @@ float3 cubicCurve( float t , float3  c0 , float3 c1 , float3 c2 , float3 c3 ){
           Vector3.one * bakedWidths[id] 
         );
         
+        bakedIDs[id] = evenIDs[id];
         id ++;
       
       } 
@@ -683,47 +693,47 @@ float3 cubicCurve( float t , float3  c0 , float3 c1 , float3 c2 , float3 c3 ){
 
 
     public Vector3 GetPositionFromValueAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w, out id1 );
         return p;
     }
 
     public Vector3 GetPositionFromLengthAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w, out id1 );
         return p;
     }
 
 
 
     public Vector3 GetRightFromValueAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w , out id1);
         return t;
     }
 
     public Vector3 GetRightFromLengthAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w, out id1 );
         return t;
     }
 
 
   public Vector3 GetForwardFromValueAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w , out id1);
         return d;
     }
 
     public Vector3 GetForwardFromLengthAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w , out id1);
         return d;
     }
 
 
     
     public Vector3 GetUpFromValueAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w , out id1);
         return -normalize(cross(normalize(d),normalize(t)));
     }
 
     public Vector3 GetUpFromLengthAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w , out id1);
         print( d );
         print( t );
         print( cross(normalize(d),normalize(t)));
@@ -733,46 +743,46 @@ float3 cubicCurve( float t , float3  c0 , float3 c1 , float3 c2 , float3 c3 ){
 
 
     public Quaternion GetRotationFromValueAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w , out id1);
         return Quaternion.LookRotation( d , -cross( d,t));
     }
 
     public Quaternion GetRotationFromLengthAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w , out id1);
         return Quaternion.LookRotation( d , -cross( d,t));
     }
 
     public float GetWidthFromValueAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w,out id1 );
         return w;
     }
 
     public float GetWidthFromLengthAlongCurve( float v ){
-        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w , out id1);
         return w;
     }
 
     public void SetTransformFromValueAlongCurve( float v , Transform transform){
-        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w , out id1);
         transform.position = p;
         transform.rotation = Quaternion.LookRotation( d , -cross( d,t));
     }
 
 
     public void SetTransformFromLengthAlongCurve( float v , Transform transform){
-        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w );
+        GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w, out id1 );
         transform.position = p;
         transform.rotation = Quaternion.LookRotation( d , -cross( d,t));
     }
 
     public Vector3 GetOffsetPositionFromValueAlongCurve( float v , float x , float y ){
-       GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w );
+       GetCubicInformation( getEvenDistAlong(v) , out p , out d , out t , out w, out id1 );
        return p + t * x -cross( d,t)*y;
     }
 
 
     public Vector3 GetOffsetPositionFromLengthAlongCurve( float v , float x , float y ){
-       GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w );
+       GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out p , out d , out t , out w, out id1 );
        return p + t * x -cross( d,t)*y;
     }
 
@@ -794,13 +804,22 @@ float3 cubicCurve( float t , float3  c0 , float3 c1 , float3 c2 , float3 c3 ){
 
 
     public void GetDataFromValueAlongCurve( float v , out float3 pos , out float3 fwd , out float3 up , out float3 rit , out float scale){
-      GetCubicInformation( getEvenDistAlong(v) , out pos , out fwd , out rit , out scale );
+      GetCubicInformation( getEvenDistAlong(v) , out pos , out fwd , out rit , out scale, out id1 );
       up = -cross(fwd,rit);
     }
 
 
+  public void GetDataFromValueAlongCurve( float v , out float3 pos , out float3 fwd , out float3 up , out float3 rit , out float scale , out float2 idd ){
+      GetCubicInformation( getEvenDistAlong(v) , out pos , out fwd , out rit , out scale, out idd );
+      up = -cross(fwd,rit);
+    }
+
+
+
+
+
     public void GetDataFromCurvePoint( float v , out float3 pos , out float3 fwd , out float3 up , out float3 rit , out float scale){
-      GetCubicInformation( v , out pos , out fwd , out rit , out scale );
+      GetCubicInformation( v , out pos , out fwd , out rit , out scale , out id1);
       up = -cross(fwd,rit);
     }
 
@@ -808,7 +827,7 @@ float3 cubicCurve( float t , float3  c0 , float3 c1 , float3 c2 , float3 c3 ){
 
     public void GetDataFromLengthAlongCurve( float v , out float3 pos , out float3 fwd , out float3 up , out float3 rit , out float scale){
       
-      GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out pos , out fwd , out rit , out scale );
+      GetCubicInformation( getEvenDistAlong(v/totalCurveLength) , out pos , out fwd , out rit , out scale, out id1);
       up = -cross( fwd,rit);
     }
 

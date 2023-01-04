@@ -59,7 +59,6 @@ public class ClosedCurveFlatMesh : MonoBehaviour
     void BuildMesh(Curve c){
         
 
-        print("hmmm");
         totalVertCount = lengthSegments * widthSegments;
         totalTriCount = (lengthSegments) * (widthSegments-1) * 3 * 2;
 
