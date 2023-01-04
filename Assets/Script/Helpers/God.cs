@@ -27,7 +27,7 @@ public class God : MonoBehaviour
     public ControllerTest _input;
 
     public FullInterface _groundInterface;    
-    public BaseInterface _airInterface;
+    public AirInterface _airInterface;
 
 
     public CollectableController _collectableController;
@@ -154,7 +154,7 @@ public class God : MonoBehaviour
         }
     }
 
-    public static BaseInterface airInterface{
+    public static AirInterface airInterface{
         get{
             return instance._airInterface;
         }

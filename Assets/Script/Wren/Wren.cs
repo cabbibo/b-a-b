@@ -51,8 +51,8 @@ public class Wren : MonoBehaviour
 
     public Collection collection;
 
-    public  FullInterface fullInterface;
-    public BaseInterface  airInterface;
+    public FullInterface fullInterface;
+    public AirInterface  airInterface;
 
 
     public Transform startingPosition;
@@ -426,6 +426,9 @@ public void ToggleInterface( bool onOff){
         maker = GameObject.FindGameObjectWithTag("Realtime")?.GetComponent<WrenMaker>();
         fullInterface = God.groundInterface;//GameObject.FindGameObjectWithTag("Interface").GetComponent<FullInterface>();
         airInterface = God.airInterface;//GameObject.FindGameObjectWithTag("Interface").GetComponent<FullInterface>();
+
+        God.groundInterface.wren = this;
+        God.airInterface.wren = this;
 
     
     }

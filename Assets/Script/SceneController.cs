@@ -95,6 +95,11 @@ public class SceneController : MonoBehaviour
        
     }
 
+    public void Death(){
+        biome = -1;
+        HardLoad(0);
+    }
+
 
 
     IEnumerator SceneSwitch(int newScene, int oldScene)
@@ -107,7 +112,7 @@ public class SceneController : MonoBehaviour
        // AsyncOperation load = SceneManager.LoadSceneAsync(scenes[newScene], LoadSceneMode.Additive);
         //var sceneStatus = SceneManager.LoadSceneAsync("SceneName", LoadSceneMode.Additive);
       //  load.completed += (e) =˃ Debug.Log("Scene Loaded");
-        
+        /*
         var progress = SceneManager.LoadSceneAsync(scenes[newScene], LoadSceneMode.Additive);
 
             while (!progress.isDone)
@@ -118,7 +123,10 @@ public class SceneController : MonoBehaviour
                 // For more information about yield in C# see: https://youtu.be/bsZjfuTrPSA
                 yield return null;
             }
+*/
 
+
+        SceneManager.LoadScene(scenes[newScene], LoadSceneMode.Additive);
             
         //SceneManager.LoadScene(scenes[newScene], LoadSceneMode.Additive);
         //yield return null;
@@ -146,7 +154,8 @@ public class SceneController : MonoBehaviour
        print(scene.path);
        print( scene.name);
             print("NOW ITS DEAD");
-            Camera.main.gameObject.GetComponent<LerpTo>().enabled = true;
+
+            
 
         if( scene.isLoaded  && oldScene != newScene ){
             var progress3=  SceneManager.UnloadSceneAsync(scene);    
@@ -159,14 +168,25 @@ public class SceneController : MonoBehaviour
                 yield return null;
             } 
 
-            Camera.main.gameObject.GetComponent<LerpTo>().enabled = true;
 
         }
+
+
+
+        SetNewScene();
 
             
     }
 
 
+    public void SetNewScene(){
+
+            Camera.main.gameObject.GetComponent<LerpTo>().enabled = true;
+            God.wren.state.inInterface = false;
+           // God.wren.ToggleInterface(false);
+            God.wren.airInterface.Toggle( false ); 
+            God.wren.fullInterface.Toggle( false ); 
+    }
 
     public void NewGame(){
         PlayerPrefs.DeleteAll();

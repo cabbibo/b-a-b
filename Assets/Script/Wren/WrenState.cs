@@ -123,12 +123,16 @@ public void OnDie(){
 
     stats.ResetStats();
 
-    wren.FullReset();
-
+  wren.FullReset();
+/*
     // WHAT IS DEAD MAY NEVER DIE
     if( !dead ){
         wren.deathAnimation.OnDeath();
-    }
+    }*/
+
+    God.sceneController.Death();
+
+
 }
 
 

@@ -30,7 +30,7 @@ public class CurveEditor : Editor
 
 
     
-            float3 t; float3 d; float w; float3 p;
+            float3 t; float3 d; float w; float3 p; float2 id1;
             
             float3 p1; float3 p2; float3 p3; float a; float whichVal;
             float3 u; float3 r; 
@@ -176,7 +176,7 @@ public class CurveEditor : Editor
             Vector3[] lilPos = new Vector3[curve.curveVizLength]; 
 
             for( int i = 0; i < curve.curveVizLength; i++ ){
-                curve.GetCubicInformation( (float)i/(curve.curveVizLength-1) , out p  , out d , out t , out w );
+                curve.GetCubicInformation( (float)i/(curve.curveVizLength-1) , out p  , out d , out t , out w , out id1);
                 lilPos[i] = p;
             }
 
@@ -207,6 +207,8 @@ public class CurveEditor : Editor
 
                 for( int i = 0; i < curve.evenBasisVizCount; i++ ){
                     float v = (float)i / ((float) curve.evenBasisVizCount-1);
+
+               
                     DrawBasisAtPoint( v , Color.HSVToRGB(0,1,1f) , Color.HSVToRGB(0.33f,1,1f),Color.HSVToRGB(0.66f,1,1f) , 1);
                 }
             }
@@ -224,13 +226,15 @@ public class CurveEditor : Editor
 
                 if( curve.showAddPositions ){
 
-                    float valAlongCurve = (float)i/((float)curve.addPointVizCount-1);
+                    float valAlongCurve = (float)i/((float)curve.addPointVizCount);
 
-                    curve.GetDataFromValueAlongCurve(valAlongCurve , out p , out d , out u , out r  , out w); 
+                    curve.GetDataFromValueAlongCurve(valAlongCurve , out p , out d , out u , out r  , out w , out id1); 
                     float s =  GetSize(p, .05f);
                     bool hit = Handles.Button( p , Quaternion.identity ,s, s,  Handles.DotHandleCap );
 
                     if( hit ){
+
+                    Debug.Log(i);
                         Undo.RecordObject(curve,"addPoint");
                         curve.AddPoint(valAlongCurve);
                         hasChanged = true;
@@ -636,7 +640,7 @@ public class CurveEditor : Editor
             if( curve.haveFun ){
 
                 Handles.color = Color.HSVToRGB(curvePosition * 10 % 1,1,1);//,.5f,1);
-                curve.GetCubicInformation( 0 , out p  , out d , out t , out w );
+                curve.GetCubicInformation( 0 , out p  , out d , out t , out w , out id1);
 
                 for(int i = 0; i < 30; i++ ){
                     whichVal =((float)i/30);

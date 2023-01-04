@@ -22,6 +22,8 @@ public class FullInterface : MonoBehaviour
 
     public int totalInterfaces;
 
+    public Wren wren;
+
 
     // Start is called before the first frame update
     void OnEnable()

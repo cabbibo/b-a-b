@@ -22,6 +22,7 @@ public class RibbonAlongCurve : MonoBehaviour
     public int lengthSegments = 50;
     public int widthSegments = 8;
     public float width = 1;
+    public float verticalOffset;
 
 
     Vector3[] positions;
@@ -128,24 +129,25 @@ public class RibbonAlongCurve : MonoBehaviour
                 float widthness = (float)j / ((float)widthSegments-1);
                
                 float w = curve.GetWidthFromValueAlongCurve(lengthAlongTube);
-                float3 fPos = curve.GetOffsetPositionFromValueAlongCurve( lengthAlongTube , ((float)widthness-.5f)*w*width, 0 );
+                float3 fPos = curve.GetOffsetPositionFromValueAlongCurve( lengthAlongTube , ((float)widthness-.5f)*w*width, verticalOffset );
                 float3 normal = u1;//curve.GetUpFromLengthAlongCurve(lengthAlongTube);
+
                 float4 tangent = float4(normalize(r1),1);//float4(cross(normal,forward),1);
                 float2 uv = float2( lengthAlongTube, widthness);
                 if( i < 10  && j== 0){
-                    print(normal);
+                   // print(normal);
                 }
                 positions[index] = transform.InverseTransformPoint(fPos);
                 tangents[index] = float4(normalize(transform.InverseTransformDirection(tangent.xyz)),1);
 
                  if( i < 10  && j== 0){
-                    print(transform.InverseTransformDirection(normal));
+                  //  print(transform.InverseTransformDirection(normal));
                 }
                 normals[index] = normalize(transform.InverseTransformDirection(normal));
 
 
                    if( i < 10 && j== 0 ){
-                    print(normals[index]);
+//                    print(normals[index]);
                 }
                 /*if( i < 10 ){
                     print(tangents[index]);
