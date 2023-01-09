@@ -18,15 +18,23 @@ public class QuillFadeMaterialController : MonoBehaviour
     }
 
     MaterialPropertyBlock mpb;
-    Renderer renderer;
+    public Renderer[] renderers;
 
     void doUpdate(){
-    if( mpb == null ){
+
+            if( mpb == null ){
                 mpb = new MaterialPropertyBlock();
-                renderer = GetComponent<Renderer>();
+                
             }
 
-            renderer.GetPropertyBlock(mpb);
+            if( renderers == null ){
+                renderers = new Renderer[1];
+            }
+            if( renderers[0] == null ){
+                renderers[0] = GetComponent<Renderer>();
+                renderers[0].GetPropertyBlock(mpb);
+            }
+
             mpb.SetFloat("_Fade",fade);
             mpb.SetColor("_Color",color);
 
@@ -35,13 +43,15 @@ public class QuillFadeMaterialController : MonoBehaviour
             }else{
                 mpb.SetVector("_FadeLocation", transform.position );
             }
-            renderer.SetPropertyBlock(mpb);
+
+            for( int i = 0; i < renderers.Length; i++){
+                renderers[i].SetPropertyBlock(mpb);
+            }
 
     }
 
     // Update is called once per frame
-    void Update()
-    {
+    void Update(){
         doUpdate();
     }
 

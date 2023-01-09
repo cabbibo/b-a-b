@@ -17,6 +17,7 @@ public class ClosedCurveFlatMesh : MonoBehaviour
 
     public bool twoSided;
     public bool flipRighthandedness;
+    public bool flipNormals;
     public Curve curve;
     public int lengthSegments = 50;
     public int widthSegments = 8;
@@ -159,6 +160,22 @@ public class ClosedCurveFlatMesh : MonoBehaviour
         
         }
 
+
+        float3 nor = centerObject.forward;
+
+          if( flatnessDirection == -1 ){
+
+            }else if(flatnessDirection == 0){
+                nor = centerObject.right;
+            }else if(flatnessDirection ==1){
+                nor = centerObject.up;
+            }else if(flatnessDirection ==2){
+               
+                nor = centerObject.forward;
+            }
+
+        
+
         // reset index of array
         index  = 0;
         for( int i = 0; i < lengthSegments; i++){
@@ -180,14 +197,14 @@ public class ClosedCurveFlatMesh : MonoBehaviour
 
                 positions[index] =  transform.InverseTransformPoint(fPos);
                 tangents[index] = float4(transform.InverseTransformDirection(tangent.xyz),1);
-                normals[index] = centerObject.forward;//transform.InverseTransformDirection(normal);
+                normals[index] = nor;//transform.InverseTransformDirection(normal);
                 uvs[ index] = uv;
 
                 if( twoSided ){
                     positions[index + totalVertCount/2] = fPos;
                     transform.InverseTransformPoint(fPos);
                     tangents[index + totalVertCount/2] = tangent;//float4(transform.InverseTransformDirection(tangent.xyz),1);
-                    normals[index + totalVertCount/2] =  -Vector3.up;//-transform.InverseTransformDirection(normal);
+                    normals[index + totalVertCount/2] =  nor * -1;//-transform.InverseTransformDirection(normal);
                     uvs[ index + totalVertCount/2] = uv;
                 }
 

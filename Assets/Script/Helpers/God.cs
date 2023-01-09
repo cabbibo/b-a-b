@@ -48,7 +48,23 @@ public class God : MonoBehaviour
     public FadeToBlack _fade;
     public SceneController _sceneController;
 
+    public SkyboxUpdater _skyboxUpdater;
+
+
+    public LerpTo _lerpTo;
+    public PostController _postController;
+
     public bool inCutScene;
+
+
+    public static LerpTo lerpTo{
+        get{ return instance._lerpTo; }
+    }
+
+    public static PostController postController{
+        get{ return instance._postController; }
+    }
+
 
     public static CollectableController collectableController{
         get{ return instance._collectableController; }
@@ -189,6 +205,13 @@ public class God : MonoBehaviour
      public static List<Transform> targetableObjects{
         get{
             return instance._targetableObjects;
+        }
+    }
+
+
+         public static SkyboxUpdater skyboxUpdater{
+        get{
+            return instance._skyboxUpdater;
         }
     }
 

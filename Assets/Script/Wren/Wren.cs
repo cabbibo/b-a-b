@@ -484,7 +484,7 @@ void OnCollisionEnter( Collision c ){
 
 
 
-void Crash(Collision c){
+public void Crash(Collision c){
     if( !state.onGround ){
     //if( c.impulse.magnitude != 0 ){
         //ToggleInterface(false);
