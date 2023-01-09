@@ -207,6 +207,8 @@ float4 backgroundCol = tex2Dproj(_BackgroundTexture, refractedBGPos);
                 col = lerp( backgroundCol * _SurfaceColor , _DeepColor , 1-foamLine);
                 col +=skyColor * saturate(pow( (1-match) , 10));
 
+                col = skyColor;
+
                 if( foamLine > .6+ noise(v.ro * .1 + _Time.y) * .1 && foamLine < 1){
                     col += 1;
                 }

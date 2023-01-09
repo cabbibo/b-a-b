@@ -4,7 +4,10 @@ using UnityEngine;
 using UnityEngine.Events;
 
 
+
 namespace WrenUtils{
+
+[ExecuteAlways]
 public class Scene : MonoBehaviour
 {
 
@@ -14,20 +17,26 @@ public class Scene : MonoBehaviour
     public Material skyboxMaterial;
     public string  physicsParameters;
 
-    public Transform[] startPositions;
+    public Portal[] portals;
+
+    public Transform baseStartPosition;
 
 
 
     // Start is called before the first frame update
-    void Start()
+    void OnEnable()
     {
         SceneLoaded();
     }
 
 
+
     public void SceneLoaded(){
 
-         RenderSettings.skybox = skyboxMaterial;
+        RenderSettings.skybox = skyboxMaterial;
+        God.skyboxUpdater.material = skyboxMaterial;
+        God.skyboxUpdater.UpdateSkybox();
+
 
 
 
@@ -35,9 +44,18 @@ public class Scene : MonoBehaviour
         God.wren.parameters.Load(physicsParameters);
 
 
-        // return / spawn at gate that is our current biome!
-        // when bird dies, we respawn at our first starting position
-        God.wren.startingPosition = startPositions[God.sceneController.biome+1];
+        if(God.sceneController.biome >= 0 ){
+            // return / spawn at gate that is our current biome!
+            // when bird dies, we respawn at our first starting position
+            God.wren.startingPosition = portals[God.sceneController.biome].startPoint;
+
+        }else{
+            God.wren.startingPosition = baseStartPosition;
+        }
+
+
+
+        
       /*  if( God.sceneController.oldScene < startPositions.Length){
             God.wren.startingPosition = startPositions[God.sceneController.oldScene];
         }else{
@@ -53,6 +71,9 @@ public class Scene : MonoBehaviour
 
         
         OnLoadEvent.Invoke();
+
+
+        God.sceneController.OnSceneFinishedLoading( this );
 
     }
 
