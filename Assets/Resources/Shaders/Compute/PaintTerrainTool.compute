@@ -1,0 +1,207 @@
+﻿#pragma kernel Paint
+
+#include "../Chunks/safeID.cginc"
+
+
+
+
+RWStructuredBuffer<float> _VectorBuffer;
+
+int _VectorBuffer_COUNT;
+float _Delta;
+
+
+float _Reset;
+
+
+float4x4 _Transform;
+float4x4 _oTransform;
+float3 _DeltaPos;
+
+
+float3 _PaintPosition;
+float3 _PaintDirection;
+float _PaintSize;
+float _PaintOpacity;
+float _PaintStrength;
+int _WhichBrush;
+int _TotalBrushes;
+
+// resolution of our map painting
+ int _Width;
+
+float weight[5] =  {0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216};
+
+Texture2D<float4> _HeightMap;
+SamplerState sampler_HeightMap;
+float3 _MapSize;
+
+    float3 worldPos( float3 pos ){
+        float4 c = _HeightMap.SampleLevel(sampler_HeightMap, (pos.xz) / _MapSize.xz + .5 /1024  , 1);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
+        pos.y = _MapSize.y * c.x;//* sin(.1 *length(pos.xz)) ;//c.x * 1000;//_MapHeight;
+        return pos;
+    }
+
+
+
+Texture2D<float4> _UndoTexture;
+SamplerState sampler_UndoTexture;
+
+
+
+Texture2D<float4> _TextureReset;
+SamplerState sampler_TextureReset;
+
+
+    float3 worldPosTexture( float3 pos ){
+        float4 c = _TextureReset.SampleLevel(sampler_TextureReset, (pos.xz) / _MapSize.xz + .5 /1024  , 1);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
+        pos.y = _MapSize.y * c.x;//* sin(.1 *length(pos.xz)) ;//c.x * 1000;//_MapHeight;
+        return pos;
+    }
+
+    float4 getTexture( float3 pos ){
+       float4 c = _TextureReset.SampleLevel(sampler_TextureReset, (pos.xz) / _MapSize.xz  + .5 /1024 , 1);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
+       return c;
+    }
+
+
+       float4 getUndoTexture( float3 pos ){
+       float4 c = _UndoTexture.SampleLevel(sampler_UndoTexture, (pos.xz) / _MapSize.xz  + .5 /1024 , 1);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
+       return c;
+    }
+
+
+
+
+
+    float3 getNormal( float3 pos ){
+
+      float delta = .01;
+      float3 dU = worldPos( pos + float3(delta,0,0) );
+      float3 dD = worldPos( pos + float3(-delta,0,0) );
+      float3 dL = worldPos( pos + float3(0,0,delta) );
+      float3 dR = worldPos( pos + float3(0,0,-delta) );
+
+      return -normalize(cross(dU.xyz-dD.xyz , dL.xyz-dR.xyz));
+
+    }
+
+#include "../Chunks/noise.cginc"
+
+
+
+
+
+float3 getPos( int id ){
+  float x = float(id % _Width);
+  float z = float(id / _Width);
+
+  float fW = float(_Width);
+
+  float3 pos = float3(
+    ((x + .5)/fW-.5) * _MapSize.x,
+    0,
+    ((z + .5)/fW-.5) * _MapSize.z
+  );
+
+  pos.y = _HeightMap.SampleLevel(sampler_HeightMap, float2((x + .5)/ fW , (z + .5) / fW),0)  * _MapSize.y*2;
+
+
+  return pos;
+}
+
+
+
+#define NR_THREADS 64
+[numthreads(NR_THREADS,1,1)]
+void Paint(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+    int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int sID = pID;//safeID( pID , _VectorBuffer_COUNT );
+
+    int baseID = sID * _TotalBrushes;
+
+
+    float3 pos = getPos(sID);
+
+
+    
+
+//      _VectorBuffer[baseID+1] = 1;
+
+
+
+    // updating our windDirection
+    if( _WhichBrush == 0 || _WhichBrush == 1 || _WhichBrush == 2 ){
+      
+      
+      float3 newVal = float3(_PaintDirection.x , _PaintDirection.y + (1-_PaintStrength), _PaintDirection.z) * _PaintOpacity;
+
+
+      float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
+      newVal = lerp( newVal , float3(0,0,0) , l );
+
+
+  float3 dir = float3(
+      _VectorBuffer[baseID + 0],
+      _VectorBuffer[baseID + 1],
+      _VectorBuffer[baseID + 2]
+  );
+
+      dir += newVal;
+
+      //  dir = float3(1,0,0);
+      if( length(dir)<  .1 ){
+        dir = float3(0,1,0);
+      }
+
+      dir = normalize(dir);
+
+      _VectorBuffer[baseID + 0] = dir.x;
+      _VectorBuffer[baseID + 1] = dir.y;
+      _VectorBuffer[baseID + 2] = dir.z;
+
+    }else if( _WhichBrush == 3 ){
+        float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
+
+        float v = _VectorBuffer[baseID + _WhichBrush];
+
+        v += .04*lerp( _PaintOpacity * _PaintStrength , 0 , l );
+        v = saturate(v);
+        _VectorBuffer[baseID + _WhichBrush] = v;
+    }
+
+/*
+
+    v.nor = getNormal( v.pos );
+
+    if( _Reset == 1 ){
+      v.pos = float3( v.pos.x , 0 , v.pos.z);
+      v.debug = 0;
+      v.tang = 0;
+    }
+
+
+    if( _Reset == 2 ){
+
+      float4 tCol = getTexture( v.pos );
+      v.pos.y =  _MapSize.y  * tCol.x;
+      v.debug = tCol.w -.1;
+      v.tang = float3( tCol.y , 0 ,tCol.z) * 2 - 1;
+    }
+
+
+    if( _Reset == 3 ){
+
+      float4 tCol = getUndoTexture( v.pos );
+      v.pos.y =  _MapSize.y  * tCol.x;
+      v.debug = tCol.w-.1;
+      v.tang = float3( tCol.y , 0 ,tCol.z) * 2 - 1;
+    }
+*/
+
+
+
+
+}

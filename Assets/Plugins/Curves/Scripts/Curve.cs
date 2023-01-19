@@ -43,6 +43,7 @@ public class Curve : MonoBehaviour
 
     public bool intersectOnPlace;
     public bool intersectOnMove;
+    public float intersectOffset;
 
     public Font labelFont;
 

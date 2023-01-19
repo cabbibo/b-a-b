@@ -4,6 +4,7 @@ using UnityEngine;
 
  using static Unity.Mathematics.math;
 using Unity.Mathematics;
+using WrenUtils;
 
 public class LerpToNest : MonoBehaviour
 {

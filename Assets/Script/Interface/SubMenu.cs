@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using WrenUtils;
 
  [System.Serializable]
  public class IntEvent : UnityEvent<int>{}

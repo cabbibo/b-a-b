@@ -1,0 +1,159 @@
+﻿#pragma kernel Flow
+
+struct Vert{
+  float3 pos;
+  float3 vel;
+  float3 nor;
+  float3 tangent;
+  float2 uv;
+  float debug;
+  float life;
+};
+
+float4x4 _Transform;
+
+RWStructuredBuffer<Vert> _VertBuffer;
+
+int _VertBuffer_COUNT;
+int _TransformBuffer_COUNT;
+
+#include "../../Chunks/safeID.cginc"
+#include "../../Chunks/snoise.cginc"
+#include "../../Chunks/hash.cginc"
+#include "../../Chunks/curlNoise.cginc"
+#include "../../Chunks/ParticleAxisHelpers.cginc"
+
+
+
+float3 VecToRay( float3 ro , float3 rd, float3 pos ){
+  
+  float3 p2 = ro - rd * 200;
+  float3 pa = pos - ro;
+  float3 ba = ro - p2;
+  float h =  dot(pa,ba)/dot(ba,ba);
+  float3 pOnLine = h * rd* 200 +ro;
+
+  float3 inLine = pos - pOnLine;
+
+  return  inLine;//normalize(inLine) * force *  (1 - clamp( length(inLine) / radius , 0 , 1));
+}
+
+
+
+
+void DoInit(inout Vert v , int pID){
+    v.life = hash(float(pID));
+}
+
+float3 _WrenPos;
+float3 _WrenDir;
+
+#include "../../Chunks/ComputeTerrainInfo.cginc"
+float _Time;
+float3 DoRemitPosition(int p){
+
+    float x = (hash(float(p)* 22.13 + _Time ) + hash(float(p)* 42.33 + _Time*4.3 ) + hash(float(p)* 22.13 + _Time *39.3) )/3 -.5;
+    float y = (hash(float(p)* 4.43 + _Time ) + hash(float(p)* 17.33 + _Time*91.3 ) + hash(float(p)* 49.13 + _Time *55.3) )/3 -.5;;
+    float3 fPos = _WrenPos + float3(x,0,y)* 40; //float3( (hash(float(p)*3+_Time)+ hash(float(p)*14+_Time * 10))/2 -.5,0 , (hash(float(p)*31+_Time*3.1)+ hash(float(p)*21+_Time * 14.4))/2-.5) * 1000;
+
+
+    fPos = worldPos(fPos);//.y = heightAtPosition(fPos);
+
+
+
+    return fPos;
+
+}
+
+float3 DoRemitVelocity(int p){return 0;}
+
+
+float3 DoForce( inout Vert vert , int pID){
+    float3 force = 0;
+
+
+   force = -getTerrainNormal( vert.pos ) * .0000001;// -t.yzw * .001 * t.x;
+
+
+
+    float3 delta = _WrenPos - vert.pos;
+    float3 outVec = VecToRay( _WrenPos , _WrenDir , vert.pos);// w.pos - projPoint;
+    //feather.vel += normalize(outVec) * 300 / length(delta);//saturate((1-feather.debug)* 10) *1000 * normalize(delta) / length(delta);
+        //normalize(cross(_WrenDir , outVec))
+   // force +=.01 *  length(_WrenDir)* outVec  / pow( length(delta),2);//saturate((1-feather.debug)* 10) *1000 * normalize(delta) / length(delta);
+  
+
+    if(length(delta) < 3){
+        vert.debug = 1;
+    }
+
+
+    if( vert.debug > .5 ){
+        force = -getTerrainNormal( vert.pos ) * .00001;
+        force +=.0001 *  length(_WrenDir)* outVec  / pow( length(delta),2);
+    }
+
+     if( vert.pos.y < heightAtPosition( vert.pos ) ){
+
+      vert.vel =  reflect( vert.vel , getTerrainNormal( vert.pos ) ) * 1.2; 
+      vert.pos = worldPos( vert.pos ) + vert.vel;//- normalize(vert.vel);
+      //vert.pos += -vert.vel; //heightAtPosition( vert.pos ) + .3;
+
+    }
+    
+    return force;
+}
+
+float DoLife( Vert v , int pID ){
+    return .0002 * (1+hash(float(pID)));
+}
+
+float DoDampening( Vert v , int pID){
+    return .99;
+}
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Flow(uint3 id : SV_DispatchThreadID) {
+
+
+      int pID = id.x;
+  pID = safeID(pID,_VertBuffer_COUNT);
+  Vert vert = _VertBuffer[pID];
+
+
+  if( vert.pos.x == 0  && vert.pos.y == 0 && vert.pos.z == 0 ){
+    DoInit(vert, float(pID));
+  }
+  
+  /*if( vert.life == 0 ){ vert.life = hash(float(pID));}
+  if( length(vert.axis) == 0 ){ vert.axis = newAxis(float(pID)); }
+  
+  vert.nor = mul(rotation(vert.axis,vert.life*10*(hash(float(pID*123))+1)),float4(0,0,1,0)).xyz;*/
+
+  if( vert.life < 0 ){
+
+    vert.pos = DoRemitPosition(pID);
+    vert.vel = DoRemitVelocity(pID);
+    vert.life = 1;//
+    vert.debug = 0;
+  
+  }else{
+
+    float3 force = DoForce( vert , pID); //float3(0,0,0);
+
+    vert.vel += force;/// * .00004 * (1+hash(pID*1021.))/2;
+
+    vert.life -= DoLife( vert , pID );//.0004 * (3+sin(float(pID)));
+    vert.pos += vert.vel;
+
+    vert.vel *= DoDampening( vert , pID );
+
+  }
+
+
+  
+  _VertBuffer[pID] = vert;
+
+
+}

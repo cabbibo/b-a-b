@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 
+using WrenUtils;
 
 [ExecuteAlways]
 public class PostController : MonoBehaviour{
@@ -21,6 +22,10 @@ public class PostController : MonoBehaviour{
     public float _Lightness;
     public float _Blend;
     public float _Fade;
+
+
+
+    public Texture2D biomeMap;
 
     void OnEnable()
     {
@@ -55,10 +60,33 @@ public class PostController : MonoBehaviour{
         float angle = Mathf.Atan2( position.x, position.z );
         float radius = ( new Vector2( position.x , position.z )).magnitude;
 
-        print( angle );
-        print( radius );
 
-        _Hue = angle  / Mathf.PI;
+        float x = (position.x +2048)/4096;
+        float y = (position.z +2048)/4096;
+
+        Color c = biomeMap.GetPixelBilinear( x, y,0);
+
+//        print( c.a);
+
+
+        float h,s,v;
+
+        Color.RGBToHSV(c, out h,out s,out v);
+
+        _Hue = h;
+        _Blend = c.a;
+
+    
+
+       /* angle = (angle > 0 ? angle : (2*Mathf.PI + angle));
+        angle /= 2 * Mathf.PI;
+
+        _Hue = angle;
+        _Hue += angleOffset;
+        _Hue %= 1;
+
+
+        print( _Hue );*/
 
         return new Vector2( angle , radius );
 

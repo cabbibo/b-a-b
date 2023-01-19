@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+using WrenUtils;
 
 [ExecuteAlways]
 public class RingSetParticles : MonoBehaviour

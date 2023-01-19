@@ -25,7 +25,7 @@
 
             float3 lensCol = hsv(_Hue,_Saturation,_Lightness);
 
-            color.rgb = color.rgb * lensCol;//lerp( color.rgb , lensCol , _Blend);
+            color.rgb = lerp( color.rgb,lensCol * color.rgb,_Blend * .8);//lerp( color.rgb , lensCol , _Blend);
 
 
             color.rgb *= (1-_Fade);
