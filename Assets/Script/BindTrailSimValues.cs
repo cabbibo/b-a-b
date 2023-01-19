@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using IMMATERIA;
-
+using WrenUtils;
 public class BindTrailSimValues : Binder
 {
 
@@ -72,7 +72,7 @@ public class BindTrailSimValues : Binder
 
 
       
-      if( God.wren != null ){ following = God.wren.transform; }
+      if( WrenUtils.God.wren != null ){ following = WrenUtils.God.wren.transform; }
       transformMatrix = transform.localToWorldMatrix;
       explodeTime = explodeSimulation.explodeTime;
 

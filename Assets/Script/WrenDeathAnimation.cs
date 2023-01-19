@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static Unity.Mathematics.math;
 using Unity.Mathematics;
+ using WrenUtils;
 
 public class WrenDeathAnimation : MonoBehaviour
 {

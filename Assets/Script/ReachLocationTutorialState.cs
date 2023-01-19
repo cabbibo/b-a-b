@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+using WrenUtils;
 public class ReachLocationTutorialState : TutorialState
 {
     public UnityEvent OnLocationReached;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+ using WrenUtils;
 
 public class GPUTrailFromFeathers : MonoBehaviour
 {

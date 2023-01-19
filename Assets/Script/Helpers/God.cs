@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+namespace WrenUtils {
 [ExecuteAlways]
 public class God : MonoBehaviour
 {
@@ -357,4 +359,6 @@ public static void SetWrenSavedPosition( Vector3 v ){
             Application.Quit();
         }
     }
+}
+
 }

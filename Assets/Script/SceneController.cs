@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 
+using WrenUtils;
 public class SceneController : MonoBehaviour
 {
 
@@ -126,7 +127,7 @@ public class SceneController : MonoBehaviour
             yield return null;
         } 
 
-       Scene scene =  SceneManager.GetSceneByName(scenes[oldScene]);
+        UnityEngine.SceneManagement.Scene scene =  SceneManager.GetSceneByName(scenes[oldScene]);
             
 
         // unloading old scene AGAIN for some reason this actually works?

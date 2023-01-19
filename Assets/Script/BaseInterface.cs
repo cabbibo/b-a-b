@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+using WrenUtils;
 public class BaseInterface : MonoBehaviour
 {
 

@@ -41,7 +41,7 @@ public void UpdateSound(){
 
 
 // Sound for when you get reallllly close to something
-float loopVal =  .005f * physics.vel.magnitude *physics.vel.magnitude/(100+physics.distToGround*physics.distToGround);
+float loopVal =  .05f * physics.vel.magnitude *physics.vel.magnitude/(100+physics.distToGround*physics.distToGround);
 closeLoop.pitch = loopVal;
 closeLoop.volume = loopVal;
 

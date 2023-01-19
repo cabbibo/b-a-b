@@ -5,6 +5,7 @@ using UnityEngine.Events;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 
+using WrenUtils;
 
 [ExecuteAlways]
 public class PlayCutScene : MonoBehaviour

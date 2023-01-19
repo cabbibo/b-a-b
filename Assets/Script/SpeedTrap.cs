@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
+using WrenUtils;
 
 public class SpeedTrap : MonoBehaviour
 {

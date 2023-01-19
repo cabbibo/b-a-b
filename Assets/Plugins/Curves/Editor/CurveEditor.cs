@@ -320,7 +320,7 @@ public class CurveEditor : Editor
                         {
                         
                         //placing
-                                        newPos = hit.point;// = hit.distance;
+                                        newPos = hit.point - mouseRay.direction * curve.intersectOffset;// = hit.distance;
                         }
 
                     }

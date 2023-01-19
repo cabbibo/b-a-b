@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using IMMATERIA;
+using WrenUtils;
+
 
 public class BindWrenRepel : Binder{
 
@@ -23,9 +25,9 @@ public class BindWrenRepel : Binder{
     }
 
     public override void WhileLiving(float v){
-        if( God.wren != null ){ 
-            t = God.wren.transform; 
-            vel = God.wren.physics.rb.velocity;
+        if( WrenUtils.God.wren != null ){ 
+            t = WrenUtils.God.wren.transform; 
+            vel = WrenUtils.God.wren.physics.rb.velocity;
         }
 
 

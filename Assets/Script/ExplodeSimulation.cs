@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using IMMATERIA;
+using WrenUtils;
 
 
 [ExecuteAlways]
@@ -84,10 +85,10 @@ public class ExplodeSimulation : MonoBehaviour
              mpb.SetInt("_Count",count);
              mpb.SetInt("_Sides",sides);
 
-            God.instance.SetTerrainMPB(mpb);
+            WrenUtils.God.instance.SetTerrainMPB(mpb);
             
-            if( God.wren ){
-                God.wren.state.SetStateMPB(mpb);
+            if( WrenUtils.God.wren ){
+                WrenUtils.God.wren.state.SetStateMPB(mpb);
             }
 
 
