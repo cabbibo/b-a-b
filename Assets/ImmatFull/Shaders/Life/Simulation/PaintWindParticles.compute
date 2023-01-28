@@ -1,0 +1,89 @@
+﻿#pragma kernel Flow
+
+struct Vert{
+  float3 pos;
+  float3 vel;
+  float3 nor;
+  float3 tangent;
+  float3 axis;
+  float life;
+};
+
+float4x4 _Transform;
+
+RWStructuredBuffer<Vert> _VertBuffer;
+
+int _VertBuffer_COUNT;
+int _TransformBuffer_COUNT;
+
+#include "../../Chunks/safeID.cginc"
+#include "../../Chunks/snoise.cginc"
+#include "../../Chunks/hash.cginc"
+#include "../../Chunks/curlNoise.cginc"
+#include "../../Chunks/ParticleAxisHelpers.cginc"
+
+
+
+float3 _PaintPosition;
+float3 _PaintDirection;
+float _PaintSize;
+float _IsPainting;
+
+float _PaintSpawnMultiplier;
+
+#include "../../Chunks/ComputeTerrainInfo.cginc"
+Texture2D<float4> _WindMap;
+SamplerState sampler_WindMap;
+
+
+
+float3 windDir( float3 pos ){
+    float2 v = (pos.xz+(_MapSize.xz/2)) / _MapSize.xz;// _MapSize.xz;
+    float4 c = _WindMap.SampleLevel(sampler_WindMap, v , 0);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
+    return c.xyz;
+}
+
+
+
+void DoInit( inout Vert vert , float pID ){
+    vert.life = hash(float(pID));
+}
+
+float _Time;
+
+float3 DoRemitPosition(int p){
+   return worldPos( float3( hash(float(p)*20)-.5,0 , hash(float(p)*231)-.5) * _PaintSize * _PaintSpawnMultiplier + _PaintPosition ) + float3(0,hash(float(p) * 12+ _Time) * 50,0);
+}
+
+float3 DoRemitVelocity(int p){return 0;}
+
+
+float3 DoForce( inout Vert vert , int pID){
+    float3 force = 0;
+    //force += 1.4*curlNoise(vert.pos * .4);
+    //force +=  float3(0,1,0);
+    force += windDir(vert.pos) * 10;
+    force *= .0004 * (1+hash(pID*1021.))/2;
+
+
+
+    vert.nor = mul(rotation(vert.axis,vert.life*10*(hash(float(pID*123))+1)),float4(0,0,1,0)).xyz;
+    // Giving the vert a tangent
+    vert.tangent =normalize(cross( vert.axis , normalize( vert.nor )));
+    
+    return force;
+}
+
+float DoLife( Vert v , int pID ){
+    return (.001  * _IsPainting + .0001) * (3+sin(float(pID)));
+}
+
+float DoDampening( Vert v , int pID){
+    return .98;
+}
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Flow(uint3 id : SV_DispatchThreadID) {
+    #include "../../Chunks/SimplifiedSimulation.cginc"
+}

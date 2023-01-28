@@ -30,7 +30,7 @@ Shader "Debug/PaintTerrainDebug" {
       uniform float _Up;
       uniform float3 _Color;
     
-      StructuredBuffer<float> _VertBuffer;
+      StructuredBuffer<float4> _VertBuffer;
 
       int _WhichBrush;
       int _TotalBrushes;
@@ -85,13 +85,13 @@ varyings vert (uint id : SV_VertexID){
 
   float2 uv = float2(0,0);
 
-  float v = _VertBuffer[base * _TotalBrushes + _WhichBrush];
+  float4 v = _VertBuffer[base];
 
   float3 pos = getPos(base);
 
   float3 dir = float3(0,1,0);
 
-  dir *= (v+ .1);
+  dir *= (v.a+ .1);
 
   
 
@@ -108,7 +108,7 @@ float3 yVal =  normalize( -cross( dir , viewDir ));
 
 
   o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
-  o.value = v;
+  o.value = v.a;
 
 
   return o;
@@ -120,7 +120,7 @@ float3 yVal =  normalize( -cross( dir , viewDir ));
 
   //Pixel function returns a solid color for each point.
   float4 frag (varyings v) : COLOR {
-    return float4(_Color,1 );
+    return float4(_Color * v.value,1 );
       return 1;
   }
 

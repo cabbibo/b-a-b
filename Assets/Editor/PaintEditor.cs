@@ -15,15 +15,46 @@
 
 
          Painter test = (Painter)target;
-         
-        if(Event.current.control)
-{
-   test.paintStrength = -1;
-}else{
-    test.paintStrength = 1;
+ 
+
+
+if( Event.current.type== EventType.KeyDown ){
+
+  if(Event.current.keyCode == KeyCode.Z){ test.fn = -1; }
+  if(Event.current.keyCode == KeyCode.X){ test.shift = -1; }
+  if(Event.current.keyCode == KeyCode.C){ test.paintStrength = -1; }
+
 }
 
+if( Event.current.type == EventType.KeyUp ){
+
+  if(Event.current.keyCode == KeyCode.Z){ test.fn = 1; }
+  if(Event.current.keyCode == KeyCode.X){ test.shift = 1; }
+  if(Event.current.keyCode == KeyCode.C){ test.paintStrength = 1; }
+
+}
+
+
+
  HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+
+             if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
+             {
+
+                
+              //print("mouse");
+
+                 Vector2 mousePos = Event.current.mousePosition * 1;
+                 mousePos.y = Camera.current.pixelHeight - mousePos.y;
+                 Ray ray = Camera.current.ScreenPointToRay(mousePos);
+                 test.MouseDown(ray);
+
+                 test.paintScreenPosition = mousePos;
+                 test.oSP = mousePos;
+
+                 test.paintScreenDirection = Vector2.zero;
+
+             }
 
              if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
              {
@@ -34,6 +65,11 @@
                  Ray ray = Camera.current.ScreenPointToRay(mousePos);
                  test.WhileDown(ray);
 
+                 test.oSP = test.paintScreenPosition;
+                 test.paintScreenPosition = mousePos;
+
+                 test.paintScreenDirection = test.paintScreenPosition - test.oSP;
+
              }
 
 
@@ -41,7 +77,9 @@
              if (Event.current.type == EventType.MouseUp)
              {
               //test.Save();
- Debug.Log("Event Type : "  + Event.current.type );
+
+              test.Save();
+              test.isPainting = 0;
  
              }
          
@@ -64,7 +102,8 @@
 
           EditorGUILayout.Space();
         GUILayout.Label("Paint STRENGTH: " + test.paintStrength);
-        test.paintStrength = GUILayout.HorizontalSlider(test.paintStrength, -1.0F, 1.0F);
+        GUILayout.Label("Shift " + test.shift);
+        GUILayout.Label("FN " + test.fn);
         
      EditorGUILayout.Space();
      
@@ -79,7 +118,8 @@
 
         if (GUILayout.Button("Set To Current"))
         {
-          //test.UltraSave();
+          test.UltraSave();
+
         }
 
          /*if (GUILayout.Button("Reset To Flat"))

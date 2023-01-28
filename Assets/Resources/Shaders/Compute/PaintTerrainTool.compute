@@ -21,11 +21,16 @@ float3 _DeltaPos;
 
 float3 _PaintPosition;
 float3 _PaintDirection;
+float2 _PaintScreenDirection;
 float _PaintSize;
 float _PaintOpacity;
 float _PaintStrength;
 int _WhichBrush;
 int _TotalBrushes;
+
+
+float _Shift;
+float _FN;
 
 // resolution of our map painting
  int _Width;
@@ -134,33 +139,51 @@ void Paint(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
     // updating our windDirection
     if( _WhichBrush == 0 || _WhichBrush == 1 || _WhichBrush == 2 ){
-      
-      
-      float3 newVal = float3(_PaintDirection.x , _PaintDirection.y + (1-_PaintStrength), _PaintDirection.z) * _PaintOpacity;
+       
+       
+       float3 dir = float3(
+          _VectorBuffer[baseID + 0],
+          _VectorBuffer[baseID + 1],
+          _VectorBuffer[baseID + 2]
+      );
 
+
+      // if just control, we do 'power'
+      // if just shift we do height
+      
+      float3 newVal = float3(_PaintDirection.x , _PaintDirection.y, _PaintDirection.z)  * _PaintOpacity;
+
+      // painting up and down
+      if( _Shift < 0 ){
+        newVal = float3( 0 ,1, 0 )* _PaintOpacity*_PaintStrength;
+      }
+
+
+      if( _FN  < 0){
+        newVal = dir* _PaintOpacity *_PaintStrength;
+
+      }
 
       float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
       newVal = lerp( newVal , float3(0,0,0) , l );
 
 
-  float3 dir = float3(
-      _VectorBuffer[baseID + 0],
-      _VectorBuffer[baseID + 1],
-      _VectorBuffer[baseID + 2]
-  );
 
-      dir += newVal;
+      dir += newVal * .01;
 
       //  dir = float3(1,0,0);
-      if( length(dir)<  .1 ){
-        dir = float3(0,1,0);
+      if( length(dir)== 0 ){
+        dir = float3(0,.00001,0);
       }
 
-      dir = normalize(dir);
+      //dir = normalize(dir);
 
       _VectorBuffer[baseID + 0] = dir.x;
       _VectorBuffer[baseID + 1] = dir.y;
       _VectorBuffer[baseID + 2] = dir.z;
+
+
+
 
     }else if( _WhichBrush == 3 ){
         float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
