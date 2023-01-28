@@ -40,11 +40,19 @@ public class Painter : Simulation
   public Vector3 paintPosition;
   private Vector3 oPP;
   public Vector3 paintDirection;
+  public Vector2 paintScreenPosition;
+  public Vector2 paintScreenDirection;
+  public Vector2 oSP;
 
   // brush size
   public float paintSize;
   public float paintOpacity;
   public float paintStrength;
+  public float shift;
+  public float fn;
+
+
+  public float isPainting;
 
   public Material[] debugMaterials;
 
@@ -62,6 +70,7 @@ public class Painter : Simulation
 
 
 
+  MeshRenderer paintTipRenderer;
 
   // to get our data back from gpu
   Queue<AsyncGPUReadbackRequest> _requests = new Queue<AsyncGPUReadbackRequest>();
@@ -71,6 +80,7 @@ public class Painter : Simulation
 
     if( mpb == null ){ mpb = new MaterialPropertyBlock(); }
 
+  paintTipRenderer = paintTip.GetComponent<MeshRenderer>();
 
     if( undoBuffer == null ){ 
       undoBuffer = new List<float[]>(); 
@@ -95,6 +105,54 @@ public class Painter : Simulation
   }
 
 
+  public int totalTextures;
+
+  public Texture2D windTexture;
+  public void SetUpTextures(){
+
+    totalTextures = (int)Mathf.Ceil( (float)verts.dataTypes.Length / 4);
+
+
+
+  }
+
+
+  public void ExtractWindColors(){
+   
+    values = verts.GetData();
+
+    colors =  new Color[verts.count];
+    for( int i = 0; i < verts.count; i ++ ){
+      
+      // extracting height
+      float x = values[ i * verts.structSize + 0] ;//height;
+      float y = values[ i * verts.structSize + 1] ;//height;
+      float z = values[ i * verts.structSize + 2] ;//height;
+      
+
+      colors[i] = new Color( x,y,z,0);
+
+    }
+
+  }
+
+  public void SaveWindTexture(){
+
+    if( windTexture == null ){ windTexture = new Texture2D( verts.width, verts.width,TextureFormat.RGBAFloat, 3, true); }
+    ExtractWindColors();
+
+    windTexture.SetPixels( colors );
+    windTexture.Apply(true);
+
+
+  }
+
+  public void SaveToTexture(){
+
+
+  }
+
+
 
 
   // Only Recreate if its not the correct size;
@@ -113,6 +171,10 @@ public class Painter : Simulation
         undoBuffer.Add(values);
       }
     }
+
+
+
+    Save();
   
   }
   
@@ -125,9 +187,12 @@ public class Painter : Simulation
 
     life.BindVector3( "_PaintPosition"  , () => this.paintPosition  );
     life.BindVector3( "_PaintDirection" , () => this.paintDirection );
+    life.BindVector2( "_PaintScreenDirection" , () => this.paintScreenDirection );
     life.BindFloat(   "_PaintSize"      , () => this.paintSize      );
     life.BindFloat(   "_PaintOpacity"   , () => this.paintOpacity   );
     life.BindFloat(   "_PaintStrength"  , () => this.paintStrength   );
+    life.BindFloat(   "_Shift"  , () => this.shift   );
+    life.BindFloat(   "_FN"  , () => this.fn   );
    
    
     life.BindInt(     "_WhichBrush"     , () => this.brushType      );
@@ -141,8 +206,8 @@ public class Painter : Simulation
 
    // data.BindTerrainData(life);
 
-life.BindTexture( "_HeightMap" , ()=> WrenUtils.God.terrainData.heightmapTexture );
-life.BindVector3( "_MapSize" , ()=> WrenUtils.God.terrainData.size );
+    life.BindTexture( "_HeightMap" , ()=> WrenUtils.God.terrainData.heightmapTexture );
+    life.BindVector3( "_MapSize" , ()=> WrenUtils.God.terrainData.size );
     
 
   
@@ -152,7 +217,12 @@ life.BindVector3( "_MapSize" , ()=> WrenUtils.God.terrainData.size );
 
   }
 
+
+
+
   public override void WhileDebug(){
+
+    paintTipRenderer.enabled = isPainting == 1 ? true : false;
     
     mpb.SetInt("_Dimensions", verts.width);
     mpb.SetInt("_Count", verts.count);
@@ -175,9 +245,37 @@ life.BindVector3( "_MapSize" , ()=> WrenUtils.God.terrainData.size );
 
 
 
+public void MouseDown(Ray ray){
+
+  
+
+    RaycastHit hit;
+    // Does the ray intersect any objects excluding the player layer
+    if (Physics.Raycast( ray , out hit, Mathf.Infinity))
+    {
+      paintPosition = hit.point;//.land.Trace( ray.origin, ray.direction);
+    }else{
+      paintPosition = ray.origin;
+    }
+
+    
+   // paintPosition = data.land.Trace( ray.origin, ray.direction);
+    paintTip.position = paintPosition;
+    paintTip.localScale = new Vector3( paintSize, paintSize,paintSize);
+
+    paintDirection = Vector3.zero;
+
+
+}
+
+
+  Vector2 mousePos;
   public void WhileDown(Ray ray){
 
 
+    isPainting = 1;
+
+    //print( Camera.current.transform.Inverseray.direction );
     paintDirection = paintPosition;
 
     RaycastHit hit;
@@ -194,12 +292,15 @@ life.BindVector3( "_MapSize" , ()=> WrenUtils.God.terrainData.size );
     paintTip.position = paintPosition;
     paintTip.localScale = new Vector3( paintSize, paintSize,paintSize);
 
-    paintDirection = -(paintDirection - paintPosition).normalized;
+    paintDirection = -(paintDirection - paintPosition);
 
     // update our life
     life.YOLO();
 
   }
+
+
+  //int getTextureID
 
 
 /*
@@ -392,5 +493,23 @@ public void ResetToFlat(){
    }
   
 */
+  
+  public void UltraSave(){
+
+    print("save");
+    Saveable.Save(verts);//.Save();
+    SaveWindTexture();
+
+  }
+
+    
+  public void Save(){
+
+    Saveable.Save(verts);//.Save();
+    SaveWindTexture();
+
+  }
+
+
 
 }

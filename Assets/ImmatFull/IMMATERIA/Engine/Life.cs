@@ -160,10 +160,8 @@ public class Life : Cycle {
 
     float totalCount = (float)primaryForm.count * countMultiplier;
 
-    print( "TOTAL COUNT");
     if( totalCount != Mathf.Floor( totalCount )){ DebugThis("your count multiplier is not allowing proper total count");}
     numGroups = ((int)totalCount+((int)numThreads-1))/(int)numThreads;
-    print( numGroups );
   }
  
   public void BindForm( string name , Form form ){

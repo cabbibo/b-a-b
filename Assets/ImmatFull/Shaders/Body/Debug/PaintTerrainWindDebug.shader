@@ -118,7 +118,7 @@ float3 yVal =  normalize( -cross( dir , viewDir ));
 
   //Pixel function returns a solid color for each point.
   float4 frag (varyings v) : COLOR {
-    return float4(v.value * .5 + .5,1 );
+    return float4((normalize(v.value) * .5 + .5) * length(v.value),1 );
       return 1;
   }
 
