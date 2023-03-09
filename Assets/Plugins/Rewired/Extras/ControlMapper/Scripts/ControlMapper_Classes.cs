@@ -435,7 +435,10 @@ namespace Rewired.UI.ControlMapper
             }
             public bool isValid {
                 get {
-                    if(_mapCategoryId < 0 || ReInput.mapping.GetMapCategory(_mapCategoryId) == null) return false;
+                    if(_mapCategoryId < 0) return false;
+                    InputMapCategory mapCategory = ReInput.mapping.GetMapCategory(_mapCategoryId);
+                    if (mapCategory == null) return false;
+                    if (!mapCategory.userAssignable) return false;
                     return true;
                 }
             }

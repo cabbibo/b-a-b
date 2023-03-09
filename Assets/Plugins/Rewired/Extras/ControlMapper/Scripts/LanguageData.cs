@@ -276,6 +276,7 @@ namespace Rewired.UI.ControlMapper {
             ControllerElementIdentifier eid = controller.GetElementIdentifierById(elementIdentifierId);
             if(eid == null) throw new ArgumentException("Invalid element identifier id: " + elementIdentifierId);
             Controller.Element element = controller.GetElementById(elementIdentifierId);
+            if(element == null) return string.Empty;
             switch(element.type) {
                 case ControllerElementType.Axis:
                     return eid.GetDisplayName(element.type, axisRange);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2015 Augie R. Maddox, Guavaman Enterprises. All rights reserved.
+// Copyright (c) 2015 Augie R. Maddox, Guavaman Enterprises. All rights reserved.
 #pragma warning disable 0219
 #pragma warning disable 0618
 #pragma warning disable 0649
@@ -538,6 +538,16 @@ namespace Rewired.UI.ControlMapper {
                     DrawPopupProperty(new GUIContent("Map Category", "The Map Category that will be displayed to the user for mapping."), mapCategoryIds, mapCategoryNames, mapCategoryId); // NOTE: mapCategoryId tool tip from Attribute is always NULL!
                     int selectedMapCategoryIndex = System.Array.IndexOf<int>(mapCategoryIds, mapCategoryId.intValue);
                     if(selectedMapCategoryIndex < 0) continue;
+
+                    // Make sure Map Category is user assignable
+                    if(userData != null && mapCategoryId.intValue >= 0) {
+                        InputMapCategory mapCategory = userData.GetMapCategoryById(mapCategoryId.intValue);
+                        if(mapCategory != null) {
+                            if(!mapCategory.userAssignable) {
+                                EditorGUILayout.HelpBox("The selected Map Category is not user assignable and will not be displayed.", MessageType.Error);
+                            }
+                        }
+                    }
 
                     SerializedProperty actionListMode = mapSet.FindPropertyRelative("_actionListMode");
                     EditorGUILayout.PropertyField(actionListMode);

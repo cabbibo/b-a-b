@@ -21,7 +21,11 @@ namespace Rewired.Demos {
         private Player player;
 
         void Awake() {
+#if UNITY_2021_2_OR_NEWER
             Screen.orientation = ScreenOrientation.LandscapeLeft;
+#else
+            Screen.orientation = ScreenOrientation.Landscape;
+#endif
             player = ReInput.players.GetPlayer(0); // get the Rewired Player
             ReInput.InputSourceUpdateEvent += OnInputUpdate; // subscribe to input update event
             controller = (CustomController)player.controllers.GetControllerWithTag(ControllerType.Custom, "TiltController"); // get the Custom Controller from the player by the Tag set in the editor

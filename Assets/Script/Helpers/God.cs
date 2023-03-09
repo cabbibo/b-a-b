@@ -15,7 +15,8 @@ public class God : MonoBehaviour
 
     public Camera _camera;
     public Terrain _terrain;
-    public TerrainData _terrainData;
+    public TerrainData _terrainData; 
+    public IslandData _islandData; 
     public Wren _localWren;
     public WrenMaker _wrenMaker;
 
@@ -157,6 +158,19 @@ public class God : MonoBehaviour
                 print(instance._terrain);
             }
             return instance._terrain;
+        }   
+    }
+
+
+    public static IslandData islandData{
+        get{
+
+            if( instance._islandData == null ){
+                print("FINDING islandData");
+                instance._islandData = (IslandData)FindObjectOfType(typeof(IslandData));
+                print(instance._islandData);
+            }
+            return instance._islandData;
         }   
     }
 
@@ -322,6 +336,14 @@ public static void SetWrenSavedPosition( Vector3 v ){
     PlayerPrefs.SetFloat("_CurrentWrenZ",v.z);
 
 }
+
+
+public static Vector3 NormalizedPositionInMap( Vector3 p ){
+
+    p += new Vector3( terrainData.size.x/2 , 0, terrainData.size.z/2);
+    return new Vector3( p.x / terrainData.size.x , p.y / terrainData.size.y , p.z / terrainData.size.z );
+
+}
    // Updates in Edit Mode!
    void OnDrawGizmos()
    {
@@ -344,10 +366,10 @@ public static void SetWrenSavedPosition( Vector3 v ){
 
 
         if( terrainData != null ){
-
-             Shader.SetGlobalTexture( "_HeightMap" ,  terrainData.heightmapTexture );
+            Shader.SetGlobalTexture( "_HeightMap" ,  terrainData.heightmapTexture );
             Shader.SetGlobalVector("_MapSize", terrainData.size);
         }
+
         if( wren ){
             Shader.SetGlobalVector("_WrenPos", wren.transform.position );
         }
