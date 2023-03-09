@@ -770,6 +770,10 @@ namespace Rewired.UI.ControlMapper
         private void Initialize() {
             if(initialized) return;
             if(!ReInput.isReady) return;
+#if UNITY_EDITOR
+            // Prevent accidental initialization in edit mode if Reset or other function is called because serialized data could be modified
+            if (!Application.isPlaying) return;
+#endif
 
             if(_rewiredInputManager == null) {
                 _rewiredInputManager = Object.FindObjectOfType<Rewired.InputManager>();
@@ -853,6 +857,18 @@ namespace Rewired.UI.ControlMapper
             mapCategoryButtons = new List<GUIButton>();
             assignedControllerButtons = new List<GUIButton>();
             miscInstantiatedObjects = new List<GameObject>();
+
+            // Remove invalid map categories to prevent issues
+            {
+                List<MappingSet> newMappingSets = new List<MappingSet>(_mappingSets.Length);
+                for (int i = 0; i < _mappingSets.Length; i++) {
+                    MappingSet set = _mappingSets[i];
+                    if (set == null) continue;
+                    if (!set.isValid) continue;
+                    newMappingSets.Add(set);
+                }
+                _mappingSets = newMappingSets.ToArray(); // replace array
+            }
 
             // Set default values
             currentMapCategoryId = _mappingSets[0].mapCategoryId;
@@ -2489,7 +2505,7 @@ namespace Rewired.UI.ControlMapper
 
             for(int i = 0; i < _mappingSets.Length; i++) {
                 MappingSet set = _mappingSets[i];
-                if(set == null) continue;
+                if(set == null || !set.isValid) continue;
                 InputMapCategory cat = ReInput.mapping.GetMapCategory(set.mapCategoryId);
                 if(cat == null) continue; // invalid map category id
 
@@ -3129,7 +3145,7 @@ namespace Rewired.UI.ControlMapper
         #region Clear / Reset
 
         private void Clear() {
-            windowManager.CancelAll();
+            CloseAllWindows();
             lastUISelection = null;
             pendingInputMapping = null;
             pendingAxisCalibration = null;
@@ -3137,6 +3153,7 @@ namespace Rewired.UI.ControlMapper
         }
 
         private void ClearCompletely() {
+            Clear();
             ClearSpawnedObjects();
             ClearAllVars();
         }

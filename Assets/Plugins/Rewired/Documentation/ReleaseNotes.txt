@@ -1,3 +1,233 @@
+1.1.44.0:
+
+  Changes:
+    - MacOS, Game Controller Framework: Added support for setting light color on Dual Shock 4 and Dual Sense controllers.
+    - Checks Unity Active Input Manager setting on installation and warns user if set to an incompatible setting.
+    - Internal changes to allow Rewired plugins to optionally run target platform-specific code in the Unity editor.
+  
+  API Changes:
+    - Added Rewired.Platforms.Apple.GameController.GCControllerShock4Extension.SetLightColor functions.
+    - Added Rewired.Platforms.Apple.GameController.GCControllerDualSenseExtension.SetLightColor functions.
+    
+  Bug Fixes:
+    - Mac OS Standalone, Native, Game Controller Framework enabled: Fixed bug causing crash in MacOS versions prior to 11.0.
+    - Reverted old workaround for a platform-specific Unity bug in Rewired Pointer Input Module which disabled the check to see if a mouse is present before processing mouse input events. The workaround caused issues because touch input changes the Unity mouse pointer position.
+
+1.1.43.0:
+
+  Changes:
+    - Added MacOS Game Controller Framework support.
+  
+  API Changes:
+    - Added ControllerMap.CreateFromJson function.
+    - Added Controller.Element.compoundElement property.
+    - Added Controller.GetCompoundElementById function.
+
+1.1.42.1:
+
+    Bug Fixes:
+      - Fixed missing method exception thrown when editing Custom Controllers in Rewired Editor.
+
+1.1.42.0:
+
+  Changes:
+    - Added Unity 2022 branch.
+    - Removed support for many old platforms: Windows 8 Phone, Windows 8 Store,  Windows 8.1 Universal, Ouya, PS3, Wii, WiiU, Xbox 360, Blackberry, Google Nexus Player, Gamestick.
+    - Removed PS4 support from core. A plugin is now required for PS4 support. See Special Platforms in the documentation for details.
+    - Added support for Sony PlayStation 4 plugin.
+    - Added support for Sony PlayStation 5 plugin.
+    - Added support for Nintendo Switch plugin running in Unity Editor.
+    - OSX: Updated SDL2 library to 2.0.20, universal Intel/Apple Silicon. (SDL2 library files in project must be deleted and re-installed from the menu.)
+    - Added Rewired_DirectInput.pdb files.
+    - Added option to disable mouse input on platforms and avoid polling for mouse input values on Unity-based input sources to reduce CPU usage on certain platforms.
+
+  Bug Fixes:
+    - Removed warning in editor when Unity Input System is enabled in Unity 2021.2+.
+    - Rewired Input Manager Settings configuration is no longer reset when using Compact Ids function.
+    - Controller Map returns the correct controller type even before data is baked when creating a Controller Map from XML.
+    - Controller id defaults to -1 instead of 0 for incomplete Controller Maps which have been created outside a Player and have no associated Controller.
+    - Creating an ActionElementMap in an incomplete Controller Map can no longer throw an exception if no Controller exists when the Controller Map has an undefined Controller id.
+    - Control Mapper: Adding a Map categories that is set to not User Assignable to the list of categories to display no longer break the layout.
+
+1.1.41.5:
+
+  Bug Fixes:
+    - Control Mapper: Fixed compiler error in Text Mesh Pro version of Control Mapper introduced in 1.1.41.4.
+
+1.1.41.4:
+
+  Changes:
+    - Added attempted workarounds to hopefully prevent API updater from seeing any calls to Texture2D.Resize in the Rewired_Core.dll assembly. A new Unity bug in the API updater in 2021.2 was causing it to crash on Rewired_Core.dll because of the use of Texture2D.Resize. This prevented Rewired_Core.dll from being loaded, completely breaking Rewired. The issue seems to be intermittent, not reproducible in every project, but in some projects likes ones upgraded from prior versions of Unity. This issue was not caused by Rewired but by Unity's API updater.
+    - Changed Corgi Engine integration to use reflection to get value of base InventoryInputManager.InventoryOpen because of breaking changes changing the name of this field to InventoryInputManager.InventoryIsOpen with no way to branch code to support both versions.
+
+  Bug Fixes:
+    - OSX Standalone, Native: Fixed Xbox Wireless Controller (Xbox Series S/X controller) view button not working.
+    - Control Mapper: UI no longer gets stuck in a bad state when changing language while a popup window is open.
+
+1.1.41.3:
+
+  Bug Fixes:
+    - OSX Standalone, Native, Enhanced Device support enabled: Fixed Dual Shock 4 axes not working when connected via USB bug introduced in 1.1.41.2.
+
+1.1.41.2:
+
+    Bug Fixes:
+      - Unity 2021.2+, Windows Standalone, Raw Input, Direct Input w/ Native Mouse/Keyboard Handling: Fixed bug in processing Raw Input messages on 32-bit builds running on 64-bit Windows resulting in Unity logging "Invalid raw input data size" messages when using certain controllers.
+      - Reworked Rewired Editor handling of prefabs in versions of Unity that use the new prefab workflow due to new errors caused by recent updates to Unity resulting in data not being saved when modifying data in a prefab using the Rewired Editor.
+      - Rewired Input Manager "Don't Destroy on Load" setting is set properly when Rewired Initializer is a child of a GameObject and instantiates the Rewired Input Manager as a child of that parent GameObject.
+      - Fixed Global Options Window not displaying any information.
+
+1.1.41.1:
+
+    Changes:
+      - Added warning to Rewired Input Manager editor to warn users to set Joystick Auto Assignment Max Joysticks Per Player to 100 if a single-player game because of how many developers ignore this setting are left with games that cannot be controlled if a virtual controller or another controller is connected to the system that takes priority other than the one the user is trying to use.
+
+    Bug Fixes:
+      - Unity 2021.2+, Windows Standalone, Raw Input, Direct Input w/ Native Mouse/Keyboard Handling: Fixed bug in new Raw Input event forwarding that could cause a multiple of the number of events to be forwarded to Unity if the number of events that were received during a frame exceeded 100. This could occur after execution was resumed from a breakpoint in a debugger due to mouse and keyboard input.
+
+1.1.41.0:
+
+    Changes:
+      - Windows Standalone, Raw Input, Direct Input w/ Native Mouse/Keyboard Handling: Raw Input messages are now retrieved using GetRawInputBuffer method due to changes to Unity input in Unity 2021.2+ that breaks Rewired's Raw Input message handling due to their use of GetRawInputBuffer to eliminate massive frame rate drop from high refresh rate mice (4000-8000 Hz). Their change to GetRawInputBuffer, which consumes all the Raw Input events when called, makes it impossible for Rewired to continue to share mouse input events with Unity so both Unity's mouse input and Rewired's native mouse input work simultaneously.
+      - Implemented Raw Input event forwarding to Unity through new Unity API exposed for this purpose in 2021.2.0. Bonus effect of this change is that Rewired can now be used alongside the new Unity Input System on Windows.
+
+    Bug Fixes:
+      - Null reference exception is no longer thrown when certain custom driver functions are called in Start or Awake (ex: DualShock4ControllerExtension.GetGyroscopeValue).
+      - Unity Editor: Adding the Nintendo Switch Input Manager component using button on the Rewired Input Manager inspector now sets the GameObject dirty so the object gets saved correctly.
+      - When first enabling the only Controller Map that binds a particular Action to the negative pole of an axis while currently holding that axis in a negative state with a value beyond the button activation threshold and querying that Action for its negative button down value will no longer return a down state.
+
+1.1.40.0:
+   
+    Changes:
+      - Disabling Visual Studio 2019 jump optimizer for Windows IL2CPP builds is no longer required.
+      - Performance improvements.
+      - UFE2 Integration: Reworked integration script again due to breaking changes in Unity causing EventSystem exceptions to be thrown.
+      - UFE2 Integration: Changed supported version to 2.4.1.
+      
+    API Changes:
+      - Changed return type of Player.ControllerHelper.GetLastActiveController<T> to T instead of Controller.
+    
+    Bug Fixes:
+      - AxisCalibration.SetData no longer overwrites default calibration data.
+
+1.1.39.3:
+
+    Changes:
+      - WebGL builds work again after changes to compiler in Unity 2020.2.0 to that caused builds to throw an error on launch.
+      - Updated UFE2 integration to change auto show/hide of touch controls to toggle based on a screen touch and a controller press instead of toggling based on the presence of a controller due to problems with phantom joysticks that appear on some Android devices.
+      - Control Mapper: Focus is now reset when calling Reset while windows are open.
+   
+    Bug Fixes:
+      - ControllerMap.hardwareGuid is now correctly set for MouseMap, KeyboardMap, and CustomControllerMap.
+
+1.1.39.2:
+    
+    Changes:
+      - Missing mouse axis entries in the Unity Input Manager entries no longer cause Rewired to fail initialization, but instead log an error.
+    
+    API Changes:
+      - Added public setter to InputManager_Base.dataFiles property.
+    
+    Bug Fixes:
+      - Windows Standalone, Native Mouse Handling: Virtual desktop mouse delta value is no longer ~1/2 size of local mouse delta.
+      - Fixed missing stick buttons mappings for Steam Controller (emulated) in Gamepad Template.
+
+1.1.39.1:
+  
+    Bug Fixes:
+      - Fixed IL2CPP compile errors and runtime exceptions on some platforms due to error in obfuscation introduced in 1.1.39.0.
+      - Disabled debug logging in OSX builds in Unity 2020 and 2021 branches introduced in 1.1.39.0.
+
+1.1.39.0:
+
+    Changes:
+      - Added Unity 2021.x branch.
+      - Windows Native, OSX Native: Marginally improved DualShock 4 and DualSense gyro drift in computed orientation.
+      - Changed inspector settings on Rewired_DirectInput.dll to explicitly exclude OSX platforms due to new Unity bug in Unity 2020.x including Windows DLLs on MacOS builds.
+      - Added changes for new Xbox Wireless Controller firmware on MacOS.
+
+1.1.38.4:
+
+    Changes:
+      - Updated Universal Fighting Engine 2 integration due to major breaking changes made in UFE 2.4.1 update.
+      - Updated Bolt integration implementing workaround to prevent Rewired Bolt DLL containing custom units from being stripped from project in IL2CPP builds resulting in deserialization errors.
+      - Windows 10 Universal: Added workaround for new bug in IL2CPP that causes builds to fail in Unity 2020.2.x and later.
+
+1.1.38.3:
+    
+    Changes:
+      - Updated Universal Fighting Engine 2 integration to fix issues caused by changes in UFE2 since last update.
+      - RewiredEventSystem script execution order is now automatically set to -1000.
+    
+    Bug Fixes:
+      - Editor script now enables building to Game Core platforms in Rewired_Core.dll.
+
+1.1.38.2:
+    
+    Changes:
+      - Changed WebGL native library to prevent failure in Chrome browser on MacOS 11+.
+      - Changed WebGL OS version parsing to handle inconsistencies between browsers in how the os version is reported.
+      - Touch Controller Disable Mouse Input When Enabled toggle now records original mouse state when component is intialized and restores this value when disabled.
+      - Xbox One controller definition now used on Stadia instead of Xbox 360 controller definition for Xbox-compatible controllers.
+
+1.1.38.1:
+
+    Bug Fixes:
+      - Fixed D-pad mapping bug in Sony DualSense controller definition internal driver mapping.
+
+1.1.38.0:
+
+    Changes:
+      - Added support for Game Core Xbox platforms through additional plugin.
+      - Added Enhanced Device Support for Sony DualSense controller (Windows and MacOS).
+      - Changed display name of Nintendo Switch handheld controller to meet Nintendo's new naming requirements.
+      
+    API Changes:
+      - Added ControllerExtensions.DualSenseExtension class.
+      - Added ControllerExtensions.DualSenseMicrophoneLightMode enum.
+      - Added ControllerExtensions.DualSenseOtherLightBrightness enum.
+      - Added ControllerExtensions.DualSensePlayerLightFlags enum.
+
+    New Controller Definitions:
+      - Sony DualSense
+
+    Bug Fixes:
+      - Fixed broken ReInput.MappingHelper.GetActionElementMap function.
+
+1.1.37.0:
+
+  Changes:
+    - Windows Standalone, Raw Input, Use XInput disabled: Implemented workaround for Steam not creating device notifications when creating or removing virtual controllers so controller changes can be detected correctly.
+    - Export constants variable, class, and namespace sanitization now uses a blacklist instead of a whitelist so unicode characters such as non-English characters are no longer filtered out. (May lead to compiler errors if certain invalid characters are used in identifier strings.)
+    - Bolt integration: Added PreserveAttribute to all classes to prevent Unity from stripping the classes on certain platforms.
+
+  API Changes:
+    - Added Platforms.PS4.PS4ControllerExtension.deviceHandle property.
+    
+  Bug Fixes:
+    - Action Element Maps that bind to an invalid controller element are filtered out when loading Joystick Maps in Players.
+    - Control Mapper: Null Reference Exception is no longer thrown when looking up a controller element name for an Action Element Map that maps to an invalid controller element.
+    - MacOS Standalone, Native: When using multiple identical controllers that do not provide enough identifying information to differentiate the controller from the others and one controller is disconnected and reconnected, it will now be detected and re-appear in the Joysticks list.
+    - Fixed bug in ComponentControls.TouchPad.pressStartDelay property causing value to always be set to float.MaxValue if set from scripting.
+
+1.1.36.1:
+    
+    Changes:
+      - Windows Standalone, Raw Input: Raw Input devices that do not appear as a HID device are no longer filtered out and are supported as controllers to support Steam virtual/remote devices when Use XInput is disabled.
+    
+    Bug Fixes:
+      - UserDataStore_PlayerPrefs: Deferred Joystick assignment loading when the first Joystick is connected no longer happens if a Joystick is detected on Awake.
+      - RewiredStandaloneInputModule: Unsubscribed to events in OnDestroy.
+
+1.1.36.0:
+
+    Changes:
+      - Added Unity 2020 support.
+      - Added UWP ARM64 native library (Unity 2019+, untested).
+      - Removed GUILayer on cameras in examples to stop errors reported in Unity 2019+
+      - Rewired Editor: Copying an Action Category that contains Actions and copying those Actions now copies the sort order of the Actions.
+      - Changed Player input event system to allow modifying the event listeners inside an event callback without causing issues.
+
 1.1.35.3:
 
     Bug Fixes:

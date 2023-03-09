@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using Normal.Realtime;
 using UnityEngine.UI;
+using WrenUtils;
 
 
 public class WrenPhysics : MonoBehaviour
@@ -132,6 +133,18 @@ public float takeOffForwardForce = 10;
 public float takeOffUpForce = 10;
 
 
+/*
+
+Painted Wind Force
+
+*/
+
+public float paintedWindForceMultiplier = 10;
+
+
+
+
+
 
 
 
@@ -192,6 +205,11 @@ public Vector3 leftFlapForcePosition;
 
 public Vector3 rightFlapForce;
 public Vector3 rightFlapForcePosition;
+
+
+
+public Vector3 paintedWindForce;
+public Vector3 paintedWindForcePosition;
 
 public float speed;
 
@@ -356,6 +374,8 @@ public void UpdatePhysics(){
 
         GroundBoost();
         RightingForces();
+        PaintedWindForce();
+
 
         ApplyForces();
    
@@ -818,6 +838,26 @@ rb.AddForceAtPosition( groundBoostForce, groundBoostForcePosition);
 
 } 
 
+
+
+
+
+// Do we make it so that it dies the further away we are?
+public virtual void PaintedWindForce(){
+
+
+if( God.islandData != null ){
+
+    Vector3 wind =  God.islandData.GetWindPower(transform.position);
+    paintedWindForce = wind * paintedWindForceMultiplier;
+    paintedWindForcePosition = transform.position;
+
+}
+
+
+
+}
+
 public virtual void RightingForces(){
 /*
 
@@ -893,6 +933,7 @@ void ApplyForces(){
         rb.AddForceAtPosition(  rightWingUpdraftForce     , rightWingUpdraftForcePosition   );
         rb.AddForceAtPosition(  groundBoostForce          , groundBoostForcePosition        );
         rb.AddForceAtPosition(  upwardsRightingForce      , upwardsRightingForcePosition    );
+        rb.AddForceAtPosition(  paintedWindForce          , paintedWindForcePosition    );
 
         // Straightens out!
         v1 = Vector3.Cross( rb.velocity , transform.forward );

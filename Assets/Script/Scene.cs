@@ -40,17 +40,21 @@ public class Scene : MonoBehaviour
 
 
 
-        
-        God.wren.parameters.Load(physicsParameters);
+        if( God.wren != null ){
 
+            God.wren.parameters.Load(physicsParameters);
+       
 
-        if(God.sceneController.biome >= 0 ){
-            // return / spawn at gate that is our current biome!
-            // when bird dies, we respawn at our first starting position
-            God.wren.startingPosition = portals[God.sceneController.biome].startPoint;
+            if(God.sceneController.biome >= 0 ){
+                // return / spawn at gate that is our current biome!
+                // when bird dies, we respawn at our first starting position
+                God.wren.startingPosition = portals[God.sceneController.biome].startPoint;
 
-        }else{
-            God.wren.startingPosition = baseStartPosition;
+            }else{
+                God.wren.startingPosition = baseStartPosition;
+            }
+
+            God.wren.FullReset();
         }
 
 
@@ -64,7 +68,6 @@ public class Scene : MonoBehaviour
 
 
        
-        God.wren.FullReset();
 
         LerpTo lt = Camera.main.GetComponent<LerpTo>();
         lt.enabled = true;
