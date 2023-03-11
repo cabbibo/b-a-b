@@ -1,5 +1,47 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!244 &-8815712174087759033
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: d6d89d1b380f1a94a960b1bea82f9fee
+  m_EffectName: SFX Reverb
+  m_MixLevel: 4e2e09c32b20f5f40a8fe746afb0464e
+  m_Parameters:
+  - m_ParameterName: Dry Level
+    m_GUID: 22036080bb2bb844ebf610c626bd6a39
+  - m_ParameterName: Room
+    m_GUID: 31c1e185293a80b48b5428000c8eaa00
+  - m_ParameterName: Room HF
+    m_GUID: 23f9725816c1db24f9ddf96d5af2c69f
+  - m_ParameterName: Decay Time
+    m_GUID: 39acf8ce4eb5e854d901afcfac4708c3
+  - m_ParameterName: Decay HF Ratio
+    m_GUID: 27b57183d14e6844ebfdaa0686605f65
+  - m_ParameterName: Reflections
+    m_GUID: 451e5785afca6044c8b63e3e719be909
+  - m_ParameterName: Reflect Delay
+    m_GUID: 255029543fb961e4c94ef3fb7dff63f6
+  - m_ParameterName: Reverb
+    m_GUID: 2b2a81333346f514d9fe6629f49b7fa6
+  - m_ParameterName: Reverb Delay
+    m_GUID: 0dd3bfdcffe4a074682b426ecfe6194c
+  - m_ParameterName: Diffusion
+    m_GUID: 1dff0226ac061054d89e606d2534bbc0
+  - m_ParameterName: Density
+    m_GUID: c53892de871eccc4dbfd94bb55c8e495
+  - m_ParameterName: HF Reference
+    m_GUID: 41b642d9d57f23d49890afba5ca0689f
+  - m_ParameterName: Room LF
+    m_GUID: a2a258ce63e7f7f4e83bc4a3cdd0f359
+  - m_ParameterName: LF Reference
+    m_GUID: 4f4ee04faf1eb8b478564ec308e71d7d
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
 --- !u!243 &-8421121796670074436
 AudioMixerGroupController:
   m_ObjectHideFlags: 0
@@ -15,6 +57,7 @@ AudioMixerGroupController:
   m_Send: 00000000000000000000000000000000
   m_Effects:
   - {fileID: 1267690714007258335}
+  - {fileID: -8815712174087759033}
   m_UserColorIndex: 6
   m_Mute: 0
   m_Solo: 0
@@ -139,17 +182,26 @@ AudioMixerSnapshotController:
   m_AudioMixer: {fileID: 24100000}
   m_SnapshotID: 2c8ea569911d68a4587dd31041dbc7c1
   m_FloatValues:
+    22036080bb2bb844ebf610c626bd6a39: -2405
     3a7ff1d0fe7544b41b52b30d592d5c0b: -4254
     b2ba2fd2d01fc884ebd318c3ed4d390b: 1.31
     ec159a73ea94596438e9b1e224c236a4: -2521
     16fbf483c40bc954eb9b658177271578: 0.0625
+    31c1e185293a80b48b5428000c8eaa00: -1680
+    451e5785afca6044c8b63e3e719be909: -2432
+    1dff0226ac061054d89e606d2534bbc0: 83.1
     e51450c6f6dc65046b021f35f00a9a9f: 0.025578512
     78e510f6a6c35f743b1ca203d42e0edf: 0.923
+    23f9725816c1db24f9ddf96d5af2c69f: -2535
     9382497963e78bf4e8ffe990ddd5aa85: -11.000072
     b4211cb95ed985b40b0dcde21800e13c: -34.66879
+    41b642d9d57f23d49890afba5ca0689f: 9621
     c53cbcba9499dbc44b574c0e49ad4c0b: 0.3945702
+    0dd3bfdcffe4a074682b426ecfe6194c: 0.0851
     3c5e333d12dcb4848a3a4986e7846b07: 0.104
     4778b36d732f84344824ce1e852e332d: -2333
+    39acf8ce4eb5e854d901afcfac4708c3: 4.1
+    c53892de871eccc4dbfd94bb55c8e495: 81.2
     8a27f6eea89a0ef4495b15699fbc1d7e: -976
   m_TransitionOverrides: {}
 --- !u!244 &96603711981224336

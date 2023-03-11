@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ShardShader
-  m_Shader: {fileID: 4800000, guid: 74c0ece5093c5814da4250acd287d4ee, type: 3}
+  m_Name: skyboxMaterial 1
+  m_Shader: {fileID: 103, guid: 0000000000000000f000000000000000, type: 0}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -19,7 +19,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: 
+  m_LockedProperties: :m_DoubleSidedGI
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -59,54 +59,32 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Tex:
+        m_Texture: {fileID: 8900000, guid: f980e9d5017ad9240a7bfa6a2056023d, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
-    - _CenterOrbFalloff: 2.18
-    - _CenterOrbFalloffSharpness: 1
-    - _CenterOrbImportance: 0.12
-    - _ColorMultiplier: 1
     - _Cutoff: 0.5
-    - _DeltaStepSize: 0.1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _Exposure: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _HueEnd: 0.44
-    - _HueSize: 1
-    - _HueStart: 1.63
-    - _IndexOfRefraction: 0.8
-    - _Lightness: 1
     - _Metallic: 0
     - _Mode: 0
-    - _NoiseImportance: 1.03
-    - _NoiseSharpness: 1
-    - _NoiseSize: 3.84
-    - _NoiseSpeed: 2.01
-    - _NoiseSubtractor: 0.2
-    - _NumSteps: 6
     - _OcclusionStrength: 1
-    - _OffsetMultiplier: 0
-    - _Opaqueness: 1
     - _Parallax: 0.02
-    - _ReflectionMultiplier: 0
-    - _ReflectionSharpness: 0
-    - _RefractionBackgroundSampleExtraStep: 0
-    - _Saturation: 0
+    - _Rotation: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _StepRefractionMultiplier: 0
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0, g: 0, b: 0, a: 1}
-    - _CenterOrbColor: {r: 0.9716981, g: 0.9716981, b: 0.9716981, a: 1}
-    - _CenterOrbOffset: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _NoiseColor: {r: 0, g: 0, b: 0, a: 1}
-    - _NoiseOffset: {r: 0, g: 0, b: 0, a: 1}
-    - _ReflectionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Tint: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}
   m_BuildTextureStacks: []

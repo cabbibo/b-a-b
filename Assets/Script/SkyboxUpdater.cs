@@ -9,6 +9,11 @@ public class SkyboxUpdater : MonoBehaviour
     private RenderTexture renderTexture;
 
     public Material material;
+
+    public MaterialPropertyBlock mpb;
+
+
+    public float fade;
  
     private void OnEnable()
     {
@@ -50,9 +55,16 @@ public class SkyboxUpdater : MonoBehaviour
         }
     }
  
-    private void Update()
+
+    Material mat;
+
+    void Update()
     {
-      //  Graphics.ExecuteCommandBuffer(commandBuffer);
+        mat = RenderSettings.skybox;
+
+        mat.SetFloat("_Fade", fade);
+
+
     }
 
     public void UpdateSkybox(){

@@ -42,6 +42,8 @@
                 float3 world : TEXCOORD3;
                 float id : TEXCOORD2;
                 float dist : TEXCOORD4;
+                float3 dirToWren : TEXCOORD5;
+                float disform : TEXCOORD6;
             };
 
             float _Size;
@@ -50,6 +52,9 @@
             int _Dimensions;
             float _NoiseOffset;
             float _NoiseSize;
+
+
+            float3 _WrenPos;
 
             v2f vert (uint vid : SV_VertexID)
             {
@@ -75,6 +80,8 @@
                 float3 v = _PointBuffer[vertID];
 
                 float3 pos = v;//v + _Center;
+
+        
                 
 
                 float sized = v.x / _GridSize;
@@ -105,6 +112,20 @@
 
 
                 pos += curlNoise(pos *_NoiseSize)* _NoiseOffset * _GridSize/float(_Dimensions);
+
+
+
+                float3 dirToWren = _WrenPos - pos;
+
+
+                o.dirToWren = dirToWren;
+
+               o.disform = (10 / (0.1 + .3*length(o.dirToWren)));
+
+                pos -= (10 / (0.1 + .3*length(o.dirToWren))) * normalize(o.dirToWren);
+
+
+
                 o.dist = max( max( abs( pos.x-_Center.x) ,   abs(pos.y-_Center.y)), abs(pos.z-_Center.z));//  minRemainder;
 
                 float fSize = (1-(o.dist*2)/_GridSize) * _Size;
@@ -162,6 +183,10 @@
                 fixed4 col = 1-(v.dist*2)/_GridSize;//float4(hsv( v.dist * 2 , 1,1),1-v.dist*2);
                // if( length( v.uv-.5) > .5 ){discard;}
                 col *= _Fade;
+
+                col.xyz *= normalize( v.dirToWren) * .5 + .5;
+
+                col.xyz *= v.disform * v.disform * v.disform * .1;
                 return col;
             }
             ENDCG

@@ -184,7 +184,12 @@ public class SceneController : MonoBehaviour
 
 public void OnSceneFinishedLoading( WrenUtils.Scene wrenScene ){
 
-    StartCoroutine( PortalAnimationIn( wrenScene.portals[biome]));
+
+    //print( biome );
+    // Only animate in if we have animation!
+    if( biome >= 0 && biome  < wrenScene.portals.Length && God.wren != null){
+        StartCoroutine( PortalAnimationIn( wrenScene.portals[biome]));
+    }
 
 }
 
