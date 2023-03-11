@@ -48,5 +48,7 @@ public class LerpOnCurveAmount : MonoBehaviour
         lerpStartValue = materialController.amount;
     }
 
+    
+
 
 }

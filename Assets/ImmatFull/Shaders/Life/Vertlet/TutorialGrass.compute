@@ -45,8 +45,11 @@ struct Vert{
 RWStructuredBuffer<Vert> _VertBuffer;
 RWStructuredBuffer<Vert> _BaseBuffer;
 
+RWStructuredBuffer<float> _DataBuffer;
+
 uint _VertBuffer_COUNT;
 uint _BaseBuffer_COUNT;
+uint _DataBuffer_COUNT;
 
 
 
@@ -192,6 +195,8 @@ void CollisionWren (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID,
 
   //int pID = id.x + id.y * gridX + id.z * gridX * gridY;
 
+
+
   uint pID = id.x;//threadID + u3GroupID.x * NR_THREADS;
   uint bID = pID / _NumVertsPerHair;
   if( pID < _VertBuffer_COUNT && bID < _BaseBuffer_COUNT ){
@@ -213,16 +218,29 @@ void CollisionWren (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID,
 
 
   if( vert.pos.y < base.pos.y+1){
-    force += float3(0,10,0);
+    force += float3(0,100 * (base.pos.y+1-vert.pos.y),0);
   }
+
   float3 d = vert.pos - (_WrenVel * .2 + _WrenPos);
 
   if( length(d) < _RepelRadius ){
     force += normalize(d)  * _RepelForce * ( length(_WrenVel)+1);
+
+    // get max force
+    //  _DataBuffer[0] += length(getVel( vert.pos , vert.oPos));//max( 1/length(d) , _DataBuffer[0]);
+    
+  
   }
 
     // Inertia: objects in motion stay in motion.
     float3 vel = getVel( vert.pos , vert.oPos);
+
+
+  float l = length(vel);
+
+  if( l > .01){
+      _DataBuffer[0] += l;//max( 1/length(d) , _DataBuffer[0]);
+  }
 
     if( length( force ) > 10 ){
       force = normalize(force) * 10;
@@ -268,7 +286,14 @@ void CollisionWren (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID,
     vert.debug.x = amountShown * _HairLength * ( _HairVariance * hash( float(pID)) + 1-_HairVariance ) * (.5 - abs(base.uv.y-.5))*2;//base.uv.x * _HairLength;
     vert.debug.y = vert.debug.x;
     _VertBuffer[pID] = vert;
+    
 
+    /*  float p = 1;
+    if( p == 1 ){
+      float v1 = _DataBuffer[0];
+      v1 += 1;
+      _DataBuffer[0] = v1;
+    }*/
   }
   
 }

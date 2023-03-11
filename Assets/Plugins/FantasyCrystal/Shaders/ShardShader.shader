@@ -268,6 +268,7 @@ float totalSmoke = 0;
 
     float fHue = _HueStart + _HueSize * noiseDensity;//lerp( _HueStart , _HueSize , noiseDensity);
     col += hsv( fHue , _Saturation , _Lightness );
+
  
   }
 
@@ -278,11 +279,12 @@ float totalSmoke = 0;
 
  col /= float(_NumSteps);
  col *= _ColorMultiplier;
+ col  = pow( col , 100) * 10;
 
 
   float3 baseCol =_BaseColor.xyz;
 
-       col = lerp(0,col,saturate(totalSmoke * _Opaqueness));
+       col = lerp(0,col,saturate(hsv(totalSmoke+ .4,.3,1)*totalSmoke * totalSmoke*totalSmoke*3* _Opaqueness));
 
        
  float m = dot( normalize(v.unrefracted), normalize(v.nor) );

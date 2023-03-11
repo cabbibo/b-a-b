@@ -59,6 +59,8 @@ public class God : MonoBehaviour
 
     public bool inCutScene;
 
+    public Texture fullColorMap;
+
 
     public static LerpTo lerpTo{
         get{ return instance._lerpTo; }
@@ -166,9 +168,9 @@ public class God : MonoBehaviour
         get{
 
             if( instance._islandData == null ){
-                print("FINDING islandData");
+  //              print("FINDING islandData");
                 instance._islandData = (IslandData)FindObjectOfType(typeof(IslandData));
-                print(instance._islandData);
+//                print(instance._islandData);
             }
             return instance._islandData;
         }   
@@ -368,6 +370,7 @@ public static Vector3 NormalizedPositionInMap( Vector3 p ){
         if( terrainData != null ){
             Shader.SetGlobalTexture( "_HeightMap" ,  terrainData.heightmapTexture );
             Shader.SetGlobalVector("_MapSize", terrainData.size);
+            Shader.SetGlobalTexture("_FullColorMap" , fullColorMap);
         }
 
         if( wren ){

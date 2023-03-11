@@ -326,6 +326,8 @@ void Update(){
                     }
                     
                 }
+            }else{
+                beacon.PlaceBeacon( Vector3.one * 1000000f);
             }
 
         }

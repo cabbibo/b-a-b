@@ -182,7 +182,7 @@ public class PlayCutScene : MonoBehaviour
         director.playableGraph.GetRootPlayable(0).SetSpeed(1);
         playing = true;
         lerpTo.enabled = true;
-        God.wren.canMove = false;
+        if( God.wren != null ){ God.wren.canMove = false; }
  //       print("lerping enabled");
     }
 
@@ -193,6 +193,9 @@ public class PlayCutScene : MonoBehaviour
 
 
         lerpTo.target = tmpLerpTarget;
+        if( lerpTo.target == null ){
+            lerpTo.target = Camera.main.transform;
+        }
 
       
         targetPos = lerpTo.target.position;

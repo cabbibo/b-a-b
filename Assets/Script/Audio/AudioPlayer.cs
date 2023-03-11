@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
-
+[ExecuteAlways]
 public class AudioPlayer:MonoBehaviour{
 
 [Header("User Set")]
@@ -97,16 +97,16 @@ public GameObject sourceHolder;
 
     public void BasePlay( AudioClip clip ){
 
-        
+    
         if( sources.Length>playID){
+            if( sources[playID] != null ){
+                sources[playID].clip = clip;
+                sources[playID].Play();
 
-            sources[playID].clip = clip;
-            sources[playID].Play();
-
-            oPlayID = playID;
-            playID ++;
-            playID %= numSources;
-
+                oPlayID = playID;
+                playID ++;
+                playID %= numSources;
+            }
         }
 
     }
@@ -117,14 +117,16 @@ public GameObject sourceHolder;
 
 
             if( sources.Length>playID){
-                sources[playID].volume = 1;
-                sources[playID].pitch = 1;
-                sources[playID].time = 0.00000001f;
-                sources[playID].transform.position = Vector3.zero;
-                sources[playID].spatialize=false;
-                sources[playID].spatialBlend = 0;
-                sources[playID].dopplerLevel = 0;
-                sources[playID].outputAudioMixerGroup = defaultMixerGroup;
+                if( sources[playID] != null ){
+                    sources[playID].volume = 1;
+                    sources[playID].pitch = 1;
+                    sources[playID].time = 0.00000001f;
+                    sources[playID].transform.position = Vector3.zero;
+                    sources[playID].spatialize=false;
+                    sources[playID].spatialBlend = 0;
+                    sources[playID].dopplerLevel = 0;
+                    sources[playID].outputAudioMixerGroup = defaultMixerGroup;
+                }
             }
         
     }
