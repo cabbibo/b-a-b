@@ -6,7 +6,7 @@ struct Vert{
   float3 pos;
   float3 vel;
   float3 nor;
-  float3 og;
+  float3 tan;
   float2 uv;
   float2 debug;
 };
@@ -21,6 +21,7 @@ int _VertBuffer_COUNT;
 int _ParticleID;
 float3 _PlacePosition;
 float3 _PlaceNormal;
+float3 _PlaceDirection;
 int _IsPainting;
 
 
@@ -40,7 +41,8 @@ void Place(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
 
             p.pos = _PlacePosition;
-            p.nor = _PlaceNormal;
+            p.nor = float3(0,-1,0);//normalize(_PlaceDirection);//_PlaceNormal;
+            p.tan = normalize( cross( normalize(_PlaceDirection), float3(0,1,0)));
 
 
             _VertBuffer[sID] = p;
