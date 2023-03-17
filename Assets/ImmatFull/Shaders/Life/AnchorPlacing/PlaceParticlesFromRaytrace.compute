@@ -1,0 +1,54 @@
+
+#pragma kernel Place
+
+
+struct Vert{
+  float3 pos;
+  float3 vel;
+  float3 nor;
+  float3 og;
+  float2 uv;
+  float2 debug;
+};
+
+RWStructuredBuffer<Vert> _VertBuffer;
+
+int _VertBuffer_COUNT;
+
+
+#include "../../Chunks/safeID.cginc"
+
+int _ParticleID;
+float3 _PlacePosition;
+float3 _PlaceNormal;
+int _IsPainting;
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Place(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+  int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    if( _IsPainting == 1 ){
+        if( pID < _VertBuffer_COUNT ){
+            
+            int sID = safeID( pID, _VertBuffer_COUNT );
+
+            if( pID == _ParticleID ){
+            Vert p = _VertBuffer[sID];
+
+
+            p.pos = _PlacePosition;
+            p.nor = _PlaceNormal;
+
+
+            _VertBuffer[sID] = p;
+
+            }
+
+
+        }
+    }
+
+}

@@ -54,7 +54,7 @@ public class MeshVerts : Form {
     int index = 0;
 
 
-   // print("Creatings");
+    print("Creatings");
 
     float[] values = new float[count*structSize];
     for( int i = 0; i < count; i ++ ){
