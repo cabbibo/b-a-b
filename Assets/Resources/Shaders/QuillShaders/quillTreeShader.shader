@@ -182,6 +182,8 @@ float4 frag (varyings v) : COLOR {
     //col *= saturate(capDistance * 10);
   }
     col *= (shadow * .5 + .5);
+
+    col *= _Color;
     
 
     return float4(col,1);
