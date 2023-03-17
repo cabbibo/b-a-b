@@ -8,6 +8,7 @@ Shader "Terrain/Skybox1"
     _MainTex("_MainTex", 2D) = "white" {}
     _MapScale("MapScale", float) = 1
     _Fade("_Fade", float) = 1
+    _CubeMap("_CubeMap" ,Cube) = "white" {}
     }
 
 
@@ -49,7 +50,7 @@ CGPROGRAM
     float _SampleSize;
 
     sampler2D _AudioMap;
-
+    samplerCUBE _CubeMap;
 
       //A simple input struct for our pixel shader step containing a position.
       struct varyings {
@@ -143,13 +144,40 @@ float4 frag (varyings v) : COLOR {
     //col *= 10;
 
     float sunCol = pow( saturate(m),1000) * 20;
-    col = hsv(col.x * .2 + sunCol + dot( _WorldSpaceLightPos0.xyz , float3(0,-1,0)), 0, saturate(col.x * 5- 5*saturate(sunCol)));
-    col += hsv(dot( _WorldSpaceLightPos0.xyz , float3(0,-1,0)),0,saturate(sunCol) ) * .8;
+    //col = hsv(col.x * .2 + sunCol + dot( _WorldSpaceLightPos0.xyz , float3(0,-1,0)), 0, saturate(col.x * 5- 5*saturate(sunCol)));
+    //col += hsv(dot( _WorldSpaceLightPos0.xyz , float3(0,-1,0)),1,saturate(sunCol) ) * 11.8;
 
     ///col *= tex2D(_AudioMap,n * .1);
 
     col *= _Fade;
     col = saturate(col);
+
+    float3 starCol = col;
+
+    float a = atan2( rd.x , rd.z);
+
+    float v1 = rd.y + (.1*sin( a * 10 + _Time.x + sin( a * 3 + _Time.y) * .1 )+ .1*sin( a * 20 +12.3 + _Time.x * .3 + sin( a * 44 + _Time.y) * .1 ) ) * .1;;//- .01*sin( _Time.y + sin(rd.x * 20 + _Time.y))- .01*sin( _Time.y  +1321+ sin(rd.y * 15 + sin( _Time.y) * 10 + _Time.y));
+
+    col /= (.1 + 10 *abs(v1));
+
+   // rd.y = v1;
+
+
+   // col = (col *.9 + 0) *texCUBE( _CubeMap , rd );
+   // col += texCUBE( _CubeMap , rd ).b *.1* v1*v1*v1 * float3(1,.8,.6);
+   // rd.y = abs(rd.y);
+    col = pow( texCUBE( _CubeMap , float3(rd.x , v1 , rd.y + rd.z * .3 ) ).r ,1) * 3;//pow(texCUBE( _CubeMap , rd ).b ,10) * 100;
+       // col /= (.03 + 1 *abs(v1));
+        
+        col = saturate( col) * 20;
+       // col *= col * col * col * col; 
+        
+       // col.xyz += starCol;
+
+    col *= pow( texCUBE( _CubeMap , rd ) ,1) * 10;//pow(texCUBE( _CubeMap , rd ).b ,10) * 100;
+
+  col *= _Fade;
+        //col = sin(atan2( rd.x , rd.z) * 10) * .1;
     return float4( col.xyz, 1);//saturate(float4(col,3*length(col) ));
 
 

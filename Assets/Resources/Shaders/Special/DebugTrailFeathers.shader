@@ -43,6 +43,26 @@ struct Feather{
   float debug;
 };
 
+
+float4x4 rotation(float3 axis, float angle)
+{
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+    
+    return float4x4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                0.0,                                0.0,                                0.0,                                1.0);
+}
+
+float3 newAxis( float id ){
+  float3 a = float3(hash(id),hash(id*10),hash(id*20));
+  return normalize(a * 2 - 1);
+}
+
+
 StructuredBuffer<Feather> _FeatherBuffer;
 
 
@@ -90,7 +110,8 @@ float3 p = v.pos;//mul(v.ltw , float4(0,0,0,1)).xyz;
 
 // p = float3(0,1000,0);
 
-float fSize = _Size;//  * min( v.debug * 20 , 1-v.debug); 
+v.debug = saturate( v.debug );
+float fSize = _Size  * min( v.debug * 100, 1-v.debug); 
 
 if( alternate == 0 ){ extra =( - l - u); uv = float2(0,0); }
 if( alternate == 1 ){ extra =( + l - u); uv = float2(1,0); }

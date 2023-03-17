@@ -1,0 +1,155 @@
+#pragma kernel Flow
+
+struct Vert{
+  float3 pos;
+  float3 vel;
+  float3 nor;
+  float3 ogPos;
+  float3 axis;
+  float life;
+};
+
+
+float4x4 _Transform;
+
+
+RWStructuredBuffer<Vert> _VertBuffer;
+
+int _VertBuffer_COUNT;
+
+#include "../../Chunks/safeID.cginc"
+#include "../../Chunks/snoise.cginc"
+#include "../../Chunks/hash.cginc"
+#include "../../Chunks/curlNoise.cginc"
+
+
+float4x4 rotation(float3 axis, float angle)
+{
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+    
+    return float4x4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                0.0,                                0.0,                                0.0,                                1.0);
+}
+
+float3 newAxis( float id ){
+  float3 a = float3(hash(id),hash(id*10),hash(id*20));
+  return normalize(a * 2 - 1);
+}
+
+float _StartLocation;
+float _EndLocation;
+float _Time;
+
+float3 _BoostVal;
+
+
+
+struct Wren{
+  float3 pos;
+  float3 vel;
+  float l1;
+  float r1;
+  float hue1;
+  float hue2;
+  float hue3;
+  float hue4;
+};
+
+RWStructuredBuffer<Wren> _WrenBuffer;
+
+int _NumWrens;
+
+float3 VecToRay( float3 ro , float3 rd, float3 pos ){
+  
+  float3 p2 = ro - rd * 200;
+  float3 pa = pos - ro;
+  float3 ba = ro - p2;
+  float h =  dot(pa,ba)/dot(ba,ba);
+  float3 pOnLine = h * rd* 200 +ro;
+
+  float3 inLine = pos - pOnLine;
+
+  return  inLine;//normalize(inLine) * force *  (1 - clamp( length(inLine) / radius , 0 , 1));
+}
+
+
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+  int pID = threadID + u3GroupID.x * NR_THREADS;
+
+  pID = safeID(pID,_VertBuffer_COUNT);
+  Vert vert = _VertBuffer[pID];
+
+
+  if( length(vert.axis) == 0 ){ vert.axis = newAxis(float(pID)); }
+  if( vert.life == 0 ){ vert.life = hash(float(pID));}
+  
+
+
+    float a = hash(float(pID)) * 6.28;
+
+  float3 r = float3( sin(  a ) , -cos(a) , 0) * .5;
+  float3 lifeRing = mul( _Transform , float4(r,1)).xyz;
+  float3 lifeRingDir = mul( _Transform , float4(r,0)).xyz;
+  if( vert.life < 0 ){  
+
+
+    vert.pos    =  lifeRing;
+    vert.vel    = 0;// d * .1;
+    vert.life   = vert.life +1;
+  
+  }else{
+
+    float3 force = float3(0,0,0);
+
+    force += curlNoise( vert.pos  * .1) * .001;
+
+    force += lifeRingDir * .001;
+
+    force += _BoostVal * .05;
+    force += length(_BoostVal) * lifeRingDir * -.1* .01;
+
+
+      for( int i = 0; i < _NumWrens; i++ ){
+
+          Wren w = _WrenBuffer[i];
+
+          float3 delta = w.pos - vert.pos;
+          float3 outVec = VecToRay( w.pos , w.vel , vert.pos);// w.pos - projPoint;
+          //vert.vel += normalize(outVec) * 300 / length(delta);//saturate((1-vert.debug)* 10) *1000 * normalize(delta) / length(delta);
+      //vert.vel +=1000;///000* length(w.vel)* normalize(cross(w.vel , outVec))  / length(delta);
+          
+          
+          //if( vert.debug < .95 ){
+              force  += .01* length(w.vel)* normalize(cross(w.vel , outVec))  / length(delta);//saturate((1-vert.debug)* 10) *1000 * normalize(delta) / length(delta);
+          //}
+      }
+
+
+
+    vert.vel += force * .1 * (1+hash(pID*1021.))/2;
+
+
+
+
+    vert.life -= .001* (3+sin(float(pID)));
+    vert.pos += vert.vel;
+
+    vert.vel *= .99;
+
+  }
+
+  vert.nor = mul(rotation(vert.axis,vert.life*10*(hash(float(pID*123))+1)),float4(0,0,1,0)).xyz;
+
+  _VertBuffer[pID] = vert;
+
+}

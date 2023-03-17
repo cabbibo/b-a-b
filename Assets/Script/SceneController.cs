@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 
 using WrenUtils;
+
 public class SceneController : MonoBehaviour
 {
 
@@ -29,6 +30,7 @@ public class SceneController : MonoBehaviour
     // lighthouse
     // cave
     // city
+
 
 
     public UnityEngine.SceneManagement.Scene currentMainScene;
@@ -291,9 +293,20 @@ public void OnSceneFinishedLoading( WrenUtils.Scene wrenScene ){
 
 
     public void OnEnable(){
+
+                int c = SceneManager.sceneCount;
+     for (int i = 0; i < c; i++) {
+         UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt (i);
+         print (scene.name);
+         if (scene.name != "BaseScene") {
+             SceneManager.UnloadScene(scene);
+         }
+     }
       //  OnStart();
        SceneManager.sceneLoaded += OnSceneLoaded;
        SceneManager.sceneUnloaded += OnSceneUnloaded;
+
+  
     }
 
     public void OnDisable(){

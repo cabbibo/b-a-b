@@ -607,7 +607,7 @@ MonoBehaviour:
   numGroups: 40
   numThreads: 128
   emitting: 0
-  active: 0
+  active: 1
 --- !u!1 &687666778219455867
 GameObject:
   m_ObjectHideFlags: 0
@@ -1878,7 +1878,7 @@ MonoBehaviour:
   numGroups: 40
   numThreads: 128
   emitting: 0
-  active: 0
+  active: 1
 --- !u!1 &687666779572013904
 GameObject:
   m_ObjectHideFlags: 0
@@ -25173,6 +25173,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f71c344e97101b24aaafe4da8aff36c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inEther: 0
   title: {fileID: 9086794400141604855}
   bird: {fileID: 687666778338606146}
   input: {fileID: 6676056819307743982}
@@ -25335,6 +25336,7 @@ MonoBehaviour:
   groundUpVal: 10
   takeOffForwardForce: 10
   takeOffUpForce: 10
+  paintedWindForceMultiplier: 1
   paramFiles: []
   paramID: 0
   oParamID: 0
@@ -25370,6 +25372,8 @@ MonoBehaviour:
   leftFlapForcePosition: {x: 0, y: 0, z: 0}
   rightFlapForce: {x: 0, y: 0, z: 0}
   rightFlapForcePosition: {x: 0, y: 0, z: 0}
+  paintedWindForce: {x: 0, y: 0, z: 0}
+  paintedWindForcePosition: {x: 0, y: 0, z: 0}
   speed: 0
   tuckAmountL: 0
   tuckAmountR: 0
@@ -25498,6 +25502,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51de878a15f030848bbc811fa4f3cd1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  upDistCarrying: 0.1
+  backDistCarrying: 0.4
   CarriedItems: []
 --- !u!114 &7282418919974470726
 MonoBehaviour:

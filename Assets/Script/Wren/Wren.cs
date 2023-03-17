@@ -222,7 +222,7 @@ void Update(){
       
         
 
-        /* if( input.left1 > .1f &&  !physics.onGround ){
+        if( input.left1 > .1f &&  !physics.onGround ){
             // God.audio.FadeLoop(God.sounds.dropParticlesLoop , 1 , .01f);
                 bird.leftWingTrailFromFeathers_gpu.emitting = 1;
             }else{
@@ -237,7 +237,7 @@ void Update(){
             }else{
                 //God.audio.FadeLoop(God.sounds.dropParticlesLoop , 0, .01f);
                 bird.rightWingTrailFromFeathers_gpu.emitting = 0;
-            }*/
+            }
 
 
 /*
@@ -526,8 +526,13 @@ void OnTriggerEnter( Collider c ){
         }else if(c.tag == "Prey" ){
             
         }else if(c.tag == "WaterDrop"){
-         
             carrying.PickUpItem( c.gameObject);
+        }else if( c.tag == "Boost" ){   
+            Booster b = c.gameObject.GetComponent<Booster>();
+            physics.Boost(b.boostVal);
+            b.OnBoost(this);
+            
+            
         }else{
 
             if( waterController ){ waterController.TriggerEnter(c); }

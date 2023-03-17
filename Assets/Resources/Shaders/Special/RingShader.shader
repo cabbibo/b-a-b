@@ -32,7 +32,7 @@
           float4 pos      : SV_POSITION;
           float3 worldPos : TEXCOORD1;
                 float2 uv : TEXCOORD0;
-                UNITY_FOG_COORDS(2)
+                float3 localPos : TEXCOORD3;
             };
 
             sampler2D _MainTex;
@@ -41,6 +41,10 @@
             #include "../Chunks/terrainData.cginc"
             #include "../Chunks/noise.cginc"
 
+            float3 _WrenPos;
+            sampler2D _FullColorMap;
+            sampler2D _AudioMap;
+
             v2f vert (appdata_full v)
             {
                 v2f o;
@@ -48,9 +52,11 @@
                 o.worldPos = mul( unity_ObjectToWorld,  float4(v.vertex.xyz,1)).xyz;
                 o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
 
+
+                o.localPos = mul( unity_WorldToObject,  float4( _WrenPos,1)).xyz;
+
                 o.uv = v.texcoord;//TRANSFORM_TEX(v.texcoord, _MainTex);
                 
-                UNITY_TRANSFER_FOG(o,o.pos);
                 return o;
             }
 
@@ -75,12 +81,25 @@
                 // sample the texture
                 fixed4 col = (sin( a * 10 + n + speed )+1)/2;//tex2D(_MainTex, v.uv);
               
-                if( r > 1 - n * .1){ discard; }
-                if( r < .95 - .1 * float(_Active) - n * .1 ){ discard; }
-                col *= (sin( r * 100 + n * 10+ speed)+1)/2;
+               // if( r > 1 - n * .1){ discard; }
+               // if( r < .95 - .1 * float(_Active) - n * .1 ){ discard; }
+                ///col *= (sin( r * 100 + n * 10+ speed)+1)/2;
 
                // col = saturate(h * .1) * _Color * col.a;
-                col =  _Color * col.a;
+                //col =  _Color * col.a;
+            col = 1;
+
+            bool circle =  length((v.uv.xy-.5)- v.localPos.xy) >.1 / (1+abs(v.localPos.z));
+            bool rim = length( v.uv -.5) > .47 && length(v.uv-.5) < .5;
+
+            float aVal = ( length( v.uv -.5) - .47) / .03;
+
+            col = tex2D( _AudioMap , float2(aVal,0));
+
+
+                if( !rim ){
+                    discard;
+                };
 
                 // apply fog
                 //UNITY_APPLY_FOG(v.fogCoord, col);

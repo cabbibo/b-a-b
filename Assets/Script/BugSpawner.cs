@@ -37,6 +37,7 @@ public class BugSpawner : MonoBehaviour
     public float maxScale;
 
     public ParticleSystem gotAteParticleSystem;
+    public AudioClip gotAteClip;
     public float bugFullnessAdd;
     public float bugStaminaAdd;
 
@@ -123,6 +124,8 @@ public class BugSpawner : MonoBehaviour
 
         gotAteParticleSystem.Play();
         gotAteParticleSystem.transform.position = b.transform.position;
+
+        God.audio.Play(gotAteClip);
    
 
         God.wren.stats.FullnessAdd( bugFullnessAdd );

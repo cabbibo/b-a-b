@@ -10,6 +10,9 @@ using UnityEngine.UI;
 public class WrenCarrying : MonoBehaviour
 {
 
+
+    public float upDistCarrying = .1f;
+    public float backDistCarrying = .4f;
     public List<Carryable> CarriedItems = new List<Carryable>();
 
     // TODO: don't use God, use info from Wren
@@ -28,7 +31,7 @@ public class WrenCarrying : MonoBehaviour
     }
 
     public bool PickUpItem(Carryable c){
-        var targetPosition = transform.position - transform.up * 1- transform.forward * 3f;
+        var targetPosition = transform.position - transform.up * upDistCarrying - transform.forward * backDistCarrying;
         if (c.TryToCarry(this, targetPosition)) {
             
             God.audio.Play(God.sounds.collectablePickedUpSounds);
@@ -80,7 +83,7 @@ public class WrenCarrying : MonoBehaviour
 
 
     public void UpdateCarriedItems(){
-        Vector3 targetPosition = transform.position - transform.up * 3- transform.forward * 4;
+        Vector3 targetPosition = transform.position - transform.up * upDistCarrying - transform.forward * backDistCarrying;
         foreach( var c in CarriedItems){
             c.UpdateCarriedPosition(this, targetPosition);
 
