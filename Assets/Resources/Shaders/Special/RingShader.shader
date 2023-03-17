@@ -87,14 +87,14 @@
 
                // col = saturate(h * .1) * _Color * col.a;
                 //col =  _Color * col.a;
-            col = 1;
+                col = 1;
 
-            bool circle =  length((v.uv.xy-.5)- v.localPos.xy) >.1 / (1+abs(v.localPos.z));
-            bool rim = length( v.uv -.5) > .47 && length(v.uv-.5) < .5;
+                bool circle =  length((v.uv.xy-.5)- v.localPos.xy) >.1 / (1+abs(v.localPos.z));
+                bool rim = length( v.uv -.5) > .47 && length(v.uv-.5) < .5;
 
-            float aVal = ( length( v.uv -.5) - .47) / .03;
+                float aVal = ( length( v.uv -.5) - .47) / .03;
 
-            col = tex2D( _AudioMap , float2(aVal,0));
+                col.xyz = tex2D( _AudioMap , float2(aVal,0)).xyz;
 
 
                 if( !rim ){
