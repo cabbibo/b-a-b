@@ -114,6 +114,8 @@ if( inDeadZone ) upVal = deadZoneUp;
         
     }else{
 
+
+
       lookTarget = objectTargeted.TransformPoint(objectTargetedPosition);
       fLookTarget = Vector3.Lerp( fLookTarget , lookTarget , lookAtTargetLookSpeedGround );
       Vector3 p = transform.position ;

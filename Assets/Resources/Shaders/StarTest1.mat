@@ -27,6 +27,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _CubeMap:
+        m_Texture: {fileID: 8900000, guid: 18ec2d52be8f4524a97c25a2ed27838e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -78,7 +82,7 @@ Material:
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Lightness: 1
-    - _MapScale: 3
+    - _MapScale: 1
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1

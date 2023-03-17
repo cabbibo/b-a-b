@@ -2,18 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+[ExecuteAlways]
 public class LerpOnCurveAmount : MonoBehaviour
 {
 
     public CurveMaterialController materialController;
 
     public float lerpSpeed;
-    float lerpStartTime;
-    float targetLerp;
+    public float lerpStartTime;
+    public float targetLerp;
 
-    bool lerping;
-    float lerpStartValue;
-    float lerpValue;
+    public bool lerping;
+    public float lerpStartValue;
+    public float lerpValue;
   
     // Update is called once per frame
     void Update()

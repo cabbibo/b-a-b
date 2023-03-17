@@ -107,6 +107,8 @@ public class PlayCutScene : MonoBehaviour
                 God.wren.transform.position  = wrenTarget.transform.position;
                 God.wren.transform.rotation  = wrenTarget.transform.rotation;
             }
+
+            God.wren.canMove = false;
             
         }
 
@@ -182,7 +184,7 @@ public class PlayCutScene : MonoBehaviour
         director.playableGraph.GetRootPlayable(0).SetSpeed(1);
         playing = true;
         lerpTo.enabled = true;
-        if( God.wren != null ){ God.wren.canMove = false; }
+        God.wren.canMove = false;
  //       print("lerping enabled");
     }
 
@@ -207,6 +209,7 @@ public class PlayCutScene : MonoBehaviour
         transitionStartTime = Time.time;
         transitioning = true;
         transitionIn = false;
+
 
 
     }

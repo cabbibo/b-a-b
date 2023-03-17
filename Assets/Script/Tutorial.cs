@@ -69,6 +69,7 @@ public class Tutorial : MonoBehaviour
                 introAnimations[i].SetStartValues();
                 introAnimations[i].enabled = false;
             }
+            
             introAnimations[0].enabled = true;
             introAnimations[0].SetStartValues();
             introAnimations[0].Play();

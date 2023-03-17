@@ -221,10 +221,10 @@ void CollisionWren (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID,
     force += float3(0,100 * (base.pos.y+1-vert.pos.y),0);
   }
 
-  float3 d = vert.pos - (_WrenVel * .2 + _WrenPos);
+  float3 d = vert.pos - (_WrenVel * .5 + _WrenPos);
 
   if( length(d) < _RepelRadius ){
-    force += normalize(d)  * _RepelForce * ( length(_WrenVel)+1);
+    force += normalize(d)  * _RepelForce * ( length(_WrenVel)+.1) / (length(d)/_RepelRadius);
 
     // get max force
     //  _DataBuffer[0] += length(getVel( vert.pos , vert.oPos));//max( 1/length(d) , _DataBuffer[0]);

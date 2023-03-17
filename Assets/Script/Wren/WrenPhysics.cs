@@ -1048,6 +1048,10 @@ public void WhileOnGround(){
 
 
 
+public void Boost(  float boostVal ){
+    rb.AddForce( rb.velocity * boostVal );
+}
+
 
 
 /*

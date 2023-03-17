@@ -87,7 +87,7 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
         feather.debug = hash(pID);
     }
 
-    if( feather.debug < 0 ){
+    if( feather.debug < 0  && _Emitting){
         feather.pos = basePos + mul(base.ltw, float4(0,0,-.2 * hash(pID),0)).xyz;
         feather.vel = 0;
         feather.debug =1;
@@ -105,30 +105,33 @@ for( int i = 0; i < _NumWrens; i++ ){
     float3 delta = w.pos - feather.pos;
     float3 outVec = VecToRay( w.pos , w.vel , feather.pos);// w.pos - projPoint;
     //feather.vel += normalize(outVec) * 300 / length(delta);//saturate((1-feather.debug)* 10) *1000 * normalize(delta) / length(delta);
-
+ //feather.vel +=1000;///000* length(w.vel)* normalize(cross(w.vel , outVec))  / length(delta);
+    
+    
     if( feather.debug < .95 ){
         feather.vel +=10* length(w.vel)* normalize(cross(w.vel , outVec))  / length(delta);//saturate((1-feather.debug)* 10) *1000 * normalize(delta) / length(delta);
     }
 }
 
-
-    float dH = terrainHeight(feather.pos);
+  // TODO ONLY CHECK IF HAS TERRAIN
+   /* float dH = terrainHeight(feather.pos);
     if(dH< 2 ){
         //feather.pos.y = dH + feather.pos.y;
         feather.vel = 0;
         feather.touchingGround = 1;
     }else{
         feather.touchingGround =0;
-    }
+    }*/
 
     feather.pos += feather.vel * .0001;
 
   
 
     feather.vel *= .99;
+   // feather.debug -= .0001f;
 
   if(_Emitting){
-    feather.debug -=  .001f *  hash(float(pID+_Time));
+    feather.debug -=  .001f *  hash(float(pID*1010 + _Time));
   }
     nanCheck( feather );
     _FeatherBuffer[pID] = feather;
