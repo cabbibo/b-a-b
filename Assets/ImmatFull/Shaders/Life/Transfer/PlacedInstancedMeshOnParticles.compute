@@ -80,7 +80,7 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   
 
 
-    _VertBuffer[pID].pos      = p.pos + mul( rotMat , fPos) * fRadius;// = v;
+    _VertBuffer[pID].pos      = p.pos + mul( rotMat , fPos) * fRadius;//mul( rotMat , fPos) * fRadius;// = v;
     _VertBuffer[pID].nor      = mul( rotMat , fNor);
     _VertBuffer[pID].tan      = mul( rotMat , fTan);
     _VertBuffer[pID].uv       = b.uv;
