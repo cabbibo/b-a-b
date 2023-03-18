@@ -33,6 +33,8 @@ public class BindEditorMouseInformation : Binder
 
     public float spread;
 
+    public bool alwaysUp;
+
     public override void Bind(){
 
         toBind.BindVector3( "_PlacePosition" , () => paintPosition );
@@ -101,6 +103,10 @@ public class BindEditorMouseInformation : Binder
         oPaintPosition = paintPosition;
         paintPosition = hit.point;//.land.Trace( ray.origin, ray.direction);
         paintNormal = hit.normal;
+
+        if( alwaysUp ){
+            paintNormal = Vector3.up;
+        }
 
         paintDirection = paintPosition - oPaintPosition;
 

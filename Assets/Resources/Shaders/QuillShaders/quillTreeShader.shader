@@ -47,6 +47,7 @@ Shader "Quill/quillTreeShader" {
 
       #include "../Chunks/hsv.cginc"
       #include "../Chunks/noise.cginc"
+#include "../Chunks/snoise3D.cginc"
 
         UNITY_INSTANCING_BUFFER_START(Props)
             UNITY_INSTANCING_BUFFER_END(Props)
@@ -97,8 +98,6 @@ float3 _WindDirection;
 float _WindAmount;
 float _WindChangeSpeed;
 float _WindChangeSize;
-
-#include "../Chunks/snoise3D.cginc"
 
 //Our vertex function simply fetches a point from the buffer corresponding to the vertex index
 //which we transform with the view-projection matrix before passing to the pixel program.

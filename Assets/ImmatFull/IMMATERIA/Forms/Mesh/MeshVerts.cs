@@ -43,6 +43,7 @@ public class MeshVerts : Form {
     Vector2[] uvs   = mesh.uv;
     Vector3[] nors  = mesh.normals;
     Vector4[] tans  = mesh.tangents;
+    Color[] colors  = mesh.colors;
     
 
     bool hasTan = false;
@@ -51,10 +52,17 @@ public class MeshVerts : Form {
     bool hasUV = false;
     if( uvs.Length == verts.Length ){ hasUV = true; }
 
+
+    bool hasColors = false;
+    if( colors.Length == verts.Length ){ hasColors = true; }
+
+
     int index = 0;
 
 
     print("Creatings");
+
+    Color cTmp = new Color();
 
     float[] values = new float[count*structSize];
     for( int i = 0; i < count; i ++ ){
@@ -65,9 +73,11 @@ public class MeshVerts : Form {
       values[ index ++ ] = verts[i].y;
       values[ index ++ ] = verts[i].z;
 
-      values[ index ++ ] = 0;
-      values[ index ++ ] = 0;
-      values[ index ++ ] = 0;
+
+      if( hasColors ){ cTmp = colors[i];}
+      values[ index ++ ] =cTmp.r;
+      values[ index ++ ] =cTmp.g;
+      values[ index ++ ] =cTmp.b;
 
       if( transformVerts ){ nors[i] = transform.TransformDirection( nors[i] ); }
       values[ index ++ ] = nors[i].x;

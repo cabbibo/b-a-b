@@ -41,10 +41,10 @@ void Place(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
 
             p.pos = _PlacePosition;
-            p.nor = float3(0,-1,0);//normalize(_PlaceDirection);//_PlaceNormal;
-            p.tan = normalize( cross( normalize(_PlaceDirection), float3(0,1,0)));
+            p.nor = _PlaceNormal;//float3(0,1,0);//normalize(_PlaceDirection);//_PlaceNormal;
+            p.tan = normalize(cross(cross(_PlaceDirection,_PlaceNormal),_PlaceNormal));//normalize( cross( normalize(_PlaceDirection), float3(0,1,0)));
 
-
+            p.debug.y = 1 + .5 * sin(float(pID));
             _VertBuffer[sID] = p;
 
             }
