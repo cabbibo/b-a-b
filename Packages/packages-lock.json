@@ -16,6 +16,15 @@
       },
       "url": "https://normcore-registry.normcore.io"
     },
+    "com.nullkal.unisense": {
+      "version": "https://github.com/nullkal/UniSense.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.inputsystem": "1.0.1"
+      },
+      "hash": "fdc6a0a13142b8614592eb8424acdecf1e170048"
+    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,
@@ -93,6 +102,15 @@
       "depth": 0,
       "source": "registry",
       "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.inputsystem": {
+      "version": "1.4.1",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.modules.uielements": "1.0.0"
+      },
       "url": "https://packages.unity.com"
     },
     "com.unity.mathematics": {
