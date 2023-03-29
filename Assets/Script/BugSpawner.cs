@@ -46,15 +46,16 @@ public class BugSpawner : MonoBehaviour
     void Start()
     {
         SpawnNewBug();
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
 
-        if( Time.time - oldSpawnTime > spawnTime ){
+
+        if (Time.time - oldSpawnTime > spawnTime)
+        {
             SpawnNewBug();
         }
 
@@ -62,13 +63,15 @@ public class BugSpawner : MonoBehaviour
     }
 
 
-    void SpawnNewBug(){
+    void SpawnNewBug()
+    {
 
 
 
-        if( God.wren ){
+        if (God.wren)
+        {
 
-        
+
             Vector3 spawnPos = God.wren.transform.position;
 
             Vector3 offset = Random.insideUnitSphere * spawnSize;
@@ -76,22 +79,25 @@ public class BugSpawner : MonoBehaviour
             Vector3 fPos = spawnPos + offset;
             fPos += God.wren.transform.forward * forwardAmount;
 
-            if( Cage != null ){
+            if (Cage != null)
+            {
                 fPos = new Vector3(
-                                Random.Range( -spawnRange,spawnRange) * Cage.lossyScale.x,
-                                Random.Range( .9f,1) * Cage.lossyScale.y,
-                                Random.Range( -spawnRange,spawnRange) * Cage.lossyScale.z
+                                Random.Range(-spawnRange, spawnRange) * Cage.lossyScale.x,
+                                Random.Range(.9f, 1) * Cage.lossyScale.y,
+                                Random.Range(-spawnRange, spawnRange) * Cage.lossyScale.z
                             );
                 fPos += Cage.transform.position;
 
                 RaycastHit hit;
-                if( Physics.Raycast( fPos , Vector3.up * -1 , out hit)){
-                    fPos = hit.point + Vector3.up * Random.Range( heightRange.x , heightRange.y);
+                if (Physics.Raycast(fPos, Vector3.up * -1, out hit))
+                {
+                    fPos = hit.point + Vector3.up * Random.Range(heightRange.x, heightRange.y);
                 }
             }
 
 
-            GameObject bug = Instantiate( bugPrefab , fPos , Quaternion.identity );
+            GameObject bug = Instantiate(bugPrefab, fPos, Quaternion.identity);
+            bug.SetActive(true);
 
             // Get the bug spinning
 
@@ -110,26 +116,27 @@ public class BugSpawner : MonoBehaviour
             bugComp.maxScale = maxScale;
 
             bug.transform.parent = transform;
-    
+
 
 
             oldSpawnTime = Time.time;
 
         }
-        
+
     }
 
-    public void BugGotAte( Bug b ){
+    public void BugGotAte(Bug b)
+    {
 
 
         gotAteParticleSystem.Play();
         gotAteParticleSystem.transform.position = b.transform.position;
 
         God.audio.Play(gotAteClip);
-   
 
-        God.wren.stats.FullnessAdd( bugFullnessAdd );
-        God.wren.stats.StaminaAdd( bugStaminaAdd );
+
+        God.wren.stats.FullnessAdd(bugFullnessAdd);
+        God.wren.stats.StaminaAdd(bugStaminaAdd);
 
     }
 }
