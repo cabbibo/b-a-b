@@ -45,6 +45,20 @@
             sampler2D _FullColorMap;
             sampler2D _AudioMap;
 
+
+            float _CurrentScore;
+
+float distanceToLine(float2 pt1, float2 pt2, float2 testPt)
+{
+  float2 lineDir = pt2 - pt1;
+  float2 perpDir = float2(lineDir.y, -lineDir.x);
+  float2 dirToPt1 = pt1 - testPt;
+  return abs(dot(normalize(perpDir), dirToPt1));
+}
+
+
+
+
             v2f vert (appdata_full v)
             {
                 v2f o;
@@ -62,11 +76,16 @@
 
                 float4 _Color;
                 float _Active;
+
+                float2 _LastHitLocation;
             fixed4 frag (v2f v) : SV_Target
             {
 
                 float r = length(v.uv - .5) * 2;
-                float a = atan2( v.uv.x- .5 , v.uv.y- .5);
+
+                float2 nV = v.uv - .5;
+                float a = atan2( nV.x- .5 , nV.y- .5);
+
 
 
 
@@ -79,7 +98,7 @@
 
                 float speed = _Time.y * ( _Active * 3 + 1 );
                 // sample the texture
-                fixed4 col = (sin( a * 10 + n + speed )+1)/2;//tex2D(_MainTex, v.uv);
+                fixed3 col = (sin( a * 10 + n + speed )+1)/2;//tex2D(_MainTex, v.uv);
               
                // if( r > 1 - n * .1){ discard; }
                // if( r < .95 - .1 * float(_Active) - n * .1 ){ discard; }
@@ -94,16 +113,40 @@
 
                 float aVal = ( length( v.uv -.5) - .47) / .03;
 
-                col.xyz = tex2D( _AudioMap , float2(aVal,0)).xyz;
+              //  col.xyz = tex2D( _AudioMap , float2(aVal,0)).xyz;
 
+                if( (a + 3.14) / 6.28 > _CurrentScore /1000 ){
+                    col = float3(1,0,0);
+                }
+
+                if( length( nV - _LastHitLocation) < .04){
+                    rim = true;
+                    col = float3(0,1,0);
+                }
+
+                if( length( nV ) < .05 ){
+                    rim = true;
+                    col = 1;
+                }
+
+              //  col = _CurrentScore;
+
+
+                if( 
+                    (distanceToLine(0,_LastHitLocation, nV) < .003/length(_LastHitLocation))
+                    && (dot( _LastHitLocation, nV) > 0 && length(nV)< length(_LastHitLocation)) 
+                ){
+                    rim = true;
+                    col = float3(0,1,0);
+                }
 
                 if( !rim ){
-                    discard;
+                    col = 0;//discard;
                 };
 
                 // apply fog
                 //UNITY_APPLY_FOG(v.fogCoord, col);
-                return col;
+                return float4(col,1);
             }
             ENDCG
         }

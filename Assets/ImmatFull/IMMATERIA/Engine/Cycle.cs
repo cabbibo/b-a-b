@@ -39,6 +39,9 @@ public class Cycle : MonoBehaviour{
   public List<Cycle> Cycles;
 
 
+  public void DeleteAllCycle(){
+    
+  }
 
   /*
     Tying it up to the unity event system for enable and disable
