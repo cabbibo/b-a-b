@@ -20,13 +20,11 @@ public class Wren : MonoBehaviour
     */
 
     public bool inEther;
-    
+
     public TextMesh title;
     public FullBird bird;
-
     public WrenInput input;
     public WrenPhysics physics;
-
     public WrenCameraWork cameraWork;
 
     public WrenSynths sounds;
@@ -52,7 +50,7 @@ public class Wren : MonoBehaviour
     public Collection collection;
 
     public FullInterface fullInterface;
-    public AirInterface  airInterface;
+    public AirInterface airInterface;
 
 
     public Transform startingPosition;
@@ -70,30 +68,32 @@ public class Wren : MonoBehaviour
     public WrenGrowthManager growth;
 
 
-   void OnEnable(){
+    void OnEnable()
+    {
 
         canMove = false;
         inEther = true;
-        
+
 
         // Makes our beacon ( aka nest ) link to us
-        if( beacon ){ beacon.Create(); }
+        if (beacon) { beacon.Create(); }
         parameters.Reset();
 
         FindInfo();
-       
+
 
         startingPosition = GameObject.Find("StartPosition").transform;
-      
-        maker.wrens.Add( this );
-        if( collection ){ collection.CreateHolders(); }
+
+        maker.wrens.Add(this);
+        if (collection) { collection.CreateHolders(); }
 
 
-        
-   }
+
+    }
 
 
-    public void LocalEnable(){
+    public void LocalEnable()
+    {
 
 
         state.CheckForOriginals();
@@ -101,85 +101,102 @@ public class Wren : MonoBehaviour
         rt_Tranform.RequestOwnership();
 
         FullReset();
-        
+
 
 
     }
 
-   void OnDisable(){
-       maker.wrens.Remove(this);
-       if( beacon ){ beacon.Demolish(); }
-   }
+    void OnDisable()
+    {
+        maker.wrens.Remove(this);
+        if (beacon) { beacon.Demolish(); }
+    }
 
-    public void FullReset(){
-        
+    public void FullReset()
+    {
+
 
         physics.Reset();
 
 
         Vector3 fPos = startingPosition.position + Vector3.up * physics.groundUpVal;
         Crash(fPos);
-        state.LookAt( fPos + startingPosition.forward );
-        bird.ResetAtLocation( fPos );//Values();
-        
-        
+        state.LookAt(fPos + startingPosition.forward);
+        bird.ResetAtLocation(fPos);//Values();
+
+
         cameraWork.Reset();
 
     }
 
 
-    public void Crash(Vector3 p){
-        physics.TransportToPosition( GroundIntersection(p)   + Vector3.up * physics.groundUpVal , Vector3.zero );
+    public void Crash(Vector3 p)
+    {
+        physics.TransportToPosition(GroundIntersection(p) + Vector3.up * physics.groundUpVal, Vector3.zero);
         state.HitGround();
     }
 
 
-    public Vector3 GroundIntersection(Vector3 p ){
+    public Vector3 GroundIntersection(Vector3 p)
+    {
 
-           RaycastHit hit;
+        RaycastHit hit;
 
-           Vector3 newPos = p;
+        Vector3 newPos = p;
 
         // Ignore ourselves for collision hit
         var layerMask = (1 << 10);
         layerMask = ~layerMask;
-        if( Physics.Raycast(p + Vector3.up * 3, -Vector3.up, out hit, 100000, layerMask)){
+        if (Physics.Raycast(p + Vector3.up * 3, -Vector3.up, out hit, 100000, layerMask))
+        {
             newPos = hit.point;
-        }else{
-            if( Physics.Raycast(p - Vector3.up * 3, Vector3.up, out hit, 100000, layerMask)){
+        }
+        else
+        {
+            if (Physics.Raycast(p - Vector3.up * 3, Vector3.up, out hit, 100000, layerMask))
+            {
                 newPos = hit.point;
-            }else{
+            }
+            else
+            {
                 newPos = p - Vector3.up * physics.groundUpVal;
             }
         }
 
-        
+
 
         return newPos;
 
     }
 
 
-       public Vector3 GroundNormal(Vector3 p ){
+    public Vector3 GroundNormal(Vector3 p)
+    {
 
-           RaycastHit hit;
+        RaycastHit hit;
 
-           Vector3 newPos = p;
+        Vector3 newPos = p;
 
         // Ignore ourselves for collision hit
         var layerMask = (1 << 10);
         layerMask = ~layerMask;
-        if( Physics.Raycast(p + Vector3.up * 3, -Vector3.up, out hit, 100000, layerMask)){
+        if (Physics.Raycast(p + Vector3.up * 3, -Vector3.up, out hit, 100000, layerMask))
+        {
             newPos = hit.normal;
-        }else{
-            if( Physics.Raycast(p - Vector3.up * 3, Vector3.up, out hit, 100000, layerMask)){
+        }
+        else
+        {
+            if (Physics.Raycast(p - Vector3.up * 3, Vector3.up, out hit, 100000, layerMask))
+            {
                 newPos = hit.normal;
-            }else{
+            }
+            else
+            {
                 newPos = Vector3.up;//p - Vector3.up * physics.groundUpVal;
             }
         }
 
-        
+
 
         return newPos;
 
@@ -188,185 +205,215 @@ public class Wren : MonoBehaviour
 
 
 
-public float lastFlapTime;
-void Update(){
+    public float lastFlapTime;
+    void Update()
+    {
 
-     if( state.isLocal  ){
-        
-
-        input.SetInput();
-
-       // state.inInterface = God.menu.menuOn;
-
-      
-        
-        if(canMove ){     
+        if (state.isLocal)
+        {
 
 
-            // Only drop items in air ( is that correct? )
-            if(input.o_ex < .5 && input.ex > .5 && physics.onGround == false){
-                carrying.DropFirstCarriedItem();
+            input.SetInput();
+
+            // state.inInterface = God.menu.menuOn;
+
+
+
+            if (canMove)
+            {
+
+
+                // Only drop items in air ( is that correct? )
+                if (input.o_ex < .5 && input.ex > .5 && physics.onGround == false)
+                {
+                    carrying.DropFirstCarriedItem();
+                }
+
+                if (input.o_ex < .5 && input.ex > .5 && physics.onGround == true && state.inInterface == false && state.canTakeOff)
+                {
+                    God.audio.Play(God.sounds.takeoffClip);
+                    state.TakeOff();
+                }
+
+
+
+
+
+
+
+
+
+
+                if (input.left1 > .1f && !physics.onGround)
+                {
+                    // God.audio.FadeLoop(God.sounds.dropParticlesLoop , 1 , .01f);
+                    bird.leftWingTrailFromFeathers_gpu.emitting = 1;
+                }
+                else
+                {
+                    // God.audio.FadeLoop(God.sounds.dropParticlesLoop , 0, .01f);
+                    bird.leftWingTrailFromFeathers_gpu.emitting = 0;
+                }
+
+
+                if (input.right1 > .1f && !physics.onGround)
+                {
+                    //God.audio.FadeLoop(God.sounds.dropParticlesLoop , 1 , .01f);
+                    bird.rightWingTrailFromFeathers_gpu.emitting = 1;
+                }
+                else
+                {
+                    //God.audio.FadeLoop(God.sounds.dropParticlesLoop , 0, .01f);
+                    bird.rightWingTrailFromFeathers_gpu.emitting = 0;
+                }
+
+
+                /*
+                            float d = Mathf.Abs( input.o_left2 - input.left2);
+                            state.stamina -= d;
+
+                            if( d > 0 ){
+                                lastFlapTime = Time.time;
+                            }
+
+                            d = Mathf.Abs( input.o_right2 - input.right2);
+                            state.stamina -= d;
+
+                            if( d > 0 ){
+                                lastFlapTime = Time.time;
+                            }
+
+
+                            if( state.stamina < 0 ){
+                                state.stamina = 0;
+                            }
+
+                            float staminaCooldownTime = 1;
+                            float staminaRefillSpeed = .1f;   
+
+                            if( Time.time - lastFlapTime  > staminaCooldownTime ){
+                                state.stamina += staminaRefillSpeed;
+                                if( state.stamina > state.maxStamina ){
+                                    state.stamina = state.maxStamina;
+                                }
+                            }
+
+
+                */
+
+                // ONLY do interface stuff when we aren't 
+                // in the ether!
+
+                if (!inEther)
+                {
+                    if (input.o_circle < .5 && input.circle > .5)
+                    {
+                        state.inInterface = !state.inInterface;
+                        ToggleInterface(state.inInterface);
+                    }
+
+
+
+                    if (input.dLeft > .5f && input.o_dLeft <= .5f)
+                    {
+
+                        Ray ray = new Ray();
+                        ray.origin = Camera.main.transform.position;
+                        ray.direction = Camera.main.transform.forward;
+                        RaycastHit hit;
+                        if (Physics.Raycast(ray, out hit, 10000))
+                        {
+                            print(hit.collider.gameObject.name);
+                            beacon.PlaceBeacon(hit.point);
+                        }
+
+                    }
+
+                    if (input.o_dUp < .5 && input.dUp > .5)
+                    {
+
+                        if (state.beaconOn == true)
+                        {
+
+
+                            Crash(startingPosition.position);
+                            ToggleInterface(false);
+                            state.HitGround();
+                            state.LookAt(transform.position + beacon.transform.forward);
+                            physics.Reset();
+                            bird.ResetAtLocation(beacon.nest.transform.position);
+
+                            cameraWork.Reset();
+
+                            //   God.AbortCurrentRace();
+
+                            //   // If we are in a race, end it!
+                            //   if( God.wren.state.inRace != -1 ){
+                            //       print("WREN IN RACE: " + God.wren.state.inRace);
+                            //       God.races[God.wren.state.inRace].AbortRace();
+                            //   }
+
+                            //   God.localWrenState.inRace
+
+                            //if( state.SetInRace )
+
+                        }
+
+                    }
+                }
+                else
+                {
+                    beacon.PlaceBeacon(Vector3.one * 1000000f);
+                }
+
             }
 
-            if(input.o_ex < .5 && input.ex > .5 && physics.onGround == true  && state.inInterface == false && state.canTakeOff ){
-                God.audio.Play(God.sounds.takeoffClip);
-                state.TakeOff();
-            }
+
+            carrying.UpdateCarriedItems();
+            sounds.UpdateSound();
+            cameraWork.CameraWork();
+
+        }
+        else
+        {
+
+            input.GetInput();
 
 
-
-
-
-
-
-      
-        
-
-        if( input.left1 > .1f &&  !physics.onGround ){
-            // God.audio.FadeLoop(God.sounds.dropParticlesLoop , 1 , .01f);
+            if (input.left1 > .1f)
+            {
                 bird.leftWingTrailFromFeathers_gpu.emitting = 1;
-            }else{
-            // God.audio.FadeLoop(God.sounds.dropParticlesLoop , 0, .01f);
+            }
+            else
+            {
                 bird.leftWingTrailFromFeathers_gpu.emitting = 0;
             }
 
 
-            if( input.right1 > .1f  &&  !physics.onGround ){
-                //God.audio.FadeLoop(God.sounds.dropParticlesLoop , 1 , .01f);
+            if (input.right1 > .1f)
+            {
                 bird.rightWingTrailFromFeathers_gpu.emitting = 1;
-            }else{
-                //God.audio.FadeLoop(God.sounds.dropParticlesLoop , 0, .01f);
+            }
+            else
+            {
                 bird.rightWingTrailFromFeathers_gpu.emitting = 0;
             }
 
 
-/*
-            float d = Mathf.Abs( input.o_left2 - input.left2);
-            state.stamina -= d;
-
-            if( d > 0 ){
-                lastFlapTime = Time.time;
-            }
-
-            d = Mathf.Abs( input.o_right2 - input.right2);
-            state.stamina -= d;
-
-            if( d > 0 ){
-                lastFlapTime = Time.time;
-            }
-
-
-            if( state.stamina < 0 ){
-                state.stamina = 0;
-            }
-
-            float staminaCooldownTime = 1;
-            float staminaRefillSpeed = .1f;   
-
-            if( Time.time - lastFlapTime  > staminaCooldownTime ){
-                state.stamina += staminaRefillSpeed;
-                if( state.stamina > state.maxStamina ){
-                    state.stamina = state.maxStamina;
-                }
-            }
-
-
-*/      
-
-            // ONLY do interface stuff when we aren't 
-            // in the ether!
-
-            if( !inEther ){
-                if(input.o_circle < .5 && input.circle > .5  ){
-                    state.inInterface = !state.inInterface;
-                    ToggleInterface(state.inInterface);
-                }
-   
-
-            
-                if( input.dLeft > .5f && input.o_dLeft <= .5f ){
-            
-                    Ray ray = new Ray();  
-                    ray.origin = Camera.main.transform.position;
-                    ray.direction = Camera.main.transform.forward;
-                    RaycastHit hit;
-                    if (Physics.Raycast (ray, out hit , 10000)) {
-                        print(hit.collider.gameObject.name);
-                        beacon.PlaceBeacon( hit.point );
-                    }
-                
-                }
-            
-                if(input.o_dUp < .5 && input.dUp > .5 ){
-
-                    if(state.beaconOn == true ){
-
-                        
-                        Crash(startingPosition.position);
-                        ToggleInterface(false);
-                        state.HitGround();
-                        state.LookAt( transform.position + beacon.transform.forward );
-                        physics.Reset();
-                        bird.ResetAtLocation(beacon.nest.transform.position);
-                        
-                        cameraWork.Reset();
-
-                //   God.AbortCurrentRace();
-
-                //   // If we are in a race, end it!
-                //   if( God.wren.state.inRace != -1 ){
-                //       print("WREN IN RACE: " + God.wren.state.inRace);
-                //       God.races[God.wren.state.inRace].AbortRace();
-                //   }
-
-                //   God.localWrenState.inRace
-
-                        //if( state.SetInRace )
-                    
-                    }
-                    
-                }
-            }else{
-                beacon.PlaceBeacon( Vector3.one * 1000000f);
-            }
 
         }
 
-        
-        carrying.UpdateCarriedItems();
-        sounds.UpdateSound();
-        cameraWork.CameraWork();
-    
-    }else{
-    
-        input.GetInput();
-
-
-        if( input.left1 > .1f ){
-            bird.leftWingTrailFromFeathers_gpu.emitting = 1;
-        }else{
-            bird.leftWingTrailFromFeathers_gpu.emitting = 0;
-        }
-
-
-        if( input.right1 > .1f ){
-            bird.rightWingTrailFromFeathers_gpu.emitting = 1;
-        }else{
-            bird.rightWingTrailFromFeathers_gpu.emitting = 0;
-        }
-
-
-    
     }
+    void FixedUpdate()
+    {
 
-}
-    void FixedUpdate(){
-
-        if( state.isLocal && canMove  ){
-            physics.UpdatePhysics();    
+        if (state.isLocal && canMove)
+        {
+            physics.UpdatePhysics();
         }
 
-        if( !inEther ){
+        if (!inEther)
+        {
             growth.updateGrowth();
         }
 
@@ -376,51 +423,61 @@ void Update(){
 
 
 
-    public virtual void LocalReset(){
+    public virtual void LocalReset()
+    {
         bird.ResetFeatherValues();
         physics.LocalReset();
         cameraWork.Reset();
 
     }
 
-    public virtual void ResetToOtherPlayer(GameObject other){
+    public virtual void ResetToOtherPlayer(GameObject other)
+    {
         bird.ResetFeatherValues();
         physics.ResetToOther(other);
-        
-    }
-  
 
-
-
-public void ToggleInterface( bool onOff){
-  //  interface.gameObject.SetActive(onOff);
-
-   //bird.Explode();
-   //bird.HitGround();
-
-   //physics.rb.isKinematic = onOff;
-
-
-     print("TOGGLING ON OFF: " + onOff);    
-     state.inInterface = onOff;//true;
-    
-    if( physics.onGround ){
-       if( fullInterface ){ 
-        
-        fullInterface.Toggle( onOff); }
-    }else{
-       if( airInterface ){ airInterface.Toggle( onOff ); }
-        //compass.gameObject.SetActive(onOff);//.Toggle( onOff);
     }
 
-}
 
 
 
-    public void FindInfo(){
+    public void ToggleInterface(bool onOff)
+    {
+        //  interface.gameObject.SetActive(onOff);
 
-        GameObject terrain = GameObject.Find( "Terrain");
-        if( terrain ){
+        //bird.Explode();
+        //bird.HitGround();
+
+        //physics.rb.isKinematic = onOff;
+
+
+        print("TOGGLING ON OFF: " + onOff);
+        state.inInterface = onOff;//true;
+
+        if (physics.onGround)
+        {
+            if (fullInterface)
+            {
+
+                fullInterface.Toggle(onOff);
+            }
+        }
+        else
+        {
+            if (airInterface) { airInterface.Toggle(onOff); }
+            //compass.gameObject.SetActive(onOff);//.Toggle( onOff);
+        }
+
+    }
+
+
+
+    public void FindInfo()
+    {
+
+        GameObject terrain = GameObject.Find("Terrain");
+        if (terrain)
+        {
             physics.terrain = terrain.GetComponent<Terrain>();
             physics.terrainCollider = terrain.GetComponent<Collider>();
         }
@@ -432,16 +489,18 @@ public void ToggleInterface( bool onOff){
         God.groundInterface.wren = this;
         God.airInterface.wren = this;
 
-    
+
     }
-    
 
 
-    public void SetLocal( bool connected  ){
+
+    public void SetLocal(bool connected)
+    {
 
         state.isLocal = true;
 
-        if( connected ){
+        if (connected)
+        {
             input.leftStickNetworkData.GetComponent<RealtimeTransform>().RequestOwnership();
             input.rightStickNetworkData.GetComponent<RealtimeTransform>().RequestOwnership();
             input.leftExtraNetworkData.GetComponent<RealtimeTransform>().RequestOwnership();
@@ -452,99 +511,143 @@ public void ToggleInterface( bool onOff){
     }
 
 
-void OnCollisionEnter( Collision c ){
-    if (state.isLocal) {
+    void OnCollisionEnter(Collision c)
+    {
+        if (state.isLocal)
+        {
 
-        if( c.collider.tag == "Food"){
-            if (!state.onGround) {
-                carrying.PickUpItem( c.collider.gameObject);
+            if (c.collider.tag == "Food")
+            {
+                if (!state.onGround)
+                {
+                    carrying.PickUpItem(c.collider.gameObject);
+                }
             }
-        }else if(c.collider.tag == "Ball" ){
-            if (!state.onGround) {
-                carrying.PickUpItem( c.collider.gameObject);
+            else if (c.collider.tag == "Ball")
+            {
+                if (!state.onGround)
+                {
+                    carrying.PickUpItem(c.collider.gameObject);
+                }
             }
-        }else if(c.collider.tag == "Fire" ){
-            if (!state.onGround) {
-                carrying.PickUpItem( c.collider.gameObject);
+            else if (c.collider.tag == "Fire")
+            {
+                if (!state.onGround)
+                {
+                    carrying.PickUpItem(c.collider.gameObject);
+                }
             }
-        }else if( c.collider.tag == "Resetable" ){
-            
-        }else if(c.collider.tag == "Prey" ){
-            
-        }else if(c.collider.tag == "Death" ){
-            state.OnDie();
-            
-        }else if(c.collider.tag == "Bug"){
-    
-        }else{
-            Crash(c);
+            else if (c.collider.tag == "Resetable")
+            {
 
-          
+            }
+            else if (c.collider.tag == "Prey")
+            {
+
+            }
+            else if (c.collider.tag == "Death")
+            {
+                state.OnDie();
+
+            }
+            else if (c.collider.tag == "Bug")
+            {
+
+            }
+            else
+            {
+                Crash(c);
+
+
+            }
         }
     }
-}
 
 
 
-public void Crash(Collision c){
-    if( !state.onGround ){
-    //if( c.impulse.magnitude != 0 ){
-        //ToggleInterface(false);
-        God.audio.Play( God.sounds.hitGroundClip );
-        state.HitGround(c);
+    public void Crash(Collision c)
+    {
+        if (!state.onGround)
+        {
+            //if( c.impulse.magnitude != 0 ){
+            //ToggleInterface(false);
+            God.audio.Play(God.sounds.hitGroundClip);
+            state.HitGround(c);
 
-        if (state.isLocal) {
-            carrying.GroundHit(Carryable.DropSettings.FromCrash(c));
-        }
-
-        if( !inEther ){
-            growth.HurtCollision(c);
-        }
-
-    //}
-
-       // state.TakeOff();
-    }
-}
-void OnTriggerEnter( Collider c ){
-    if (state.isLocal) {
-
-        if( c.tag == "Food"){
-            if (!state.onGround) {
-                carrying.PickUpItem( c.gameObject);
+            if (state.isLocal)
+            {
+                carrying.GroundHit(Carryable.DropSettings.FromCrash(c));
             }
-        }else if(c.tag == "Ball" ){
-            if (!state.onGround) {
-                carrying.PickUpItem( c.gameObject);
-            }
-        }else if(c.tag == "Fire" ){
-            if (!state.onGround) {
-                carrying.PickUpItem( c.gameObject);
-            }
-        }else if( c.tag == "Resetable" ){
-            
-        }else if(c.tag == "Prey" ){
-            
-        }else if(c.tag == "WaterDrop"){
-            carrying.PickUpItem( c.gameObject);
-        }else if( c.tag == "Boost" ){   
-            Booster b = c.gameObject.GetComponent<Booster>();
-            physics.Boost(b.boostVal);
-            b.OnBoost(this);
-            
-            
-        }else{
 
-            if( waterController ){ waterController.TriggerEnter(c); }
-          
+            if (!inEther)
+            {
+                growth.HurtCollision(c);
+            }
+
+            //}
+
+            // state.TakeOff();
         }
     }
-}
+    void OnTriggerEnter(Collider c)
+    {
+        if (state.isLocal)
+        {
+
+            if (c.tag == "Food")
+            {
+                if (!state.onGround)
+                {
+                    carrying.PickUpItem(c.gameObject);
+                }
+            }
+            else if (c.tag == "Ball")
+            {
+                if (!state.onGround)
+                {
+                    carrying.PickUpItem(c.gameObject);
+                }
+            }
+            else if (c.tag == "Fire")
+            {
+                if (!state.onGround)
+                {
+                    carrying.PickUpItem(c.gameObject);
+                }
+            }
+            else if (c.tag == "Resetable")
+            {
+
+            }
+            else if (c.tag == "Prey")
+            {
+
+            }
+            else if (c.tag == "WaterDrop")
+            {
+                carrying.PickUpItem(c.gameObject);
+            }
+            else if (c.tag == "Boost")
+            {
+                Booster b = c.gameObject.GetComponent<Booster>();
+                b.OnBoost(this);
 
 
-void OnTriggerExit( Collider c ){
-    if( waterController ){ waterController.TriggerExit(c); }
-}
+            }
+            else
+            {
+
+                if (waterController) { waterController.TriggerEnter(c); }
+
+            }
+        }
+    }
+
+
+    void OnTriggerExit(Collider c)
+    {
+        if (waterController) { waterController.TriggerExit(c); }
+    }
 
 
 

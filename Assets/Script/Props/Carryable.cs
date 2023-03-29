@@ -15,7 +15,7 @@ public class Carryable : RealtimeComponent<CarryableModel>
             return new DropSettings { 
                 ExplosiveDirection = collision.contacts[0].normal,
                 ExplosivePosition = collision.contacts[0].point,
-                ExplosiveForce = 50f + collision.impulse.magnitude * .1f,
+                ExplosiveForce =collision.impulse.magnitude * 0f//50f + collision.impulse.magnitude * .1f,
             };
         }
     }

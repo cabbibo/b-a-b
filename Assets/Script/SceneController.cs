@@ -21,8 +21,8 @@ public class SceneController : MonoBehaviour
 
     int loadedScene = -1;
 
-    public int biome = 0; 
-    
+    public int biome = 0;
+
     // mountain
     // temple
     // desert
@@ -35,23 +35,25 @@ public class SceneController : MonoBehaviour
 
     public UnityEngine.SceneManagement.Scene currentMainScene;
 
-    public void LoadScene(int id ){        
+    public void LoadScene(int id)
+    {
 
         HardLoad(id);
-            
+
     }
 
-    public void LoadSceneFromPortal(Portal portal ){
+    public void LoadSceneFromPortal(Portal portal)
+    {
 
-     
-            // make it so we dont hurt ourselves
-            God.wren.inEther = true;
-            God.wren.Crash(portal.collisionPoint.position);
 
-            God.wren.canMove = false;
-            Camera.main.gameObject.GetComponent<LerpTo>().enabled = false;
+        // make it so we dont hurt ourselves
+        God.wren.inEther = true;
+        God.wren.Crash(portal.collisionPoint.position);
 
-            StartCoroutine(PortalAnimationOut(portal));
+        God.wren.canMove = false;
+        Camera.main.gameObject.GetComponent<LerpTo>().enabled = false;
+
+        StartCoroutine(PortalAnimationOut(portal));
 
 
     }
@@ -60,26 +62,27 @@ public class SceneController : MonoBehaviour
 
 
     public float portalAnimationOutLength = 3;
-    IEnumerator PortalAnimationOut( Portal portal )
+    IEnumerator PortalAnimationOut(Portal portal)
     {
 
         float StartTime = Time.time;
         float EndTime = Time.time + portalAnimationOutLength;
 
 
-        Vector3 startPoint  = God.camera.transform.position;
-        Vector3 endPoint  = portal.collisionPoint.position;
+        Vector3 startPoint = God.camera.transform.position;
+        Vector3 endPoint = portal.collisionPoint.position;
 
 
         Quaternion startRot = God.camera.transform.rotation;
-        Quaternion endRot = Quaternion.LookRotation(portal.collisionPoint.forward,Vector3.up);
-        while( Time.time - StartTime < portalAnimationOutLength ){
-        
-            float val = (Time.time - StartTime ) / portalAnimationOutLength;
+        Quaternion endRot = Quaternion.LookRotation(portal.collisionPoint.forward, Vector3.up);
+        while (Time.time - StartTime < portalAnimationOutLength)
+        {
+
+            float val = (Time.time - StartTime) / portalAnimationOutLength;
             //God.fade
             God.postController._Fade = val * val;
-            God.camera.transform.position = Vector3.Lerp(startPoint, endPoint  , val);///.Lerp()
-            God.camera.transform.rotation = Quaternion.Slerp(startRot,endRot ,val);///.Lerp()
+            God.camera.transform.position = Vector3.Lerp(startPoint, endPoint, val);///.Lerp()
+            God.camera.transform.rotation = Quaternion.Slerp(startRot, endRot, val);///.Lerp()
 
             yield return null;
         }
@@ -89,23 +92,28 @@ public class SceneController : MonoBehaviour
 
     }
 
-    public void HardLoad(int id){
-
-        
-        sceneLoaded = true;     
+    public void HardLoad(int id)
+    {
 
 
-        if( dontLoadOnStart == false ){
-            StartCoroutine(SceneSwitch( id, currentSceneID));
-        }else{
+        sceneLoaded = true;
+
+
+        if (dontLoadOnStart == false)
+        {
+            StartCoroutine(SceneSwitch(id, currentSceneID));
+        }
+        else
+        {
             OnSceneLoaded();
             SetNewScene(id, currentSceneID);
         }
 
-       
+
     }
 
-    public void Death(){
+    public void Death()
+    {
         biome = -1;
         HardLoad(0);
     }
@@ -117,32 +125,38 @@ public class SceneController : MonoBehaviour
 
 
         SceneManager.LoadScene(scenes[newScene], LoadSceneMode.Additive);
-            
 
-        // unloading old scne
-        var progress2= SceneManager.UnloadSceneAsync(scenes[oldScene]);
-        while (!progress2.isDone)
+
+        if (scenes[oldScene] != null)
         {
 
-            // Check each frame if the scene has completed.
-            // For more information about yield in C# see: https://youtu.be/bsZjfuTrPSA
-            yield return null;
-        } 
+            // unloading old scne
+            var progress2 = SceneManager.UnloadSceneAsync(scenes[oldScene]);
+            while (!progress2.isDone)
+            {
 
-        UnityEngine.SceneManagement.Scene scene =  SceneManager.GetSceneByName(scenes[oldScene]);
-            
+                // Check each frame if the scene has completed.
+                // For more information about yield in C# see: https://youtu.be/bsZjfuTrPSA
+                yield return null;
+            }
+
+        }
+
+        UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneByName(scenes[oldScene]);
+
 
         // unloading old scene AGAIN for some reason this actually works?
-    
-        if( scene.isLoaded  && oldScene != newScene ){
-            var progress3=  SceneManager.UnloadSceneAsync(scene);    
+
+        if (scene.isLoaded && oldScene != newScene)
+        {
+            var progress3 = SceneManager.UnloadSceneAsync(scene);
             while (!progress3.isDone)
             {
 
                 // Check each frame if the scene has completed.
                 // For more information about yield in C# see: https://youtu.be/bsZjfuTrPSA
                 yield return null;
-            } 
+            }
 
 
         }
@@ -151,84 +165,92 @@ public class SceneController : MonoBehaviour
 
         SetNewScene(newScene, oldScene);
 
-            
-    }
-
-
-    public void SetNewScene(int newSceneID , int oldSceneID){
-
-            Camera.main.gameObject.GetComponent<LerpTo>().enabled = true;
-            God.wren.state.inInterface = false;
-            God.wren.airInterface.Toggle( false ); 
-            God.wren.fullInterface.Toggle( false ); 
-
-            if( newSceneID == 0 ){
-                God.wren.inEther = true;
-            }else{
-                God.wren.inEther = false;
-            }
-
-            God.wren.canMove = true;
-            
-            PlayerPrefs.SetInt("_CurrentScene",newSceneID);
-            PlayerPrefs.SetInt("_CurrentBiome",biome);
-            oldScene = currentSceneID;
-            currentSceneID = newSceneID;
-            loadedScene = currentSceneID;
-
-            currentMainScene = SceneManager.GetSceneByName(scenes[newSceneID]);
-
-          //  StartCoroutine(PortalAnimationIn(currentMainScene.portals[biome]));
-
 
     }
 
 
-public void OnSceneFinishedLoading( WrenUtils.Scene wrenScene ){
+    public void SetNewScene(int newSceneID, int oldSceneID)
+    {
+
+        Camera.main.gameObject.GetComponent<LerpTo>().enabled = true;
+        God.wren.state.inInterface = false;
+        God.wren.airInterface.Toggle(false);
+        God.wren.fullInterface.Toggle(false);
+
+        if (newSceneID == 0)
+        {
+            God.wren.inEther = true;
+        }
+        else
+        {
+            God.wren.inEther = false;
+        }
+
+        God.wren.canMove = true;
+
+        PlayerPrefs.SetInt("_CurrentScene", newSceneID);
+        PlayerPrefs.SetInt("_CurrentBiome", biome);
+        oldScene = currentSceneID;
+        currentSceneID = newSceneID;
+        loadedScene = currentSceneID;
+
+        currentMainScene = SceneManager.GetSceneByName(scenes[newSceneID]);
+
+        //  StartCoroutine(PortalAnimationIn(currentMainScene.portals[biome]));
 
 
-    //print( biome );
-    // Only animate in if we have animation!
-    if( biome >= 0 && biome  < wrenScene.portals.Length && God.wren != null){
-        StartCoroutine( PortalAnimationIn( wrenScene.portals[biome]));
     }
 
-}
 
-  
+    public void OnSceneFinishedLoading(WrenUtils.Scene wrenScene)
+    {
+
+
+        //print( biome );
+        // Only animate in if we have animation!
+        if (biome >= 0 && biome < wrenScene.portals.Length && God.wren != null)
+        {
+            StartCoroutine(PortalAnimationIn(wrenScene.portals[biome]));
+        }
+
+    }
+
+
     public float portalAnimationInLength = 3;
-    IEnumerator PortalAnimationIn( Portal portal )
+    IEnumerator PortalAnimationIn(Portal portal)
     {
 
         float StartTime = Time.time;
         float EndTime = Time.time + portalAnimationInLength;
 
-        float v1 = Vector3.Distance( portal.collisionPointFront.position , portal.startPoint.position );
-        float v2 = Vector3.Distance( portal.collisionPointBack.position , portal.startPoint.position );
+        float v1 = Vector3.Distance(portal.collisionPointFront.position, portal.startPoint.position);
+        float v2 = Vector3.Distance(portal.collisionPointBack.position, portal.startPoint.position);
 
-        portal.collisionPoint =  portal.collisionPointFront;
+        portal.collisionPoint = portal.collisionPointFront;
 
-        if( v2 < v1 ){
+        if (v2 < v1)
+        {
             portal.collisionPoint = portal.collisionPointBack;
         }
 
 
 
 
-        Vector3 endPoint  = portal.collisionPoint.position;
-        Quaternion endRot = Quaternion.LookRotation(portal.collisionPoint.forward,Vector3.up);
+        Vector3 endPoint = portal.collisionPoint.position;
+        Quaternion endRot = Quaternion.LookRotation(portal.collisionPoint.forward, Vector3.up);
 
 
-        Vector3 startPoint  = God.wren.cameraWork.camTarget.position;//portal.startPoint.position + portal.startPoint.forward * -God.wren.cameraWork.groundBackAmount + portal.startPoint.up * -God.wren.cameraWork.groundUpAmount;
-        Quaternion startRot =  God.wren.cameraWork.camTarget.rotation;//portal.startPoint.rotation;
+        Vector3 startPoint = God.wren.cameraWork.camTarget.position;//portal.startPoint.position + portal.startPoint.forward * -God.wren.cameraWork.groundBackAmount + portal.startPoint.up * -God.wren.cameraWork.groundUpAmount;
+        Quaternion startRot = God.wren.cameraWork.camTarget.rotation;//portal.startPoint.rotation;
 
-        while( Time.time - StartTime < portalAnimationInLength ){
-        
-            float val = (Time.time - StartTime ) / portalAnimationInLength;
+        while (Time.time - StartTime < portalAnimationInLength)
+        {
+
+            float val = (Time.time - StartTime) / portalAnimationInLength;
             //God.fade
-            God.postController._Fade = (1-val );
-            God.camera.transform.position = Vector3.Lerp(endPoint, startPoint  , val);///.Lerp()
-            God.camera.transform.rotation = Quaternion.Slerp(endRot,startRot ,val);///.Lerp()
+            God.postController._Fade = (1 - val);
+            God.camera.transform.position = Vector3.Lerp(endPoint, startPoint, val);///.Lerp()
+            God.camera.transform.rotation = Quaternion.Slerp(endRot, startRot, val);///.Lerp()
 
 
             yield return null;
@@ -240,106 +262,122 @@ public void OnSceneFinishedLoading( WrenUtils.Scene wrenScene ){
 
 
 
-    public void NewGame(){
+    public void NewGame()
+    {
         PlayerPrefs.DeleteAll();
         OnStart();
     }
 
-    public void ResetSave(){
+    public void ResetSave()
+    {
         PlayerPrefs.DeleteAll();
-        currentSceneID = PlayerPrefs.GetInt("_CurrentScene",0);
-        biome = PlayerPrefs.GetInt("_CurrentBiome",-1);
+        currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
+        biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
 
-        int gameStarted = PlayerPrefs.GetInt("_GameStarted",0);
-        if( gameStarted == 0){
+        int gameStarted = PlayerPrefs.GetInt("_GameStarted", 0);
+        if (gameStarted == 0)
+        {
             gameStarted = 1;
         }
-        
+
     }
-        
 
-    public void HardStart(){
 
-        if( useStartScene == false ){
-            currentSceneID = PlayerPrefs.GetInt("_CurrentScene",0);
+    public void HardStart()
+    {
+
+        if (useStartScene == false)
+        {
+            currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
         }
-    
-        biome = PlayerPrefs.GetInt("_CurrentBiome",-1);
 
-        int gameStarted = PlayerPrefs.GetInt("_GameStarted",0);
-        if( gameStarted == 0){
+        biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
+
+        int gameStarted = PlayerPrefs.GetInt("_GameStarted", 0);
+        if (gameStarted == 0)
+        {
             gameStarted = 1;
         }
 
-        PlayerPrefs.SetInt("_GameStarted",1);
+        PlayerPrefs.SetInt("_GameStarted", 1);
         HardLoad(currentSceneID);
 
     }
-    
-    public void OnStart(){
 
-            currentSceneID = PlayerPrefs.GetInt("_CurrentScene",0);
-            biome = PlayerPrefs.GetInt("_CurrentBiome",-1);
+    public void OnStart()
+    {
 
-            int gameStarted = PlayerPrefs.GetInt("_GameStarted",0);
-            if( gameStarted == 0){
-                gameStarted = 1;
+        currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
+        biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
+
+        int gameStarted = PlayerPrefs.GetInt("_GameStarted", 0);
+        if (gameStarted == 0)
+        {
+            gameStarted = 1;
+        }
+
+        PlayerPrefs.SetInt("_GameStarted", 1);
+        LoadScene(currentSceneID);
+
+    }
+
+
+    public void OnEnable()
+    {
+
+        int c = SceneManager.sceneCount;
+        for (int i = 0; i < c; i++)
+        {
+            UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt(i);
+            print(scene.name);
+            if (scene.name != "BaseScene")
+            {
+                SceneManager.UnloadScene(scene);
             }
+        }
+        //  OnStart();
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
 
-            PlayerPrefs.SetInt("_GameStarted",1);
-            LoadScene(currentSceneID); 
-        
+
     }
 
-
-    public void OnEnable(){
-
-                int c = SceneManager.sceneCount;
-     for (int i = 0; i < c; i++) {
-         UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt (i);
-         print (scene.name);
-         if (scene.name != "BaseScene") {
-             SceneManager.UnloadScene(scene);
-         }
-     }
-      //  OnStart();
-       SceneManager.sceneLoaded += OnSceneLoaded;
-       SceneManager.sceneUnloaded += OnSceneUnloaded;
-
-  
-    }
-
-    public void OnDisable(){
-       //OnStart();
-       SceneManager.sceneLoaded -= OnSceneLoaded;
-       SceneManager.sceneUnloaded -= OnSceneUnloaded;
+    public void OnDisable()
+    {
+        //OnStart();
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
     }
 
 
 
     public UnityEvent OnSceneLoadEvent;
 
-    void OnSceneUnloaded( UnityEngine.SceneManagement.Scene  s  ){
+    void OnSceneUnloaded(UnityEngine.SceneManagement.Scene s)
+    {
 
     }
 
-    void OnSceneLoaded(UnityEngine.SceneManagement.Scene  scene, LoadSceneMode mode)
+    void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, LoadSceneMode mode)
     {
         OnSceneLoadEvent.Invoke();
     }
 
-       void OnSceneLoaded()
+    void OnSceneLoaded()
     {
         OnSceneLoadEvent.Invoke();
     }
- 
-    bool isScene_CurrentlyLoaded(string sceneName_no_extention, out UnityEngine.SceneManagement.Scene sceneFound ) {
-        
+
+    bool isScene_CurrentlyLoaded(string sceneName_no_extention, out UnityEngine.SceneManagement.Scene sceneFound)
+    {
+
         sceneFound = SceneManager.GetSceneAt(0);
-        for(int i = 0; i<SceneManager.sceneCount; ++i) {
+        for (int i = 0; i < SceneManager.sceneCount; ++i)
+        {
             UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt(i);
 
-            if(scene.name == sceneName_no_extention) {
+            if (scene.name == sceneName_no_extention)
+            {
                 //the scene is already loaded
                 sceneFound = scene;
                 return true;

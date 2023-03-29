@@ -119,6 +119,7 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     force += length(_BoostVal) * lifeRingDir * -.1* .01;
 
 
+
       for( int i = 0; i < _NumWrens; i++ ){
 
           Wren w = _WrenBuffer[i];
@@ -137,9 +138,6 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
 
     vert.vel += force * .1 * (1+hash(pID*1021.))/2;
-
-
-
 
     vert.life -= .004* (3+sin(float(pID)));
     vert.pos += vert.vel;
