@@ -13,7 +13,7 @@ public class LookAtLocation : MonoBehaviour
     public float minStrength;
     public float maxStrength;
     public float radius;
-    
+
     public bool onlyOnGround;
 
     public bool isTargeting;
@@ -22,21 +22,22 @@ public class LookAtLocation : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
-    void OnTriggerEnter(Collider c ){
+    void OnTriggerEnter(Collider c)
+    {
         // skip if only want on ground
-        if( onlyOnGround && !God.wren.state.onGround ) return;
+        if (onlyOnGround && !God.wren.state.onGround) return;
 
-        if( Helpers.isWrenCollision(c) ){
-            print(":helllllos");
+        if (Helpers.isWrenCollision(c))
+        {
 
             isTargeting = true;
             tmpStrength = God.wren.physics.rotateTowardsTargetOnGround;
@@ -46,12 +47,11 @@ public class LookAtLocation : MonoBehaviour
     }
 
 
-    void OnTriggerExit(Collider c){
+    void OnTriggerExit(Collider c)
+    {
 
-           // skip if only want on ground
-        if( onlyOnGround && !God.wren.state.onGround ) return;
-
-        if( Helpers.isWrenCollision(c) ){
+        if (Helpers.isWrenCollision(c))
+        {
             isTargeting = false;
             God.wren.physics.rotateTowardsTargetOnGround = tmpStrength;
             God.wren.cameraWork.objectTargeted = null;

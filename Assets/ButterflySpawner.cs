@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
-
+using IMMATERIA;
 
 using static Unity.Mathematics.math;
 using Unity.Mathematics;
@@ -42,6 +42,8 @@ public class ButterflySpawner : MonoBehaviour
     public ParticleSystem gotAteParticleSystem;
     public AudioClip gotAteClip;
 
+    public TransformBuffer tb;
+
     // Start is called before the first frame update
     void OnEnable()
     {
@@ -71,22 +73,49 @@ public class ButterflySpawner : MonoBehaviour
             active[i] = true;
             velocities[i] = float3(0, 0, 0);//new float3(UnityEngine.Random.Range(-1, 1), UnityEngine.Random.Range(-1, 1), UnityEngine.Random.Range(-1, 1));
 
+
         }
+
 
 
 
     }
 
+    void OnDisable()
+    {
+        for (int i = this.transform.childCount; i > 0; --i)
+            DestroyImmediate(this.transform.GetChild(0).gameObject);
+    }
+
+    void Destroy()
+    {
+        for (int i = this.transform.childCount; i > 0; --i)
+            DestroyImmediate(this.transform.GetChild(0).gameObject);
+    }
+
     public float maxSpeed = 1;
+    public int numToUpdate = 32;
+    public int lastUpdated = 0;
+
+    public float updateAllRadius;
+    public float updateNoneRadius;
+
+
+    public float randomFromInt(int i)
+    {
+        int customSeed = 1234;
+        UnityEngine.Random.InitState(customSeed);
+        return UnityEngine.Random.value;
+    }
 
     // Update is called once per frame
     void Update()
     {
 
-        if (God.wren)
+        if (WrenUtils.God.wren)
         {
-            sharkPos = God.wren.transform.position;
-            sharkSpeed = God.wren.physics.vel;
+            sharkPos = WrenUtils.God.wren.transform.position;
+            sharkSpeed = WrenUtils.God.wren.physics.vel;
         }
         else
         {
@@ -95,41 +124,59 @@ public class ButterflySpawner : MonoBehaviour
         }
 
 
+        float3 dist = float3(transform.position) - sharkPos;
+        float len = length(dist);
+
+        float smoothVal = (len - updateAllRadius) / (updateNoneRadius - updateAllRadius);
+        smoothVal = saturate(smoothVal);
+        numToUpdate = (int)((1 - smoothVal) * (float)butterflys.Length);
+
 
         float3 force;
-        for (int i = 0; i < butterflys.Length; i++)
+        for (int i = 0; i < numToUpdate; i++)
         {
+
+            int fID = (lastUpdated + i) % butterflys.Length;
             force = 0;
-            // need to write a flocking alorigthm
+
+            force += CohesionForce(fID);
+            force += AlignmentForce(fID);
+            force += SeperationForce(fID);
+            force += SharkRepelForce(fID);
 
 
-            force += CohesionForce(i);
-            force += AlignmentForce(i);
-            force += SeperationForce(i);
+            velocities[fID] += force;
 
-            force += float3(centerForce * (transform.position - butterflys[i].transform.position));
-
-            force += SharkRepelForce(i);
-
-
-
-            velocities[i] += force;
-
-            if (length(velocities[i]) > maxSpeed)
+            if (length(velocities[fID]) > maxSpeed)
             {
-                velocities[i] = normalize(velocities[i]) * maxSpeed;
+                velocities[fID] = normalize(velocities[fID]) * maxSpeed;
             }
 
+
+
+        }
+
+        for (int i = 0; i < butterflys.Length; i++)
+        {
+
+
+
+            force = 0;
+            force += float3(centerForce * (transform.position - butterflys[i].transform.position)) * (randomFromInt(i) * .5f + .8f);
+
+            velocities[i] += force;
 
             positions[i] += velocities[i];
 
             butterflys[i].transform.position = positions[i];
             butterflys[i].transform.rotation = Quaternion.Slerp(butterflys[i].transform.rotation, Quaternion.LookRotation(velocities[i], Vector3.up), .1f);
 
-
+            //velocities[i] *= .9f;
         }
 
 
+        lastUpdated += numToUpdate;
+        lastUpdated %= butterflys.Length;
 
     }
 
@@ -232,7 +279,7 @@ public class ButterflySpawner : MonoBehaviour
         gotAteParticleSystem.Play();
         gotAteParticleSystem.transform.position = b.transform.position;
 
-        God.audio.Play(gotAteClip);
+        WrenUtils.God.audio.Play(gotAteClip);
         b.gameObject.SetActive(false);
         for (int i = 0; i < butterflys.Length; i++)
         {
