@@ -177,7 +177,39 @@ float4 frag (varyings v) : COLOR {
     col *= pow( texCUBE( _CubeMap , rd ) ,1) * 10;//pow(texCUBE( _CubeMap , rd ).b ,10) * 100;
 
   col *= _Fade;
-        //col = sin(atan2( rd.x , rd.z) * 10) * .1;
+
+
+  col = 0;
+  for( int i = 0; i < 3; i++ ){
+    float3 fPos = _WorldSpaceCameraPos * .1  + v.ro * 100+ rd * i * 10.1f;
+    float v = pow(noise( (fPos + float3(0,_Time.y * 10,0)) * .3 * float3(.8,.1 ,1)),2);//sin( fPos.x *100 + _Time.x) * .1 + sin( fPos.y *100 + _Time.y) * .1 + sin( fPos.z *100 + _Time.z) * .1;
+    v += noise(fPos * .03+ float3(0,_Time.y * .1,0)) * 2;
+
+    v/=5;
+    float3 tMap = pow( texCUBE( _CubeMap , fPos ) ,1) * 2;
+    if( i == 0 ){
+      col += float3(v,.2,.2) * (v+.1) * tMap;
+    }else if( i == 1 ){
+      col += float3(.2,v,.2)*(v+.1) * tMap;;
+    }else if( i == 2 ){
+      col += float3(.2,.2,v)* (v+.1) * tMap;;
+    }
+
+    
+    
+  }
+
+  col *= pow(saturate(1-abs(rd.y)),2);
+
+ col *= col;
+    col *= _Fade;
+
+
+//col *= 10;
+    col = saturate(col);  
+   // col *= .5;
+   // col += .5;
+  // = sin(atan2( rd.x , rd.z) * 10) * .1;
     return float4( col.xyz, 1);//saturate(float4(col,3*length(col) ));
 
 
