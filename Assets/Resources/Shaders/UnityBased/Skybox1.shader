@@ -184,9 +184,9 @@ float4 frag (varyings v) : COLOR {
     float3 fPos = _WorldSpaceCameraPos * .1  + v.ro * 100+ rd * i * 10.1f;
     float v = pow(noise( (fPos + float3(0,_Time.y * 10,0)) * .3 * float3(.8,.1 ,1)),2);//sin( fPos.x *100 + _Time.x) * .1 + sin( fPos.y *100 + _Time.y) * .1 + sin( fPos.z *100 + _Time.z) * .1;
     v += noise(fPos * .03+ float3(0,_Time.y * .1,0)) * 2;
-
+  //v= floor(v* 2) / 2;
     v/=5;
-    float3 tMap = pow( texCUBE( _CubeMap , fPos ) ,1) * 2;
+    float3 tMap = float3(.5 , 1 - 2*abs(rd.y), 1-abs( rd.y));// pow( texCUBE( _CubeMap , fPos ) ,1) * 2;
     if( i == 0 ){
       col += float3(v,.2,.2) * (v+.1) * tMap;
     }else if( i == 1 ){
@@ -199,11 +199,14 @@ float4 frag (varyings v) : COLOR {
     
   }
 
+//  col = floor(col * 5) / 5;
+
   col *= pow(saturate(1-abs(rd.y)),2);
 
  col *= col;
     col *= _Fade;
 
+  col += pow(texCUBE(_CubeMap, rd).xyz ,1).x * pow(abs(rd.y),2)*2;//* 1;
 
 //col *= 10;
     col = saturate(col);  

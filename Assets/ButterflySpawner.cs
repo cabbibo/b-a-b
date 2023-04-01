@@ -103,9 +103,7 @@ public class ButterflySpawner : MonoBehaviour
 
     public float randomFromInt(int i)
     {
-        int customSeed = 1234;
-        UnityEngine.Random.InitState(customSeed);
-        return UnityEngine.Random.value;
+        return (float)Mathf.Sin(((float)i * 10131.9494f + (float)i * 441.414f)) * 0.5f + 0.5f;
     }
 
     // Update is called once per frame
