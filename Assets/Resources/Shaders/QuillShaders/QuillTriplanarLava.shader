@@ -164,7 +164,7 @@ float4 frag (varyings v) : COLOR {
  // float3 triplanar = triplanarSample( v.worldPos , v.nor);
     col = v.color;
 
-    //col *= _Color;
+    col *= _Color;
 
 
     //col *=  ((floor( m * 2 + triplanar.x * .2 )/ 2) * .3 + 1);
@@ -197,7 +197,8 @@ float4 frag (varyings v) : COLOR {
     col *= ( tex2D(_TriplanarMap , float2( (fadeDist + fadeNoise * .3) * .1  - _Time.x , .1) ).xyz * 2+ .3);
     col *= ((sin((fadeDist + fadeNoise * .4) - _Time.y)+1)/2) + .4;
     //col *= abs(((fadeDist * 100 + _Time.y * 10) % 10)/10 );
-        
+    
+
         //col = 1;
   //  if( fwd > length(v.eye) * .03  ){ discard; }
    // if( sin(v.worldPos.x * .1 ) > -.9 && sin(v.worldPos.z * .1 ) > -.9 ){ col = 0;}

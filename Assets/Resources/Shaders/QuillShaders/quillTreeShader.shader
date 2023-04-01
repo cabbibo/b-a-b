@@ -181,8 +181,40 @@ float4 frag (varyings v) : COLOR {
     //col *= saturate(capDistance * 10);
   }
     col *= (shadow * .5 + .5);
-
     col *= _Color;
+
+
+    float shadowStep = floor(shadow * 3)/3;
+
+    //float 
+
+  float3 shadowCol = 0;
+  
+    for( int i = 0; i < 3; i++){
+
+      float3 fPos = v.worldPos - normalize(v.eye) * float(i) * 1.3;
+      float v = (snoise(fPos * 10)+1)/2;
+      shadowCol += hsv((float)i/3,1,v);
+
+    
+    }//
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+
+    shadowCol = length(shadowCol) * (shadowCol * .8 + .3)  * 10;//
+shadowCol += .3;
+    shadowCol *= float3(.1 , .3 , .6);
+    shadowCol /= clamp( (.1 + .1* length( v.eye)), 0, 2);
+    col = shadowStep * col * float3(1,1,.6) +  clamp( (1-shadowStep) * length(col) * length(col) * 10 , .1, 1) * shadowCol;// float3(.1,.2,.5);
+
+
+    float b = length(col);
+
+    col = normalize( col) * b * b * 6;
+
+    //col *= col * 4;
     
 
     return float4(col,1);
