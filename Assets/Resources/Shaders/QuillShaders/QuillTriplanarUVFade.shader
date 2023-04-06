@@ -56,6 +56,8 @@ Shader "Quill/TriplanarUVFade" {
 
     float3 _FadeLocation;
 
+    float _Multiplier;
+
 
       //uniform float4x4 worldMat;
 
@@ -178,6 +180,44 @@ float4 frag (varyings v) : COLOR {
     }else{
         col *= saturate(fadeDif * .1);
     }
+
+
+
+    
+    float shadowStep = shadow;//floor(shadow * 3)/3;
+
+  float3 shadowCol = 0;
+  
+    for( int i = 0; i < 3; i++){
+
+      float3 fPos = v.worldPos - normalize(v.eye) * float(i) * 1.3;
+      float v = (snoise(fPos * 10)+1)/2;
+      shadowCol += hsv((float)i/3,1,v);
+
+    
+    }//
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+
+    shadowCol = length(shadowCol) * (shadowCol * .8 + .3)  * 10;//
+
+shadowCol += .5;
+    shadowCol *= float3(.1 , .3 , .6);
+
+    shadowCol /=  clamp( (.1 + .1* length( v.eye)), 2, 3);
+    col = shadowStep * col * float3(1,1,.6) +  clamp( (1-shadowStep) * length(col) * length(col) * 10 , .1, 1) * shadowCol;// float3(.1,.2,.5);
+
+
+
+
+   // col = col * shadow * float3(1,1,.8) + (1-shadow) * col * float3(.2,.4,1);//(shadow * .5 + .5);
+
+    float b = length(col);
+
+  col = normalize( col) * (b * b * b * 1 * _Multiplier);
+
         
   //  if( fwd > length(v.eye) * .03  ){ discard; }
    // if( sin(v.worldPos.x * .1 ) > -.9 && sin(v.worldPos.z * .1 ) > -.9 ){ col = 0;}

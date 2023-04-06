@@ -9,7 +9,7 @@ public class DandelionPluckInstrument : Cycle
 
 
     public DataForm pluckForm;
-  
+
     public int[] steps;
     public AudioClip[] clips;
 
@@ -28,7 +28,8 @@ public class DandelionPluckInstrument : Cycle
 
 
     public float minPlayTime;
-    public override void WhileLiving(float v ){
+    public override void WhileLiving(float v)
+    {
         float numPlucked = pluckForm.values[0];
 
         float newPlucks = numPlucked - oNumPlucked;
@@ -37,14 +38,15 @@ public class DandelionPluckInstrument : Cycle
 
 
 
-        if( newPlucks > 0 && Time.time - lastPlayTime > minPlayTime){
-        
-            AudioClip clip = clips[Random.Range(0,clips.Length)];
-            int step = steps[Random.Range(0,steps.Length)];
+        if (newPlucks > 0 && numPlucked > .4 && Time.time - lastPlayTime > minPlayTime)
+        {
 
-          //  AudioMixer mix = WrenUtils.God.audio.defaultMixer;
+            AudioClip clip = clips[Random.Range(0, clips.Length)];
+            int step = steps[Random.Range(0, steps.Length)];
+
+            //  AudioMixer mix = WrenUtils.God.audio.defaultMixer;
             string groupName = mixerName;
-            WrenUtils.God.audio.Play( clip , numPlucked * pitchMultiplier  , numPlucked * volumeMultiplier ,0,1 , WrenUtils.God.audio.defaultMixer , groupName );
+            WrenUtils.God.audio.Play(clip, numPlucked * pitchMultiplier, numPlucked * volumeMultiplier, 0, 1, WrenUtils.God.audio.defaultMixer, groupName);
 
             lastPlayTime = Time.time;
 

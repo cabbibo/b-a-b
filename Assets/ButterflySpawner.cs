@@ -40,9 +40,16 @@ public class ButterflySpawner : MonoBehaviour
 
 
     public ParticleSystem gotAteParticleSystem;
-    public AudioClip gotAteClip;
+    public AudioClip[] gotAteClips;
+
+    public float clipVolumeFalloff;
+    public float clipPitchLow;
+    public float clipPitchHigh;
+    public float clipPitchDistanceLow;
+    public float clipPitchDistanceHigh;
 
     public TransformBuffer tb;
+    public Cycle tbParent;
 
     // Start is called before the first frame update
     void OnEnable()
@@ -57,6 +64,8 @@ public class ButterflySpawner : MonoBehaviour
         velocities = new float3[numButterflys];
         active = new bool[numButterflys];
 
+        tb.Deactivate();
+        tb.transforms = new Transform[numButterflys];
         for (int i = 0; i < numButterflys; i++)
         {
             Vector3 fPos = new Vector3(UnityEngine.Random.Range(-spawnRange.x, spawnRange.x),
@@ -73,8 +82,22 @@ public class ButterflySpawner : MonoBehaviour
             active[i] = true;
             velocities[i] = float3(0, 0, 0);//new float3(UnityEngine.Random.Range(-1, 1), UnityEngine.Random.Range(-1, 1), UnityEngine.Random.Range(-1, 1));
 
-
+            tb.transforms[i] = bug.transform;
         }
+
+
+        tbParent.SafeInsert(tb);
+
+        if (tbParent.living)
+        {
+            print("alive");
+            tbParent.JumpStart(tb);
+        }
+        else
+        {
+            tb.Activate();
+        }
+
 
 
 
@@ -83,6 +106,17 @@ public class ButterflySpawner : MonoBehaviour
 
     void OnDisable()
     {
+        if (tbParent.living)
+        {
+            print("alive");
+            tbParent.JumpDeath(tb);
+        }
+        else
+        {
+            tb.Deactivate();
+        }
+
+
         for (int i = this.transform.childCount; i > 0; --i)
             DestroyImmediate(this.transform.GetChild(0).gameObject);
     }
@@ -276,8 +310,13 @@ public class ButterflySpawner : MonoBehaviour
 
         gotAteParticleSystem.Play();
         gotAteParticleSystem.transform.position = b.transform.position;
+        gotAteParticleSystem.transform.LookAt(WrenUtils.God.camera.transform.position);
 
-        WrenUtils.God.audio.Play(gotAteClip);
+        float d = length(b.transform.position - WrenUtils.God.wren.transform.position);
+        float pitch = Mathf.Lerp(clipPitchLow, clipPitchHigh, (d - clipPitchDistanceLow) / (clipPitchDistanceHigh - clipPitchDistanceLow));
+
+
+        WrenUtils.God.audio.Play(gotAteClips, 1, pitch);
         b.gameObject.SetActive(false);
         for (int i = 0; i < butterflys.Length; i++)
         {

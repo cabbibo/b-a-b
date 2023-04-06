@@ -228,7 +228,7 @@ float4 frag (varyings v) : COLOR {
 
 
 
-    float shadowStep = floor(shadow * 3)/3;
+    float shadowStep = shadow;//floor(shadow * 3)/3;
 
   float3 shadowCol = 0;
   
@@ -250,7 +250,7 @@ float4 frag (varyings v) : COLOR {
 shadowCol += .5;
     shadowCol *= float3(.1 , .3 , .6);
 
-    shadowCol /= clamp( (.1 + .1* length( v.eye)), 0, 2);
+    shadowCol /=  clamp( (.1 + .1* length( v.eye)), 2, 3);
     col = shadowStep * col * float3(1,1,.6) +  clamp( (1-shadowStep) * length(col) * length(col) * 10 , .1, 1) * shadowCol;// float3(.1,.2,.5);
 
 

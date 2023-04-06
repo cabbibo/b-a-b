@@ -235,12 +235,21 @@ void CollisionWren (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID,
     // Inertia: objects in motion stay in motion.
     float3 vel = getVel( vert.pos , vert.oPos);
 
-
+  if( length(d) < _RepelRadius * 1 ){
+    
+    _DataBuffer[0] = max( ((_RepelRadius * 1)/length(d)) - 1, _DataBuffer[0]);
+ 
+  }
+ 
   float l = length(vel);
 
-  if( l > .01){
-      _DataBuffer[0] += l;//max( 1/length(d) , _DataBuffer[0]);
-  }
+ // if( l > .01){
+
+   // _DataBuffer[0] = max( 1/length(d) , _DataBuffer[0]);
+    //  _DataBuffer[0] += max( 1/length(d) , _DataBuffer[0]);
+  //}
+
+
 
     if( length( force ) > 10 ){
       force = normalize(force) * 10;

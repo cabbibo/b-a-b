@@ -2,8 +2,10 @@
 #pragma kernel LifeTime
 #pragma kernel TrailTransfer
 #pragma kernel LineTransfer
+#pragma kernel Curvy
 #pragma kernel DebugWidthTransfer
 #pragma kernel CrystalWorms
+#pragma kernel Simple
 
 
 struct Vert{
@@ -372,6 +374,56 @@ void LineTransfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
 }
 
 
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Curvy (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+    int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int particleID = pID / ( _RibbonLength * 2);
+
+    int idInTube = pID % ( _RibbonLength * 2);
+    int row = idInTube / 2;
+    int col = pID % 2;
+    Vert baseParticle  = _SkeletonBuffer[ safeID(particleID * _NumVertsPerHair, _SkeletonBuffer_COUNT) ];
+    Vert tipParticle  = _SkeletonBuffer[ safeID(particleID * _NumVertsPerHair + _NumVertsPerHair-1, _SkeletonBuffer_COUNT) ];
+    float rowVal = float(row) / float(_RibbonLength);
+    float colVal =  (float(col)/float(2)) ;
+
+    float3 upPos; float3 doPos;
+    float3 upTang; float3 doTang;
+    float3 tang;
+    float3 nor;
+
+
+   
+    float3 pos = cubicFromValue( rowVal , particleID , upPos , doPos , tang ,nor  );
+
+   
+    float3 fPos = pos;
+
+  float fRadius = _Radius * min( rowVal * 3, (1-rowVal));
+    pos += normalize(nor) * ((float(pID)%2)-.5) * fRadius;// * _Radius;
+
+    float2 fUV = float2( float(row+1)/_RibbonLength , colVal*2 );    
+
+    int sID = safeID( pID , _VertBuffer_COUNT );
+    Vert v = _VertBuffer[sID];
+
+   
+    v.uv = fUV;
+    v.vel = pos - v.pos;
+    v.debug = float2(float(particleID),baseParticle.debug.y);
+    v.pos = pos;
+    v.nor = normalize(nor);//normalize(tang);
+    v.tangent = normalize(tang);//nor;// * ((float(pID)%2)-.5); //-normalize(cross(nor,tang));
+    _VertBuffer[sID] = v;
+
+}
+
+
+
+
 
 #define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
@@ -491,6 +543,63 @@ void CrystalWorms (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
     v.uv = fUV;
     v.debug = float2(float(particleID),baseParticle.debug.y);
     v.pos = pos;
+    
+   // v.nor = normalize(nor);//normalize(tang);
+    //v.tangent = normalize(tang);//nor;// * ((float(pID)%2)-.5); //-normalize(cross(nor,tang));
+    _VertBuffer[sID] = v;
+
+}
+
+
+
+
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Simple (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+    int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int particleID = pID / ( _RibbonLength * 2);
+
+    
+ 
+    int idInTube = pID % ( _RibbonLength * 2);
+    int row = idInTube / 2;
+    int col = pID % 2;
+    Vert baseParticle  = _SkeletonBuffer[ safeID(particleID * _NumVertsPerHair, _SkeletonBuffer_COUNT) ];
+    Vert tipParticle  = _SkeletonBuffer[ safeID(particleID * _NumVertsPerHair + _NumVertsPerHair-1, _SkeletonBuffer_COUNT) ];
+    float rowVal = float(row) / float(_RibbonLength-1);
+    float colVal =  (float(col)/float(2)) ;
+
+    float3 upPos; float3 doPos;
+    float3 upTang; float3 doTang;
+    float3 tang;
+    float3 nor;
+
+
+    int sID = safeID( pID , _VertBuffer_COUNT );
+    Vert v = _VertBuffer[sID];
+
+
+    float3 pos = lerp( baseParticle.pos , tipParticle.pos , rowVal );
+    float3 tangent = baseParticle.nor;
+
+
+  float  nRow = float(row)/_RibbonLength;
+  float rowWidth = clamp( min( 1-nRow , nRow * 4),0,1)  * _Radius;
+
+    float2 fUV = float2( rowVal , colVal*2 );    
+
+
+    pos += tangent * ( colVal-.25) * _Radius;
+
+    v.vel = pos - v.pos;
+    v.uv = fUV;
+    v.debug = float2(float(particleID),baseParticle.debug.y);
+    v.pos = pos;
+    v.nor = baseParticle.nor;
     
    // v.nor = normalize(nor);//normalize(tang);
     //v.tangent = normalize(tang);//nor;// * ((float(pID)%2)-.5); //-normalize(cross(nor,tang));

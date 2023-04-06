@@ -132,6 +132,7 @@ Vert v = _VertBuffer[_TriBuffer[alternate + whichMesh * _TrisPerMesh]];
       o.nor = normalize(mul( baseMatrix , float4(v.nor,0)).xyz);
       o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
       o.uv = v.uv;
+      o.eye = _WorldSpaceCameraPos - o.worldPos;
   UNITY_TRANSFER_SHADOW(o,o.worldPos);
   
 
@@ -139,24 +140,64 @@ Vert v = _VertBuffer[_TriBuffer[alternate + whichMesh * _TrisPerMesh]];
 
 }
 
-
+#include "../Chunks/snoise.cginc"
 //Pixel function returns a solid color for each point.
 float4 frag (varyings v) : COLOR {
   fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos);//* .5 + .5;
   float3 tCol = tex2D (_MainTex, v.uv);
 
   float3 m = dot( UNITY_MATRIX_V[2].xyz , v.nor );
+  float3 m2 = dot(float3(0,1,0), v.nor );
   float hueOffset =   sin(v.id * 15.91) * .04 + sin( v.id * 14.1445) * .06;
 
 
 
 
    // float3 col= float3(v.data1.x,v.data1.y,1.);//(1-tCol.x) * hsv(m * .3 + v.feather * .2, 1,1) * shadow;
-    float3 col= hsv(v.hue , _Saturation,1);// * lerp(1,tCol ,1-shadow);
-float lightness = m * ( shadow * .5 + .5);
+    float3 col= hsv(v.hue + m2 * .4, _Saturation,1);// * lerp(1,tCol ,1-shadow);
+float lightness = saturate(m) * ( shadow * .5 + .5);
 lightness = floor(lightness*2) / 2;
 
-col *= lightness + .4;
+col *= lightness + .1;
+
+//col *= col * col * col * 10;
+
+
+
+
+    float shadowStep = floor(shadow * 3)/3;
+
+    //float 
+
+  float3 shadowCol = 0;
+  
+    for( int i = 0; i < 3; i++){
+
+      float3 fPos = v.worldPos - normalize(v.eye) * float(i) * 1.3;
+      float v = (snoise(fPos * 10)+1)/2;
+      shadowCol += hsv((float)i/3,1,v);
+
+    
+    }//
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+
+    shadowCol = length(shadowCol) * (shadowCol * .8 + .3)  * 10;//
+shadowCol += .3;
+    shadowCol *= float3(.1 , .3 , .6);
+    shadowCol /= clamp( (.1 + .1* length( v.eye)), 1, 3);
+    col = shadowStep * col * float3(1,.8,.6)* (length(shadowCol)+.4) *1 +  clamp( (1-shadowStep) * length(col) * length(col) * 10 , 0.05, 1) * shadowCol;// float3(.1,.2,.5);
+
+
+    float b = length(col);
+
+    col = normalize( col*col) * b * b * 4;
+    //col = saturate(col/.8)*.8;
+
+
+
     //col = v.nor * .5 +.5;
     return float4(col,1);
 }
