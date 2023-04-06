@@ -9,6 +9,7 @@ Shader "Terrain/Skybox1"
     _MapScale("MapScale", float) = 1
     _Fade("_Fade", float) = 1
     _CubeMap("_CubeMap" ,Cube) = "white" {}
+    
     }
 
 
@@ -51,6 +52,8 @@ CGPROGRAM
 
     sampler2D _AudioMap;
     samplerCUBE _CubeMap;
+
+    float3 _LightDir;
 
       //A simple input struct for our pixel shader step containing a position.
       struct varyings {
@@ -203,6 +206,9 @@ float4 frag (varyings v) : COLOR {
 
   col *= pow(saturate(1-abs(rd.y)),2);
 
+    col +=float3(1,.8,.5)*30*pow(  saturate(dot( _LightDir, -normalize(rd))),101);
+
+
  col *= col;
     col *= _Fade;
 
@@ -210,6 +216,8 @@ float4 frag (varyings v) : COLOR {
 
 //col *= 10;
     col = saturate(col);  
+
+    //col += pow( dot( _LightDir, -normalize(rd)),30);
    // col *= .5;
    // col += .5;
   // = sin(atan2( rd.x , rd.z) * 10) * .1;

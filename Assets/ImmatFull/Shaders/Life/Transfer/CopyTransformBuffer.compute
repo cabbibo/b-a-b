@@ -1,0 +1,45 @@
+﻿#pragma kernel Transfer
+
+struct Vert{
+    float3 pos;
+    float3 vel;
+    float3 nor;
+    float3 tangent;
+    float2 uv;
+    float2 debug;
+};
+
+struct Transform{
+  float4x4 localToWorld;
+  float4x4 worldToLocal;
+};
+
+RWStructuredBuffer<Vert> _VertBuffer;
+RWStructuredBuffer<Transform> _TransformBuffer;
+
+int _VertBuffer_COUNT;
+int _TransformBuffer_COUNT;
+#include "../../Chunks/safeID.cginc"
+
+
+
+#define NR_THREADS 64
+[numthreads(NR_THREADS,1,1)]
+void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+    int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int sID = safeID(pID,_VertBuffer_COUNT);
+
+    Transform t = _TransformBuffer[sID];
+
+
+    float3 fPos = mul( t.localToWorld , float4(0,0,0,1)).xyz;
+
+    _VertBuffer[sID].vel = _VertBuffer[sID].pos - fPos;
+    _VertBuffer[sID].pos = fPos;
+    _VertBuffer[sID].debug.x = .5;
+    _VertBuffer[sID].debug.y = .5;
+
+}
+

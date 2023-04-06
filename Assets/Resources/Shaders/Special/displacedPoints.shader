@@ -139,22 +139,22 @@
 
                  if( alternate == 0 ){
                     fPos = p1;
-                    fUV = float2(0,0);
+                    fUV = float2(0,1);
                 }else if( alternate == 1){
                     fPos = p2;
-                    fUV = float2(1,0);
+                    fUV = float2(0,-1);
                 }else if( alternate == 2){
                     fPos = p4;
-                    fUV = float2(1,1);
+                    fUV = float2(1,0);
                 }else if( alternate == 3){
                     fPos = p1;
-                    fUV = float2(0,0);
+                    fUV = float2(0,1);
                 }else if( alternate == 4){
                     fPos = p3;
-                    fUV = float2(1,1);
+                    fUV = float2(-1,0);
                 }else{
                     fPos = p2;
-                    fUV = float2(0,1);
+                    fUV = float2(0,-1);
                 }
 
                 
@@ -184,7 +184,11 @@
                // if( length( v.uv-.5) > .5 ){discard;}
                 col *= _Fade;
 
-                col.xyz *= normalize( v.dirToWren) * .5 + .5;
+                col.r *= saturate( 1-abs(v.uv.x) - 0);
+                col.g *= saturate( 1-abs(v.uv.x) - .2) * 1.2;
+                col.b *= saturate( 1-abs(v.uv.x) - .4)* 1.4;
+
+                //col.xyz *= normalize( v.dirToWren) * .5 + .5;
 
                 col.xyz *= v.disform * v.disform * v.disform * .1;
                 return col;

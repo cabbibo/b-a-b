@@ -1,5 +1,7 @@
 ﻿#pragma kernel Flow
-#pragma kernel FlowWithWren
+#pragma kernel Flow2
+//#pragma kernel FlowSlow
+//#pragma kernel FlowWithWren
 #pragma kernel Transport
 
 struct Vert{
@@ -70,7 +72,7 @@ float3 DoForce( inout Vert vert , int pID){
     }
     
     force += targetPos - vert.pos;
-    force *= _TailFlowForce * ((1-nID)* .8 + .2);
+    force *= .1* ((1-nID)* .8 + .2);
 
     float life = _HeadBuffer[safeID(whichHead,_HeadBuffer_COUNT)].life;
     
@@ -80,6 +82,14 @@ float3 DoForce( inout Vert vert , int pID){
         vert.vel = 0;
         force = 0;
     }
+
+    if( length( vert.pos - head.pos ) > 5){
+        vert.pos =head.pos;
+        vert.vel = 0;
+    }
+
+    vert.nor = head.nor;
+    vert.tan = head.tan;
 
     /*if( length(head.pos - vert.pos) > 1){
         vert.pos =head.pos;
@@ -119,6 +129,109 @@ void Flow(uint3 id : SV_DispatchThreadID) {
 
 
 
+float3 DoForce2( inout Vert vert , int pID){
+    float3 force = 0;
+
+    int idInTrail = pID % _ParticlesPerTrail;
+    int whichHead = pID / _ParticlesPerTrail;
+
+
+    float nID = float(idInTrail)/float(_ParticlesPerTrail);
+
+    Vert head = _HeadBuffer[safeID(whichHead,_HeadBuffer_COUNT)];
+
+  
+    float3 targetPos = 0;
+    if( idInTrail == 0 ){
+        targetPos =head.pos;
+    }else{
+        targetPos = _VertBuffer[safeID(pID-1,_VertBuffer_COUNT)].pos;
+    }
+    
+    force += targetPos - vert.pos;
+    force *= .1* ((1-nID)* .8 + .2);
+
+    float life = _HeadBuffer[safeID(whichHead,_HeadBuffer_COUNT)].life;
+    
+    // If our head is remitting we need to be remitting too!
+    if( life <= 0 || life >= 1){
+        vert.pos =head.pos;
+        vert.vel = 0;
+        force = 0;
+    }
+
+    if( length( vert.pos - head.pos ) > 20){
+        vert.pos =head.pos;
+        vert.vel = 0;
+    }
+
+    vert.nor = head.nor;
+    vert.tan = head.tan;
+
+    /*if( length(head.pos - vert.pos) > 1){
+        vert.pos =head.pos;
+    }*/
+
+    //vert.nor = head.nor; //normalize(targetPos -vert.pos);//normalize( vert.vel );
+    vert.tan = normalize( cross( vert.nor , float3(1,0,0)));
+
+    vert.life = life;
+
+    //vert.debug =head.debug;
+    vert.uv.x = float( idInTrail) / float( _ParticlesPerTrail);
+    vert.uv.y = float( whichHead) / float( _HeadBuffer_COUNT);
+    
+
+    //force = 0;
+    //vert.pos = 0;
+    return force;
+}
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Flow2(uint3 id : SV_DispatchThreadID) {
+    int pID = id.x;
+  pID = safeID(pID,_VertBuffer_COUNT);
+  Vert vert = _VertBuffer[pID];
+
+
+  if( vert.pos.x == 0  && vert.pos.y == 0 && vert.pos.z == 0 ){
+    DoInit(vert, float(pID));
+  }
+  
+  /*if( vert.life == 0 ){ vert.life = hash(float(pID));}
+  if( length(vert.axis) == 0 ){ vert.axis = newAxis(float(pID)); }
+  
+  vert.nor = mul(rotation(vert.axis,vert.life*10*(hash(float(pID*123))+1)),float4(0,0,1,0)).xyz;*/
+
+  if( vert.life < 0 ){
+
+    vert.pos = DoRemitPosition(pID);
+    vert.vel = DoRemitVelocity(pID);
+    vert.life = 1;//
+  
+  }else{
+
+    float3 force = DoForce2( vert , pID); //float3(0,0,0);
+
+    vert.vel += force;/// * .00004 * (1+hash(pID*1021.))/2;
+
+    vert.life -= DoLife( vert , pID );//.0004 * (3+sin(float(pID)));
+    vert.pos += vert.vel;
+
+    vert.vel *= DoDampening( vert , pID );
+
+  }
+
+
+  
+  _VertBuffer[pID] = vert;
+}
+
+
+
+
 int _NumVertsPerHair;
 
 #define NR_THREADS 128
@@ -147,3 +260,4 @@ void Transport (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
       }
 
 }
+

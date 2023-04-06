@@ -1,0 +1,139 @@
+﻿#pragma kernel Transfer
+#pragma kernel Transfer1
+
+struct Vert{
+    float3 pos;
+    float3 vel;
+    float3 nor;
+    float3 tangent;
+    float2 uv;
+    float2 debug;
+};
+
+RWStructuredBuffer<Vert> _VertBuffer;
+RWStructuredBuffer<Vert> _SkeletonBuffer;
+RWStructuredBuffer<Vert> _HeadBuffer;
+
+int _VertBuffer_COUNT;
+int _SkeletonBuffer_COUNT;
+int _HeadBuffer_COUNT;
+
+
+float _Radius;
+float _Time;
+
+#include "../../Chunks/safeID.cginc"
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void  Transfer(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+    int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int vID = safeID(pID, _VertBuffer_COUNT);
+    int bID = safeID(pID/8, _HeadBuffer_COUNT);
+    int sID = safeID(pID/4, _SkeletonBuffer_COUNT);
+
+    int whichInWing = vID % 4;
+    int whichWing = (vID / 4) % 2;
+
+
+    Vert v = _VertBuffer[vID];
+    Vert s = _SkeletonBuffer[sID];
+    Vert b = _HeadBuffer[bID];
+
+
+    float3 d = s.pos - b.pos;
+
+
+    float speedMultiplier = .8;
+
+    float flapAmount =  sin( speedMultiplier * _Time * ( 40 + 5 * sin(float(bID) * 100)) + float( bID) );
+    flapAmount *= .4;
+
+
+    float3 up = b.nor;//normalize(cross(normalize(d), normalize(b.vel)));
+    v.nor = b.nor;
+    v.tangent = b.tangent;
+
+    if( whichInWing == 0 ){
+        v.pos = b.pos;
+        v.uv = 0;
+    }else if( whichInWing == 1 ){
+        v.pos = b.pos + d * .5 + normalize(b.vel) * _Radius + up * flapAmount * .4;
+        v.uv = float2(1,0);
+        
+    }else if( whichInWing == 2 ){
+        v.pos = b.pos + d * .8 - normalize(b.vel) * _Radius  + up* flapAmount * .4;
+        v.uv = float2(0,1);
+    }else{
+        v.pos = s.pos + up* flapAmount- normalize(b.vel) * _Radius * .5;
+        v.uv = 1;
+    }
+
+    _VertBuffer[vID] = v;
+
+
+
+
+   
+
+}
+
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void  Transfer1(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+    int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int vID = safeID(pID, _VertBuffer_COUNT);
+    int bID = safeID(pID/8, _HeadBuffer_COUNT);
+    int sID = safeID(pID/4, _SkeletonBuffer_COUNT);
+
+    int whichInWing = vID % 4;
+    int whichWing = (vID / 4) % 2;
+
+
+    Vert v = _VertBuffer[vID];
+    Vert s = _SkeletonBuffer[sID];
+    Vert b = _HeadBuffer[bID];
+
+
+    float3 d = s.pos - b.pos;
+
+
+    float speedMultiplier = .1;
+
+    float flapAmount =  sin( speedMultiplier * _Time * ( 40 + 5 * sin(float(bID) * 100)) + float( bID) );
+    flapAmount *=1;
+
+
+    float3 up = b.nor;//normalize(cross(normalize(d), normalize(b.vel)));
+    v.nor = b.nor;
+    v.tangent = b.tangent;
+
+    if( whichInWing == 0 ){
+        v.pos = b.pos;
+        v.uv = 0;
+    }else if( whichInWing == 1 ){
+        v.pos = b.pos + d * .5 + normalize(b.vel) * _Radius + up * flapAmount * .4;
+        v.uv = float2(1,0);
+        
+    }else if( whichInWing == 2 ){
+        v.pos = b.pos + d * .8 - normalize(b.vel) * _Radius  + up* flapAmount * .4;
+        v.uv = float2(0,1);
+    }else{
+        v.pos = s.pos + up* flapAmount- normalize(b.vel) * _Radius * .5;
+        v.uv = 1;
+    }
+
+    _VertBuffer[vID] = v;
+
+
+
+
+   
+
+}

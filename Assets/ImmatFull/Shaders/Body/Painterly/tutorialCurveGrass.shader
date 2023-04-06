@@ -52,6 +52,8 @@
             #include "AutoLight.cginc"
 
             #include "../../Chunks/Struct16.cginc"
+            #include "../../Chunks/noise.cginc"
+            #include "../../Chunks/hsv.cginc"
 
 
             struct v2f { 
@@ -197,7 +199,29 @@
 
                 fCol = cMap * tCol * 10;
 
-                fCol = tex2D(_AudioMap, float2(v.uv.x,0)) * 10;
+
+                fCol = tex2D(_AudioMap, float2(v.uv.x * .2 +v.debug.x * .01 ,0)) * 10;
+
+
+                float3 eye = _WorldSpaceCameraPos - v.world;
+
+float3 shadowCol = 0;
+ for( int i = 0; i < 3; i++){
+
+      float3 fPos = v.world - normalize(eye) * float(i) * 1.3;
+      float v = (noise(fPos * 10));
+      shadowCol += hsv((float)i/3,1,v);
+
+    
+    }//
+
+    fCol += pow( shadowCol, 10) * 10 * float3(1,.8,.3);
+
+                //fCol = v.debug.x * .01;
+
+                if( length( fCol < .1 )){
+                    discard;
+                }
 
                 //fCol *= 1-abs(dot(v.bi, float3(0,1,0)));
 
@@ -253,6 +277,7 @@
             struct v2f {
                 V2F_SHADOW_CASTER;
                 float3 nor : NORMAL;
+                float2 uv : TEXCOORD0;
             };
 
 
@@ -263,11 +288,18 @@
                 o.nor = normalize( v.nor);
                 float4 position = ShadowCasterPos(v.pos, normalize(v.nor));
                 o.pos = UnityApplyLinearShadowBias(position);
+                o.uv = v.uv;
                 return o;
             }
 
-            float4 frag(v2f i) : COLOR
+            float4 frag(v2f v) : COLOR
             {
+
+                
+
+                if( length( tex2D(_AudioMap, float2(v.uv.x,0)) * 10 < .1 )){
+                    discard;
+                }
                 SHADOW_CASTER_FRAGMENT(i)
             }
             ENDCG
@@ -276,78 +308,6 @@
 
 
 
-        Pass
-        {
-
-            // Outline Pass
-            Cull OFF
-            ZWrite OFF
-            ZTest ON
-            Stencil
-            {
-                Ref 9
-                Comp notequal
-                Fail keep
-                Pass replace
-            }
-            
-            CGPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            #pragma target 4.5
-            // make fog work
-            #pragma multi_compile_fogV
-            #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
-
-            #include "UnityCG.cginc"
-            #include "AutoLight.cginc"
-            
-
-
-            struct Vert{
-                float3 pos;
-                float3 vel;
-                float3 nor;
-                float3 tan;
-                float2 uv;
-                float2 debug;
-            };
-
-
-            struct v2f { 
-                float4 pos : SV_POSITION; 
-            };
-            float4 _Color;
-
-            StructuredBuffer<Vert> _VertBuffer;
-            StructuredBuffer<int> _TriBuffer;
-
-            float _OutlineHue;
-            float _OutlineAmount;
-
-            v2f vert ( uint vid : SV_VertexID )
-            {
-                v2f o;
-
-                
-                Vert v = _VertBuffer[_TriBuffer[vid]];
-                float3 fPos = v.pos + v.nor * _OutlineAmount;
-                o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
-
-
-                return o;
-            }
-
-            sampler2D _ColorMap;
-            fixed4 frag (v2f v) : SV_Target
-            {
-                
-                fixed4 col = tex2D(_ColorMap, float2( _OutlineHue,0));
-                return col;
-            }
-
-            ENDCG
-        }
 
         
         

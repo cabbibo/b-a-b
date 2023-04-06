@@ -1,0 +1,142 @@
+#pragma kernel Transfer
+#pragma kernel Wings
+#pragma kernel Wings1
+
+struct Vert{
+    float3 pos;
+    float3 vel;
+    float3 nor;
+    float3 tangent;
+    float2 uv;
+    float2 debug;
+};
+
+struct Transform{
+  float4x4 localToWorld;
+  float4x4 worldToLocal;
+};
+
+RWStructuredBuffer<Vert> _VertBuffer;
+RWStructuredBuffer<Transform> _TransformBuffer;
+
+int _VertBuffer_COUNT;
+int _TransformBuffer_COUNT;
+#include "../../Chunks/safeID.cginc"
+
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+    int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int sID = safeID(pID,_VertBuffer_COUNT);
+
+    Transform t = _TransformBuffer[sID];
+
+
+    float3 fPos = mul( t.localToWorld , float4(0,0,0,1)).xyz;
+    float3 fTan =normalize( mul( t.localToWorld , float4(1,0,0,0)).xyz);
+    float3 fNor =normalize( mul( t.localToWorld , float4(0,1,0,0)).xyz);
+
+    _VertBuffer[sID].vel = _VertBuffer[sID].pos - fPos;
+    _VertBuffer[sID].pos = fPos;
+    _VertBuffer[sID].nor = fNor;
+    _VertBuffer[sID].tangent = fTan;
+    _VertBuffer[sID].debug.x = .5;
+    _VertBuffer[sID].debug.y = .5;
+
+}
+
+
+
+RWStructuredBuffer<Vert> _BaseBuffer;
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Wings(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+    int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int sID = safeID(pID,_VertBuffer_COUNT);    
+
+    int bID = sID / 2;
+    int which = sID % 2;
+
+    Vert v = _VertBuffer[sID];
+    Vert b = _BaseBuffer[bID];
+
+
+    float3 targetPos = b.pos + b.tangent* (float(which) -.5) * .9;
+
+    if( length( targetPos-v.pos )> 1){
+        v.pos = targetPos;
+        v.vel = 0;
+    }
+
+    float3 force = 0;
+
+    force += (targetPos - v.pos);
+
+    v.vel += force * .03;
+    v.pos += v.vel;
+
+    v.vel *= .8;
+
+
+    //v.pos = b.pos + b.tangent* (float(which) -.5) * 1;
+
+    _VertBuffer[sID] = v;
+
+
+
+
+}
+
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Wings1(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+    int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int sID = safeID(pID,_VertBuffer_COUNT);    
+
+    int bID = sID / 2;
+    int which = sID % 2;
+
+    Vert v = _VertBuffer[sID];
+    Vert b = _BaseBuffer[bID];
+
+
+    float3 targetPos = b.pos + b.tangent* (float(which) -.5) *2.9;
+
+    if( length( targetPos-v.pos )> 10){
+        v.pos = targetPos;
+        v.vel = 0;
+    }
+
+    float3 force = 0;
+
+    force += (targetPos - v.pos);
+
+    v.vel += force * .01;
+    v.pos += v.vel;
+
+    v.vel *= .95;
+
+
+    //v.pos = b.pos + b.tangent* (float(which) -.5) * 1;
+
+    _VertBuffer[sID] = v;
+
+
+
+
+}
+
+
+
+
