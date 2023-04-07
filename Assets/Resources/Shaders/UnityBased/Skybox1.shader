@@ -119,6 +119,19 @@ float _Fade;
 sampler2D _MainTex;
 #include "../Chunks/noise.cginc"
 
+float2 GetXYCoordsInPlane(float3 p1, float3 v1, float3 up)
+{
+   
+    float distance = dot(p1, v1);
+    float3 projectedPoint = p1 - distance * v1;
+
+    float3 right = normalize(cross(v1, up));
+    float x = dot(projectedPoint, right);
+    float y = dot(projectedPoint, cross(right,v1));
+
+    return float2(x, y);
+}
+
 
 //Pixel function returns a solid color for each point.
 float4 frag (varyings v) : COLOR {
@@ -185,6 +198,7 @@ float4 frag (varyings v) : COLOR {
   col = 0;
   for( int i = 0; i < 3; i++ ){
     float3 fPos = _WorldSpaceCameraPos * .1  + v.ro * 100+ rd * i * 10.1f;
+    
     float v = pow(noise( (fPos + float3(0,_Time.y * 10,0)) * .3 * float3(.8,.1 ,1)),2);//sin( fPos.x *100 + _Time.x) * .1 + sin( fPos.y *100 + _Time.y) * .1 + sin( fPos.z *100 + _Time.z) * .1;
     v += noise(fPos * .03+ float3(0,_Time.y * .1,0)) * 2;
   //v= floor(v* 2) / 2;
@@ -204,9 +218,24 @@ float4 frag (varyings v) : COLOR {
 
 //  col = floor(col * 5) / 5;
 
-  col *= pow(saturate(1-abs(rd.y)),2);
+  col *= pow(saturate(1-abs(rd.y + noise( v.ro- float3(0,_Time.y * .12,0) )- noise(v.ro * 2 + float3(0,_Time.y * .1,0)))),1);
+  col *= length(col) * length(col) * 10;
 
-    col +=float3(1,.8,.5)*30*pow(  saturate(dot( _LightDir, -normalize(rd))),101);
+  
+  for( int i = 0; i < 3; i++ ){
+    float3 fPos = _WorldSpaceCameraPos * .1  + v.ro * 100+ rd * i * 30.1f;
+    col += .5*float3(1,float(i) * .2 + .4,.2)* pow( noise(fPos * .1),2)*10*pow(  saturate(dot( _LightDir, -normalize(rd))),101);
+    col += .2*float3(1,.6-float(i) * .2,.2)* pow( noise(fPos * .4),2)*10*pow(  saturate(dot( _LightDir, -normalize(rd))),101);
+
+    
+float2  xy = GetXYCoordsInPlane(_WorldSpaceCameraPos * .1+ v.ro * 400+ rd * i * 100.1f, _LightDir ,float3(0,1,0));
+
+float ang= atan2(xy.y, xy.x);
+
+col += .2 * float3(1,float(i) * .2 + .4,.2)*noise( ang * 10 + float3(0,_Time.y* (i-1.5) * .4,0)) *  pow( saturate(dot( -_LightDir,rd)) ,10)* 1;//length(xy) * .01;//length(xy) * .1;//1 / length( xy );// * .0001;
+
+
+  }
 
 
  col *= col;
@@ -216,6 +245,12 @@ float4 frag (varyings v) : COLOR {
 
 //col *= 10;
     col = saturate(col);  
+
+
+    
+
+//col += pow( dot( -_LightDir,rd) ,100)* 10;
+
 
     //col += pow( dot( _LightDir, -normalize(rd)),30);
    // col *= .5;

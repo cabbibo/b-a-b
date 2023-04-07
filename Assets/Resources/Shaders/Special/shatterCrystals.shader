@@ -5,6 +5,8 @@ Shader "Simulation/ShatterCrystals" {
 
     _Color ("Color", Color) = (1,1,1,1)
     _Size ("Size", float) = .01
+         _MainTex ("Base (RGB) Trans (A)", 2D) = "white" {}
+
     }
 
 
@@ -20,7 +22,9 @@ Shader "Simulation/ShatterCrystals" {
       #pragma fragment frag
 
       #include "UnityCG.cginc"
-     // #include "../Chunks/Struct16.cginc"
+      #include "../Chunks/hsv.cginc"
+      #include "../Chunks/snoise.cginc"
+      #include "../Chunks/hash.cginc"
 
 
 
@@ -101,7 +105,7 @@ varyings vert (uint id : SV_VertexID){
       o.eye = _WorldSpaceCameraPos - o.worldPos;
       o.nor =normalize(d);//v.nor;
       //o.uv = v.uv;
-      o.uv2 = uv;
+      o.uv2 = uv  * (1./6.) + float2( floor(hash(float(base)* 100) * 6) / 6,floor(hash(float(base)* 10) * 6) / 6 );
       o.id = base;
       o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
 
@@ -112,11 +116,48 @@ varyings vert (uint id : SV_VertexID){
 }
 
 
+
+sampler2D _MainTex;
       
 
 //Pixel function returns a solid color for each point.
 float4 frag (varyings v) : COLOR {
-    return float4(v.nor*.5 +.5,1 );
+
+
+
+  float3 col = 0;
+  
+    float shadowStep = 1;
+
+  float3 shadowCol = 0;
+  
+    for( int i = 0; i < 3; i++){
+
+      float3 fPos = v.worldPos - normalize(v.eye) * float(i) * 1.3;
+      float v = (snoise(fPos * 10)+1)/2;
+      shadowCol += hsv((float)i/3,1,v);
+
+    
+    }//
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+    shadowCol *= shadowCol;
+
+    shadowCol = length(shadowCol) * (shadowCol * .8 + .1 )  * 10;//
+
+    shadowCol *= float3(4,3,2);
+
+    shadowCol *= 1-tex2D(_MainTex,v.uv2).x;
+
+    //shadowCol /=  clamp( (.1 + .1* length( v.eye)), 2, 3);
+    col = shadowCol * (v.nor * .5 + .5);//clamp( (1-shadowStep) * length(col) * length(col) * 10 , .1, 1) * shadowCol;// float3(.1,.2,.5);
+
+    if( length(col) < .01){
+      discard;
+    }
+
+    return float4(col,1 );
 }
 
       ENDCG

@@ -21,12 +21,15 @@ public class DandelionPluckInstrument : Cycle
     public float pitchMultiplier;
     public float volumeMultiplier;
 
+    public float pitchMax;
+    public float volumeMax;
+
     public override void OnLive()
     {
         lastPlayTime = Time.time;
     }
 
-
+    public float pluckedCutoff;
     public float minPlayTime;
     public override void WhileLiving(float v)
     {
@@ -38,7 +41,7 @@ public class DandelionPluckInstrument : Cycle
 
 
 
-        if (newPlucks > 0 && numPlucked > .4 && Time.time - lastPlayTime > minPlayTime)
+        if (newPlucks > 0 && numPlucked > pluckedCutoff && Time.time - lastPlayTime > minPlayTime)
         {
 
             AudioClip clip = clips[Random.Range(0, clips.Length)];
@@ -46,7 +49,7 @@ public class DandelionPluckInstrument : Cycle
 
             //  AudioMixer mix = WrenUtils.God.audio.defaultMixer;
             string groupName = mixerName;
-            WrenUtils.God.audio.Play(clip, numPlucked * pitchMultiplier, numPlucked * volumeMultiplier, 0, 1, WrenUtils.God.audio.defaultMixer, groupName);
+            WrenUtils.God.audio.Play(clip, Mathf.Clamp(numPlucked * pitchMultiplier, 0, pitchMax), Mathf.Clamp(numPlucked * volumeMultiplier, 0, volumeMax), 0, 1, WrenUtils.God.audio.defaultMixer, groupName);
 
             lastPlayTime = Time.time;
 
