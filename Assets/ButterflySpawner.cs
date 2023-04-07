@@ -38,6 +38,10 @@ public class ButterflySpawner : MonoBehaviour
     public float sharkRepelForce;
 
 
+    public float sharkAttractRadius;
+    public float sharkAttractForce;
+
+
 
     public ParticleSystem gotAteParticleSystem;
     public AudioClip[] gotAteClips;
@@ -175,6 +179,7 @@ public class ButterflySpawner : MonoBehaviour
             force += AlignmentForce(fID);
             force += SeperationForce(fID);
             force += SharkRepelForce(fID);
+            force += SharkAttractForce(fID);
 
 
             velocities[fID] += force;
@@ -219,6 +224,21 @@ public class ButterflySpawner : MonoBehaviour
         if (dist < sharkRepelRadius)
         {
             return diff * sharkRepelForce * length(sharkSpeed);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+
+    float3 SharkAttractForce(int i)
+    {
+        float3 diff = positions[i] - sharkPos;
+        float dist = length(diff);
+        if (dist < sharkAttractRadius)
+        {
+            return -diff * sharkAttractForce * length(sharkSpeed);
         }
         else
         {
@@ -317,13 +337,13 @@ public class ButterflySpawner : MonoBehaviour
 
 
         WrenUtils.God.audio.Play(gotAteClips, 1, pitch);
-        b.gameObject.SetActive(false);
+        /*b.gameObject.SetActive(false);
         for (int i = 0; i < butterflys.Length; i++)
         {
             if (b.gameObject == butterflys[i])
                 active[i] = false;
 
-        }
+        }*/
 
         // God.wren.stats.FullnessAdd(bugFullnessAdd);
         // God.wren.stats.StaminaAdd(bugStaminaAdd);

@@ -100,7 +100,7 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   float3 r = float3( sin(  a ) , -cos(a) , 0) * .5;
   float3 lifeRing = mul( _Transform , float4(r,1)).xyz;
   float3 lifeRingDir = mul( _Transform , float4(r,0)).xyz;
-  if( vert.life < 0 ){  
+  if( vert.life <= 0 && length(_BoostVal) > .1 ){  
 
 
     vert.pos    =  lifeRing;
@@ -143,6 +143,10 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     vert.pos += vert.vel;
 
     vert.vel *= .99;
+
+    vert.life = saturate( vert.life );
+
+
 
   }
 

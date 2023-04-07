@@ -26,6 +26,8 @@ public class Booster : Cycle
 
     public Vector2 lastHitLocation;
 
+    public BoostSim boostSim;
+
     public void OnBoost(Wren w)
     {
 
@@ -52,7 +54,6 @@ public class Booster : Cycle
 
         currentScore = length(fVel * boostVal * 1 / dist);
 
-        print(currentScore);
 
         for (int i = 0; i < (int)currentScore / 100; i++)
         {
@@ -61,6 +62,10 @@ public class Booster : Cycle
 
             WrenUtils.God.audio.Play(clip, 10 - i, (float)i, w.transform.position, 100);// int step, float volume, Vector3 location, float falloff )
         }
+
+
+
+        boostSim.OnBoost(this);
 
 
     }
@@ -84,7 +89,8 @@ public class Booster : Cycle
     public void OnBoost(Vector3 v)
     {
 
-        lifeBoostVal = v;
+        lifeBoostVal = v * boostVal;
+        boostSim.OnBoost(this);
 
     }
 
@@ -93,7 +99,6 @@ public class Booster : Cycle
 
         lastHitLocation = Vector2.one * 100000;
 
-        life.BindVector3("_BoostVal", () => this.lifeBoostVal);
 
         if (debug)
         {
@@ -115,8 +120,6 @@ public class Booster : Cycle
         renderer.SetPropertyBlock(mpb);
 
 
-        WrenUtils.God.instance.SetWrenCompute(0, life.shader);
-        lifeBoostVal *= .9f;// Vector3.Scale( lifeBoostVal , .9f );
 
     }
 

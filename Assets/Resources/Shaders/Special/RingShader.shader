@@ -99,6 +99,8 @@ float nScore = saturate(_CurrentScore /1000);
             float n = noise( v.worldPos );
             float h = terrainHeight( v.worldPos);
 
+            float3 fwd = normalize(mul( unity_ObjectToWorld , float4(0,0,1,0)).xyz);
+
             if( h < 0   ){
                // discard;
             }
@@ -145,10 +147,11 @@ float nScore = saturate(_CurrentScore /1000);
                    //col.b += 1/(1+abs(length(fPos.xy)-.48) * 200);
                     float uvL = length( fUV );
 
-                    uvL += noise( fPos * 100 ) * .01;
+                    uvL += noise( fPos * 2) * .1;
+
 
                     if( uvL > .5){
-                        col -= .1;//discard;
+                      //  col -= .1;//discard;
                     }
 
                     col += hsv( float(i)/3 , 1, 1) *  .8/(1+pow( abs(uvL-.49) * 10,4) * 100);
@@ -183,8 +186,20 @@ float3 shadowCol = 0;
     }//
     shadowCol = pow( shadowCol,40);
     col *= (length(shadowCol) * 100+.5) * (shadowCol * .5 +.5);
-    if( length(nV) > .5){
+
+
+    float fNV = length( nV);
+    fNV += noise( v.worldPos * 2 + fwd  * _Time.y) * .1;
+    if( fNV > .5){
         discard;
+    }
+
+
+
+
+    float ringFade = .45;
+    if( fNV> ringFade){
+        col *= pow( 1-(fNV-ringFade)/ (.5-ringFade),2);
     }
 
    // col *= pow( length(shadowCol * .3) + length(col * .3) , 10) * 100;// * shadowCol;
