@@ -107,16 +107,24 @@ public class Booster : Cycle
 
     }
 
+    public Vector2 tv2;
+    public float tScore;
+
     public override void WhileLiving(float v)
     {
+
 
         if (renderer == null) { renderer = GetComponent<Renderer>(); }
         if (mpb == null) { mpb = new MaterialPropertyBlock(); }
 
+        if (tv2 == null) { tv2 = new Vector2(0, 0); }
+
+        tv2 = Vector2.Lerp(tv2, lastHitLocation, .2f);
+        tScore = Mathf.Lerp(tScore, currentScore, .2f);
 
         renderer.GetPropertyBlock(mpb);
-        mpb.SetFloat("_CurrentScore", currentScore);
-        mpb.SetVector("_LastHitLocation", lastHitLocation);
+        mpb.SetFloat("_CurrentScore", tScore);
+        mpb.SetVector("_LastHitLocation", tv2);
         renderer.SetPropertyBlock(mpb);
 
 

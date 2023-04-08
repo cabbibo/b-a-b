@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections;
-
+#if UNITY_EDITOR
 public class RenderCubemapWizard : ScriptableWizard
 {
     public Transform renderFromPosition;
@@ -36,3 +36,5 @@ public class RenderCubemapWizard : ScriptableWizard
             "Render cubemap", "Render!");
     }
 }
+
+#endif

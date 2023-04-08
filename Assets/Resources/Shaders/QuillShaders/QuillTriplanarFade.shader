@@ -260,7 +260,7 @@ shadowCol += .5;
 
     float b = length(col);
 
-  col = normalize( col) * (b * b * b * 1 * _Multiplier);
+  col = length(shadowCol )* 20 *normalize( col) * (b * b * b * 1 * _Multiplier);
 
 
    // col = v.color;

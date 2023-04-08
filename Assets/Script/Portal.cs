@@ -9,7 +9,10 @@ public class Portal : MonoBehaviour
 {
 
     public int sceneID;
-    
+
+    public bool demo;
+
+
 
     public int biome;
     public Transform startPoint;
@@ -24,37 +27,51 @@ public class Portal : MonoBehaviour
     public Transform collisionPointBack;
 
 
-    
 
-    
+
+
     public Transform collisionPoint;
     public ParticleSystem successParticles;
 
 
 
-    public void OnEnable(){
+    public void OnEnable()
+    {
         portalCollision.portal = this;
     }
-   
 
 
-    public void OnCollision(Collision c){
 
-        float l1 = Vector3.Distance( God.camera.transform.position , collisionPointFront.position );
-        float l2 = Vector3.Distance( God.camera.transform.position , collisionPointBack.position );
+    public void OnCollision(Collision c)
+    {
 
-        if( l1 < l2 ){
+        float l1 = Vector3.Distance(God.camera.transform.position, collisionPointFront.position);
+        float l2 = Vector3.Distance(God.camera.transform.position, collisionPointBack.position);
+
+        if (l1 < l2)
+        {
             collisionPoint = collisionPointFront;
-        }else{
+        }
+        else
+        {
             collisionPoint = collisionPointBack;
         }
 
         collision = c;
+        if (demo)
+        {
+            God.sceneController.EndDemo(this);
+        }
+        else
+        {
+            God.sceneController.LoadSceneFromPortal(this);
+        }
 
-        God.sceneController.LoadSceneFromPortal( this );
+
+
 
         collider.enabled = false;
-            
+
 
     }
 

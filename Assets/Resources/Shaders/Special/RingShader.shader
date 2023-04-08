@@ -35,6 +35,7 @@
           float3 worldPos : TEXCOORD1;
                 float2 uv : TEXCOORD0;
                 float3 localPos : TEXCOORD3;
+                float2 wrenPos : TEXCOORD4;
             };
 
             sampler2D _MainTex;
@@ -63,6 +64,7 @@ float distanceToLine(float2 pt1, float2 pt2, float2 testPt)
 
 
 
+
             v2f vert (appdata_full v)
             {
                 v2f o;
@@ -74,7 +76,8 @@ float distanceToLine(float2 pt1, float2 pt2, float2 testPt)
                 o.localPos = mul( unity_WorldToObject,  float4( _WrenPos,1)).xyz;
 
                 o.uv = v.texcoord;//TRANSFORM_TEX(v.texcoord, _MainTex);
-                
+
+
                 return o;
             }
 
@@ -154,20 +157,30 @@ float nScore = saturate(_CurrentScore /1000);
                       //  col -= .1;//discard;
                     }
 
-                    col += hsv( float(i)/3 , 1, 1) *  .8/(1+pow( abs(uvL-.49) * 10,4) * 100);
+                    float3 colMultiplier = float3(1,0,0);
+                    if( i == 1){ colMultiplier = float3(0,1,0);}
+                    if( i == 2){ colMultiplier = float3(0,0,1);}
+
+                    col += colMultiplier *  .8/(1+pow( abs(uvL-.49) * 10,4) * 100);
 
                 
-                    col +=  hsv( float(i)/3 , 1, 1) * 1/(1 + uvL * 1000);
-                    col +=  hsv( float(i)/3 , 1, 1) * 1/(1+abs(uvL-.05) * 1000);
+                    col +=  colMultiplier * 1/(1 + uvL * 1000);
+                    col +=  colMultiplier * 1/(1+abs(uvL-.05) * 1000);
 
 
                         float2 delta = _LastHitLocation-fUV;
 
                         float aDelta = (dot( normalize(_LastHitLocation) , normalize(fUV))+1)/2;
-                        col += hsv(float(i)/3,1,1) * pow( aDelta , 100) * saturate( ( length(_LastHitLocation) - uvL) * 100);
-                        col += hsv(float(i)/3,1,1) / (1+pow(length(fUV- _LastHitLocation) * 10,4));//pow( aDelta , 100) * saturate( ( length(_LastHitLocation) - uvL) * 100);
-                        col += hsv(float(i)/3,1,1) / (.1+pow(length(fUV- _LastHitLocation) * 30,14));//pow( aDelta , 100) * saturate( ( length(_LastHitLocation) - uvL) * 100);
+                       col += nScore *4 * colMultiplier  * pow( aDelta , 100 *nScore) * saturate( ( length(_LastHitLocation) - uvL) * 100);
+                       col += nScore *4 * colMultiplier  / (1+pow(length(fUV- _LastHitLocation) * 10,4));//pow( aDelta , 100) * saturate( ( length(_LastHitLocation) - uvL) * 100);
+                       col += nScore *4 * colMultiplier  / (.1+pow(length(fUV- _LastHitLocation) * 30,14 * nScore + 1));//pow( aDelta , 100) * saturate( ( length(_LastHitLocation) - uvL) * 100);
 
+
+
+                        float wrenDist = length(fUV - v.localPos.xy);
+                        col += abs(v.localPos.z) / (.2 + 100 * pow(wrenDist,1/abs(v.localPos.z)));
+
+                        
                     }
               //  }
 
@@ -202,6 +215,8 @@ float3 shadowCol = 0;
         col *= pow( 1-(fNV-ringFade)/ (.5-ringFade),2);
     }
 
+
+    
    // col *= pow( length(shadowCol * .3) + length(col * .3) , 10) * 100;// * shadowCol;
       //  col =  dot( _LastHitLocation , nV);//atan2( delta.y , delta.x)/6.28; //length(_LastHitLocation-nV);
               //  col = ((a + 3.14  * 1.5)%6.28) / 6.28;

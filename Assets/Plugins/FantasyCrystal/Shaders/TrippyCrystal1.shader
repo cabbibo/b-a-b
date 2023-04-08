@@ -292,6 +292,8 @@ float4 backgroundCol = tex2Dproj(_BackgroundTexture, refractedPos);
     // col *= pow((1-m),5) * 60;
     // col += (v.nor * .5 + .5 ) * .4;
 
+    col = col * pow( length(col),4) * .2;
+
  // col =float3(1,0,0);// saturate(col);
     return float4( col.xyz , 1);//saturate(float4(col,3*length(col) ));
 

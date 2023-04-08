@@ -1,18 +1,20 @@
 // Converted from UnityScript to C# at http://www.M2H.nl/files/js_to_c.php - by Mike Hergaarden
 // C # manual conversion work by Yun Kyu Choi
- 
+
 using UnityEngine;
 using UnityEditor;
 using System;
 using System.Collections;
 using System.IO;
 using System.Text;
- 
+
 enum SaveFormat { Triangles, Quads }
-enum SaveResolution { Full=0, Half, Quarter, Eighth, Sixteenth }
- 
+enum SaveResolution { Full = 0, Half, Quarter, Eighth, Sixteenth }
+#if UNITY_EDITOR
 class ExportTerrain : EditorWindow
 {
+
+   
    SaveFormat saveFormat = SaveFormat.Triangles;
    SaveResolution saveResolution = SaveResolution.Half;
  
@@ -215,3 +217,6 @@ class ExportTerrain : EditorWindow
       }
    }
 }
+
+
+#endif

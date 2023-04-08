@@ -218,6 +218,10 @@ shadowCol += .5;
 
   col = normalize( col) * (b * b * b * 1 * _Multiplier);
 
+  //col.r *= (sin(v.uv.y *3 - _Time.y * 3 + .1)+1)/2;
+  //col.g *= (sin(v.uv.y *3 - _Time.y * 3 + .3)+1)/2;
+  //col.b *= (sin(v.uv.y *3 - _Time.y * 3 + .5)+1)/2;
+
         
   //  if( fwd > length(v.eye) * .03  ){ discard; }
    // if( sin(v.worldPos.x * .1 ) > -.9 && sin(v.worldPos.z * .1 ) > -.9 ){ col = 0;}
