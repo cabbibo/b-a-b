@@ -5,17 +5,16 @@ Shader "FantasyCrystals/ShardShader"
 
     Properties {
 
-    _BaseColor ("BaseColor", Color) = (1,1,1,1)
     
     _NumSteps("Num Trace Steps",int) = 10
     _DeltaStepSize("DeltaStepSize",float) = .01
     _StepRefractionMultiplier("StepRefractionMultiplier", float) = 0
-    
-    _ColorMultiplier("ColorMultiplier",float)=1
   
     _Opaqueness("_Opaqueness",float) = 1
     _IndexOfRefraction("_IndexOfRefraction",float) = .8
-    _RefractionBackgroundSampleExtraStep("_RefractionBackgroundSampleExtraStep",float) = 0
+    _ColorSplit("_ColorSplit",float) = .8
+    _Contrast("_Constrast",float) = .8
+    
 
     _ReflectionColor ("ReflectionColor", Color) = (1,1,1,1)
     _ReflectionSharpness("ReflectionSharpness",float)=1
@@ -62,9 +61,6 @@ CGPROGRAM
 
       #include "UnityCG.cginc"
       
-    float4 _BaseColor;
-    float4 _CenterOrbColor;
-    float4 _NoiseColor;
     int _NumSteps;
     float _DeltaStepSize;
     float _NoiseSize;
@@ -78,7 +74,6 @@ CGPROGRAM
     float _Opaqueness;
     float _NoiseSubtractor;
     float _ColorMultiplier;
-    float _RefractionBackgroundSampleExtraStep;
     float _IndexOfRefraction;
     float3 _CenterOrbOffset;
     float3 _NoiseOffset;
@@ -94,6 +89,9 @@ CGPROGRAM
     float _Saturation;
     float _Lightness;
 
+    float _ColorSplit;
+    float _Contrast;
+
 
       //A simple input struct for our pixel shader step containing a position.
       struct varyings {
@@ -107,6 +105,10 @@ CGPROGRAM
           float3 lightDir : TEXCOORD6;
           float4 grabPos : TEXCOORD7;
           float3 unrefracted : TEXCOORD8;
+
+          float3 rdR : TEXCOORD9;
+          float3 rdG : TEXCOORD10;
+          float3 rdB : TEXCOORD11;
           
           
       };
@@ -147,6 +149,9 @@ varyings vert ( appdata vertex ){
 
         o.unrefracted = eye;
         o.rd = refract( eye , -n , _IndexOfRefraction);
+        o.rdR = refract( eye , -n , _IndexOfRefraction - _ColorSplit * 0);
+        o.rdG = refract( eye , -n , _IndexOfRefraction - _ColorSplit * 1);
+        o.rdB = refract( eye , -n , _IndexOfRefraction - _ColorSplit * 2);
         o.eye = refract( -normalize(_WorldSpaceCameraPos - worldPos) , normalize(mul (unity_ObjectToWorld, float4(n.xyz,0.0f))) , _IndexOfRefraction);
     
         o.worldNor = normalize(mul (unity_ObjectToWorld, float4(-n,0.0f)).xyz);
@@ -230,27 +235,29 @@ float3 hsv(float h, float s, float v)
   return lerp( float3( 1.0 , 1, 1 ) , clamp( ( abs( frac(
     h + float3( 3.0, 2.0, 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ), 0.0, 1.0 ), s ) * v;
 }
-//Pixel function returns a solid color for each point.
-float4 frag (varyings v) : COLOR {
-  float3 col =0;//hsv( float(v.face) * .3 , 1,1);
 
 
-  
-  float dt = _DeltaStepSize;
+
+float4 trace( float3 ro , float3 rd , float iOR ){
+
+
+   float dt = _DeltaStepSize;
   float t = 0;
   float c = 0.;
 float3 p = 0;
 
 float totalSmoke = 0;
-  float3 rd = v.rd;
+
+float3 col = 0;
+
   for(int i =0 ; i < _NumSteps; i++ ){
       t+=dt*exp(-2.*c);
-    p = v.ro - rd * t * 2;
+    p = ro - rd * t * 2;
     
   float3 smoke = nT3D( p * _NoiseSize  );
   float3 nor = normalize(smoke);
 
-  float noiseDensity = saturate(length(smoke) - _NoiseSubtractor);
+    float noiseDensity = saturate(length(smoke) - _NoiseSubtractor);
 
 
     noiseDensity =   pow( noiseDensity , _NoiseSharpness)  * _NoiseImportance;
@@ -266,40 +273,37 @@ float totalSmoke = 0;
     col = .99*col;
 
 
-    float fHue = _HueStart + _HueSize * noiseDensity;//lerp( _HueStart , _HueSize , noiseDensity);
-    col += hsv( fHue , _Saturation , _Lightness );
+    float fHue= _HueStart + _HueSize * noiseDensity;//lerp( _HueStart , _HueSize , noiseDensity);
 
+  col += hsv( fHue , _Saturation , _Lightness );
  
   }
+  return float4(col * pow( totalSmoke , 3),totalSmoke);
+
+}
+//Pixel function returns a solid color for each point.
+float4 frag (varyings v) : COLOR {
+  float3 col =0;//hsv( float(v.face) * .3 , 1,1);
 
 
-       // float4 refractedPos = UnityObjectToClipPos( float4(o.ro + o.rd * 1.5,1));
-  //float4 refractedPos = ComputeGrabScreenPos(UnityObjectToClipPos(float4(p+rd * _RefractionBackgroundSampleExtraStep,1)));
-//float4 backgroundCol = tex2Dproj(_BackgroundTexture, refractedPos);
+  float4 traceValR =  trace(v.ro, v.rdR, 1);
+  float4 traceValG =  trace(v.ro, v.rdG, 1);
+  float4 traceValB =  trace(v.ro, v.rdB, 1);
+  //float4 traceVal =  trace(v.ro, v.rd, 1);
+ // float4 traceVal =  trace(v.ro, v.rd, 1);
 
- col /= float(_NumSteps);
- col *= _ColorMultiplier;
- col  = pow( col , 100) * 10;
-
-
-  float3 baseCol =_BaseColor.xyz;
-
-       col = lerp(0,col,saturate(hsv(totalSmoke+ .4,.3,1)*totalSmoke * totalSmoke*totalSmoke*3* _Opaqueness));
-
+  col.r = traceValR.r;
+  col.g = traceValG.g;
+  col.b = traceValB.b;
        
  float m = dot( normalize(v.unrefracted), normalize(v.nor) );
  col += pow((1-m),_ReflectionSharpness) * _ReflectionMultiplier * _ReflectionColor;
 
+ col = pow( length(col), _Contrast) * _ColorMultiplier * col;
 
- float3 reflection=-v.eye;//normalize(reflect( normalize(-v.eye) , -v.worldNor));
-      half4 skyData = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflection,0); //UNITY_SAMPLE_TEXCUBE_LOD('cubemap', 'sample coordinate', 'map-map level')
-         half3 skyColor = DecodeHDR (skyData, unity_SpecCube0_HDR); // This is done because the cubemap is stored HDR
-        //col = skyColor;
 
-    //col = v.nor * .5 + .5;
-    // col *= pow((1-m),5) * 60;
-    // col += (v.nor * .5 + .5 ) * .4;
-    col = saturate(col);
+
+    col = saturate(col * .8) / .8;
     return float4( col.xyz , 1);//saturate(float4(col,3*length(col) ));
 
 

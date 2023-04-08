@@ -59,6 +59,21 @@ public class SceneController : MonoBehaviour
     }
 
 
+    public void EndDemo(Portal portal)
+    {
+
+        // make it so we dont hurt ourselves
+        God.wren.inEther = true;
+        God.wren.Crash(portal.collisionPoint.position);
+
+        God.wren.canMove = false;
+        Camera.main.gameObject.GetComponent<LerpTo>().enabled = false;
+
+        StartCoroutine(DemoAnimationOut(portal));
+
+    }
+
+
 
 
     public float portalAnimationOutLength = 3;
@@ -91,6 +106,46 @@ public class SceneController : MonoBehaviour
         LoadScene(portal.sceneID);
 
     }
+
+
+
+    IEnumerator DemoAnimationOut(Portal portal)
+    {
+
+        float StartTime = Time.time;
+        float EndTime = Time.time + portalAnimationOutLength;
+
+
+        Vector3 startPoint = God.camera.transform.position;
+        Vector3 endPoint = portal.collisionPoint.position;
+
+
+        Quaternion startRot = God.camera.transform.rotation;
+        Quaternion endRot = Quaternion.LookRotation(portal.collisionPoint.forward, Vector3.up);
+        while (Time.time - StartTime < portalAnimationOutLength)
+        {
+
+            float val = (Time.time - StartTime) / portalAnimationOutLength;
+            //God.fade
+            //  God.postController._Fade = val * val;
+            God.camera.transform.position = Vector3.Lerp(startPoint, endPoint, val);///.Lerp()
+            God.camera.transform.rotation = Quaternion.Slerp(startRot, endRot, val);///.Lerp()
+
+            yield return null;
+        }
+
+        biome = portal.biome;
+        OnDemoEnd();
+
+    }
+
+
+    public GameObject demoEnder;
+    public void OnDemoEnd()
+    {
+        demoEnder.SetActive(true);
+    }
+
 
     public void HardLoad(int id)
     {
