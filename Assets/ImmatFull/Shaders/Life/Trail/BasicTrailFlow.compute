@@ -151,7 +151,7 @@ float3 DoForce2( inout Vert vert , int pID){
     force += targetPos - vert.pos;
     force *= .1* ((1-nID)* .8 + .2);
 
-    float life = _HeadBuffer[safeID(whichHead,_HeadBuffer_COUNT)].life;
+    float life = head.life;
     
     // If our head is remitting we need to be remitting too!
     if( life <= 0 || life >= 1){

@@ -216,10 +216,11 @@ public class BirdPrey : MonoBehaviour
             velocity = normalize(velocity) * maxSpeed;
         }
 
-        position += velocity;
+        position += float3(transform.forward) * length(velocity);
 
         transform.position = position;
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(velocity, Vector3.up), .1f);
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(velocity, Vector3.up), .03f);
+
 
 
 
@@ -230,6 +231,7 @@ public class BirdPrey : MonoBehaviour
     void OnTriggerEnter(Collider c)
     {
 
+        print("HELLO");
         if (God.IsOurWren(c))
         {
             Eat(c);
@@ -238,6 +240,10 @@ public class BirdPrey : MonoBehaviour
 
     public void Eat(Collider c)
     {
+
+        print("HELLO2");
+        particleSystem.transform.position = transform.position;
+        particleSystem.transform.LookAt(Camera.main.transform.position);
         particleSystem.Play();
     }
 

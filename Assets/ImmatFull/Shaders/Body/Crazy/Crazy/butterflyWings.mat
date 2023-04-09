@@ -66,6 +66,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
+    - _ColorID: 0.1
     - _ColorMapSize: 0
     - _ColorMapStart: 0
     - _Cutoff: 0.5

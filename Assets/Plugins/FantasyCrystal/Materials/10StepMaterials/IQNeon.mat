@@ -62,9 +62,9 @@ Material:
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
-    - _CenterOrbFalloff: 1.35
+    - _CenterOrbFalloff: 111
     - _CenterOrbFalloffSharpness: 1.82
-    - _CenterOrbImportance: 0.02
+    - _CenterOrbImportance: 0
     - _ColorMultiplier: 2.83
     - _Cutoff: 0.5
     - _DeltaStepSize: 0.03
@@ -77,9 +77,9 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _NoiseImportance: 10000
-    - _NoiseSharpness: 11.4
-    - _NoiseSize: 10.52
-    - _NoiseSubtractor: -0.06
+    - _NoiseSharpness: 111
+    - _NoiseSize: 30
+    - _NoiseSubtractor: -0.5
     - _NumSteps: 10
     - _OcclusionStrength: 1
     - _Opaqueness: 0.6
@@ -95,11 +95,11 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 0, g: 0, b: 0, a: 1}
-    - _CenterOrbColor: {r: 0.57040644, g: 0, b: 1, a: 1}
+    - _CenterOrbColor: {r: 1, g: 1, b: 1, a: 1}
     - _CenterOrbOffset: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _NoiseColor: {r: 0.015686274, g: 0.60903233, b: 1, a: 1}
+    - _NoiseColor: {r: 1, g: 1, b: 1, a: 1}
     - _NoiseOffset: {r: 0, g: 3.67, b: 0, a: 1}
-    - _ReflectionColor: {r: 0, g: 1, b: 0.6853485, a: 1}
+    - _ReflectionColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
