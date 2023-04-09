@@ -71,6 +71,8 @@ void  Transfer(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
         v.uv = 1;
     }
 
+    v.debug = s.debug;
+
     _VertBuffer[vID] = v;
 
 
@@ -129,6 +131,7 @@ void  Transfer1(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
         v.uv = 1;
     }
 
+    v.debug = s.debug;
     _VertBuffer[vID] = v;
 
 

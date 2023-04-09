@@ -40,12 +40,18 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     float3 fTan =normalize( mul( t.localToWorld , float4(1,0,0,0)).xyz);
     float3 fNor =normalize( mul( t.localToWorld , float4(0,1,0,0)).xyz);
 
-    _VertBuffer[sID].vel = _VertBuffer[sID].pos - fPos;
-    _VertBuffer[sID].pos = fPos;
-    _VertBuffer[sID].nor = fNor;
-    _VertBuffer[sID].tangent = fTan;
-    _VertBuffer[sID].debug.x = .5;
-    _VertBuffer[sID].debug.y = .5;
+    Vert v = _VertBuffer[sID];
+
+
+    v.vel = v.pos - fPos;
+    v.pos = fPos;
+    v.nor = fNor;
+    v.tangent = fTan;
+    v.debug.x = .8;
+    v.debug.y = .8;
+
+
+    _VertBuffer[sID] = v;
 
 }
 
@@ -83,6 +89,7 @@ void Wings(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     v.pos += v.vel;
 
     v.vel *= .8;
+    v.debug.x = bID;
 
 
     //v.pos = b.pos + b.tangent* (float(which) -.5) * 1;
@@ -126,6 +133,7 @@ void Wings1(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     v.pos += v.vel;
 
     v.vel *= .95;
+    v.debug.x = bID;
 
 
     //v.pos = b.pos + b.tangent* (float(which) -.5) * 1;

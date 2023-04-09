@@ -9,7 +9,7 @@ using Unity.Mathematics;
 [ExecuteAlways]
 public class Booster : Cycle
 {
-    public bool debug;
+    public bool debug2;
     public float boostVal = 1;
 
     public Vector3 lifeBoostVal;
@@ -100,7 +100,7 @@ public class Booster : Cycle
         lastHitLocation = Vector2.one * 100000;
 
 
-        if (debug)
+        if (debug2)
         {
             OnBoost(transform.forward);
         }

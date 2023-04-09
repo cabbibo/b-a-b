@@ -13,6 +13,8 @@ Shader "IMMAT/Crazy/ButterflyWings"
         _MainTex("_MainTex", 2D) = "white" {}
         
         _TexSize("_TexSize", float ) = 1
+        _ColorID("_ColorID", float ) = 1
+   
     }
 
 
@@ -76,6 +78,7 @@ ENDCG
             float4 _BumpMap_ST;
 
             sampler2D _FullColorMap;
+            float _ColorID;
 
 
             int _Steps;
@@ -100,6 +103,8 @@ ENDCG
 
             StructuredBuffer<Vert> _VertBuffer;
             StructuredBuffer<int> _TriBuffer;
+
+            float4 _ColorMultiplier;
 
             v2f vert ( uint vid : SV_VertexID )
             {
@@ -207,6 +212,7 @@ ENDCG
 
 
 col =  tCol.xyz * length(shadowCol) * (shadowCol* .8 + .2)  * 300 * float3(1, .8,.3)  * v.uv.x * 2;
+col += 1* tex2D(_FullColorMap, float2(tCol.x * .3 , v.debug.x * 1/16 ))  * _ColorMultiplier;//hsv(tCol.x * .3,1,1);
 
   //col = v.uv.x;
 
