@@ -133,6 +133,20 @@ float2 GetXYCoordsInPlane(float3 p1, float3 v1, float3 up)
 }
 
 
+
+float4x4 rotationMatrix(float3 axis, float angle)
+{
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+    
+    return float4x4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                0.0,                                0.0,                                0.0,                                1.0);
+}
+
 //Pixel function returns a solid color for each point.
 float4 frag (varyings v) : COLOR {
   float3 col =0;//hsv( float(v.face) * .3 , 1,1);
@@ -196,14 +210,21 @@ float4 frag (varyings v) : COLOR {
 
 
   col = 0;
+  float3 tmpRD = rd;
   for( int i = 0; i < 3; i++ ){
-    float3 fPos = _WorldSpaceCameraPos * .1  + v.ro * 100+ rd * i * 10.1f;
-    
-    float v = pow(noise( (fPos + float3(0,_Time.y * 10,0)) * .3 * float3(.8,.1 ,1)),2);//sin( fPos.x *100 + _Time.x) * .1 + sin( fPos.y *100 + _Time.y) * .1 + sin( fPos.z *100 + _Time.z) * .1;
+    float3 fPos = _WorldSpaceCameraPos * .1  + v.ro * 100+ tmpRD * i * 10.1f;
+     
+    fPos = mul( rotationMatrix( float3(0,1,0) , 1* noise( _Time.y * .04 + fPos * .01* float3(1,1,1))) , float4(fPos,1)).xyz;
+
+
+   float v = pow(noise( (fPos + float3(0,_Time.y * 10,0)) * .3 * float3(.8,.2 ,1)),2);//sin( fPos.x *100 + _Time.x) * .1 + sin( fPos.y *100 + _Time.y) * .1 + sin( fPos.z *100 + _Time.z) * .1;
     v += noise(fPos * .03+ float3(0,_Time.y * .1,0)) * 2;
   //v= floor(v* 2) / 2;
     v/=5;
-    float3 tMap = float3(.5 , 1 - 2*abs(rd.y), 1-abs( rd.y));// pow( texCUBE( _CubeMap , fPos ) ,1) * 2;
+
+    tmpRD.y += v * .1;
+    float3 tMap = float3(.5 , 1 - 2*abs(tmpRD.y), 1-abs(tmpRD.y));// pow( texCUBE( _CubeMap , fPos ) ,1) * 2;
+
     if( i == 0 ){
       col += float3(v,.2,.2) * (v+.1) * tMap;
     }else if( i == 1 ){
@@ -221,11 +242,13 @@ float4 frag (varyings v) : COLOR {
   col *= pow(saturate(1-abs(rd.y + noise( v.ro- float3(0,_Time.y * .12,0) )- noise(v.ro * 2 + float3(0,_Time.y * .1,0)))),1);
   col *= length(col) * length(col) * 10;
 
+
+/// SUN
   
   for( int i = 0; i < 3; i++ ){
     float3 fPos = _WorldSpaceCameraPos * .1  + v.ro * 100+ rd * i * 30.1f;
-    col += .5*float3(1,float(i) * .2 + .4,.2)* pow( noise(fPos * .1),2)*10*pow(  saturate(dot( _LightDir, -normalize(rd))),101);
-    col += .2*float3(1,.6-float(i) * .2,.2)* pow( noise(fPos * .4),2)*10*pow(  saturate(dot( _LightDir, -normalize(rd))),101);
+ col += .5*float3(1,float(i) * .2 + .4,.2)* pow( noise(fPos * .1),2)*10*pow(  saturate(dot( _LightDir, -normalize(rd))),101);
+ col += .2*float3(1,.6-float(i) * .2,.2)* pow( noise(fPos * .4),2)*10*pow(  saturate(dot( _LightDir, -normalize(rd))),101);
 
     
 float2  xy = GetXYCoordsInPlane(_WorldSpaceCameraPos * .1+ v.ro * 400+ rd * i * 100.1f, _LightDir ,float3(0,1,0));

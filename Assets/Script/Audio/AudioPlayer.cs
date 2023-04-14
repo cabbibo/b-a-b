@@ -326,6 +326,19 @@ public class AudioPlayer : MonoBehaviour
 
 
 
+    public void Play(AudioClip[] clips, float volume, float pitch, AudioMixer mixer, string group)
+    {
+        Reset();
+        sources[playID].volume = volume;
+        sources[playID].pitch = pitch;
+        sources[playID].outputAudioMixerGroup = mixer.FindMatchingGroups(group)[0];
+        int clipID = (int)Mathf.Floor(Random.Range(0, clips.Length - .0001f));
+        BasePlay(clips[clipID]);
+    }
+
+
+
+
 
 
 

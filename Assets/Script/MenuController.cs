@@ -31,11 +31,11 @@ public class MenuController : MonoBehaviour
     {
         //TurnMenuOn();
 
-           //  God.audio.Play( menuCloseSound );
+        //  God.audio.Play( menuCloseSound );
         //DeactivateMenu();
         //God.fade.FadeIn(.1f);  
-        
-      //  God.sceneController.HardStart();
+
+        //  God.sceneController.HardStart();
     }
 
     // Update is called once per frame
@@ -44,35 +44,43 @@ public class MenuController : MonoBehaviour
 
 
         // can only do this if we aren't in the middle of fading!
-        if( God.input.menuPressed && God.fade.fading == false ){
+        if (God.input.menuPressed && God.fade.fading == false && God.wren != null)
+        {
 
 
             // if our menu is off, we turn it on!
-            if( !menuOn){
+            if (!menuOn)
+            {
 
-                    TurnMenuOn();
+                TurnMenuOn();
 
-            }else{
+            }
+            else
+            {
 
                 // If we are in main menu, going 'back'
                 // will take us out of the menu
-                if(currentMenu == "main"){
+                if (currentMenu == "main")
+                {
 
                     // cant turn off menu if we just opened game!
-                    if( God.sceneController.sceneLoaded != false ){
-                    //print("hmmm");
+                    if (God.sceneController.sceneLoaded != false)
+                    {
+                        //print("hmmm");
                         DeactivateMenu();
-                       TurnMenuOff();
+                        TurnMenuOff();
                     }
 
-                }else{
+                }
+                else
+                {
                     // just show the main menu
                     ActivateMainMenu();
                 }
-            
+
             }
         }
-        
+
     }
 
     /*void ToggleMenu(){
@@ -86,45 +94,57 @@ public class MenuController : MonoBehaviour
     }*/
 
 
-    public void TurnMenuOff(){
+    public void TurnMenuOff()
+    {
 
-        God.audio.Play( menuCloseSound );
-        God.fade.FadeIn(.1f );      
-       // DeactivateMenu();
+        God.audio.Play(menuCloseSound);
+        God.fade.FadeIn(.1f);
+        // DeactivateMenu();
 
-   
-       // God.fade.FadeIn(.5f);
-    }
-
-
-    
-    public void TurnMenuOff(float l){
-
-        God.audio.Play( menuCloseSound );
-        God.fade.FadeIn(l);      
-       // DeactivateMenu();
-        if( God.wren != null ){
+        if (God.wren != null)
+        {
             God.wren.canMove = true;
         }
-   
-       // God.fade.FadeIn(.5f);
+        // God.fade.FadeIn(.5f);
     }
 
 
 
+    public void TurnMenuOff(float l)
+    {
 
-    public void TurnMenuOn(){
 
-        God.fade.FadeOut(Color.white,.5f, () => { ActivateMainMenu(); return 0; });        
-        God.audio.Play( menuOpenSound );
-        if( God.wren != null ){
-            God.wren.canMove = false;
-            God.SetWrenSavedPosition( God.wren.transform.position );
+        print("menu turning off");
+        God.audio.Play(menuCloseSound);
+        God.fade.FadeIn(l);
+        // DeactivateMenu();
+        if (God.wren != null)
+        {
+            God.wren.canMove = true;
         }
-      
+
+        // God.fade.FadeIn(.5f);
     }
 
-    public void DeactivateMenu(){
+
+
+
+    public void TurnMenuOn()
+    {
+
+        print("somewhere the menu is turning on");
+        God.fade.FadeOut(Color.white, .5f, () => { ActivateMainMenu(); return 0; });
+        God.audio.Play(menuOpenSound);
+        if (God.wren != null)
+        {
+            God.wren.canMove = false;
+            God.SetWrenSavedPosition(God.wren.transform.position);
+        }
+
+    }
+
+    public void DeactivateMenu()
+    {
         Time.timeScale = 1;
         canvas.enabled = false;
         mainMenu.gameObject.SetActive(false);
@@ -137,7 +157,8 @@ public class MenuController : MonoBehaviour
     }
 
 
-    public void ActivateMainMenu(){
+    public void ActivateMainMenu()
+    {
         Time.timeScale = 0;
         canvas.enabled = true;
         mainMenu.gameObject.SetActive(true);
@@ -148,9 +169,10 @@ public class MenuController : MonoBehaviour
         menuOn = true;
         currentMenu = "main";
     }
-    
 
-    public void ActivateOptionsMenu(){
+
+    public void ActivateOptionsMenu()
+    {
         canvas.enabled = true;
         mainMenu.gameObject.SetActive(false);
         optionsMenu.gameObject.SetActive(true);
@@ -161,7 +183,8 @@ public class MenuController : MonoBehaviour
         currentMenu = "options";
     }
 
-    public void ActivateCredits(){
+    public void ActivateCredits()
+    {
 
         print("hello");
         canvas.enabled = true;
@@ -174,7 +197,8 @@ public class MenuController : MonoBehaviour
         currentMenu = "credits";
     }
 
-    public void ActivateExitMenu(){
+    public void ActivateExitMenu()
+    {
         canvas.enabled = true;
         mainMenu.gameObject.SetActive(false);
         optionsMenu.gameObject.SetActive(false);
@@ -186,7 +210,8 @@ public class MenuController : MonoBehaviour
     }
 
 
-    public void ActivateStartMenu(){
+    public void ActivateStartMenu()
+    {
 
         print("Activating");
         canvas.enabled = true;
@@ -203,19 +228,24 @@ public class MenuController : MonoBehaviour
     }
 
 
-    public void QuitGame(){
+    public void QuitGame()
+    {
         Application.Quit();
     }
 
 
-    public void OnContinue(){
-           // DeactivateMenu();
+    public void OnContinue()
+    {
+        // DeactivateMenu();
 
-        if( God.sceneController.sceneLoaded == true ){
+        if (God.sceneController.sceneLoaded == true)
+        {
             DeactivateMenu();
             TurnMenuOff();
-        }else{
-             God.sceneController.OnSceneLoadEvent.AddListener( OnSceneLoaded );//m_MyEvent.AddListener(MyAction);
+        }
+        else
+        {
+            God.sceneController.OnSceneLoadEvent.AddListener(OnSceneLoaded);//m_MyEvent.AddListener(MyAction);
             God.sceneController.HardStart();
 
         }
@@ -223,23 +253,25 @@ public class MenuController : MonoBehaviour
     }
 
 
-    public void OnNewGameSelected(){
+    public void OnNewGameSelected()
+    {
 
 
         God.sceneController.ResetSave();
-        God.sceneController.OnSceneLoadEvent.AddListener( OnSceneLoaded );//m_MyEvent.AddListener(MyAction);
+        God.sceneController.OnSceneLoadEvent.AddListener(OnSceneLoaded);//m_MyEvent.AddListener(MyAction);
         God.sceneController.HardStart();
-    
 
 
-       // print("need to start a new game here");
+
+        // print("need to start a new game here");
 
     }
 
-    void OnSceneLoaded(){
-        God.sceneController.OnSceneLoadEvent.RemoveListener( OnSceneLoaded );
+    void OnSceneLoaded()
+    {
+        God.sceneController.OnSceneLoadEvent.RemoveListener(OnSceneLoaded);
         DeactivateMenu();
-        TurnMenuOff(5);
+        TurnMenuOff(.5f);
 
     }
 

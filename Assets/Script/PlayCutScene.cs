@@ -15,7 +15,7 @@ public class PlayCutScene : MonoBehaviour
     public float speedMultiplier = 1;
     public UnityEvent CutSceneFinished;
     public UnityEvent CutSceneStarted;
-    
+
     public Camera main;
 
     public Transform cameraTarget;
@@ -28,7 +28,7 @@ public class PlayCutScene : MonoBehaviour
     public bool playOnce;
     public float transitionInSpeed;
     public float transitionOutSpeed;
-    
+
     LerpTo lerpTo;
     GlitchHit glitch;
     PlayableDirector director;
@@ -37,10 +37,10 @@ public class PlayCutScene : MonoBehaviour
     float tmpSlerpSpeed;
     Transform tmpLerpTarget;
 
-    
 
 
-    
+
+
 
     bool played;
 
@@ -49,25 +49,26 @@ public class PlayCutScene : MonoBehaviour
     void Awake()
     {
 
-        
-       // if( Camera.main == null ){ Camera.main = Camera.Camera.main; }
+
+        // if( Camera.main == null ){ Camera.main = Camera.Camera.main; }
         director = GetComponent<PlayableDirector>();
         director.played += Director_Played;
         director.stopped += Director_Stopped;
 
 
 
-        if( timeline != null ){
+        if (timeline != null)
+        {
             director.playableAsset = timeline;
         }
 
         lerpTo = Camera.main.gameObject.GetComponent<LerpTo>();
         glitch = Camera.main.gameObject.GetComponent<GlitchHit>();
 
-       // print(lerpTo);
-        
+        // print(lerpTo);
+
         tmpLerpTarget = lerpTo.target;
-    
+
     }
 
     float transitionStartTime;
@@ -88,167 +89,212 @@ public class PlayCutScene : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if( Application.isEditor && Application.isPlaying != true && stealCameraInEditMode ){
-            Camera.main.transform.position =  cameraTarget.position;
-            Camera.main.transform.rotation =  cameraTarget.rotation;
+        if (Application.isEditor && Application.isPlaying != true && stealCameraInEditMode)
+        {
+            Camera.main.transform.position = cameraTarget.position;
+            Camera.main.transform.rotation = cameraTarget.rotation;
         }
-        if( playing ){
+        if (playing)
+        {
 
-           
-     
+
+
 
             float fSpeed = 1;
-            if(God.input.x){fSpeed *= 10; }
+            if (God.input.x)
+            {
+                AudioListener.volume = .1f;
+                fSpeed *= 10;
+            }
+            else
+            {
+                AudioListener.volume = 1;
+            }
 
             fSpeed *= speedMultiplier;
             director.playableGraph.GetRootPlayable(0).SetSpeed(fSpeed);
 
-            if( God.wren != null && wrenTarget != null ){
-                God.wren.transform.position  = wrenTarget.transform.position;
-                God.wren.transform.rotation  = wrenTarget.transform.rotation;
+            if (God.wren != null && wrenTarget != null)
+            {
+                God.wren.transform.position = wrenTarget.transform.position;
+                God.wren.transform.rotation = wrenTarget.transform.rotation;
             }
 
             God.wren.canMove = false;
-            
+
         }
 
-        if( transitioning ){
+        if (transitioning)
+        {
 
 
-            if( transitionIn ){
-                if( transitionInSpeed == 0 ){
+            if (transitionIn)
+            {
+                if (transitionInSpeed == 0)
+                {
                     StartPlay();
-                }else{
+                }
+                else
+                {
 
                     print("Evaluating");
                     float v = Time.time - transitionStartTime;
                     v /= transitionInSpeed;
-                    if( v >= 1 ){
+                    if (v >= 1)
+                    {
                         StartPlay();
-                    }else{
+                    }
+                    else
+                    {
                         print("transitioning");
                         float fV = v * v * (3 - 2 * v);
 
-                        print( fV);
+                        print(fV);
                         print(startPos);
                         print(targetPos);
-                        Camera.main.transform.position = Vector3.Lerp( startPos , targetPos , fV );
-                        Camera.main.transform.rotation = Quaternion.Slerp( startRot , targetRot , fV );
-                    }
-                }
-            }else{
-                 if( transitionOutSpeed == 0 ){
-                    transitioning = false;
-                    OnFinish();
-                }else{
-                    float v = Time.time - transitionStartTime;
-                    v /= transitionOutSpeed;
-                    if( v >= 1 ){
-                        transitioning = false;
-                        OnFinish();
-                    }else{
-                        float fV = v * v * (3 - 2 * v);
-                        Camera.main.transform.position = Vector3.Lerp( startPos , targetPos , fV );
-                        Camera.main.transform.rotation = Quaternion.Slerp( startRot , targetRot , fV );
+                        Camera.main.transform.position = Vector3.Lerp(startPos, targetPos, fV);
+                        Camera.main.transform.rotation = Quaternion.Slerp(startRot, targetRot, fV);
                     }
                 }
             }
-        
+            else
+            {
+                if (transitionOutSpeed == 0)
+                {
+                    transitioning = false;
+                    OnFinish();
+                }
+                else
+                {
+                    float v = Time.time - transitionStartTime;
+                    v /= transitionOutSpeed;
+                    if (v >= 1)
+                    {
+                        transitioning = false;
+                        OnFinish();
+                    }
+                    else
+                    {
+                        float fV = v * v * (3 - 2 * v);
+                        Camera.main.transform.position = Vector3.Lerp(startPos, targetPos, fV);
+                        Camera.main.transform.rotation = Quaternion.Slerp(startRot, targetRot, fV);
+                    }
+                }
+            }
+
         }
-        
+
     }
 
 
-    
-    private void Director_Stopped( PlayableDirector d ){
-        print( "Director stoppped on :  " + this.gameObject.name );
+
+    private void Director_Stopped(PlayableDirector d)
+    {
+        print("Director stoppped on :  " + this.gameObject.name);
         playing = false;
+        AudioListener.volume = 1;
         Stop();
     }
 
 
-    private void Director_Played( PlayableDirector d ){
+    private void Director_Played(PlayableDirector d)
+    {
 
         //glitch.StartGlitch();
 
         //print("playStart");
-        
+        AudioListener.volume = 1;
+
         playing = true;
 
     }
 
-    void StartPlay(){
-//        print("Evaluating2");
+    void StartPlay()
+    {
+        //        print("Evaluating2");
         transitioning = false;
         director.Play();
         director.playableGraph.GetRootPlayable(0).SetSpeed(1);
         playing = true;
         lerpTo.enabled = true;
         God.wren.canMove = false;
- //       print("lerping enabled");
+        AudioListener.volume = 1;
+        //       print("lerping enabled");
     }
 
-    public void Stop(){
+    public void Stop()
+    {
 
         startPos = Camera.main.transform.position;
         startRot = Camera.main.transform.rotation;
 
 
         lerpTo.target = tmpLerpTarget;
-        if( lerpTo.target == null ){
+        if (lerpTo.target == null)
+        {
             lerpTo.target = Camera.main.transform;
         }
 
-      
+
         targetPos = lerpTo.target.position;
         targetRot = lerpTo.target.rotation;// Quaternion.LookRotation( lerpTo.lookTarget.position - lerpTo.target.position);
 
         lerpTo.enabled = false;
-    
-        
+
+
         transitionStartTime = Time.time;
         transitioning = true;
         transitionIn = false;
 
+        AudioListener.volume = 1;
 
 
     }
 
 
-    public void OnFinish(){
+    public void OnFinish()
+    {
 
         God.instance.inCutScene = false;
         lerpTo.enabled = true;
 
-        print( lerpTo );
-        print( lerpTo.target );
-        print( Camera.main );
-        print( tmpLerpTarget );
+        print(lerpTo);
+        print(lerpTo.target);
+        print(Camera.main);
+        print(tmpLerpTarget);
 
         lerpTo.lerpSpeed = tmpLerpSpeed;
         lerpTo.slerpSpeed = tmpSlerpSpeed;
         lerpTo.target = tmpLerpTarget;
         Camera.main.transform.position = lerpTo.target.position;
-        Camera.main.transform.LookAt( lerpTo.lookTarget );
+        Camera.main.transform.LookAt(lerpTo.lookTarget);
         CutSceneFinished.Invoke();
         God.wren.canMove = true;
+
+
+        AudioListener.volume = 1;
 
     }
 
 
-    public void Play(){
-        
-        if( played && playOnce ){
+    public void Play()
+    {
+        AudioListener.volume = 1;
 
-        }else{
+        if (played && playOnce)
+        {
 
-            
+        }
+        else
+        {
+
+
             God.instance.inCutScene = true;
             CutSceneStarted.Invoke();
             lerpTo.enabled = false;
-          
 
-            
+
+
 
             tmpSlerpSpeed = lerpTo.slerpSpeed;
             tmpLerpSpeed = lerpTo.lerpSpeed;
@@ -273,16 +319,17 @@ public class PlayCutScene : MonoBehaviour
 
 
 
-            targetPos= cameraTarget.position;
+            targetPos = cameraTarget.position;
             targetRot = cameraTarget.rotation;
-            
+
             Camera.main.transform.position = startPos;
             Camera.main.transform.rotation = startRot;
 
             // Our bird shouldn't be flying during 
             // cut scenes!
-            if( God.wren ){
-                God.wren.Crash(God.wren.transform.position );
+            if (God.wren)
+            {
+                God.wren.Crash(God.wren.transform.position);
             }
         }
     }
@@ -290,36 +337,39 @@ public class PlayCutScene : MonoBehaviour
 
     // Evalutates the animator at the end of the animation
     // to set all the proper values!
-    public void SetEndValues(){
+    public void SetEndValues()
+    {
 
-        startPos= Camera.main.transform.position;
+        startPos = Camera.main.transform.position;
         startRot = Camera.main.transform.rotation;
-        
+
         director.time = director.playableAsset.duration;
         director.Evaluate();
 
         Camera.main.transform.position = startPos;
         Camera.main.transform.rotation = startRot;
-    
+
     }
 
-    public void SetStartValues(){
+    public void SetStartValues()
+    {
 
 
-        startPos= Camera.main.transform.position;
+        startPos = Camera.main.transform.position;
         startRot = Camera.main.transform.rotation;
-    
+
 
         director.time = 0;
         director.Evaluate();
 
         Camera.main.transform.position = startPos;
         Camera.main.transform.rotation = startRot;
-    
+
 
     }
 
-    public void OnEnd(){
+    public void OnEnd()
+    {
 
     }
 }

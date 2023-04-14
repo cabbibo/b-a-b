@@ -17,13 +17,16 @@
 
         Blend One One
         Cull Off
+        ZWrite Off
+        
         Pass
         {
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            
+            #pragma multi_compile_instancing
             // make fog work
-            #pragma multi_compile_fog
 
             #include "UnityCG.cginc"
            
@@ -215,6 +218,8 @@ float3 shadowCol = 0;
         col *= pow( 1-(fNV-ringFade)/ (.5-ringFade),2);
     }
 
+
+//col = 1;
 
     
    // col *= pow( length(shadowCol * .3) + length(col * .3) , 10) * 100;// * shadowCol;

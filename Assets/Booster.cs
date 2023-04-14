@@ -97,13 +97,24 @@ public class Booster : Cycle
     public override void OnLive()
     {
 
-        lastHitLocation = Vector2.one * 100000;
 
+        if (renderer == null) { renderer = GetComponent<Renderer>(); }
+        if (mpb == null) { mpb = new MaterialPropertyBlock(); }
 
-        if (debug2)
-        {
-            OnBoost(transform.forward);
-        }
+        print("hello LIVED");
+        lastHitLocation = Vector2.one * 100 * UnityEngine.Random.Range(0.5f, 1.0f);
+        currentScore = UnityEngine.Random.Range(0.5f, 1.0f);
+
+        if (tv2 == null) { tv2 = new Vector2(0, 0); }
+
+        tv2 = Vector2.one * 100 * UnityEngine.Random.Range(0.5f, 1.0f);
+        tScore = UnityEngine.Random.Range(0.5f, 1.0f);
+
+        renderer.GetPropertyBlock(mpb);
+        mpb.SetFloat("_CurrentScore", tScore);
+        mpb.SetVector("_LastHitLocation", tv2);
+        renderer.SetPropertyBlock(mpb);
+
 
     }
 
@@ -114,10 +125,7 @@ public class Booster : Cycle
     {
 
 
-        if (renderer == null) { renderer = GetComponent<Renderer>(); }
-        if (mpb == null) { mpb = new MaterialPropertyBlock(); }
 
-        if (tv2 == null) { tv2 = new Vector2(0, 0); }
 
         tv2 = Vector2.Lerp(tv2, lastHitLocation, .2f);
         tScore = Mathf.Lerp(tScore, currentScore, .2f);

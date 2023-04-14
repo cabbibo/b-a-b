@@ -212,7 +212,7 @@ shadowCol += .3;
 
     float b = length(col);
 
-    col = length(shadowCol) * 10*normalize( col) * b * b * 6;
+    col = saturate(length(shadowCol)* .5 + .2) * 10*normalize( col) * b * b * 6;
 
     //col *= col * 4;
     
