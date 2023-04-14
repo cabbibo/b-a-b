@@ -1,6 +1,6 @@
-// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
-Shader "Quill/TriplanarTextureFade" {
+Shader "Quill/TriplanarUVFade_PULSE" {
     Properties {
 
     _Color ("Color", Color) = (1,1,1,1)
@@ -40,8 +40,6 @@ Shader "Quill/TriplanarTextureFade" {
             // make fog work
             #pragma multi_compile_fogV
  #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
- 
-            #pragma multi_compile_instancing
 
       #include "UnityCG.cginc"
       #include "AutoLight.cginc"
@@ -50,25 +48,16 @@ Shader "Quill/TriplanarTextureFade" {
       #include "../Chunks/hsv.cginc"
       #include "../Chunks/noise.cginc"
 
-        UNITY_INSTANCING_BUFFER_START(Props)
-            UNITY_INSTANCING_BUFFER_END(Props)
+
 
       uniform float3 _Color;
 
     float _Fade;
-    float _Multiplier;
 
     float3 _FadeLocation;
-struct appdata_full2 {
-    float4 vertex : POSITION;
-    float4 tangent : TANGENT;
-    float3 normal : NORMAL;
-    float4 texcoord : TEXCOORD0;
-    float4 texcoord1 : TEXCOORD1;
-    fixed4 color : COLOR;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-    
-};
+
+    float _Multiplier;
+
 
       //uniform float4x4 worldMat;
 
@@ -85,9 +74,7 @@ struct appdata_full2 {
           float4 color : TEXCOORD11;
           float id        : TEXCOORD5;
           int feather:TEXCOORD7;
-          float4 data1:TEXCOORD9;   
-           UNITY_VERTEX_INPUT_INSTANCE_ID // use this to access instanced properties in the fragment shader.
-         
+          float4 data1:TEXCOORD9;
            UNITY_SHADOW_COORDS(8)
                 UNITY_FOG_COORDS(10)
       };
@@ -96,12 +83,8 @@ uniform float4x4 _Transform;
 uniform int _NumberMeshes;
 //Our vertex function simply fetches a point from the buffer corresponding to the vertex index
 //which we transform with the view-projection matrix before passing to the pixel program.
-varyings vert (appdata_full2 vert){
+varyings vert (appdata_full vert){
     varyings o;
-
-         UNITY_SETUP_INSTANCE_ID(vert);
-                UNITY_TRANSFER_INSTANCE_ID(vert, o); // necessary only if you want to access instanced properties in the fragment Shader.
- 
      
       o.worldPos = mul( unity_ObjectToWorld,  float4(vert.vertex.xyz,1)).xyz;
       o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
@@ -122,15 +105,8 @@ uniform sampler2D _PaintTexture;
 
 #include "../Chunks/triplanar.cginc"
 #include "../Chunks/snoise3D.cginc"
-
-
-float sdCapsule( float3 p, float3 a, float3 b, float r )
-{
-    float3 pa = p - a, ba = b - a;
-    float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
-    return length( pa - ba*h ) - r;
-}
-
+#include "../Chunks/noise.cginc"
+      
 float3 _WrenPos;
 //Pixel function returns a solid color for each point.
 float4 frag (varyings v) : COLOR {
@@ -145,21 +121,20 @@ float4 frag (varyings v) : COLOR {
 
   float gridVal = max( (1-sin( v.uv.x * 1000)), (1- sin( v.uv.y * 1000)));
   float noiseVal1 = snoise(v.worldPos * .3);
-  float noiseVal2 = snoise(v.worldPos * 11.3);
     float sinVal = clamp( (sin(v.worldPos.y * .6+ _Time.y + .3*noiseVal1) - .9) * 20   , 0,1);
     //col *= 1-sinVal;// ; }
     ///col *= gridVal * gridVal * gridVal * .2;
 
 
 //float3 neon = hsv(  m2 , 1.,1. )* (sinVal);
-//col = lerp( col , neon , 1-shadow );55
+//col = lerp( col , neon , 1-shadow );
 
 
                 float dist  = length(_WrenPos- v.worldPos);
                 
                 col = max( col , (sin(dist * 6 + noiseVal1 ) * 40  ) / dist);
 
-  col *= v.color;
+
                 
   float3 triplanar = triplanarSample( v.worldPos , v.nor);
 
@@ -170,13 +145,7 @@ float4 frag (varyings v) : COLOR {
    col += saturate(pow((1-m),10)* 3)* float3(1,1,1);
     col *= m2 +1; 
 
-
-
   
-  float camDist = length(v.worldPos - _WorldSpaceCameraPos);
-
-
-
   float4 paintCol = tex2D(_PaintTexture,v.uv);
  
  
@@ -187,16 +156,6 @@ float4 frag (varyings v) : COLOR {
  // float3 triplanar = triplanarSample( v.worldPos , v.nor);
     col = v.color;
 
-   // col = 10/dist;
-
-  float capDistance =sdCapsule(v.worldPos , _WorldSpaceCameraPos , _WrenPos , 1 );
-  capDistance -= noiseVal2 * .2;
-
-  if( capDistance < 0 ){
-    discard;
-  }else{
-    //col *= saturate(capDistance * 10);
-  }
     col *= _Color;
 
 
@@ -216,10 +175,7 @@ float4 frag (varyings v) : COLOR {
     float fwd = dot( normalize(viewDir) , normalize(v.eye));
 
 
-    float fadeDist = length(v.worldPos - _FadeLocation);
-    fadeDist += noise(v.worldPos * .1) * 60;
-
-    float fadeDif = _Fade - fadeDist;
+    float fadeDif = _Fade - v.uv.y;
     if( fadeDif < 0 ){
         discard;
     }else{
@@ -228,6 +184,7 @@ float4 frag (varyings v) : COLOR {
 
 
 
+    
     float shadowStep = shadow;//floor(shadow * 3)/3;
 
   float3 shadowCol = 0;
@@ -247,11 +204,11 @@ float4 frag (varyings v) : COLOR {
 
     shadowCol = length(shadowCol) * (shadowCol * .8 + .3)  * 10;//
 
-//shadowCol += .5;
+shadowCol += .5;
     shadowCol *= float3(.1 , .3 , .6);
 
     shadowCol /=  clamp( (.1 + .1* length( v.eye)), 2, 3);
-    col = shadowStep * col * float3(1,1,.6) +  clamp( (1-shadowStep) * shadowCol *.4 * col * 20  , 0, 1);// float3(.1,.2,.5);
+    col = shadowStep * col * float3(1,1,.6) +  clamp( (1-shadowStep) * length(col) * length(col) * 10 , .1, 1) * shadowCol;// float3(.1,.2,.5);
 
 
 
@@ -260,17 +217,20 @@ float4 frag (varyings v) : COLOR {
 
     float b = length(col);
 
-  //col = length(shadowCol )* 20 *normalize( col) * (b * b * b * 1 * _Multiplier);
-  col = 20*normalize( col) * (b * b * b * 1 * _Multiplier);
+  col = normalize( col) * (b * b * b * 1 * _Multiplier);
 
+  col.r *= noise( v.uv.y * .33 - _Time.y + .1);//(sin(v.uv.y *.2 - _Time.y * 5 + .1)+1)/2 + (sin(v.uv.y *.4 - _Time.y * 8 + 10.1)+1)/2;
+  col.g *= noise( v.uv.y * .33 - _Time.y + .2);//(sin(v.uv.y *.2 - _Time.y * 5 + .3)+1)/2 + (sin(v.uv.y *.4 - _Time.y * 8 + 10.3)+1)/2;
+  col.b *= noise( v.uv.y * .33 - _Time.y + .3);//(sin(v.uv.y *.2 - _Time.y * 5 + .5)+1)/2 + (sin(v.uv.y *.4 - _Time.y * 8 + 10.5)+1)/2;
 
-   // col = v.color;
-
-  
-  //col *= col * 2 + .2;
-    
         
-   //if( fwd > length(v.eye) * 1  ){ discard; }
+  col.r *= noise( v.uv.y * .33 - _Time.y*2+ .1);//(sin(v.uv.y *.2 - _Time.y * 5 + .1)+1)/2 + (sin(v.uv.y *.4 - _Time.y * 8 + 10.1)+1)/2;
+  col.g *= noise( v.uv.y * .33 - _Time.y*2+ .2);//(sin(v.uv.y *.2 - _Time.y * 5 + .3)+1)/2 + (sin(v.uv.y *.4 - _Time.y * 8 + 10.3)+1)/2;
+  col.b *= noise( v.uv.y * .33 - _Time.y*2+ .3);//(sin(v.uv.y *.2 - _Time.y * 5 + .5)+1)/2 + (sin(v.uv.y *.4 - _Time.y * 8 + 10.5)+1)/2;
+
+
+col *= 10;
+  //  if( fwd > length(v.eye) * .03  ){ discard; }
    // if( sin(v.worldPos.x * .1 ) > -.9 && sin(v.worldPos.z * .1 ) > -.9 ){ col = 0;}
 
    // UNITY_APPLY_FOG(v.fogCoord, col);
@@ -296,14 +256,6 @@ Fallback "Diffuse"
 
 
 }
-
-
-
-
-
-
-
-
 
 
 

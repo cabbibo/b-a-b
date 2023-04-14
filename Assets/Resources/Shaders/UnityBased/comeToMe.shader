@@ -26,6 +26,7 @@
             {
                 float4 vertex : POSITION;
                 float3 normal :NORMAL;
+                float3 color :COLOR;
                 float2 uv : TEXCOORD0;
                 uint id : SV_VERTEXID;
             };
@@ -38,6 +39,7 @@
                 float id : TEXCOORD2;
                 float3 nor : NORMAL;
                 float3 world : TEXCOORD3;
+                float3 col : TEXCOORD4;
             };
 
             sampler2D _MainTex;
@@ -52,7 +54,7 @@
                 o.world = mul( unity_ObjectToWorld , float4( v.vertex.xyz,1)).xyz;
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.nor = normalize(mul( unity_ObjectToWorld , float4( v.normal,0)));
-
+                o.col = v.color;
                 int id = v.id / 4;
 
                 o.id = float(id);
@@ -130,9 +132,11 @@ float3 shadowCol = 0;
                 float4 tCol = tex2D(_MainTex, v.uv);
                 //col.xyz = hsv( l - .4 , 1,lightness );
 
-                col.xyz = (v.nor * .5 +.5) * hsv( v.id / 100, 1,1 );
+                col.xyz = v.col;// (v.nor * .5 +.5) * hsv( v.id / 100, 1,1 );
 
-                col += shadowCol ;
+                col += v.col * shadowCol ;
+
+              //  col *= v.col;
 if( tCol.x > .9){
     discard;
 }

@@ -231,20 +231,33 @@ public class BirdPrey : MonoBehaviour
     void OnTriggerEnter(Collider c)
     {
 
-        print("HELLO");
         if (God.IsOurWren(c))
         {
             Eat(c);
         }
     }
 
+    public float clipPitchDistanceHigh;
+    public float clipPitchDistanceLow;
+    public float clipPitchHigh;
+    public float clipPitchLow;
+    public AudioClip[] gotAteClips;
     public void Eat(Collider c)
     {
 
-        print("HELLO2");
         particleSystem.transform.position = transform.position;
         particleSystem.transform.LookAt(Camera.main.transform.position);
         particleSystem.Play();
+
+
+        float d = length(transform.position - WrenUtils.God.wren.transform.position);
+
+        float pitch = Mathf.Lerp(clipPitchLow, clipPitchHigh, (d - clipPitchDistanceLow) / (clipPitchDistanceHigh - clipPitchDistanceLow));
+
+        print(pitch);
+        WrenUtils.God.audio.Play(gotAteClips, 1, pitch);
+        WrenUtils.God.audio.Play(gotAteClips, 1, pitch * 2);
+        WrenUtils.God.audio.Play(gotAteClips, 1, pitch * 3);
     }
 
 }

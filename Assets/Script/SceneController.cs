@@ -182,17 +182,27 @@ public class SceneController : MonoBehaviour
         SceneManager.LoadScene(scenes[newScene], LoadSceneMode.Additive);
 
 
+        print(scenes[oldScene]);
+
         if (scenes[oldScene] != null)
         {
 
+            print("unloading " + scenes[oldScene]);
+
             // unloading old scne
             var progress2 = SceneManager.UnloadSceneAsync(scenes[oldScene]);
-            while (!progress2.isDone)
-            {
 
-                // Check each frame if the scene has completed.
-                // For more information about yield in C# see: https://youtu.be/bsZjfuTrPSA
-                yield return null;
+            print(progress2);
+
+            if (progress2 != null)
+            {
+                while (!progress2.isDone)
+                {
+
+                    // Check each frame if the scene has completed.
+                    // For more information about yield in C# see: https://youtu.be/bsZjfuTrPSA
+                    yield return null;
+                }
             }
 
         }

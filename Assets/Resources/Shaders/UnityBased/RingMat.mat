@@ -63,7 +63,7 @@ Material:
     m_Floats:
     - _Active: 2
     - _BumpScale: 1
-    - _CurrentScore: 1111
+    - _CurrentScore: 0
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
