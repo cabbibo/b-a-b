@@ -101,7 +101,6 @@ public class Booster : Cycle
         if (renderer == null) { renderer = GetComponent<Renderer>(); }
         if (mpb == null) { mpb = new MaterialPropertyBlock(); }
 
-        print("hello LIVED");
         lastHitLocation = Vector2.one * 100 * UnityEngine.Random.Range(0.5f, 1.0f);
         currentScore = UnityEngine.Random.Range(0.5f, 1.0f);
 

@@ -240,9 +240,9 @@ public class AudioPlayer : MonoBehaviour
     // plays sound at 3d location with mixer and default distances
     public void Play(AudioClip clip, float pitch, float volume, float location, float length, AudioMixer mixer, string group, Vector3 pos)
     {
-        sources[playID].volume = volume;
 
         Reset();
+        sources[playID].volume = volume;
         sources[playID].clip = clip;
         sources[playID].pitch = pitch;
         sources[playID].time = location;
