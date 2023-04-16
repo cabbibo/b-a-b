@@ -44,6 +44,9 @@ struct Feather{
 };
 
 
+#include "../Chunks/hash.cginc"
+
+
 float4x4 rotation(float3 axis, float angle)
 {
     axis = normalize(axis);
@@ -83,7 +86,6 @@ StructuredBuffer<Feather> _FeatherBuffer;
 
       };
 
-#include "../Chunks/hash.cginc"
 uniform float4x4 _Transform;
 //Our vertex function simply fetches a point from the buffer corresponding to the vertex index
 //which we transform with the view-projection matrix before passing to the pixel program.
