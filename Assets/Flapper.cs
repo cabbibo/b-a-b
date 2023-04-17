@@ -53,6 +53,7 @@ public class Flapper : MonoBehaviour
         DoBrakeSynth();
         DoLiftSynth();
         DoBankSynth();
+        DoTrail();
 
     }
 
@@ -408,8 +409,14 @@ public class Flapper : MonoBehaviour
     }
 
 
+    public AudioSource trail;
+    public float trailMultiplier;
+    void DoTrail()
+    {
 
-
+        float total = (wren.input.left1 + wren.input.right1) / 2;
+        trail.volume = total * total * trailMultiplier;
+    }
 
 
 
