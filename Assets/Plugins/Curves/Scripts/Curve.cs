@@ -831,6 +831,15 @@ namespace MagicCurve
         }
 
 
+        public void SetTransformFromValueAlongCurve(float v, Transform transform, float widthMultiplier)
+        {
+            GetCubicInformation(getEvenDistAlong(v), out p, out d, out t, out w, out id1);
+            transform.position = p;
+            transform.rotation = Quaternion.LookRotation(d, -cross(d, t));
+            transform.localScale = Vector3.one * w * widthMultiplier;
+        }
+
+
         public void SetTransformFromLengthAlongCurve(float v, Transform transform)
         {
             GetCubicInformation(getEvenDistAlong(v / totalCurveLength), out p, out d, out t, out w, out id1);

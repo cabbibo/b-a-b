@@ -15,9 +15,14 @@ public class BoostSim : Binder
     public void OnBoost(Booster b)
     {
 
+        print(whichTransform.gameObject.name);
         print("boost");//
+        print(b.transform.gameObject.name);
         whichTransform = b.transform;
         lifeBoostVal = b.lifeBoostVal * lifeBoostMultiplier;
+
+        transformMatrix = whichTransform.localToWorldMatrix;
+        lifeBoostVal *= lifeBoostFalloff;
 
     }
 
@@ -41,6 +46,7 @@ public class BoostSim : Binder
 
     public override void WhileLiving(float v)
     {
+
         transformMatrix = whichTransform.localToWorldMatrix;
         lifeBoostVal *= lifeBoostFalloff;
         WrenUtils.God.instance.SetWrenCompute(0, toBind.shader);
