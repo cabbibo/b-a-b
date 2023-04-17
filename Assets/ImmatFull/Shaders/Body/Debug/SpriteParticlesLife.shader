@@ -143,7 +143,7 @@ varyings vert (uint id : SV_VertexID){
 
           float4 tCol = tex2D(_MainTex,v.texUV);
 
-          float4 cCol = tex2D(_ColorMap, float2(v.life * _ColorInfo.x + _ColorInfo.y, _ColorInfo.z ));
+          float4 cCol = tex2D(_ColorMap, float2((v.life + sin(v.id))* _ColorInfo.x  + _ColorInfo.y, _ColorInfo.z ));
 
 
           col *= cCol;

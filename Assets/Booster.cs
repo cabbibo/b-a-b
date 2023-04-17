@@ -114,6 +114,7 @@ public class Booster : Cycle
         mpb.SetVector("_LastHitLocation", tv2);
         renderer.SetPropertyBlock(mpb);
 
+        print("on live : " + gameObject.name);
 
     }
 
