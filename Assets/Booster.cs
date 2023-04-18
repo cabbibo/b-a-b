@@ -126,6 +126,18 @@ public class Booster : Cycle
 
 
 
+        if (renderer == null)
+        {
+            renderer = GetComponent<Renderer>();
+            lastHitLocation = Vector2.one * 100 * UnityEngine.Random.Range(0.5f, 1.0f);
+            currentScore = UnityEngine.Random.Range(0.5f, 1.0f);
+
+            if (tv2 == null) { tv2 = new Vector2(0, 0); }
+
+            tv2 = Vector2.one * 100 * UnityEngine.Random.Range(0.5f, 1.0f);
+            tScore = UnityEngine.Random.Range(0.5f, 1.0f);
+
+        }
 
         tv2 = Vector2.Lerp(tv2, lastHitLocation, .2f);
         tScore = Mathf.Lerp(tScore, currentScore, .2f);

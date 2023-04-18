@@ -90,7 +90,7 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   Vert vert = _VertBuffer[pID];
 
 
-  if( length(vert.axis) == 0 ){ vert.axis = newAxis(float(pID));vert.life = hash(float(pID)); }
+  if( length(vert.axis) == 0 ){ vert.axis = newAxis(float(pID));vert.life = -hash(float(pID)); }
 
   
 
@@ -102,7 +102,7 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   float3 lifeRingDir = mul( _Transform , float4(r,0)).xyz;
   float dVal = length( lifeRingDir );
 
-  if( vert.life < 0 && length(_BoostVal) > .1 ){  
+  if( vert.life <= 0 && length(_BoostVal) > .1 ){  
 
 
     vert.pos    =  lifeRing;
@@ -147,7 +147,7 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
     vert.vel *= .99;
 
-    vert.life =clamp( vert.life , -.05 , 1);//saturate( vert.life );
+    vert.life =clamp( vert.life , 0 , 1);//saturate( vert.life );
 
 
 

@@ -8,11 +8,18 @@ public class CrystalCollector : MonoBehaviour
 
 
     public GameObject[] possibleCrystals;
+    public Rigidbody[] possibleCrystalsRB;
+    public Collider[] possibleCrystalsColliders;
+    public bool[] isCollected;
+
+
 
     public int crystalsCollected;
     public int oCrystalsCollected;
 
     public float collectionDist = 6;
+
+    public float attractForce = .01f;
 
 
 
@@ -28,7 +35,15 @@ public class CrystalCollector : MonoBehaviour
 
             if (d < collectionDist)
             {
+                //  possibleCrystalsColliders[i].enabled = false;
+
+
+                possibleCrystalsRB[i].AddForce((possibleCrystals[i].transform.position - transform.position) * attractForce);
                 crystalsCollected++;
+            }
+            else
+            {
+                //possibleCrystalsColliders[i].enabled = true;
             }
         }
 
@@ -36,14 +51,44 @@ public class CrystalCollector : MonoBehaviour
         if (oCrystalsCollected != crystalsCollected)
         {
             Debug.Log("Collected " + crystalsCollected + " crystals");
-        }
+            if (crystalsCollected > oCrystalsCollected)
+            {
+                OnCollect();
 
-        if (crystalsCollected == possibleCrystals.Length)
-        {
-            Debug.Log("All crystals collected!");
+            }
+            else
+            {
+                OnLose();
+            }
+
+            if (crystalsCollected == possibleCrystals.Length)
+            {
+                OnAllCollect();
+            }
+
+
         }
 
 
 
     }
+
+
+    public void OnCollect()
+    {
+
+    }
+
+    public void OnLose()
+    {
+        print("should this be happening ever ?");
+        print("proably across network....");
+    }
+
+    public void OnAllCollect()
+    {
+        print("something big");
+    }
+
 }
+

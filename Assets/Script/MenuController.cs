@@ -81,6 +81,31 @@ public class MenuController : MonoBehaviour
             }
         }
 
+
+        if (God.input.circlePressed && menuOn)
+        {
+            // If we are in main menu, going 'back'
+            // will take us out of the menu
+            if (currentMenu == "main")
+            {
+
+                // cant turn off menu if we just opened game!
+                if (God.sceneController.sceneLoaded != false)
+                {
+                    //print("hmmm");
+                    DeactivateMenu();
+                    TurnMenuOff();
+                }
+
+            }
+            else
+            {
+                // just show the main menu
+                ActivateMainMenu();
+            }
+
+        }
+
     }
 
     /*void ToggleMenu(){
