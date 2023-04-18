@@ -17,85 +17,115 @@ public class OptionsMenu : MonoBehaviour
 
     public List<MenuOption> options;
 
+    public OptionsMenu parentMenu;
+
     public int currentOption;
 
     // Start is called before the first frame update
     void OnEnable()
     {
-      
+
 
         Create();
-        
+
     }
 
-    public virtual void Create(){      
-        
-         for( int i = 0; i < options.Count; i++ ){
+    public virtual void Create()
+    {
+
+        for (int i = 0; i < options.Count; i++)
+        {
             DeactivateOption(i);
         }
 
         ActivateOption(currentOption);
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
 
-        if( God.input.dUpPressed){
+        if (God.input.dUpPressed)
+        {
             DeactivateOption(currentOption);
-            currentOption --;
-            if( currentOption < 0){ currentOption += options.Count; }
+            currentOption--;
+            if (currentOption < 0) { currentOption += options.Count; }
             ActivateOption(currentOption);
         }
 
-          if( God.input.dDownPressed ){
+        if (God.input.dDownPressed)
+        {
             DeactivateOption(currentOption);
-            currentOption ++;
-            if( currentOption == options.Count){ currentOption = 0; }
+            currentOption++;
+            if (currentOption == options.Count) { currentOption = 0; }
             ActivateOption(currentOption);
         }
 
 
 
-        if( God.input.xPressed ){
+        if (God.input.xPressed)
+        {
             SelectCurrentOption();
         }
 
-        if( God.input.dLeft ){
+        if (God.input.circlePressed)
+        {
+            print("O PRESSED");
+
+            //SelectCurrentOption();
+        }
+
+        if (God.input.dLeft)
+        {
             CurrentOptionDLeft();
         }
 
-        
-        if( God.input.dRight ){
+
+        if (God.input.dRight)
+        {
             CurrentOptionDRight();
         }
-        
+
     }
 
-    public void ActivateOption( int id){
-        
+    public void ActivateOption(int id)
+    {
+
         God.audio.Play(activateOptionSound);
         options[id].Activate();
 
     }
 
-    public void DeactivateOption( int id){
-        
+    public void DeactivateOption(int id)
+    {
+
         options[id].Deactivate();
     }
 
 
-    public void SelectCurrentOption(){
+    public void SelectCurrentOption()
+    {
         God.audio.Play(selectionOptionSound);
         options[currentOption].Select();
     }
 
-    public void CurrentOptionDLeft(){ 
+    public void Deselect()
+    {
+
+        if (parentMenu != null)
+        {
+            parentMenu.SelectCurrentOption();
+        }
+    }
+
+    public void CurrentOptionDLeft()
+    {
         options[currentOption].DLeft();
     }
 
-       public void CurrentOptionDRight(){ 
+    public void CurrentOptionDRight()
+    {
         options[currentOption].DRight();
     }
 
