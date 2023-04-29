@@ -18,6 +18,12 @@ Shader "Quill/TriplanarTextureFade" {
 
     
     _TriplanarMultiplier ("TriplanarMultiplier", Vector) = (1,1,1)
+
+    
+    _WindDirection ("_WindDirection",Vector) = (1,0,0)
+    _WindAmount ("_WindAmount",float) = 1
+    _WindChangeSpeed ("_WindChangeSpeed",float) = 1
+    _WindChangeSize ("_WindChangeSize",float) = 1
     
 
 
@@ -49,6 +55,7 @@ Shader "Quill/TriplanarTextureFade" {
 
       #include "../Chunks/hsv.cginc"
       #include "../Chunks/noise.cginc"
+#include "../Chunks/snoise3D.cginc"
 
         UNITY_INSTANCING_BUFFER_START(Props)
             UNITY_INSTANCING_BUFFER_END(Props)
@@ -66,6 +73,7 @@ struct appdata_full2 {
     float4 texcoord : TEXCOORD0;
     float4 texcoord1 : TEXCOORD1;
     fixed4 color : COLOR;
+     uint   id                : SV_VertexID;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
     
 };
@@ -94,6 +102,12 @@ struct appdata_full2 {
 
 uniform float4x4 _Transform;
 uniform int _NumberMeshes;
+
+float3 _WindDirection;
+float _WindAmount;
+float _WindChangeSpeed;
+float _WindChangeSize;
+
 //Our vertex function simply fetches a point from the buffer corresponding to the vertex index
 //which we transform with the view-projection matrix before passing to the pixel program.
 varyings vert (appdata_full2 vert){
@@ -101,9 +115,26 @@ varyings vert (appdata_full2 vert){
 
          UNITY_SETUP_INSTANCE_ID(vert);
                 UNITY_TRANSFER_INSTANCE_ID(vert, o); // necessary only if you want to access instanced properties in the fragment Shader.
- 
-     
-      o.worldPos = mul( unity_ObjectToWorld,  float4(vert.vertex.xyz,1)).xyz;
+ int instanceID = 0;
+
+#ifdef INSTANCING_ON
+    instanceID = vert.instanceID;
+#endif
+
+
+    float flooredTime = floor(_Time.y *_WindChangeSpeed + float(0) * .4);
+
+     float3 wPos = mul( unity_ObjectToWorld,  float4(vert.vertex.xyz,1)).xyz;
+
+    //  o.worldPos = mul( unity_ObjectToWorld,  float4(vert.vertex.xyz,1)).xyz;
+
+          float3 windDirection = float3(1,0,0);
+
+    float3 noiseVal = snoise( wPos * _WindChangeSize + windDirection * flooredTime);
+
+          o.worldPos = wPos + _WindDirection * noiseVal * _WindAmount;//windAmount;
+      
+
       o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
       o.eye = _WorldSpaceCameraPos - o.worldPos;
       o.nor = normalize(mul( unity_ObjectToWorld,  float4(vert.normal,0)).xyz);
@@ -121,7 +152,6 @@ varyings vert (appdata_full2 vert){
 uniform sampler2D _PaintTexture;
 
 #include "../Chunks/triplanar.cginc"
-#include "../Chunks/snoise3D.cginc"
 
 
 float sdCapsule( float3 p, float3 a, float3 b, float r )
@@ -251,7 +281,7 @@ float4 frag (varyings v) : COLOR {
     shadowCol *= float3(.1 , .3 , .6);
 
     shadowCol /=  clamp( (.1 + .1* length( v.eye)), 2, 3);
-    col = shadowStep * col * float3(1,1,.6) +  clamp( (1-shadowStep) * shadowCol *.4 * col * 20  , 0, 1);// float3(.1,.2,.5);
+    col = shadowStep * col * float3(1,1,.6)  * (shadowCol * 1+.9)  * triplanar+  pow((1-m),1) * 2 * clamp( (1-shadowStep) * shadowCol *.4 * col * 20  , 0, 1);// float3(.1,.2,.5);
 
 
 
@@ -262,6 +292,7 @@ float4 frag (varyings v) : COLOR {
 
   //col = length(shadowCol )* 20 *normalize( col) * (b * b * b * 1 * _Multiplier);
   col = 20*normalize( col) * (b * b * b * 1 * _Multiplier);
+
 
 
    // col = v.color;

@@ -22,32 +22,40 @@ public class SetGatesOnCurve : MonoBehaviour
 
     public Cycle cycle;
 
+    public bool regenerate;
+
 
     void OnEnable()
     {
-        //Delete all children
-        foreach (Transform child in ringParent)
+
+
+        if (regenerate)
         {
-            cycle.JumpDeath(child.GetComponent<Cycle>());
-            DestroyImmediate(child.gameObject);
+            //Delete all children
+            foreach (Transform child in ringParent)
+            {
+                cycle.JumpDeath(child.GetComponent<Cycle>());
+                DestroyImmediate(child.gameObject);
+
+            }
+
+            //Create gates
+            curve = GetComponent<Curve>();
+            for (int i = 0; i < numGates; i++)
+            {
+
+                float v = (float)i / (float)numGates;
+
+                GameObject gate = Instantiate(gatePrefab);
+                gate.transform.parent = ringParent;
+                curve.SetTransformFromValueAlongCurve(v, gate.transform, widthMultiplier);
+                gate.SetActive(true);
+                cycle.JumpStart(gate.GetComponent<Cycle>());
+
+            }
+
 
         }
-
-        //Create gates
-        curve = GetComponent<Curve>();
-        for (int i = 0; i < numGates; i++)
-        {
-
-            float v = (float)i / (float)numGates;
-
-            GameObject gate = Instantiate(gatePrefab);
-            gate.transform.parent = ringParent;
-            curve.SetTransformFromValueAlongCurve(v, gate.transform, widthMultiplier);
-            gate.SetActive(true);
-            cycle.JumpStart(gate.GetComponent<Cycle>());
-
-        }
-
 
 
 

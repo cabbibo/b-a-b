@@ -29,7 +29,9 @@ public class Caller : MonoBehaviour
     public void Call()
     {
 
-        God.audio.Play(possibleClips, wren.input.circle, wren.input.circle, mixer, group);
+
+        // Play in correct Location
+        God.audio.Play(possibleClips[Random.Range(0, possibleClips.Length)], 1, 1, 0, 10, mixer, group, wren.transform.position);
         particles.Play();
         particles.transform.position = wren.transform.position;
 

@@ -43,27 +43,32 @@ ENDCG
         Pass
         {
 
-            Stencil
+            /*Stencil
             {
                 Ref 9
                 Comp always
                 Pass replace
                 ZFail keep
-            }
+            }*/
 
-        Tags { "RenderType"="Opaque" }
+
+//Blend OneMinusDstColor One // Soft additive
+       // Tags { "RenderType"="Transparent" }
+
+         Tags { "Queue"="Transparent" }
+   // Blend SrcAlpha One
+    Cull Off //Lighting Off ZWrite Off 
         LOD 100
 
-        Cull Off
 
-          Tags{ "LightMode" = "ForwardBase" }
+         // Tags{ "LightMode" = "ForwardBase" }
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #pragma target 4.5
             // make fog work
             #pragma multi_compile_fogV
-            #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
+            //#pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 
             #include "UnityCG.cginc"
             #include "AutoLight.cginc"
@@ -105,6 +110,76 @@ ENDCG
             StructuredBuffer<int> _TriBuffer;
 
             float4 _ColorMultiplier;
+
+
+
+
+
+
+            
+float tri(in float x){return abs(frac(x)-.5);}
+float3 tri3(in float3 p){return float3( tri(p.y+tri(p.z)), tri(p.z+tri(p.x)), tri(p.y+tri(p.x)));}
+           
+float triAdd( in float3 p ){ return (tri(p.x+tri(p.y+tri(p.z)))); }
+
+float triangularNoise( float3 p ){
+
+    float totalFog = 0;
+
+    float noiseScale = 1;
+
+    float3 tmpPos = p;
+
+    float noiseContribution = 1;
+
+    float3 offset = 0;
+
+    //p *= _NoiseSize;
+    //p *= 2;
+
+   float speed = 1.1;
+ 
+   p +=  tri3(p.xyz * .3 + _Time.x* .1 ) *1.6;
+   totalFog += triAdd(p.yxz * .3) * .35;
+    
+   p +=  tri3(p.xyz * .4 + 121  + _Time.x* .2) * 1;
+   totalFog += triAdd(p.yxz * 1) * .25;
+    
+   p +=  tri3(p.xyz * .8 + 31  + _Time.x * .3) * 1;
+   totalFog += triAdd(p.yxz* 1.3) * .15;
+
+  return totalFog;
+
+}
+
+
+float t3D( float3 pos ){
+  float3 fPos = pos * .05;// + _NoiseOffset;
+
+  // Adds Randomness to noise for each crystal
+ // fPos += 100 * mul(unity_ObjectToWorld,float4(0,0,0,1)).xyz;
+  return triangularNoise( fPos);
+}
+
+float dT3D( float3 pos , float3 lightDir ){
+
+  float eps = .0001;
+
+  
+  return ((t3D(pos) - t3D(pos+ lightDir * eps))/eps+.5);
+}
+
+float3 nT3D( float3 pos ){
+
+  float3 eps = float3(.0001,0,0);
+
+  return t3D(pos) * normalize(
+         float3(  t3D(pos + eps.xyy) - t3D(pos - eps.xyy), 
+                  t3D(pos + eps.yxy) - t3D(pos - eps.yxy),
+                  t3D(pos + eps.yyx) - t3D(pos - eps.yyx) ));
+
+
+}
 
             v2f vert ( uint vid : SV_VertexID )
             {
@@ -178,7 +253,7 @@ ENDCG
                 col = tex2D(_FullColorMap , float2(tCol.x * .5 + m * .1 ,.5)).xyz * skyColor * 10;//dot( _WorldSpaceLightPos0.xyz  , v.nor );
 
                 if( tCol.a < .5 ){
-                    discard;
+                   // discard;
                 }
 
 
@@ -191,37 +266,67 @@ ENDCG
   
     for( int i = 0; i < 3; i++){
 
-      float3 fPos = v.worldPos - normalize(v.eye) * float(i) * 1.3;
-      float v = (snoise(fPos * 10)+1)/2;
-      shadowCol += hsv((float)i/3,1,v);
+      float3 fPos = v.worldPos - normalize(v.eye) * float(i) * .1;
+      float v =triangularNoise(fPos * 1);//(triangularNoise(fPos * 1)+1)/2;
+      shadowCol += hsv(float(i)/3,1,v);//hsv((float)i/3,1,v);
 
     
     }//
-    shadowCol *= shadowCol;
-    shadowCol *= shadowCol;
-    shadowCol *= shadowCol;
-    shadowCol = pow( shadowCol,5);
+  //  shadowCol *= shadowCol;
+  // shadowCol *= shadowCol;
+  // shadowCol *= shadowCol;
 
-    ////shadowCol = length(shadowCol) * (shadowCol * .8 + .3)  * 10;//
+
+    //shadowCol = pow( shadowCol,2);
+
+
+
+float3 fSC =  pow(shadowCol,4) * 100;
+
+col = fSC;
+
+
+
+float d = length(v.uv - .5) + length(fSC) * .1;
+
+
+if( d > .5){
+  discard;
+}
+
+if( d > .47){
+  col *= 10;
+}
+  // shadowCol = length(shadowCol) * (shadowCol * .8 + .3)  * 10;//
 
     //shadowCol += .5;
    // shadowCol *= float3(.1 , .3 , .6);
+
+   /*
 
     shadowCol /=  clamp( (.1 + .1* length( v.eye)), 2, 3);
     col = shadowStep * col * float3(1,1,.6) +  clamp( (1-shadowStep) * length(col) * length(col) * 10 , .1, 1) * shadowCol;// float3(.1,.2,.5);
 
 
-col =  tCol.xyz * length(shadowCol) * (shadowCol* .8 + .2)  * 300 * float3(1, .8,.3)  * v.uv.x * 2;
+//col =  tCol.xyz * length(shadowCol) * (shadowCol* .8 + .2)  * 300 * float3(1, .8,.3)  * v.uv.x * 2;
 col += 1* tex2D(_FullColorMap, float2(tCol.x * .3 , v.debug.x * 1/16 ))  * _ColorMultiplier;//hsv(tCol.x * .3,1,1);
 
 
-float3 cMap = tex2D(_ColorMap, float2(v.debug.x / 20,.05 ));
-col = length(shadowCol)* 300* cMap + cMap * (1-tCol.xyz) * m;
+float3 cMap = tex2D(_ColorMap, float2(v.debug.x / 20,_ColorID ));
+col = length(shadowCol)* 300* cMap+ cMap * (1-tCol.xyz) * m;
 
- if( tCol.a < .5 ){
-                    discard;
+
+col = shadowCol * 1;//length(col);
+ if( tCol.a < .1 ){
+                 //   discard;
                 }
-  //col = v.uv.x;
+
+                if( tCol.a < .7){
+                //  col += .2;
+                }
+
+               // col *= cMap;
+  //col = v.uv.x;*/
 
 
                 return float4(col,1);
@@ -231,6 +336,8 @@ col = length(shadowCol)* 300* cMap + cMap * (1-tCol.xyz) * m;
         }
 
 // Shadow Pass
+
+/*
     Pass
     {
       Tags{ "LightMode" = "ShadowCaster" }
@@ -282,12 +389,12 @@ col = length(shadowCol)* 300* cMap + cMap * (1-tCol.xyz) * m;
       {
 
         if( tex2D(_MainTex,i.uv).a < .5){
-          discard;
+        //  discard;
         }
         SHADOW_CASTER_FRAGMENT(i)
       }
       ENDCG
-    }
+    }*/
     
   
   

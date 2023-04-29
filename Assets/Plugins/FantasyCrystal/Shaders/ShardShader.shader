@@ -165,7 +165,6 @@ varyings vert ( appdata vertex ){
 
 }
 
-
 float tri(in float x){return abs(frac(x)-.5);}
 float3 tri3(in float3 p){return float3( tri(p.y+tri(p.z)), tri(p.z+tri(p.x)), tri(p.y+tri(p.x)));}
            

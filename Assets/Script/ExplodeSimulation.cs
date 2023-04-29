@@ -94,7 +94,7 @@ public class ExplodeSimulation : MonoBehaviour
             mpb.SetInt("_Count", count);
             mpb.SetInt("_Sides", sides);
 
-            WrenUtils.God.instance.SetTerrainMPB(mpb);
+            //WrenUtils.God.instance.SetTerrainMPB(mpb);
 
             if (WrenUtils.God.wren)
             {

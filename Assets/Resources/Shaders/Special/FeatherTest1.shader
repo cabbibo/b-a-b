@@ -85,6 +85,7 @@ struct Feather{
           float id        : TEXCOORD5;
           float hue        : TEXCOORD10;
           float offset : TEXCOORD11;
+          float baseHue : TEXCOORD12;
           int feather:TEXCOORD7;
           float4 data1:TEXCOORD9;
            UNITY_SHADOW_COORDS(8)
@@ -121,7 +122,10 @@ Vert v = _VertBuffer[_TriBuffer[alternate + whichMesh * _TrisPerMesh]];
       o.id = float(base);
       o.feather = whichMesh;
 
+      o.baseHue = _Hue1;
+
       o.hue = _Hue1;
+
 
       if( _IsBody > .5 ){ o.hue = _Hue4; }
 
@@ -140,13 +144,15 @@ Vert v = _VertBuffer[_TriBuffer[alternate + whichMesh * _TrisPerMesh]];
 
 }
 
+
+sampler2D _FullColorMap;
 #include "../Chunks/snoise.cginc"
 //Pixel function returns a solid color for each point.
 float4 frag (varyings v) : COLOR {
   fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos);//* .5 + .5;
   float3 tCol = tex2D (_MainTex, v.uv);
 
-  float3 m = dot( UNITY_MATRIX_V[2].xyz , v.nor );
+  float m = dot( UNITY_MATRIX_V[2].xyz , v.nor );
   float3 m2 = dot(float3(0,1,0), v.nor );
   float hueOffset =   sin(v.id * 15.91) * .04 + sin( v.id * 14.1445) * .06;
 
@@ -193,9 +199,14 @@ shadowCol += .3;
 
     float b = length(col);
 
-    col = normalize( col*col) * b * b * 4;
+
+    tCol = tex2D(_FullColorMap , float2( v.hue , v.baseHue )).xyz;
+
+    col.xyz *= (tCol * 1 + 1.4);//normalize( col*col) * b * b * 4;
     //col = saturate(col/.8)*.8;
 
+
+    col = pow(length(col),2) * col * m * m;
 
 
     //col = v.nor * .5 +.5;

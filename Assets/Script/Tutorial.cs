@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
- using WrenUtils;
+using WrenUtils;
 
 public class Tutorial : MonoBehaviour
 {
@@ -10,7 +10,7 @@ public class Tutorial : MonoBehaviour
 
     public bool canSkip;
     public TutorialState[] tutorialStates;
-    
+
 
 
     public Slider amountComplete;
@@ -23,7 +23,7 @@ public class Tutorial : MonoBehaviour
     public float stateFillSpeed = 1;
 
 
-    
+
     public bool betweenStates;
 
     public float stateComplete;
@@ -33,7 +33,8 @@ public class Tutorial : MonoBehaviour
     public PlayCutScene[] introAnimations;
 
 
-    public void CheckIfNeeded(){ 
+    public void CheckIfNeeded()
+    {
 
 
 
@@ -43,16 +44,19 @@ public class Tutorial : MonoBehaviour
         // If we have completed, 
         // set all the values for what 
         // happens during the tutorial
-        if( tutorialComplete > 0 ){
+        if (tutorialComplete > 0)
+        {
 
 
-            for( int i = 0; i < introAnimations.Length; i++ ){
+            for (int i = 0; i < introAnimations.Length; i++)
+            {
                 introAnimations[i].SetStartValues();
                 introAnimations[i].SetEndValues();
                 introAnimations[i].enabled = false;
             }
 
-            for( int i = 0; i < tutorialStates.Length;i++){
+            for (int i = 0; i < tutorialStates.Length; i++)
+            {
                 tutorialStates[i].OnStartEvent.Invoke();
                 tutorialStates[i].OnCompleteEvent.Invoke();
                 //tutorialStates
@@ -61,15 +65,18 @@ public class Tutorial : MonoBehaviour
             var p = (ReachLocationTutorialState)tutorialStates[6];
             p.hasFired = true;
 
-        // Otherwise, 
-        // Play the animation!    
-        }else{
-             
-            for( int i = 0; i <  introAnimations.Length;i++){
+            // Otherwise, 
+            // Play the animation!    
+        }
+        else
+        {
+
+            for (int i = 0; i < introAnimations.Length; i++)
+            {
                 introAnimations[i].SetStartValues();
                 introAnimations[i].enabled = false;
             }
-            
+
             introAnimations[0].enabled = true;
             introAnimations[0].SetStartValues();
             introAnimations[0].Play();
@@ -91,87 +98,148 @@ public class Tutorial : MonoBehaviour
     {
 
 
-        if( God.wren != null && !betweenStates && tutorialComplete == 0 ){
+        if (God.wren != null && !betweenStates && tutorialComplete == 0)
+        {
 
             // Going in from intro animation!
-            if( state == -1 ){
+            if (state == -1)
+            {
                 state = 0;
                 God.wren.state.canTakeOff = false;
                 God.audio.Play(God.sounds.tutorialSectionStartSound);
-                if( !tutorialStates[state].instant ){
+                if (!tutorialStates[state].instant)
+                {
                     amountComplete.value = 0;
                     amountComplete.gameObject.SetActive(true);
                 }
                 tutorialStates[0].OnStart();
-            }else if( state == 0 ){
+            }
+            else if (state == 0)
+            {
                 // Ground Move Forward
-                if( God.input.left.y > .5f &&  God.input.right.y  > .5f ){ UpdatingState(); }
-            }else if( state == 1 ){
+                if (God.input.left.y > .5f && God.input.right.y > .5f) { UpdatingState(); }
+            }
+            else if (state == 1)
+            {
                 // Ground Move Back
-                if( God.input.left.y  < -.5f &&  God.input.right.y  < -.5f ){ UpdatingState(); }
-            }else if( state == 2 ){
+                if (God.input.left.y < -.5f && God.input.right.y < -.5f) { UpdatingState(); }
+            }
+            else if (state == 2)
+            {
                 // Ground Move Left
-                if( God.input.left.x  < -.5f &&  God.input.right.x < -.5f ){ UpdatingState(); }
-            }else if( state == 3 ){
+                if (God.input.left.x < -.5f && God.input.right.x < -.5f) { UpdatingState(); }
+            }
+            else if (state == 3)
+            {
                 // Ground Move Right
-                if( God.input.left.x  > .5f &&  God.input.right.x > .5f ){ UpdatingState(); }
-            }else if( state == 4 ){
+                if (God.input.left.x > .5f && God.input.right.x > .5f) { UpdatingState(); }
+            }
+            else if (state == 4)
+            {
                 // Ground Turn Left
-                if( God.input.left.y  < -.5f &&  God.input.right.y > .5f ){ UpdatingState(); }
-            }else if( state == 5 ){
+                if (God.input.left.y < -.5f && God.input.right.y > .5f) { UpdatingState(); }
+            }
+            else if (state == 5)
+            {
                 // Ground Turn Right
-                if( God.input.left.y  > .5f &&  God.input.right.y < -.5f ){ UpdatingState(); }
-            }else if( state == 6 ){
-                // Get it from collision!
-            }else if( state == 7 ){
-                // Take Off
-                God.wren.state.canTakeOff = true;
-                if( God.input.x ){ stateComplete = 11; UpdatingState(); }
-            }else if( state == 8 ){
-                // Tilt Up
-                if( God.input.left.y  < -.5f &&  God.input.right.y  < -.5f && !God.wren.state.onGround ){ UpdatingState(); }
-            }else if( state == 9 ){
-                // Tilt Down
-                if( God.input.left.y  > .5f &&  God.input.right.y > .5f && !God.wren.state.onGround ){ UpdatingState(); }
-            }else if( state == 10 ){
-                // turn left
-                if( God.input.left.x  > .5f &&  God.input.right.x > .5f && !God.wren.state.onGround ){ UpdatingState(); }
-            }else if( state == 11 ){
-                // turn right
-                if( God.input.left.x  < -.5f &&  God.input.right.x < -.5f && !God.wren.state.onGround ){ UpdatingState(); }
-            }else if( state == 12 ){
-                // tuck
-                if( God.input.l2 > .5f &&  God.input.r2 > .5f && !God.wren.state.onGround ){ UpdatingState(); }
-            }else if( state == 13 ){
-                // brake
-                if( God.input.l3 &&  God.input.r3 && !God.wren.state.onGround ){ UpdatingState(); }
-            }else if( state == 14 ){
-                // Get it from collision!
-            }else if( state == 15 ){
+                if (God.input.left.y > .5f && God.input.right.y < -.5f) { UpdatingState(); }
+            }
+            else if (state == 6)
+            {
                 // Get it from collision!
             }
+            else if (state == 7)
+            {
+                // Take Off
+                God.wren.state.canTakeOff = true;
+                if (God.input.x) { stateComplete = 11; UpdatingState(); }
+            }
+            else if (state == 8)
+            {
+                // Tilt Up
+                if (God.input.left.y < -.5f && God.input.right.y < -.5f && !God.wren.state.onGround) { UpdatingState(); }
+            }
+            else if (state == 9)
+            {
+                // Tilt Down
+                if (God.input.left.y > .5f && God.input.right.y > .5f && !God.wren.state.onGround) { UpdatingState(); }
+            }
+            else if (state == 10)
+            {
+                // turn left
+                if (God.input.left.x > .5f && God.input.right.x > .5f && !God.wren.state.onGround) { UpdatingState(); }
+            }
+            else if (state == 11)
+            {
+                // turn right
+                if (God.input.left.x < -.5f && God.input.right.x < -.5f && !God.wren.state.onGround) { UpdatingState(); }
+            }
+            else if (state == 12)
+            {
+                // tuck
+                if (God.input.l2 > .5f && God.input.r2 > .5f && !God.wren.state.onGround) { UpdatingState(); }
+            }
+            else if (state == 13)
+            {
+                // brake
+                if (God.input.l3 && God.input.r3 && !God.wren.state.onGround) { UpdatingState(); }
+            }
+            else if (state == 14)
+            {
 
-            if(canSkip&& Input.GetKey("space") ){
+                if (God.input.circle) { stateComplete = 11; UpdatingState(); }
+                // Get it from collision!
+            }
+            else if (state == 15)
+            {
+
+                if (God.input.square) { stateComplete = 11; UpdatingState(); }
+
+                // Get it from collision!
+            }
+            else if (state == 16)
+            {
+
+                God.wren.state.canTakeOff = true;
+                if (God.input.x) { stateComplete = 11; UpdatingState(); }
+            }
+            else if (state == 17)
+            {
+
+                if (God.input.triangle) { stateComplete = 11; UpdatingState(); }
+            }
+            else if (state == 18)
+            {
+
+                if (God.input.l1 > .5f && God.input.r1 > .5f && !God.wren.state.onGround) { UpdatingState(); }
+
+            }
+
+            if (canSkip && Input.GetKey("space"))
+            {
                 NextState();
-            } 
+            }
         }
-        
+
     }
 
-    void UpdatingState(){
+    void UpdatingState()
+    {
 
         float fillSpeed = .01f * stateFillSpeed;
-        if(canSkip){ fillSpeed *= 1000;}
+        if (canSkip) { fillSpeed *= 1000; }
         stateComplete += fillSpeed;
         amountComplete.value = stateComplete;
-        if( stateComplete > 1 ){
+        if (stateComplete > 1)
+        {
             NextState();
         }
 
     }
 
-    public void NextState(){
-        
+    public void NextState()
+    {
+
         stateComplete = 0;
         amountComplete.value = 0;
         amountComplete.gameObject.SetActive(false);
@@ -180,13 +248,14 @@ public class Tutorial : MonoBehaviour
         betweenStates = true;
 
         float fTime = timeBetweenSections;
-        if( canSkip ){fTime = .01f;}
+        if (canSkip) { fTime = .01f; }
         StartCoroutine(StartNextSection(fTime));
-        
+
     }
 
 
-    void OnFinishTutorial(){
+    void OnFinishTutorial()
+    {
         PlayerPrefs.SetInt("_TutorialComplete", 1);
     }
 
@@ -199,16 +268,21 @@ public class Tutorial : MonoBehaviour
         // Code to execute after the delay
     }
 
-    void StartSection(){
-        
+    void StartSection()
+    {
+
         betweenStates = false;
-        state ++;
-        
-        if( state == tutorialStates.Length ){
+        state++;
+
+        if (state == tutorialStates.Length)
+        {
             OnFinishTutorial();
-        }else{
+        }
+        else
+        {
             stateComplete = 0;
-            if( !tutorialStates[state].instant ){
+            if (!tutorialStates[state].instant)
+            {
                 amountComplete.value = 0;
                 amountComplete.gameObject.SetActive(true);
             }
@@ -219,8 +293,10 @@ public class Tutorial : MonoBehaviour
     }
 
 
-    public void ReachLocationStateHit(TutorialState tutState){
-        if( tutState == tutorialStates[state] ){
+    public void ReachLocationStateHit(TutorialState tutState)
+    {
+        if (tutState == tutorialStates[state])
+        {
             stateComplete = 11;
             UpdatingState();
         }
