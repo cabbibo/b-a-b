@@ -38,7 +38,8 @@ public class CrystalCollector : MonoBehaviour
                 //  possibleCrystalsColliders[i].enabled = false;
 
 
-                possibleCrystalsRB[i].AddForce((possibleCrystals[i].transform.position - transform.position) * attractForce);
+                //print("collected");
+                //possibleCrystalsRB[i].AddForce((possibleCrystals[i].transform.position - transform.position) * attractForce);
                 crystalsCollected++;
             }
             else

@@ -22,6 +22,18 @@ public class CrystalCollectable : MonoBehaviour
 
     public Collider c;
 
+    public void OnEnable()
+    {
+
+        God.targetableObjects.Add(this.transform);
+    }
+
+    public void OnDisable()
+    {
+
+        God.targetableObjects.Remove(this.transform);
+    }
+
     public void OnTriggerEnter(Collider c)
     {
         if (c.gameObject.name == "CrystalCollection")
@@ -31,7 +43,9 @@ public class CrystalCollectable : MonoBehaviour
                 God.wren.carrying.DropIfCarrying(carryable);
 
                 //can't pick up again
-                /// GetComponent<Collider>().enabled = false;
+                ///  GetComponent<Collider>().enabled = false;
+
+                //  God.targetableObjects.Remove(this.transform);
                 OnDrop();
                 //collector.OnCollect();
             }

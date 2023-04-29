@@ -114,7 +114,6 @@ public class Booster : Cycle
         mpb.SetVector("_LastHitLocation", tv2);
         renderer.SetPropertyBlock(mpb);
 
-        print("on live : " + gameObject.name);
 
     }
 
@@ -129,6 +128,8 @@ public class Booster : Cycle
         if (renderer == null)
         {
             renderer = GetComponent<Renderer>();
+            mpb = new MaterialPropertyBlock();
+
             lastHitLocation = Vector2.one * 100 * UnityEngine.Random.Range(0.5f, 1.0f);
             currentScore = UnityEngine.Random.Range(0.5f, 1.0f);
 

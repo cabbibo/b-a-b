@@ -67,6 +67,8 @@ public class PlayCutScene : MonoBehaviour
 
         // print(lerpTo);
 
+        print("AWAKE");
+        print(lerpTo.target);
         tmpLerpTarget = lerpTo.target;
 
     }
@@ -190,6 +192,7 @@ public class PlayCutScene : MonoBehaviour
 
     private void Director_Stopped(PlayableDirector d)
     {
+
         print("Director stoppped on :  " + this.gameObject.name);
         playing = false;
         AudioListener.volume = 1;
@@ -211,14 +214,18 @@ public class PlayCutScene : MonoBehaviour
 
     void StartPlay()
     {
+
+        print("start play cut scene");
         //        print("Evaluating2");
         transitioning = false;
         director.Play();
         director.playableGraph.GetRootPlayable(0).SetSpeed(1);
         playing = true;
         lerpTo.enabled = true;
+        lerpTo.target = cameraTarget;
         God.wren.canMove = false;
         AudioListener.volume = 1;
+
         //       print("lerping enabled");
     }
 
@@ -279,14 +286,18 @@ public class PlayCutScene : MonoBehaviour
 
     public void Play()
     {
+
+        print("playing cutscene");
         AudioListener.volume = 1;
 
         if (played && playOnce)
         {
-
+            print("already played");
         }
         else
         {
+
+            print("PLAYING FOR REAL");
 
 
             God.instance.inCutScene = true;
@@ -303,6 +314,9 @@ public class PlayCutScene : MonoBehaviour
             lerpTo.lerpSpeed = lerpSpeed;
             lerpTo.slerpSpeed = slerpSpeed;
             lerpTo.target = cameraTarget;
+
+            print("Setting camera target");
+            print(cameraTarget);
 
 
             transitionStartTime = Time.time;

@@ -80,7 +80,7 @@ varyings vert (uint id : SV_VertexID){
     
     float2 uv = float2(0,0);
 
-    Vert v = _VertBuffer[base];
+    Vert v = _VertBuffer[clamp(base,0,_Count-1)];
     
 
       float3 d = normalize(v.vel);
@@ -139,22 +139,30 @@ float4 frag (varyings v) : COLOR {
 
     
     }//
-    shadowCol *= shadowCol;
-    shadowCol *= shadowCol;
-    shadowCol *= shadowCol;
-    shadowCol *= shadowCol;
+    //shadowCol *= shadowCol;
+    //shadowCol *= shadowCol;
+    //shadowCol *= shadowCol;
+    //shadowCol *= shadowCol;
 
     shadowCol = length(shadowCol) * (shadowCol * .8 + .1 )  * 10;//
 
-    shadowCol *= float3(4,3,2);
+    //shadowCol *= float3(4,3,2);
 
     shadowCol *= 1-tex2D(_MainTex,v.uv2).x;
 
     //shadowCol /=  clamp( (.1 + .1* length( v.eye)), 2, 3);
-    col = shadowCol * (v.nor * .5 + .5);//clamp( (1-shadowStep) * length(col) * length(col) * 10 , .1, 1) * shadowCol;// float3(.1,.2,.5);
+    col = shadowCol * hsv( sin(v.id),.6,1);//(v.nor * .5 + .5);//clamp( (1-shadowStep) * length(col) * length(col) * 10 , .1, 1) * shadowCol;// float3(.1,.2,.5);
 
+
+  //col = shadowCol;//
+
+   
     if( length(col) < .01){
       discard;
+    } 
+    
+    if(tex2D(_MainTex,v.uv2).x>.9){
+      //col = 1;
     }
 
     return float4(col,1 );

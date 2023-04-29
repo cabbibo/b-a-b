@@ -12,7 +12,7 @@ public class Reseter : MonoBehaviour
     void Update()
     {
 
-        if (wren.input.o_square < .5f && wren.input.square > .5f)
+        if (wren.input.o_square < .5f && wren.input.square > .5f && wren.state.canTakeOff)
         {
             print("here3");
             Call();

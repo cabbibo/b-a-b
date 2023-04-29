@@ -281,7 +281,7 @@ public class MenuController : MonoBehaviour
     public void OnNewGameSelected()
     {
 
-
+        print("new game selected");
         God.sceneController.ResetSave();
         God.sceneController.OnSceneLoadEvent.AddListener(OnSceneLoaded);//m_MyEvent.AddListener(MyAction);
         God.sceneController.HardStart();
@@ -294,6 +294,7 @@ public class MenuController : MonoBehaviour
 
     void OnSceneLoaded()
     {
+        print("Scene Loaded");
         God.sceneController.OnSceneLoadEvent.RemoveListener(OnSceneLoaded);
         DeactivateMenu();
         TurnMenuOff(.5f);

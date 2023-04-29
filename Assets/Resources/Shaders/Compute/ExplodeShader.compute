@@ -64,14 +64,14 @@ void Shatter(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 
     float iSimTime = 1 - nSimTime;
 
    // force += startDir * pow(iSimTime, 6) * 2;
-    force += startDir * pow(iSimTime, 1) * 6 * (hash(pID * 111)* .9 + .1);
+    force += startDir * pow(iSimTime, 1) * 6 * (hash(pID * 111)* .6 + .4);
 
-   // force += curlNoise( p.pos * .01) * 3* pow(iSimTime, 10);
+    force += curlNoise( p.pos * .1) * 3* pow(iSimTime, 1);
 
 
     p.vel +=  force;
     p.pos += p.vel * .004;
-    p.vel *= .9 * (1-pow(nSimTime,10));
+    p.vel *= .95;//* (1-pow(nSimTime,4));
 
     p.life = iSimTime;
 
