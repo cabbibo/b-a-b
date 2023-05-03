@@ -205,7 +205,6 @@ public class WrenCompass : WrenInterface
                         // get normalized between min and max
                         v = Mathf.InverseLerp(target_minDist, target_maxDist, v);
 
-                        print(v);
                         //
                         float fWidth = Mathf.Lerp(1, target_maxDistWidthMultiplier, v);
                         float fLength = Mathf.Lerp(1, target_maxDistLengthMultiplier, v);
