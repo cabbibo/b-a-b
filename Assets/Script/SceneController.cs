@@ -32,6 +32,9 @@ public class SceneController : MonoBehaviour
     // city
 
 
+    public bool graybox;
+
+
 
     public UnityEngine.SceneManagement.Scene currentMainScene;
 
@@ -356,6 +359,9 @@ public class SceneController : MonoBehaviour
             currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
         }
 
+        if( graybox ){
+            currentSceneID = 2;
+        }
         biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
 
         int gameStarted = PlayerPrefs.GetInt("_GameStarted", 0);
