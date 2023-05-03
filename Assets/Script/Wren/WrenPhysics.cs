@@ -252,6 +252,8 @@ protected float flapVel;
 
 protected float distToGroundVal;
 
+public int raycastDirections = 5;
+
 /*
 
     TODO
@@ -716,11 +718,13 @@ if (Physics.Raycast (transform.position, -Vector3.up, out hit)) {
 
 bool hitVal = false;
 Ray ray = new Ray();
-for( int i = 0; i< 10; i++){
-for( int j = 0; j< 10; j++){
 
-    float a1 = ((float)i)/10;
-    float a2 = ((float)j)/10;
+
+for( int i = 0; i< raycastDirections; i++){
+for( int j = 0; j< raycastDirections; j++){
+
+    float a1 = ((float)i)/raycastDirections;
+    float a2 = ((float)j)/raycastDirections;
 
     a2 *= Mathf.PI *2;
     a1 *= Mathf.PI *2;
@@ -736,7 +740,7 @@ for( int j = 0; j< 10; j++){
 ray.origin = transform.position;
 ray.direction = dir;
     //terrainCollider.Raycast....
-    if (Physics.Raycast (ray, out hit , 10000)) {
+    if (Physics.Raycast (ray, out hit , 500)) {
 
         //debugger.SetLine( i + 2 + j * 10 , transform.position , transform.position + dir * hit.distance );
     
@@ -901,7 +905,13 @@ float maxVal = Mathf.Max( new float[]{
         Mathf.Abs(input.left2) , 
         Mathf.Abs(input.right2) 
     });
-float forceFactor = Mathf.Sqrt(1-Mathf.Pow(Vector3.Dot( vel.normalized, Vector3.up), 2));
+
+
+float forceFactor = Mathf.Pow(1-Mathf.Pow(Vector3.Dot( vel.normalized, Vector3.up), 2),2);
+
+//print( forceFactor );
+
+
 upwardsRightingForce = forceFactor * d * rightingForce * (1-maxVal*rightingDependentOnNotTouchingVal);
 
 /*
