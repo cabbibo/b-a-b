@@ -38,6 +38,8 @@ public class PlayCutScene : MonoBehaviour
     Transform tmpLerpTarget;
 
 
+    public Transform wrenCrashPosition;
+
 
 
 
@@ -118,11 +120,13 @@ public class PlayCutScene : MonoBehaviour
 
             if (God.wren != null && wrenTarget != null)
             {
-                God.wren.transform.position = wrenTarget.transform.position;
-                God.wren.transform.rotation = wrenTarget.transform.rotation;
+                God.wren.canMove = false;
+                if (wrenTarget != null)
+                {
+                    God.wren.transform.position = wrenTarget.transform.position;
+                    God.wren.transform.rotation = wrenTarget.transform.rotation;
+                }
             }
-
-            God.wren.canMove = false;
 
         }
 
@@ -139,7 +143,7 @@ public class PlayCutScene : MonoBehaviour
                 else
                 {
 
-                   // print("Evaluating");
+                    // print("Evaluating");
                     float v = Time.time - transitionStartTime;
                     v /= transitionInSpeed;
                     if (v >= 1)
@@ -151,9 +155,9 @@ public class PlayCutScene : MonoBehaviour
                         //print("transitioning");
                         float fV = v * v * (3 - 2 * v);
 
-                       //print(fV);
-                       //print(startPos);
-                       //print(targetPos);
+                        //print(fV);
+                        //print(startPos);
+                        //print(targetPos);
                         Camera.main.transform.position = Vector3.Lerp(startPos, targetPos, fV);
                         Camera.main.transform.rotation = Quaternion.Slerp(startRot, targetRot, fV);
                     }
@@ -343,7 +347,14 @@ public class PlayCutScene : MonoBehaviour
             // cut scenes!
             if (God.wren)
             {
-                God.wren.Crash(God.wren.transform.position);
+                if (wrenCrashPosition != null)
+                {
+                    God.wren.Crash(wrenCrashPosition.position);
+                }
+                else
+                {
+                    God.wren.Crash(God.wren.transform.position);
+                }
             }
         }
     }

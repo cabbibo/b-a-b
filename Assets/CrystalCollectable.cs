@@ -25,13 +25,13 @@ public class CrystalCollectable : MonoBehaviour
     public void OnEnable()
     {
 
-        God.targetableObjects.Add(this.transform);
+        //  God.targetableObjects.Add(this.transform);
     }
 
     public void OnDisable()
     {
 
-        God.targetableObjects.Remove(this.transform);
+        //   God.targetableObjects.Remove(this.transform);
     }
 
     public void OnTriggerEnter(Collider c)
