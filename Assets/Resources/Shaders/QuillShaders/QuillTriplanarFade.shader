@@ -65,6 +65,8 @@ Shader "Quill/TriplanarTextureFade" {
     float _Fade;
     float _Multiplier;
 
+  
+
     float3 _FadeLocation;
 struct appdata_full2 {
     float4 vertex : POSITION;
@@ -238,6 +240,7 @@ float4 frag (varyings v) : COLOR {
   }
     col *=((floor( shadow * 2 + triplanar.x * .3 )/ 2) * .3 + .8);//(1-shadow);
 
+  
    
                // col = max( col , (sin(dist * 6 + noiseVal1 ) * 5  ) / dist);
     //col += saturate(pow((1-m),10)* 1)* float3(1,.5,.5);
@@ -293,6 +296,12 @@ float4 frag (varyings v) : COLOR {
   //col = length(shadowCol )* 20 *normalize( col) * (b * b * b * 1 * _Multiplier);
   col = 20*normalize( col) * (b * b * b * 1 * _Multiplier);
 
+
+float _DistanceMin = 0.1;
+float _DistanceMax = .5;
+      float mult = 1-smoothstep( dist , _DistanceMin, _DistanceMax);
+
+  col *= mult* 100 + 1;
 
 
    // col = v.color;

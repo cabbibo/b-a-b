@@ -139,7 +139,7 @@ public class PlayCutScene : MonoBehaviour
                 else
                 {
 
-                    print("Evaluating");
+                   // print("Evaluating");
                     float v = Time.time - transitionStartTime;
                     v /= transitionInSpeed;
                     if (v >= 1)
@@ -148,12 +148,12 @@ public class PlayCutScene : MonoBehaviour
                     }
                     else
                     {
-                        print("transitioning");
+                        //print("transitioning");
                         float fV = v * v * (3 - 2 * v);
 
-                        print(fV);
-                        print(startPos);
-                        print(targetPos);
+                       //print(fV);
+                       //print(startPos);
+                       //print(targetPos);
                         Camera.main.transform.position = Vector3.Lerp(startPos, targetPos, fV);
                         Camera.main.transform.rotation = Quaternion.Slerp(startRot, targetRot, fV);
                     }

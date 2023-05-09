@@ -65,6 +65,10 @@ public class Tutorial : MonoBehaviour
             var p = (ReachLocationTutorialState)tutorialStates[6];
             p.hasFired = true;
 
+
+            p = (ReachLocationTutorialState)tutorialStates[19];
+            p.hasFired = true;
+
             // Otherwise, 
             // Play the animation!    
         }
@@ -206,13 +210,19 @@ public class Tutorial : MonoBehaviour
             else if (state == 17)
             {
 
-                if (God.input.triangle) { stateComplete = 11; UpdatingState(); }
+                if (God.input.l1 > .5f && God.input.r1 > .5f && !God.wren.state.onGround) { UpdatingState(); }
+
             }
             else if (state == 18)
             {
 
-                if (God.input.l1 > .5f && God.input.r1 > .5f && !God.wren.state.onGround) { UpdatingState(); }
+                if (God.input.triangle) { stateComplete = 11; UpdatingState(); }
+            }
+            else if (state == 19)
+            {
 
+                print("find crystal?");
+                // Get it from collision!
             }
 
             if (canSkip && Input.GetKey("space"))
@@ -274,6 +284,9 @@ public class Tutorial : MonoBehaviour
         betweenStates = false;
         state++;
 
+        print("section started");
+        print( state);
+
         if (state == tutorialStates.Length)
         {
             OnFinishTutorial();
@@ -295,8 +308,12 @@ public class Tutorial : MonoBehaviour
 
     public void ReachLocationStateHit(TutorialState tutState)
     {
+
+        print("tutorial state reached");
+
         if (tutState == tutorialStates[state])
         {
+            print("tutorial state reached inside");
             stateComplete = 11;
             UpdatingState();
         }
