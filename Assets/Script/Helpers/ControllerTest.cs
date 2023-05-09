@@ -67,10 +67,29 @@ public class ControllerTest : MonoBehaviour
 
     public bool menuPressed;
 
+
+    public Joystick joystick;
+
     // Start is called before the first frame update
     void OnEnable()
     {
         player = ReInput.players.GetPlayer(0);
+
+        // Find the first Joystick object with "DualSense" in its name
+       foreach (var controller in player.controllers.Joysticks) {
+           if (controller.name.Contains("DualSense")) {
+               joystick = (Joystick)controller;
+               break;
+           }
+       }
+
+
+       print(joystick);
+       
+       // Set the motor speeds for the haptic feedback
+       //joystick.SetVibration(0, 1f, 1f);
+
+
     }
 
     // Update is called once per frame
@@ -161,5 +180,51 @@ public class ControllerTest : MonoBehaviour
     public float rightX
     {
         get { return rightXRemap.Evaluate(Mathf.Abs(right.x)) * Mathf.Sign(right.x); }
+    }
+
+
+
+    public void SetVibration( int whichMotor, float intensity ){
+
+
+        print("setting");
+            // Set vibration for a certain duration
+            foreach(Joystick j in player.controllers.Joysticks) {
+                if(!j.supportsVibration) continue;
+                print("setting here");
+                if(j.vibrationMotorCount > 0){
+                     j.SetVibration(whichMotor, intensity); // 1 second duration
+                     print("set 4");
+                }
+            }
+
+    }
+
+
+        public void SetVibration( int whichMotor , float intensity1, float intensity2, float frequency ){
+
+
+            // Set vibration for a certain duration
+            foreach(Joystick j in player.controllers.Joysticks) {
+                if(!j.supportsVibration) continue;
+                if(j.vibrationMotorCount > 0){
+                     j.SetVibration(whichMotor, intensity1, intensity2 , .1f); // 1 second duration
+                }
+            }
+
+    }
+
+
+       public void SetVibration( int whichMotor , float intensity1, float duration ){
+
+
+            // Set vibration for a certain duration
+            foreach(Joystick j in player.controllers.Joysticks) {
+                if(!j.supportsVibration) continue;
+                if(j.vibrationMotorCount > 0){
+                     j.SetVibration(whichMotor, intensity1, duration); // 1 second duration
+                }
+            }
+
     }
 }

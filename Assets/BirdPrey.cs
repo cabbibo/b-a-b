@@ -255,9 +255,9 @@ public class BirdPrey : MonoBehaviour
         float pitch = Mathf.Lerp(clipPitchLow, clipPitchHigh, (d - clipPitchDistanceLow) / (clipPitchDistanceHigh - clipPitchDistanceLow));
 
         print(pitch);
-        WrenUtils.God.audio.Play(gotAteClips, 1, pitch);
-        WrenUtils.God.audio.Play(gotAteClips, 1, pitch * 2);
-        WrenUtils.God.audio.Play(gotAteClips, 1, pitch * 3);
+        WrenUtils.God.audio.Play(gotAteClips, .2f, pitch);
+        WrenUtils.God.audio.Play(gotAteClips, .2f, pitch * 2);
+        WrenUtils.God.audio.Play(gotAteClips, .2f, pitch * 3);
     }
 
 }

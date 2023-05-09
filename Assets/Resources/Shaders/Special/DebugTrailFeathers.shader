@@ -134,8 +134,10 @@ float3 p = v.pos;//mul(v.ltw , float4(0,0,0,1)).xyz;
 
 // p = float3(0,1000,0);
 
+float dieSize = 1/(1+(_Time.y- v.locked) * .1);
+
 v.debug = saturate( v.debug );
-float fSize = _Size  * min( v.debug , (1-v.debug) * 40); 
+float fSize = _Size  * min( v.debug , (1-v.debug) * 40) * dieSize; 
 fSize *= fSize;
 
 if( alternate == 0 ){ extra =( - l - u); uv = float2(0,0); }

@@ -38,6 +38,10 @@ public class MenuController : MonoBehaviour
         //  God.sceneController.HardStart();
     }
 
+    void OnEnable(){
+        God.audio.Play( menuOpenSound );
+    }
+
     // Update is called once per frame
     void Update()
     {

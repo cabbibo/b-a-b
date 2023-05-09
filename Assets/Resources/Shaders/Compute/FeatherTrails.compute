@@ -85,18 +85,22 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
 
     if( feather.debug == 0 ){
         feather.debug = hash(pID);
+        feather.locked = -1000000;
     }
 
     if( feather.debug < 0  && _Emitting){
         feather.pos = basePos + mul(base.ltw, float4(0,0,-.2 * hash(pID),0)).xyz;
         feather.vel = 0;
         feather.debug =1;
+        // Set our spwawn time value;
+        feather.locked = _Time;
     }
 
 
     feather.vel += curlNoise( feather.pos * .1 );
     //feather.vel -= float3(0,100,0);
 
+// Make it so that when we fly through the space, we distrube the particles
 
 for( int i = 0; i < _NumWrens; i++ ){
 

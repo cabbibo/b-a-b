@@ -215,6 +215,14 @@ shadowCol += .3;
     col = saturate(length(shadowCol)* .5 + .2) * 10*normalize( col) * b * b * 6;
 
     //col *= col * 4;
+
+    
+                float dist  = length(_WrenPos- v.worldPos);
+float _DistanceMin = 0.1;
+float _DistanceMax = .5;
+      float mult = 1-smoothstep( dist , _DistanceMin, _DistanceMax);
+
+  col *= mult* 10 + 1;
     
 
     return float4(col,1);

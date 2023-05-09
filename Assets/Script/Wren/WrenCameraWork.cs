@@ -53,6 +53,9 @@ public float deadZoneCutoff = .8f;
 public float lookAtTargetLookSpeedAir = 1;
 public float lookAtTargetLookSpeedGround = 1 ;
 
+
+public float lookUpAmount;
+
 Vector3 fLookTarget = new Vector3();
 public void Reset(){
     fLookTarget = transform.position;
@@ -104,7 +107,7 @@ if( inDeadZone ) upVal = deadZoneUp;
 
         // try and look ahead
 
-        lookTarget += wren.physics.vel * forwardLookVal * wren._ScaleMultiplier;
+       // lookTarget += wren.physics.vel * forwardLookVal * wren._ScaleMultiplier;
 
 
         fLookTarget = Vector3.Lerp( fLookTarget , lookTarget , .1f);
@@ -151,12 +154,15 @@ if( inDeadZone ) upVal = deadZoneUp;
         //lookTarget =  camTarget.position + Vector3.Lerp( camTarget.forward, wrenHead.forward.normalized , lerpTowardHeadLook );
       
       
+      Vector3 lookForwardDirection = Vector3.Lerp( camTarget.forward, wrenHead.forward.normalized , lerpTowardHeadLook );
       lookTarget = transform.position;//+  Vector3.Lerp( camTarget.forward, wrenHead.forward.normalized , lerpTowardHeadLook ) * headLookForwardAmount;
     // Check to make sure we aren't in the terrain
-      lookTarget += wren.physics.vel * forwardLookVal * wren._ScaleMultiplier;
+      lookTarget += lookForwardDirection * forwardLookVal * wren._ScaleMultiplier;
 
 
       // try and look ahead
+
+      lookTarget += wren.transform.up * lookUpAmount;
 
 
       fLookTarget = Vector3.Lerp( fLookTarget , lookTarget , .1f);
