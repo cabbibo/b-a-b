@@ -207,7 +207,7 @@ shadowCol += .5;
     shadowCol *= float3(.1 , .3 , .6);
 
     shadowCol /=  clamp( (.1 + .1* length( v.eye)), 2, 3);
-    col = shadowStep * col * float3(1,1,.6) +  clamp( (1-shadowStep) * length(col) * length(col) * 10 , .1, 1) * shadowCol;// float3(.1,.2,.5);
+    col = shadowStep * col * float3(1,1,.6) +  clamp( (1-shadowStep) * length(col) * length(col) * 10 , .1, 1) * shadowCol +.1*floor( pow(1-m,4) * 5)/5;// float3(.1,.2,.5);
 
 
 

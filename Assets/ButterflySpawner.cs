@@ -55,6 +55,8 @@ public class ButterflySpawner : MonoBehaviour
     public TransformBuffer tb;
     public Cycle tbParent;
 
+    public Transform startLocation;
+
     // Start is called before the first frame update
     void OnEnable()
     {
@@ -76,7 +78,7 @@ public class ButterflySpawner : MonoBehaviour
                                         UnityEngine.Random.Range(-spawnRange.y, spawnRange.y),
                                         UnityEngine.Random.Range(-spawnRange.z, spawnRange.z));
 
-            fPos += transform.position;
+            fPos += startLocation.position;// transform.position;
             GameObject bug = Instantiate(butterflyPrefab, fPos, Quaternion.identity);
             bug.SetActive(true);
             bug.GetComponent<Butterfly>().bs = this;
@@ -166,6 +168,9 @@ public class ButterflySpawner : MonoBehaviour
         float smoothVal = (len - updateAllRadius) / (updateNoneRadius - updateAllRadius);
         smoothVal = saturate(smoothVal);
         numToUpdate = (int)((1 - smoothVal) * (float)butterflys.Length);
+
+        // always update at least 1!
+        numToUpdate = Mathf.Max(1, numToUpdate);
 
 
         float3 force;

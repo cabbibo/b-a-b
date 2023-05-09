@@ -23,12 +23,13 @@ public class BirdPrey : MonoBehaviour
     public float3 startPosition;
 
     public ParticleSystem particleSystem;
+    public Transform startLocation;
 
 
     void OnEnable()
     {
-        transform.position = startPosition;
-        position = startPosition;
+        transform.position = startLocation.position;
+        position = startLocation.position;
         velocity = 0;
         stamina = 1;
         //(Wander());
