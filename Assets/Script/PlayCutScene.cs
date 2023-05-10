@@ -133,6 +133,17 @@ public class PlayCutScene : MonoBehaviour
         if (transitioning)
         {
 
+            if (God.wren != null )
+            {
+                God.wren.canMove = false;
+                
+                if (wrenCrashPosition != null)
+                {
+                    God.wren.transform.position = wrenCrashPosition.position;
+                    God.wren.transform.rotation = wrenCrashPosition.rotation;
+                }
+
+            }
 
             if (transitionIn)
             {

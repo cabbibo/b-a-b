@@ -7,14 +7,14 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: RingMat
-  m_Shader: {fileID: 4800000, guid: 58342ecb0bf80f44eac4813c3cf216fe, type: 3}
+  m_Name: targetablePointBase
+  m_Shader: {fileID: 4800000, guid: 496ea740bfea15541a2d46fa651715a5, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 1
+  m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -39,12 +39,16 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _DiscardTex:
+        m_Texture: {fileID: 2800000, guid: f566294049c7c0945887c681b9596a12, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: c20545af53730ab459c576122c7e80ab, type: 3}
+        m_Texture: {fileID: 2800000, guid: 612b65e0cd1576e4bbba0516d756a99d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -61,26 +65,54 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Active: 2
     - _BumpScale: 1
-    - _CurrentScore: 0
+    - _CenterOrbFalloff: 0
+    - _CenterOrbFalloffSharpness: 0
+    - _CenterOrbImportance: 0
+    - _ColorMultiplier: 0.003
+    - _ColorSplit: 0.05
+    - _Contrast: 2
     - _Cutoff: 0.5
+    - _DeltaStepSize: 0.3
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _HueEnd: 0.44
+    - _HueSize: 2.77
+    - _HueStart: 3.4
+    - _IndexOfRefraction: 0.8
+    - _Lightness: 0.5
     - _Metallic: 0
     - _Mode: 0
+    - _NoiseImportance: 1.03
+    - _NoiseSharpness: 1
+    - _NoiseSize: 4
+    - _NoiseSpeed: 2.01
+    - _NoiseSubtractor: -0.1
+    - _NumSteps: 3
     - _OcclusionStrength: 1
+    - _OffsetMultiplier: 0
+    - _Opaqueness: 1
     - _Parallax: 0.02
+    - _ReflectionMultiplier: 0
+    - _ReflectionSharpness: 11
+    - _RefractionBackgroundSampleExtraStep: 0
+    - _Saturation: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _StepRefractionMultiplier: 0
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
+    - _BaseColor: {r: 0, g: 0, b: 0, a: 1}
+    - _CenterOrbColor: {r: 0.6415094, g: 0.6415094, b: 0.6415094, a: 1}
+    - _CenterOrbOffset: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _LastHitLocation: {r: 0.5, g: 0.5, b: 0, a: 0}
+    - _NoiseColor: {r: 0, g: 0, b: 0, a: 1}
+    - _NoiseOffset: {r: 0, g: 0, b: 0, a: 1}
+    - _ReflectionColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

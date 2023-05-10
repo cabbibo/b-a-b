@@ -256,7 +256,16 @@ float4 frag (varyings v) : COLOR {
     if( fadeDif < 0 ){
         discard;
     }else{
-        col *= saturate(fadeDif * .1);
+
+        if( fadeDif < 30 ){
+
+          float fVal = ((30-fadeDif)/30);
+          fVal = min( fVal * 1 , (1-fVal)*100);
+          col *= (fVal*4+1);
+        }else{
+
+       // col *= saturate((fadeDif-30) * .1);
+        }
     }
 
 
