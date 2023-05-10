@@ -329,7 +329,8 @@ float4 frag (varyings v) : COLOR {
     col = saturate(col * .8) / .8;
     col *= tex2D(_FullColorMap , float2(  length(col.xyz) * _HueSize  + v.uv.y , _HueStart + _Hue1 )).xyz * 10;
 
-    col = lerp( length(col) / 2 , col , _Saturation);
+    col = lerp( length(col) / 2 , col , _Saturation * v.uv.x);
+    col *= 2;
 
 
 float4 tCol = tex2D(_DiscardTex, v.uv);
@@ -341,11 +342,14 @@ float dVal = abs(v.uv2.y -.5);// - v.uv.x*.5;
 dVal = dVal - (.5 - max( v.uv2.x * .5 , (.5-v.uv2.x*3)));
 //dVal += length(col.rgb) * .3;
 if(dVal > -.05){
-  col *= 2;
+  //col *= 10;
 }
 if( dVal > 0 ){
- discard;
+ //discard;
 }
+
+
+col *= 10*v.uv2.x;
 
 //col *= tex2D(_FullColorMap , float2(  traceValR.a * .3 + v.uv.y + tCol.x * .3 , _Hue1 )).xyz * 10;
     //col *= pow( v.uv.y,10);// * v.uv.x;

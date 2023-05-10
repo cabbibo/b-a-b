@@ -60,9 +60,9 @@ public class CrystalCollectable : MonoBehaviour
 
     public void OnCollect()
     {
-        God.audio.Play(collectSound, 1f);
-        God.audio.Play(collectSound, 2f);
-        God.audio.Play(collectSound, 3f);
+        God.audio.Play(collectSound, 1f , .3f);
+        God.audio.Play(collectSound, 2f , .3f);
+        God.audio.Play(collectSound, 3f , .3f);
         collectSystem.transform.position = transform.position;
         collectSystem.Play();
 
@@ -75,9 +75,9 @@ public class CrystalCollectable : MonoBehaviour
 
     public void OnDrop()
     {
-        God.audio.Play(dropSound, 1f);
-        God.audio.Play(dropSound, 2f);
-        God.audio.Play(dropSound, 3f);
+        God.audio.Play(dropSound, 1f, .3f);
+        God.audio.Play(dropSound, 2f, .3f);
+        God.audio.Play(dropSound, 3f, .3f);
 
 
 
