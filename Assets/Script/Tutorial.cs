@@ -221,8 +221,11 @@ public class Tutorial : MonoBehaviour
             else if (state == 19)
             {
 
-                print("find crystal?");
                 // Get it from collision!
+            }
+            else if (state == 20)
+            {
+                print("Get to portal");
             }
 
             if (canSkip && Input.GetKey("space"))
@@ -285,7 +288,7 @@ public class Tutorial : MonoBehaviour
         state++;
 
         print("section started");
-        print( state);
+        print(state);
 
         if (state == tutorialStates.Length)
         {
