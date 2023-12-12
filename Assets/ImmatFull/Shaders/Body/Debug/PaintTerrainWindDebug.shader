@@ -30,7 +30,7 @@ Shader "Debug/PaintTerrainWindDebug" {
       uniform float _Up;
       uniform float3 _Color;
     
-      StructuredBuffer<float4> _VertBuffer;
+      StructuredBuffer<float> _VertBuffer;
       //Buffer<float> _VertBuffer;
 
       int _WhichBrush;
@@ -89,10 +89,12 @@ varyings vert (uint id : SV_VertexID){
 
   float3 pos = getPos(base);
 
-float3 dir = _VertBuffer[base].xyz;
+  float x = _VertBuffer[base * _TotalBrushes + 0 ];
+  float y = _VertBuffer[base * _TotalBrushes + 1 ];
+  float z = _VertBuffer[base * _TotalBrushes + 2 ];
 
+float3 dir = float3(x,y,z) * 1;
 
-  
 
 float3 viewDir = UNITY_MATRIX_IT_MV[2].xyz;
 

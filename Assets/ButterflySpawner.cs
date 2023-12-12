@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 using IMMATERIA;
+using static Helpers;
 
 using static Unity.Mathematics.math;
 using Unity.Mathematics;
@@ -57,6 +58,11 @@ public class ButterflySpawner : MonoBehaviour
 
     public Transform startLocation;
 
+
+    public float bugFullnessAdd;
+    public float bugStaminaAdd;
+
+
     // Start is called before the first frame update
     void OnEnable()
     {
@@ -83,6 +89,8 @@ public class ButterflySpawner : MonoBehaviour
             bug.SetActive(true);
             bug.GetComponent<Butterfly>().bs = this;
             bug.transform.parent = this.transform;
+
+            print(bug);
             butterflys[i] = bug;
             positions[i] = fPos;
             active[i] = true;
@@ -330,6 +338,9 @@ public class ButterflySpawner : MonoBehaviour
 
     }
 
+
+    public Helpers.FloatEvent OnEat;
+
     public void GotAte(Butterfly b)
     {
 
@@ -350,8 +361,10 @@ public class ButterflySpawner : MonoBehaviour
 
         }*/
 
-        // God.wren.stats.FullnessAdd(bugFullnessAdd);
-        // God.wren.stats.StaminaAdd(bugStaminaAdd);
+
+        // OnEat.Invoke(bugFullnessAdd);
+        WrenUtils.God.wren.stats.FullnessAdd(bugFullnessAdd);
+        WrenUtils.God.wren.stats.StaminaAdd(bugStaminaAdd);
 
     }
 }

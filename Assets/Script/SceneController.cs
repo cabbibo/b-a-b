@@ -359,7 +359,8 @@ public class SceneController : MonoBehaviour
             currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
         }
 
-        if( graybox ){
+        if (graybox)
+        {
             currentSceneID = 2;
         }
         biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
@@ -396,10 +397,13 @@ public class SceneController : MonoBehaviour
     public void OnEnable()
     {
 
-        int c = SceneManager.sceneCount;
+        int c = SceneManager.loadedSceneCount;
+
+        print(c);
         for (int i = 0; i < c; i++)
         {
             UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt(i);
+
             print(scene.name);
             if (scene.name != "BaseScene")
             {
