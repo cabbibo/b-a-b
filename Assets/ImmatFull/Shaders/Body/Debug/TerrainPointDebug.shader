@@ -21,7 +21,7 @@ Shader "Debug/TerrainPointDebug" {
       #include "UnityCG.cginc"      
       
       uniform int _Count;
-      uniform int _BrushTypes;
+      uniform int _TotalBrushes;
       uniform float _Size;
       uniform float3 _Color;
 
@@ -96,9 +96,9 @@ varyings vert (uint id : SV_VertexID){
 
     float3 pos = getPos(base);
 
-      //Vert v = _VertBuffer[base];
+      float v = _VertBuffer[base * _TotalBrushes+0];
       //Vert v = _VertBuffer[base % _Count];
-      o.worldPos = pos + extra * _Size;
+      o.worldPos = pos + extra * _Size * v;
       o.eye = _WorldSpaceCameraPos - o.worldPos;
     //  o.nor =v.nor;
      // o.uv = v.uv;

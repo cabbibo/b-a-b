@@ -11,7 +11,7 @@ public class PaintVerts : Form
   public int totalDataSize;
 
 
-[SerializeField]public string[] dataTypes;
+  [SerializeField] public string[] dataTypes;
   // windDirX
   // windDirY
   // windDirZ
@@ -25,36 +25,39 @@ public class PaintVerts : Form
   // city
   // food
   // water
-  
 
-  public override void SetStructSize(){
+
+  public override void SetStructSize()
+  {
 
     totalDataSize = dataTypes.Length;
-    structSize = totalDataSize;
+    structSize = 1; //totalDataSize;
 
-    print( structSize );
+    //  print(structSize);
   }
 
-  public override void SetCount(){
-    count = width * width;
+  public override void SetCount()
+  {
+    count = width * width * totalDataSize;
     //size = WrenUtils.God.terrainData.size.x;
-  }   
+  }
 
-    public override void WhileDebug(){
+  public override void WhileDebug()
+  {
 
-        mpb.SetBuffer("_VertBuffer", _buffer);
-        mpb.SetInt("_Width", width);
-        mpb.SetInt("_Count",count);
-        mpb.SetInt("_BrushTypes",structSize);
+    mpb.SetBuffer("_VertBuffer", _buffer);
+    mpb.SetInt("_Width", width);
+    mpb.SetInt("_Count", count);
+    mpb.SetInt("_TotalBrushes", totalDataSize);
 
-        mpb.SetTexture( "_HeightMap", WrenUtils.God.terrainData.heightmapTexture );
-        mpb.SetVector("_MapSize", WrenUtils.God.terrainData.size);
+    mpb.SetTexture("_HeightMap", WrenUtils.God.terrainData.heightmapTexture);
+    mpb.SetVector("_MapSize", WrenUtils.God.terrainData.size);
 
-        Graphics.DrawProcedural(debugMaterial,  new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, count * 3 * 2 , 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+    Graphics.DrawProcedural(debugMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
 
-    }
+  }
 
 
-   
+
 
 }

@@ -30,7 +30,7 @@ Shader "Debug/PaintTerrainDebug" {
       uniform float _Up;
       uniform float3 _Color;
     
-      StructuredBuffer<float4> _VertBuffer;
+      StructuredBuffer<float> _VertBuffer;
 
       int _WhichBrush;
       int _TotalBrushes;
@@ -85,13 +85,13 @@ varyings vert (uint id : SV_VertexID){
 
   float2 uv = float2(0,0);
 
-  float4 v = _VertBuffer[base];
+  float v = _VertBuffer[base * _TotalBrushes + _WhichBrush];
 
   float3 pos = getPos(base);
 
   float3 dir = float3(0,1,0);
 
-  dir *= (v.a+ .1);
+  dir *= (v+ .1);
 
   
 
@@ -104,11 +104,11 @@ float3 yVal =  normalize( -cross( dir , viewDir ));
   if( alternate == 1 ){ extra =  +yVal  * .1; uv = float2(1,0); }
   if( alternate == 2 ){ extra =  dir; uv = float2(.5,1); }
 
-  o.worldPos = pos.xyz + float3(0,_Up,0) + extra * _Size;
+  o.worldPos = pos.xyz + float3(0,_Up  ,0)+ viewDir * _WhichBrush * .2f + extra * _Size;
 
 
   o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
-  o.value = v.a;
+  o.value = v;
 
 
   return o;

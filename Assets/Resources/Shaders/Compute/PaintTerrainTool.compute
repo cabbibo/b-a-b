@@ -117,7 +117,7 @@ float3 getPos( int id ){
 
 
 
-#define NR_THREADS 64
+#define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
 void Paint(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
@@ -131,7 +131,6 @@ void Paint(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     float3 pos = getPos(sID);
 
 
-    
 
 //      _VectorBuffer[baseID+1] = 1;
 
@@ -185,7 +184,7 @@ void Paint(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
 
 
-    }else if( _WhichBrush == 3 ){
+    }else{
         float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
 
         float v = _VectorBuffer[baseID + _WhichBrush];

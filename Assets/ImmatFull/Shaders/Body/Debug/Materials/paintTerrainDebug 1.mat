@@ -7,13 +7,12 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Point 16 Debug red
-  m_Shader: {fileID: 4800000, guid: e9e49404f86e1034d868422565781b1d, type: 3}
+  m_Name: paintTerrainDebug 1
+  m_Shader: {fileID: 4800000, guid: 39f049a724e89fa488abc2f00cd24629, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords:
-  - Enable16Struct
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -73,18 +72,14 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Size: 111
+    - _Size: 11
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _Struct12: 0
-    - _Struct16: 1
-    - _Struct24: 0
-    - _Struct36: 0
-    - _Struct9: 0
     - _UVSec: 0
+    - _Up: 1
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 1, g: 0.70388687, b: 0, a: 1}
+    - _Color: {r: 0, g: 1, b: 0.41581964, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

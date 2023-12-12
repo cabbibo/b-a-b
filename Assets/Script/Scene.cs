@@ -22,6 +22,8 @@ namespace WrenUtils
 
         public Transform baseStartPosition;
 
+        public bool isDemo;
+
 
 
         // Start is called before the first frame update
@@ -41,7 +43,11 @@ namespace WrenUtils
 
             God.currentScene = this;
 
-
+            // Sets up our demo info
+            for (int i = 0; i < portals.Length; i++)
+            {
+                portals[i].demo = isDemo;
+            }
 
             if (God.wren != null)
             {
