@@ -31,7 +31,7 @@ public class TerrainPainter : Simulation
   public string safeName;
 
 
-  //Texture taht informs the start
+  //Textur informs the start
   public Texture2D[] startTexture;
   public Texture2D[] undoTexture;
   public Texture2D[] currentTexture;
@@ -137,7 +137,7 @@ public class TerrainPainter : Simulation
       float z = values[i + 2];//height;
 
 
-      colors[i] = new Color(x, y, z, 0);
+      colors[i / verts.totalDataSize] = new Color(x, y, z, 0);
 
     }
 

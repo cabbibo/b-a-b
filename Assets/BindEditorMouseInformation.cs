@@ -26,6 +26,10 @@ public class BindEditorMouseInformation : Binder
     public bool painting;
 
 
+    public bool paintOnDown = false;
+    public bool paintOnMove = true;
+
+
     public int particleID;
 
     public float paintTime;
@@ -35,97 +39,130 @@ public class BindEditorMouseInformation : Binder
 
     public bool alwaysUp;
 
-    public override void Bind(){
 
-        toBind.BindVector3( "_PlacePosition" , () => paintPosition );
-        toBind.BindVector3( "_PlaceDirection" , () => paintDirection );
-        toBind.BindVector3( "_PlaceNormal"   , () => paintNormal   );
-        toBind.BindInt("_IsPainting" , () => painting ? 1:0  );
-        toBind.BindInt("_ParticleID", () => particleID );
+    public float DPI;
+
+    public override void Bind()
+    {
+
+        toBind.BindVector3("_PlacePosition", () => paintPosition);
+        toBind.BindVector3("_PlaceDirection", () => paintDirection);
+        toBind.BindVector3("_PlaceNormal", () => paintNormal);
+        toBind.BindInt("_IsPainting", () => painting ? 1 : 0);
+        toBind.BindInt("_ParticleID", () => particleID);
 
     }
 
 
 
-    public override void WhileLiving( float v ){
+    public override void WhileLiving(float v)
+    {
 
 
-        if( mouseDown == false){
+        if (mouseDown == false)
+        {
             painting = false;
         }
 
 
-        paintRep.position = paintPosition;;
+        paintRep.position = paintPosition; ;
 
 
     }
 
 
-    public void MouseDown( Ray ray){
+    public void MouseDown(Ray ray)
+    {
 
         RaycastHit hit;
 
         ray.direction = (ray.direction + Random.insideUnitSphere * spread).normalized;
-        
+
         // Does the ray intersect any objects excluding the player layer
-        if (Physics.Raycast( ray , out hit, Mathf.Infinity))
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity))
         {
-           // painting = true;
-             oPaintPosition =hit.point;
-             paintPosition = hit.point;//.land.Trace( ray.origin, ray.direction);
+            // painting = true;
+            oPaintPosition = hit.point;
+            paintPosition = hit.point;//.land.Trace( ray.origin, ray.direction);
 
-           /* if( Time.time - paintTime > minPaintTime ){
-                
-            }*/
+            /* if( Time.time - paintTime > minPaintTime ){
 
-           // particleID ++; 
-           // particleID %= particlesToPlace.count;
+             }*/
 
-        }else{
+            // particleID ++; 
+            // particleID %= particlesToPlace.count;
+
+            if (paintOnDown)
+            {
+                DoPaintPlace(ray);
+            }
+
+        }
+        else
+        {
             painting = false;
             paintPosition = ray.origin;
         }
 
-    
+
 
     }
-    
-    public void WhileDown( Ray ray){
 
-            RaycastHit hit;
 
-            
-        ray.direction = (ray.direction + Random.insideUnitSphere * spread).normalized;
-    // Does the ray intersect any objects excluding the player layer
-    if (Physics.Raycast( ray , out hit, Mathf.Infinity))
-    { 
-        painting = true;
-        oPaintPosition = paintPosition;
-        paintPosition = hit.point;//.land.Trace( ray.origin, ray.direction);
-        paintNormal = hit.normal;
+    public void OnMouseUp()
+    {
 
-        if( alwaysUp ){
-            paintNormal = Vector3.up;
+    }
+
+    public void WhileDown(Ray ray)
+    {
+
+        if (paintOnMove)
+        {
+            DoPaintPlace(ray);
         }
 
-        paintDirection = paintPosition - oPaintPosition;
-
-      
-            particleID ++; 
-            particleID %= particlesToPlace.count;
-
-    }else{
-        painting = false;
-      paintPosition = ray.origin;
-    }
-
-    
-
 
     }
-    public void Save(){
+    public void Save()
+    {
         Saveable.Save(particlesToPlace);
     }
 
-    
+
+    public void DoPaintPlace(Ray ray)
+    {
+        RaycastHit hit;
+
+
+        ray.direction = (ray.direction + Random.insideUnitSphere * spread).normalized;
+        // Does the ray intersect any objects excluding the player layer
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+        {
+            painting = true;
+            oPaintPosition = paintPosition;
+            paintPosition = hit.point;//.land.Trace( ray.origin, ray.direction);
+            paintNormal = hit.normal;
+
+            if (alwaysUp)
+            {
+                paintNormal = Vector3.up;
+            }
+
+            paintDirection = paintPosition - oPaintPosition;
+
+
+            particleID++;
+            particleID %= particlesToPlace.count;
+
+        }
+        else
+        {
+            painting = false;
+            paintPosition = ray.origin;
+        }
+
+    }
+
+
 }
