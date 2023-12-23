@@ -36,6 +36,8 @@ public class TerrainPainter : Simulation
   public Texture2D[] undoTexture;
   public Texture2D[] currentTexture;
 
+  public Texture2D biomeMap;
+
 
   // getting position and direction
   public Vector3 paintPosition;

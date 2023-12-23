@@ -11,9 +11,16 @@ public class IslandData : MonoBehaviour
 
     public TerrainPainter painter;
 
+    public Texture2D BiomeMap;
+
 
     public Texture2D windMap;
     public RenderTexture heightMap;
+
+    public Texture2D biomeMap;
+
+    public float[] biomeValus;
+
 
 
     public Vector3 size;
@@ -26,8 +33,14 @@ public class IslandData : MonoBehaviour
     void OnEnable()
     {
         windMap = painter.windTexture;
+        biomeMap = painter.biomeMap;
         heightMap = God.terrainData.heightmapTexture;
         size = God.terrainData.size;
+
+
+        Shader.SetGlobalTexture("_WindMap", windMap);
+        // Shader.SetGlobalTexture("_BiomeMap");
+
     }
 
 
@@ -62,6 +75,16 @@ public class IslandData : MonoBehaviour
         return v1;
     }
 
+
+    public float GetBiomeValue(Vector3 p)
+    {
+        Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
+        Color c = biomeMap.GetPixelBilinear(uv.x, uv.z);
+
+        print("BiomeValue :" + c);
+        return c.a;
+
+    }
 
 
 
