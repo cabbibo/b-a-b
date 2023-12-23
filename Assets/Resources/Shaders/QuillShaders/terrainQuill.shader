@@ -554,6 +554,8 @@ col *= (floor(triNoise3D( pos * .001,0,0) * 6) / 6) *1 + .4;
 
 col *= (floor(lMap * 4 ) /4  + .3);
 
+col *= shadow;
+
 
 
   return col;
@@ -848,8 +850,10 @@ for( int i= 0; i < 4; i++ ){
 
 float d = max - max2;
 
+
+// DEBUG Borders;
 if( d < .4 ){
-  col = float3(1,0,0);
+  //col = float3(1,0,0);
 }
 
 float4 bMap = tex2D(_BiomeMap, (v.worldPos.xz+2048) / 4096);

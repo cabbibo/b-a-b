@@ -109,6 +109,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _BiomeMapWeight: 0
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -141,9 +142,9 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
-    - _MeadowColor: {r: 0.6861064, g: 0.754717, b: 0.5660378, a: 1}
-    - _MossColor1: {r: 0.34080678, g: 0.41568628, b: 0.32941177, a: 1}
-    - _MossColor2: {r: 0.33228016, g: 0.5377358, b: 0.4241945, a: 1}
+    - _MeadowColor: {r: 0.8651153, g: 0.9528302, b: 0.7056337, a: 1}
+    - _MossColor1: {r: 0.43835524, g: 0.6509434, b: 0.40837488, a: 1}
+    - _MossColor2: {r: 0, g: 1, b: 0.70425534, a: 1}
     - _SandBaseColor: {r: 0.46226418, g: 0.36647293, b: 0.26383945, a: 1}
     - _SandFresnelColor: {r: 0.8867924, g: 0.6384693, b: 0.53123885, a: 1}
     - _SandSpecularColor1: {r: 0.7830189, g: 0.55913746, b: 0.44691172, a: 1}
