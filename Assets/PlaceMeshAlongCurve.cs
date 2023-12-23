@@ -87,7 +87,7 @@ public class PlaceMeshAlongCurve : MonoBehaviour
             print(mesh.vertices.Length);//
 
             GetComponent<MeshFilter>().mesh = mesh;
-            GetComponent<MeshCollider>().sharedMesh = mesh;
+            //  GetComponent<MeshCollider>().sharedMesh = mesh;
 
         }
     }

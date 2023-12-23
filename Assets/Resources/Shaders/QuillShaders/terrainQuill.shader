@@ -30,6 +30,7 @@ Shader "Unlit/quillTerrain"{
 
 
     _BiomeMap ("BiomeMap", 2D) = "white" {}
+    _BiomeMapWeight ("BiomeMapWeight", float) = .01
     /*_Color ("Color", Color) = (1,1,1,1)
     _BackfaceColor("BackfaceColor", Color )= (1,1,1,1)
     _Size ("Size", float) = .01
@@ -763,6 +764,9 @@ if( baseVert < .3 ){
 
 sampler2D _BiomeMap;
 
+float _BiomeMapWeight;
+
+
 float3 _WrenPos;
 //Pixel function returns a solid color for each point.
 float4 frag (varyings v) : COLOR {
@@ -849,7 +853,7 @@ if( d < .4 ){
 }
 
 float4 bMap = tex2D(_BiomeMap, (v.worldPos.xz+2048) / 4096);
-col *= lerp( 1, bMap.xyz * .4 + .6 , bMap.a);
+col *= lerp( 1, bMap.xyz * _BiomeMapWeight + (1-_BiomeMapWeight) , bMap.a);
 
 
 //col = fNor ;

@@ -47,7 +47,7 @@ public class TerrainPainterEditor : Editor
 
     if (Event.current.type == EventType.MouseMove)
     {
-      Vector2 mousePos = Event.current.mousePosition * 1.25f;
+      Vector2 mousePos = Event.current.mousePosition * painter.displayScale;
       mousePos.y = Camera.current.pixelHeight - mousePos.y;
       Ray ray = Camera.current.ScreenPointToRay(mousePos);
 
@@ -76,7 +76,7 @@ public class TerrainPainterEditor : Editor
 
       //print("mouse");
 
-      Vector2 mousePos = Event.current.mousePosition * 1.25f;
+      Vector2 mousePos = Event.current.mousePosition * painter.displayScale;
       mousePos.y = Camera.current.pixelHeight - mousePos.y;
       Ray ray = Camera.current.ScreenPointToRay(mousePos);
       painter.MouseDown(ray);
@@ -91,8 +91,8 @@ public class TerrainPainterEditor : Editor
     if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
     {
 
-      //print("mouse");
-      Vector2 mousePos = Event.current.mousePosition * 1.25f;
+      Debug.Log(painter.displayScale);
+      Vector2 mousePos = Event.current.mousePosition * painter.displayScale;
       mousePos.y = Camera.current.pixelHeight - mousePos.y;
       Ray ray = Camera.current.ScreenPointToRay(mousePos);
       painter.WhileDown(ray);
