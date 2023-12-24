@@ -15,7 +15,7 @@ public class BindPaintInformation : Binder
     toBind.BindVector3("_PaintPosition", () => painter.paintPosition);
     toBind.BindVector3("_PaintDirection", () => painter.paintDirection);
     toBind.BindFloat("_PaintSize", () => painter.paintSize);
-    toBind.BindTexture("_WindMap", () => painter.windTexture);
+    //toBind.BindTexture("_WindMap", () => painter.windTexture);
     toBind.BindFloat("_IsPainting", () => painter.isPainting);
     toBind.BindFloat("_PaintSpawnMultiplier", () => paintSpawnMultiplier);
 

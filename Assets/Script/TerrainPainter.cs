@@ -7,13 +7,13 @@ using UnityEngine.Rendering;
 using IMMATERIA;
 using WrenUtils;
 
-
 [ExecuteInEditMode]
 public class TerrainPainter : Simulation
 {
 
+
+  // Makes it so we have the right scale for our windows display
   public float displayScale;
-  [SerializeField] public string[] options;
   public int brushType;
 
 
@@ -23,23 +23,26 @@ public class TerrainPainter : Simulation
 
   public PaintVerts verts;
   // how many undos we get!
+
   public int undoBufferSize;
   public int currentUndoLocation;
 
   public List<float[]> undoBuffer;
 
+
+  // String for saving safeness;
   public string safeName;
 
 
   //Textur informs the start
-  public Texture2D[] startTexture;
-  public Texture2D[] undoTexture;
-  public Texture2D[] currentTexture;
+  public Texture2D startTexture;
+  public Texture2D undoTexture;
+  public Texture2D currentTexture;
 
-  public Texture2D biomeMap;
 
 
   // getting position and direction
+  // These are all asigned via script
   public Vector3 paintPosition;
   private Vector3 oPP;
   public Vector3 paintDirection;
@@ -57,10 +60,8 @@ public class TerrainPainter : Simulation
 
   public float isPainting;
 
-  public Material[] debugMaterials;
+  public Material debugMaterial;
 
-
-  public bool debugAll;
 
 
   private Color[] colors;
@@ -85,6 +86,11 @@ public class TerrainPainter : Simulation
   {
 
 
+    if (verts.dataTypes.Length > 4)
+    {
+      print("TOO MANY DATA TYPES");
+    }
+
     if (mpb == null) { mpb = new MaterialPropertyBlock(); }
 
     paintTipRenderer = paintTip.GetComponent<MeshRenderer>();
@@ -95,33 +101,30 @@ public class TerrainPainter : Simulation
     }
 
 
-    /*
-        startTexture = new Texture2D( verts.width , verts.width );
 
-       // if( undoTexture == null ){
-          undoTexture = new Texture2D(startTexture.width, startTexture.height);
-          Graphics.CopyTexture(startTexture, undoTexture);
-        //}
+    startTexture = new Texture2D(verts.width, verts.width);
 
-       // if( currentTexture == null ){
-          currentTexture = new Texture2D(startTexture.width, startTexture.height);
-          Graphics.CopyTexture(startTexture, currentTexture);
-        //}
+    if (undoTexture == null)
+    {
+      undoTexture = new Texture2D(startTexture.width, startTexture.height);
+      Graphics.CopyTexture(startTexture, undoTexture);
+    }
 
-        */
+    // rebuild shouldn't override;
+    if (currentTexture == null)
+    {
+      currentTexture = new Texture2D(startTexture.width, startTexture.height);
+      Graphics.CopyTexture(startTexture, currentTexture);
 
-  }
+    }
 
 
-  public int totalTextures;
 
-  public Texture2D windTexture;
-  public void SetUpTextures()
-  {
-
-    totalTextures = (int)Mathf.Ceil((float)verts.dataTypes.Length / 4);
 
   }
+
+
+
 
 
   public void ExtractWindColors()
@@ -145,23 +148,18 @@ public class TerrainPainter : Simulation
 
   }
 
-  public void SaveWindTexture()
+  // Dont save mips
+  public void SaveTexture()
   {
 
-    if (windTexture == null) { windTexture = new Texture2D(verts.width, verts.width, TextureFormat.RGBAFloat, 3, true); }
-    ExtractWindColors();
+    if (currentTexture == null) { currentTexture = new Texture2D(verts.width, verts.width, TextureFormat.RGBAFloat, -1, true); }
+    ExtractColors();
 
-    windTexture.SetPixels(colors);
-    windTexture.Apply(true);
-
+    currentTexture.SetPixels(colors);
+    currentTexture.Apply(true);
 
   }
 
-  public void SaveToTexture()
-  {
-
-
-  }
 
 
 
@@ -171,9 +169,11 @@ public class TerrainPainter : Simulation
   {
 
 
-    //Load();
+    Load();
 
-    //ExtractColors();
+    ExtractColors();
+
+
     //UpdateLand();
 
     if (undoBuffer.Count != undoBufferSize)
@@ -209,19 +209,13 @@ public class TerrainPainter : Simulation
     life.BindFloat("_Shift", () => this.shift);
     life.BindFloat("_FN", () => this.fn);
 
-
-
-
     life.BindInt("_WhichBrush", () => this.brushType);
     life.BindInt("_TotalBrushes", () => verts.dataTypes.Length);
 
-
     life.BindFloat("_Reset", () => this.reset);
-    // life.BindTexture( "_TextureReset"   , () => this.startTexture   );
-    // life.BindTexture( "_UndoTexture"    , () => this.undoTexture    );
+    life.BindTexture("_TextureReset", () => this.startTexture);
+    life.BindTexture("_UndoTexture", () => this.undoTexture);
     life.BindInt("_Width", () => this.verts.width);
-
-    // data.BindTerrainData(life);
 
     life.BindTexture("_HeightMap", () => WrenUtils.God.terrainData.heightmapTexture);
     life.BindVector3("_MapSize", () => WrenUtils.God.terrainData.size);
@@ -237,20 +231,20 @@ public class TerrainPainter : Simulation
 
 
 
-
+  public int debugDrawMultiplier = 1;
   public override void WhileDebug()
   {
 
 
     //paintTipRenderer.enabled = isPainting == 1 ? true : false;
 
+    mpb.SetBuffer("_VertBuffer", verts._buffer);
+
     mpb.SetInt("_Dimensions", verts.width);
     mpb.SetInt("_Count", verts.count);
-    mpb.SetBuffer("_VertBuffer", verts._buffer);
     mpb.SetInt("_WhichBrush", brushType);
     mpb.SetInt("_TotalBrushes", verts.dataTypes.Length);
     mpb.SetInt("_Width", verts.width);
-    // mpb.SetFloat("_Size", 100);
 
     mpb.SetTexture("_HeightMap", WrenUtils.God.terrainData.heightmapTexture);
     mpb.SetVector("_MapSize", WrenUtils.God.terrainData.size);
@@ -258,20 +252,10 @@ public class TerrainPainter : Simulation
     if (debug)
     {
 
-      if (!debugAll)
-      {
-        Graphics.DrawProcedural(debugMaterials[brushType], new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, (verts.count / verts.totalDataSize) * 3, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-      }
-      else
-      {
 
-        for (int i = 0; i < debugMaterials.Length; i++)
-        {
-          mpb.SetInt("_WhichBrush", i);
-          Graphics.DrawProcedural(debugMaterials[i], new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, (verts.count / verts.totalDataSize) * 3, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-        }
 
-      }
+      Graphics.DrawProcedural(debugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, (verts.count * debugDrawMultiplier) * 3, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+
 
 
     }
@@ -390,14 +374,16 @@ public class TerrainPainter : Simulation
   //int getTextureID
 
 
-  /*
 
-  public void ResetToOriginal(){
+
+  public void ResetToOriginal()
+  {
     Load();
   }
 
 
-  public void ResetToUndo(){
+  public void ResetToUndo()
+  {
     reset = 3;
     life.YOLO();
     reset = 0;
@@ -405,199 +391,223 @@ public class TerrainPainter : Simulation
 
 
 
-  public void ResetToFlat(){
+  public void ResetToFlat()
+  {
     reset = 1;
     life.YOLO();
     reset = 0;
   }
 
 
-    // getting our information back from GPU
-    public void ExtractColors(){
+  // getting our information back from GPU
+  public void ExtractColors()
+  {
 
-      values = verts.GetData();
+    values = verts.GetData();
+    UnpackDataIntoColors(values);
 
-      colors =  new Color[verts.count];
-      for( int i = 0; i < verts.count; i ++ ){
+  }
 
-        // extracting height
-        float h = values[ i * verts.structSize + 1 ] /  WrenUtils.God.terrainData.size.y;//height;
+  // METHOD for doing it async
+  public void ExtractColors(float[] v)
+  {
 
-        // extracting flow verts
-        float x = values[ i * verts.structSize + 6 ] * .5f + .5f;
-        float z = values[ i * verts.structSize + 8 ] * .5f + .5f;
+    UnpackDataIntoColors(v);
 
+  }
+  public virtual void UnpackDataIntoColors(float[] v)
+  {
 
-        float a = Mathf.Clamp( values[ i * verts.structSize + 11 ], .1f , .9999f);
-
-        colors[i] = new Color( h,x,z,a);
-
-      }
-
-    }
-
-
-    public void ExtractColors( float[] v){
-
-      //int count = values.Length / verts.structSize;
-
-      values = v;
-      colors =  new Color[verts.count];
-      for( int i = 0; i < verts.count; i ++ ){
-
-        // extracting height
-        float h = values[ i * verts.structSize + 1 ] / WrenUtils.God.terrainData.size.y;
-
-        // extracting flow verts
-        float x = values[ i * verts.structSize + 6 ] * .5f + .5f;
-        float z = values[ i * verts.structSize + 8 ] * .5f + .5f;
-
-        // extracting grass height
-        float a = Mathf.Clamp( values[ i * verts.structSize + 11 ], .1f , .9999f);
+    values = v;
+    colors = new Color[verts.count];
+    for (int i = 0; i < verts.count; i++)
+    {
 
 
+      float x = values[i * verts.structSize + 0];
+      float y = values[i * verts.structSize + 1];
+      float z = values[i * verts.structSize + 2];
+      float w = values[i * verts.structSize + 3];
 
-        colors[i] = new Color( h,x,z,a);
 
-      }
+      colors[i] = new Color(x, y, z, w);
 
     }
-
-    // only need to update the textures we are interested in!
-     public void Save(){
-
-      ExtractColors();
-      propogateUndoBuffer();
-      UpdateLand();
-
-    }
-
-
-    public void UltraSave(){
-
-      ExtractColors();
-      propogateUndoBuffer();
-      UpdateLand();
-
-      string path = "StreamingAssets/Terrain/safe";
-      Saveable.Save( verts , path );
-
-      SaveTextureAsPNG( currentTexture , Application.dataPath+"/" + path );
-
-    }
-
-    public void Load(){
-      string path = "StreamingAssets/Terrain/safe";
-      Saveable.Load( verts , path );
-    }
-
-
-
-    public void propogateUndoBuffer(){
-
-       for( int i = undoBuffer.Count-1; i > 0; i-- ){
-        undoBuffer[i] = undoBuffer[i-1];
-       }
-
-       undoBuffer[0] = values;
-
-       currentUndoLocation = 0;
-
-    }
-
-
-
-    public void UpdateLand(){
-
-      currentTexture.SetPixels(colors,0);
-      currentTexture.Apply(true);
-
-    }
-
-
-
-    public void Undo(){
-      currentUndoLocation ++;
-      if( currentUndoLocation >= undoBuffer.Count-1 ){
-        Debug.Log( "At Oldest");
-      }else{
-        MakeUndoTexture( undoBuffer[currentUndoLocation] );
-      }
-    }
-
-
-    public void Redo(){
-
-      currentUndoLocation --;
-      if( currentUndoLocation < 0 ){
-        Debug.Log( "AT NEWEST");
-      }else{
-        MakeUndoTexture( undoBuffer[currentUndoLocation] );
-      }
-
-    }
-
-
-    public void MakeUndoTexture(float[] v){
-
-      verts.SetData(v);
-
-      ExtractColors();
-
-      currentTexture.SetPixels(colors,0);
-      currentTexture.Apply(true);
-
-    }
-
-
-
-    public static void SaveTextureAsPNG(Texture2D _texture, string _fullPath)
-     {
-         byte[] _bytes =_texture.EncodeToJPG(1000);
-         System.IO.File.WriteAllBytes(_fullPath, _bytes);
-         Debug.Log(_bytes.Length/1024  + "Kb was saved as: " + _fullPath + ".jpg");
-     }
+  }
 
 
 
 
-     public override void WhileLiving( float v ){
+  // only need to update the textures we are interested in!
+  public void Save()
+  {
 
-        while (_requests.Count > 0){
-              var req = _requests.Peek();
+    ExtractColors();
+    propogateUndoBuffer();
+    UpdateLand();
 
-              if (req.hasError){
-                  Debug.Log("GPU readback error detected.");
-                  _requests.Dequeue();
-              }else if (req.done){
-                  var buffer = req.GetData<float>();
-                  ExtractColors( buffer.ToArray() );
-                  _requests.Dequeue();
-              }else{
-                  break;
-              }
-          }
-     }
+  }
 
-  */
 
   public void UltraSave()
   {
 
-    print("save");
-    Saveable.Save(verts);//.Save();
-    SaveWindTexture();
+    ExtractColors();
+    propogateUndoBuffer();
+    UpdateLand();
+
+    print("ULTRA SAVE");
+    string path = "StreamingAssets/Terrain/" + safeName;
+    Saveable.Save(verts, path);
+
+    SaveTextureAsPNG(currentTexture, Application.dataPath + "/" + path);
 
   }
 
-
-  public void Save()
+  public Texture2D LoadTexture()
   {
 
-    Saveable.Save(verts);//.Save();
-    SaveWindTexture();
+    print("LOADING");
+    string path = "StreamingAssets/Terrain/" + safeName;
+    path = Application.dataPath + "/" + path + ".jpg";
+
+    if (System.IO.File.Exists(path))
+    {
+
+
+      byte[] fileData = System.IO.File.ReadAllBytes(path);
+
+      Texture2D texture = new Texture2D(2, 2);
+      texture.LoadImage(fileData); //..this will auto-resize the texture dimensions.
+      return texture;
+    }
+    else
+    {
+      Debug.LogError("File not found at " + path);
+      return null;
+    }
+  }
+
+
+
+  public void Load()
+  {
+    string path = "StreamingAssets/Terrain/" + safeName;
+    Saveable.Load(verts, path);
+  }
+
+
+
+  public void propogateUndoBuffer()
+  {
+
+    for (int i = undoBuffer.Count - 1; i > 0; i--)
+    {
+      undoBuffer[i] = undoBuffer[i - 1];
+    }
+
+    undoBuffer[0] = values;
+
+    currentUndoLocation = 0;
 
   }
+
+
+
+  public void UpdateLand()
+  {
+
+    currentTexture.SetPixels(colors, 0);
+    currentTexture.Apply(true);
+
+  }
+
+
+
+  public void Undo()
+  {
+    currentUndoLocation++;
+    if (currentUndoLocation >= undoBuffer.Count - 1)
+    {
+      Debug.Log("At Oldest");
+    }
+    else
+    {
+      MakeUndoTexture(undoBuffer[currentUndoLocation]);
+    }
+  }
+
+
+  public void Redo()
+  {
+
+    currentUndoLocation--;
+    if (currentUndoLocation < 0)
+    {
+      Debug.Log("AT NEWEST");
+    }
+    else
+    {
+      MakeUndoTexture(undoBuffer[currentUndoLocation]);
+    }
+
+  }
+
+
+  public void MakeUndoTexture(float[] v)
+  {
+
+    verts.SetData(v);
+
+    ExtractColors();
+
+    currentTexture.SetPixels(colors, 0);
+    currentTexture.Apply(true);
+
+  }
+
+
+
+  public static void SaveTextureAsPNG(Texture2D _texture, string _fullPath)
+  {
+    byte[] _bytes = _texture.EncodeToJPG(1000);
+    System.IO.File.WriteAllBytes(_fullPath + ".jpg", _bytes);
+    Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullPath + ".jpg");
+  }
+
+
+
+  // Extracting colors using request
+  public override void WhileLiving(float v)
+  {
+
+    while (_requests.Count > 0)
+    {
+
+      print("SOMETHING NOT RIGHT");
+      var req = _requests.Peek();
+
+      if (req.hasError)
+      {
+        Debug.Log("GPU readback error detected.");
+        _requests.Dequeue();
+      }
+      else if (req.done)
+      {
+        var buffer = req.GetData<float>();
+        ExtractColors(buffer.ToArray());
+        _requests.Dequeue();
+      }
+      else
+      {
+        break;
+      }
+    }
+  }
+
+
+
+
 
 
 

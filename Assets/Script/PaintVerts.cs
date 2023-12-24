@@ -31,14 +31,14 @@ public class PaintVerts : Form
   {
 
     totalDataSize = dataTypes.Length;
-    structSize = 1; //totalDataSize;
+    structSize = totalDataSize;
 
     //  print(structSize);
   }
 
   public override void SetCount()
   {
-    count = width * width * totalDataSize;
+    count = width * width;
     //size = WrenUtils.God.terrainData.size.x;
   }
 
