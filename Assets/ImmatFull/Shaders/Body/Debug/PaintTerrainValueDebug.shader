@@ -1,5 +1,5 @@
 
-Shader "Debug/PaintTerrainWindDebug" {
+Shader "Debug/PaintTerrainValueDebug" {
     Properties {
 
     _Color ("Color", Color) = (1,1,1,1)
@@ -91,7 +91,7 @@ varyings vert (uint id : SV_VertexID){
 
  float4 v = _VertBuffer[base];
 
-float3 dir = v.xyz * 1;
+float3 dir = float3(0,1,0) * v[_WhichBrush];
 
 
 float3 viewDir = UNITY_MATRIX_IT_MV[2].xyz;
@@ -118,7 +118,7 @@ float3 yVal =  normalize( -cross( dir , viewDir ));
 
   //Pixel function returns a solid color for each point.
   float4 frag (varyings v) : COLOR {
-    return float4((normalize(v.value) * .5 + .5) * length(v.value),1 );
+    return float4(_Color.xyz,1 );
       return 1;
   }
 

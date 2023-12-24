@@ -28,7 +28,7 @@ Shader "Debug/TerrainPointDebug" {
 
 
       
-      StructuredBuffer<float> _VertBuffer;
+      StructuredBuffer<float4> _VertBuffer;
 
   int _Width;
   float3 _MapSize;
@@ -96,9 +96,9 @@ varyings vert (uint id : SV_VertexID){
 
     float3 pos = getPos(base);
 
-      float v = _VertBuffer[base * _TotalBrushes+0];
+      float4 v = _VertBuffer[base ];
       //Vert v = _VertBuffer[base % _Count];
-      o.worldPos = pos + extra * _Size * v;
+      o.worldPos = pos + extra * _Size + v.xyz;
       o.eye = _WorldSpaceCameraPos - o.worldPos;
     //  o.nor =v.nor;
      // o.uv = v.uv;

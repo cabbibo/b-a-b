@@ -9,7 +9,13 @@ public class IslandData : MonoBehaviour
 {
 
 
-    public TerrainPainter painter;
+    public TerrainPainter windPainter;
+    public TerrainPainter foodPainter;
+    public TerrainPainter weatherPainter;
+
+    public TerrainPainter biomePainter;
+
+
 
     public Texture2D BiomeMap;
 
@@ -28,12 +34,10 @@ public class IslandData : MonoBehaviour
 
     public bool debugWind;
 
-
-
     void OnEnable()
     {
-        windMap = painter.windTexture;
-        biomeMap = painter.biomeMap;
+        windMap = windPainter.LoadTexture(); ;
+        //biomeMap = painter.biomeMap;
         heightMap = God.terrainData.heightmapTexture;
         size = God.terrainData.size;
 

@@ -149,8 +149,8 @@ public class TerrainPainterEditor : Editor
 
     if (GUILayout.Button("Reset To Original"))
     {
-      //painter.ResetToOriginal();
-      // painter.Save();
+      painter.ResetToOriginal();
+      painter.Save();
     }
 
     if (GUILayout.Button("Set To Current"))
@@ -159,20 +159,20 @@ public class TerrainPainterEditor : Editor
 
     }
 
-    /*if (GUILayout.Button("Reset To Flat"))
-   {
-     painter.ResetToFlat();
-     painter.Save();
-   }*/
+    if (GUILayout.Button("Reset To Flat"))
+    {
+      painter.ResetToFlat();
+      painter.Save();
+    }
 
     if (GUILayout.Button("UNDO"))
     {
-      //painter.Undo();
+      painter.Undo();
     }
 
     if (GUILayout.Button("REDO"))
     {
-      //painter.Redo();
+      painter.Redo();
     }
 
 
