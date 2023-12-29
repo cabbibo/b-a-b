@@ -56,6 +56,7 @@ public class SceneController : MonoBehaviour
         God.wren.canMove = false;
         Camera.main.gameObject.GetComponent<LerpTo>().enabled = false;
 
+        // Lerps out of scene via a portal
         StartCoroutine(PortalAnimationOut(portal));
 
 
