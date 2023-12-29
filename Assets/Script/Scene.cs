@@ -57,6 +57,8 @@ namespace WrenUtils
 
                 if (God.sceneController.biome >= 0)
                 {
+
+                    print("BIOME IS " + God.sceneController.biome);
                     // return / spawn at gate that is our current biome!
                     // when bird dies, we respawn at our first starting position
                     God.wren.startingPosition = portals[God.sceneController.biome].startPoint;

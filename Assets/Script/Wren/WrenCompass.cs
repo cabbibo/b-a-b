@@ -80,10 +80,13 @@ public class WrenCompass : WrenInterface
     {
         active = !active;
 
-        if( active ){
-            God.audio.Play(on,1,.3f);
-        }else{
-            God.audio.Play(off,-1,.3f);
+        if (active)
+        {
+            God.audio.Play(on, 1, .3f);
+        }
+        else
+        {
+            God.audio.Play(off, -1, .3f);
         }
 
         holder.gameObject.SetActive(active);
@@ -154,7 +157,7 @@ public class WrenCompass : WrenInterface
                         float fWidth = Mathf.Lerp(1, maxDistWidthMultiplier, v);
                         float fLength = Mathf.Lerp(1, maxDistLengthMultiplier, v);
 
-                        
+
                         pointers[id].transform.position = transform.position + v2.normalized * (baseDist + fLength * tipDist);
 
                         // pointers[id].transform.position = transform.position + v2.normalized * 8 + v2.normalized * 2 + v2.normalized * 5 * closeness;
@@ -221,7 +224,7 @@ public class WrenCompass : WrenInterface
                         float fLength = Mathf.Lerp(1, target_maxDistLengthMultiplier, v);
 
                         // pointers[id].transform.position = transform.position + v2.normalized * 8 + v2.normalized * 2 + v2.normalized * 5 * closeness;
-target_pointers[id].transform.position = transform.position + v2.normalized * (target_baseDist + fLength * target_tipDist);
+                        target_pointers[id].transform.position = transform.position + v2.normalized * (target_baseDist + fLength * target_tipDist);
                         target_lines[id].SetPosition(0, transform.position + v2.normalized * target_baseDist);
                         target_lines[id].SetPosition(1, transform.position + v2.normalized * (target_baseDist + fLength * target_tipDist));
                         target_lines[id].startWidth = fWidth * target_baseWidth;
@@ -242,7 +245,7 @@ target_pointers[id].transform.position = transform.position + v2.normalized * (t
     public void WrensChanged()
     {
 
-        print("changing wren");
+        //        print("changing wren");
 
         for (int i = 0; i < pointers.Length; i++)
         {

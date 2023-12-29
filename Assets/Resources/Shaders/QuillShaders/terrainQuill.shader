@@ -28,6 +28,30 @@ Shader "Unlit/quillTerrain"{
  _SandSpecularPower2("_SandSpecularPower2",float) = 1
 
 
+  _CityFresnelColor("_CityFresnelColor",Color) = (1,1,1,1)
+
+ _CityBaseColor("_CityBaseColor",Color) = (1,1,1,1)
+ _CitySpecularColor1("_CitySpecularColor1",Color) = (1,1,1,1)
+
+ _CitySpecularColor2("_CitySpecularColor2",Color) = (1,1,1,1)
+ _CityStriationColorLight("_CityStriationColorLight",Color) = (1,1,1,1)
+ _CityStriationColorDark("_CityStriationColorDark",Color) = (1,1,1,1)
+ _CityStriationSize("_CityStriationSize", Vector) = (1,1,1)
+ _CityStriationColorSteps("_CityStriationColorSteps",float) = 4
+ _CityStriationVerticalCutoff("_CityStriationVerticalCutoff",float) = .5
+
+
+ _CitySaturation("_CitySaturation",float) = 1
+ _CityBrightness("_CityBrightness",float) = 1
+ _CityMatchMultiplier("_CityMatchMultiplier",float) = 1 
+ _CityShadowBase("_CityShadowBase",float) = 1
+ _CitySpecularPower1("_CitySpecularPower1",float) = 1
+ _CitySpecularPower2("_CitySpecularPower2",float) = 1
+ _CitySpecularPower2("_CitySpecularPower2",float) = 1
+
+
+
+
 
     _BiomeMap ("BiomeMap", 2D) = "white" {}
     _BiomeMapWeight ("BiomeMapWeight", float) = .01
@@ -340,6 +364,29 @@ float3 _SandStriationSize;
 float _SandStriationColorSteps;
 float _SandStriationVerticalCutoff;
 
+
+float _CityMatchMultiplier; 
+float _CityShadowBase;
+float4 _CityFresnelColor;
+
+float _CitySaturation;
+float _CityBrightness;
+
+float4 _CityBaseColor;
+float4 _CitySpecularColor1;
+float _CitySpecularPower1;
+
+float4 _CitySpecularColor2;
+float _CitySpecularPower2;
+
+
+float4 _CityStriationColorLight;
+float4 _CityStriationColorDark;
+float3 _CityStriationSize;
+float _CityStriationColorSteps;
+float _CityStriationVerticalCutoff;
+
+
 /*
 
 
@@ -429,6 +476,91 @@ col *= ((floor(lMap * 4 ) /4 ) * _SandMatchMultiplier + _SandShadowBase);
 };
 
 
+/*
+
+
+CityColor
+
+*/
+
+float3 DoCityColor(float3 pos, float3 baseNor, float3 nor, float3 eye ,float shadow){
+
+
+
+  float3 col = _CityBaseColor;
+float3 refl = normalize(reflect( -eye, nor  ));
+
+
+
+  half4 skyData = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, refl);
+                // decode cubemap data into actual color
+                half3 skyColor = DecodeHDR (skyData, unity_SpecCube0_HDR);
+
+
+
+  float3 spec = dot(refl, _WorldSpaceLightPos0.xyz); 
+  col +=  _CitySpecularColor1  * floor( pow(spec,10) * 3) * _CitySpecularPower1;
+
+
+  float m = saturate( dot( normalize(eye), baseNor));
+
+
+
+
+
+  //float3 cubeCol = texCube( _CubeMap,refl);
+
+
+
+  float sparkleSize = 1;
+  float sparkleForce = .3;
+  refl = reflect( -eye, normalize( nor + float3(snoise(pos*sparkleSize),0,0)*sparkleForce + float3(0,0,snoise(pos * 1.2*sparkleSize + 13103))*sparkleForce )  );
+  spec = saturate(dot(normalize(refl) , _WorldSpaceLightPos0.xyz)); 
+ // col += col * floor( pow(spec,100) * 3) *3;
+
+
+col += _CitySpecularColor2  *  floor( pow(spec,100) * 3) * _CitySpecularPower2;
+
+
+
+
+  // canyon
+ if( dot( nor , float3(0,1,0)) < _CityStriationVerticalCutoff ){
+
+    col = float3(1,.3,.1);
+
+
+    float noiseVal = noise( pos * _CityStriationSize);//snoise( pos * _CityStriationSize );
+
+    noiseVal = floor( ((noiseVal +1 )/2) * _CityStriationColorSteps ) / _CityStriationColorSteps;
+
+    col = lerp( _CityStriationColorLight , _CityStriationColorDark , noiseVal);
+    //col *= floor(noise( float3(pos.xz,pos.y* 30) * .1 /*+noise( float3(pos.xz * 1,pos.y* 100)) * 1*/)*4)/4;
+    //col *= floor(noise( float3(pos.xz,pos.y* 30) * .1 )*4)/4;
+
+  }
+
+  float lMap = dot(nor ,_WorldSpaceLightPos0.xyz);
+
+lMap *= shadow;
+
+
+col *= ((floor(lMap * 4 ) /4 ) * _CityMatchMultiplier + _CityShadowBase);
+
+
+
+
+  col += _CityFresnelColor*2*floor(pow(saturate((1-m)),10) * 4)/4;
+
+  col = col * _CitySaturation + 1-_CitySaturation;
+  col *= _CityBrightness;
+
+
+  col = saturate(col) * .95;
+  return col;
+
+
+};
 
 
 
@@ -857,9 +989,17 @@ if( d < .4 ){
 }
 
 float4 bMap = tex2D(_BiomeMap, (v.worldPos.xz+2048) / 4096);
-col *= lerp( 1, bMap.xyz * _BiomeMapWeight + (1-_BiomeMapWeight) , bMap.a);
+//col *= lerp( 1, bMap.xyz * _BiomeMapWeight + (1-_BiomeMapWeight) , bMap.a);
 
+float cityDot = dot( normalize(bMap.xyz) , normalize(float3(1,0,.5)));
 
+float cityValue = saturate((pow( cityDot,30)-.3) * 10) * bMap.a;
+float3 cityColor = DoCityColor( v.worldPos, v.nor,fNor,eye,shadow);
+col = lerp(col ,cityColor,cityValue); 
+
+//col = bMap.xyz * bMap.a;
+
+//col =   * bMap.a * bMap.a;//lerp( col , pow( length(col )/3,3) * 10 * (bMap.xyz * _BiomeMapWeight + (1-_BiomeMapWeight)) ,bMap.a);
 //col = fNor ;
 
 
