@@ -182,6 +182,9 @@ public class SceneController : MonoBehaviour
     {
 
 
+        print("switching scene");
+        print(newScene);
+        print(oldScene);
         SceneManager.LoadScene(scenes[newScene], LoadSceneMode.Additive);
 
 
@@ -359,11 +362,17 @@ public class SceneController : MonoBehaviour
             currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
         }
 
+
+        biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
+
+
         if (graybox)
         {
+
             currentSceneID = 2;
+            biome = 0;
         }
-        biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
+
 
         int gameStarted = PlayerPrefs.GetInt("_GameStarted", 0);
         if (gameStarted == 0)
@@ -400,6 +409,10 @@ public class SceneController : MonoBehaviour
         int c = SceneManager.loadedSceneCount;
 
         print(c);
+        print(SceneManager.sceneCount);
+
+        // TODO:
+        // this isn't loading the correct scenes
         for (int i = 0; i < c; i++)
         {
             UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt(i);

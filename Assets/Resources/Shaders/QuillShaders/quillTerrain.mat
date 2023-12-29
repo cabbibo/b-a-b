@@ -111,6 +111,14 @@ Material:
     m_Floats:
     - _BiomeMapWeight: 0
     - _BumpScale: 1
+    - _CityBrightness: 1
+    - _CityMatchMultiplier: 1
+    - _CitySaturation: 1
+    - _CityShadowBase: 0
+    - _CitySpecularPower1: 11
+    - _CitySpecularPower2: 11
+    - _CityStriationColorSteps: 6
+    - _CityStriationVerticalCutoff: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
@@ -139,6 +147,13 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CityBaseColor: {r: 0.81501424, g: 0.9339623, b: 0.862127, a: 1}
+    - _CityFresnelColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CitySpecularColor1: {r: 0.87058514, g: 0.7390531, b: 0.9056604, a: 1}
+    - _CitySpecularColor2: {r: 1, g: 0.5613208, b: 0.83047664, a: 1}
+    - _CityStriationColorDark: {r: 0.6740388, g: 0.764151, b: 0.7235986, a: 1}
+    - _CityStriationColorLight: {r: 1, g: 1, b: 1, a: 1}
+    - _CityStriationSize: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
