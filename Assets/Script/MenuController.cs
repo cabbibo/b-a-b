@@ -24,6 +24,8 @@ public class MenuController : MonoBehaviour
 
     public bool menuOn;
 
+    public bool autoLoad = true;
+
     public string currentMenu = "";
 
     // Start is called before the first frame update
@@ -38,8 +40,16 @@ public class MenuController : MonoBehaviour
         //  God.sceneController.HardStart();
     }
 
-    void OnEnable(){
-        God.audio.Play( menuOpenSound );
+    void OnEnable()
+    {
+        God.audio.Play(menuOpenSound);
+        print("goes here");
+
+        // we skip the menu and auto load into the game
+        if (autoLoad)
+        {
+            OnContinue();
+        }
     }
 
     // Update is called once per frame
