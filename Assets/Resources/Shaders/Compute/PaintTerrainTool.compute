@@ -1,5 +1,6 @@
 ﻿#pragma kernel PaintWind
 #pragma kernel PaintFood
+#pragma kernel PaintBiome
 
 #include "../Chunks/safeID.cginc"
 
@@ -179,6 +180,7 @@ void PaintWind(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
       v.xyz = dir;
 
 
+    v.w = length(v.xyz);
 
 
 
@@ -290,6 +292,67 @@ void PaintFood(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
 
 }
+
+
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void PaintBiome(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+    int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int sID = pID;//safeID( pID , _VectorBuffer_COUNT );
+
+    int baseID = sID ;
+
+
+    float3 pos = getPos(sID);
+
+    float4 v = _VectorBuffer[baseID];
+
+
+     float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
+
+    float val =  v[_WhichBrush];
+
+        val += .04*lerp( _PaintOpacity * _PaintStrength , 0 , l );
+     val =  saturate( val);
+ 
+
+
+
+    if( _Reset == 1 ){
+      val = 0;
+    }
+
+
+    if( _Reset == 2 ){
+
+      float4 tCol = getResetTexture( pos );
+      val = tCol[_WhichBrush];
+
+    }
+
+
+    if( _Reset == 3 ){
+
+      float4 tCol = getUndoTexture( pos );
+      val = tCol[_WhichBrush];
+    }
+
+
+    v = SetVal( val,v, _WhichBrush );
+
+    _VectorBuffer[baseID] = v;
+
+
+}
+
+
+
+
+
 
 
 

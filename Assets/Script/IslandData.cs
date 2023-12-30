@@ -13,7 +13,8 @@ public class IslandData : MonoBehaviour
     public TerrainPainter foodPainter;
     public TerrainPainter weatherPainter;
 
-    public TerrainPainter biomePainter;
+    public TerrainPainter biomePainter1;
+    public TerrainPainter biomePainter2;
 
 
 
@@ -23,9 +24,9 @@ public class IslandData : MonoBehaviour
     public Texture2D windMap;
     public RenderTexture heightMap;
 
-    public Texture2D biomeMap;
 
-    public float[] biomeValus;
+    public Texture2D biomeMap1;
+    public Texture2D biomeMap2;
 
 
 
@@ -36,10 +37,14 @@ public class IslandData : MonoBehaviour
 
     void OnEnable()
     {
+
         windMap = windPainter.LoadTexture(); ;
         //biomeMap = painter.biomeMap;
         heightMap = God.terrainData.heightmapTexture;
         size = God.terrainData.size;
+
+        biomeMap1 = biomePainter1.LoadTexture();
+        biomeMap2 = biomePainter2.LoadTexture();
 
 
         Shader.SetGlobalTexture("_WindMap", windMap);
@@ -80,29 +85,58 @@ public class IslandData : MonoBehaviour
     }
 
 
-    public float GetBiomeValue(Vector3 p)
-    {
-        Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
-        Color c = biomeMap.GetPixelBilinear(uv.x, uv.z);
-
-        print("BiomeValue :" + c);
-        return c.a;
-
-    }
-
-
 
     public LineRenderer lr;
+
+    public Transform debugValueTransform;
     void Update()
     {
 
-        // GetWindPower( new Vector3(1000, 0,1000) );
-        /*if( God.wren != null ){
-         GetWindPower(God.wren.transform.position);
-        }*/
+
+
+        // In editor ( no wren ) have a debug transform we can check values with!
+
+        Vector3 positionToCheck = debugValueTransform.position;
+        if (God.wren != null)
+        {
+            positionToCheck = God.wren.transform.position;
+        }
+
+
+        currentWindDirection = GetWind(positionToCheck);
+        currentBiomeValues = GetBiomeValues(positionToCheck);
+
+
 
     }
 
+
+    public Vector3 currentWindDirection;
+    public float[] currentBiomeValues;
+
+
+    public Vector3 GetWind(Vector3 p)
+    {
+
+        Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
+        Color c = windMap.GetPixelBilinear(uv.x, uv.z);
+
+        print(uv);
+        print(c);
+        return new Vector3(c.r, c.g, c.b);
+
+    }
+
+
+    public float[] GetBiomeValues(Vector3 p)
+    {
+        Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
+        Color c1 = biomeMap1.GetPixelBilinear(uv.x, uv.z);
+        Color c2 = biomeMap2.GetPixelBilinear(uv.x, uv.z);
+
+        return new float[] { c1.r, c1.g, c1.b, c1.a, c2.r, c2.g, c2.b, c2.a };
+
+    }
 
 
 }

@@ -20,6 +20,7 @@ Shader "Debug/PaintTerrainValueDebug" {
       #pragma fragment frag
 
       #include "UnityCG.cginc"
+      #include "../../Chunks/hsv.cginc"
 
 
 
@@ -36,6 +37,7 @@ Shader "Debug/PaintTerrainValueDebug" {
       int _WhichBrush;
       int _TotalBrushes;
       int _BaseBrush;
+      int _ShownBrushes;
       
 
 
@@ -46,6 +48,8 @@ Shader "Debug/PaintTerrainValueDebug" {
           float4 pos      : SV_POSITION;
           float3 worldPos : TEXCOORD1;
           float3 value       : TEXCOORD5;
+          float whichBrush : TEXCOORD6;
+        
       };
 
 
@@ -80,8 +84,11 @@ varyings vert (uint id : SV_VertexID){
 
   varyings o;
 
-  int base = id / 3;
-  int alternate = id %3;
+  int safeID = id  % (_Count *3);
+  int whichBrushAdd = id / (_Count*3);
+
+  int base = safeID / 3;
+  int alternate = safeID %3;
 
   float3 extra;
 
@@ -91,7 +98,9 @@ varyings vert (uint id : SV_VertexID){
 
  float4 v = _VertBuffer[base];
 
-float3 dir = float3(0,1,0) * v[_WhichBrush];
+ float value = v[(_WhichBrush+whichBrushAdd)%_TotalBrushes];
+
+float3 dir = float3(0,1,0) *value ;
 
 
 float3 viewDir = UNITY_MATRIX_IT_MV[2].xyz;
@@ -102,11 +111,12 @@ float3 yVal =  normalize( -cross( dir , viewDir ));
   if( alternate == 1 ){ extra =  +yVal  * .1; uv = float2(1,0); }
   if( alternate == 2 ){ extra =  dir; uv = float2(.5,1); }
 
-  o.worldPos = pos.xyz + float3(0,_Up,0) + extra * _Size;
+  o.worldPos = pos.xyz + float3(0,_Up,0) + extra * _Size +  float3(0,_Up,0)*(_WhichBrush+whichBrushAdd) * .4 + viewDir *(_WhichBrush+whichBrushAdd) * .4 ;
 
 
   o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
-  o.value = dir;
+  o.value = value;
+  o.whichBrush = (_WhichBrush+whichBrushAdd)%_TotalBrushes;
 
 
   return o;
@@ -118,7 +128,7 @@ float3 yVal =  normalize( -cross( dir , viewDir ));
 
   //Pixel function returns a solid color for each point.
   float4 frag (varyings v) : COLOR {
-    return float4(_Color.xyz,1 );
+    return float4(hsv(v.whichBrush/_TotalBrushes,1,1),1 );
       return 1;
   }
 

@@ -10,13 +10,30 @@ public class TerrainPainterEditor : Editor
   //private static bool m_editMode = false;
   //private static bool m_editMode2 = false;
 
-  void OnSceneGUI()
+  public void OnEnable()
+  {
+    Debug.Log("ENABLE");
+
+    TerrainPainter painter = (TerrainPainter)target;
+    painter.OnGUIEnable();
+
+  }
+
+  public void OnDisable()
+  {
+    Debug.Log("DISABLE");
+    TerrainPainter painter = (TerrainPainter)target;
+    painter.OnGUIDisable();
+
+  }
+  public void OnSceneGUI()
   {
 
     /*Vector2 dpi = DPIHelper.GetSystemDPI();
     Debug.Log($"System DPI: X = {dpi.x}, Y = {dpi.y}");
 
     Debug.Log(dpi.x / 96.0f);*/
+
 
     TerrainPainter painter = (TerrainPainter)target;
 
@@ -74,7 +91,6 @@ public class TerrainPainterEditor : Editor
     {
 
 
-      //print("mouse");
 
       Vector2 mousePos = Event.current.mousePosition * painter.displayScale;
       mousePos.y = Camera.current.pixelHeight - mousePos.y;
@@ -91,7 +107,6 @@ public class TerrainPainterEditor : Editor
     if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
     {
 
-      Debug.Log(painter.displayScale);
       Vector2 mousePos = Event.current.mousePosition * painter.displayScale;
       mousePos.y = Camera.current.pixelHeight - mousePos.y;
       Ray ray = Camera.current.ScreenPointToRay(mousePos);
@@ -120,7 +135,6 @@ public class TerrainPainterEditor : Editor
   public override void OnInspectorGUI()
   {
 
-    // Debug.Log("PRSITN");
     TerrainPainter painter = (TerrainPainter)target;
 
 
@@ -131,7 +145,7 @@ public class TerrainPainterEditor : Editor
     EditorGUILayout.Space();
 
     GUILayout.Label("PaintSize : " + painter.paintSize);
-    painter.paintSize = GUILayout.HorizontalSlider(painter.paintSize, 0.0F, 100.0F);
+    painter.paintSize = GUILayout.HorizontalSlider(painter.paintSize, 0.0F, 500.0F);
 
     EditorGUILayout.Space();
     GUILayout.Label("Paint Opacity: " + painter.paintOpacity);

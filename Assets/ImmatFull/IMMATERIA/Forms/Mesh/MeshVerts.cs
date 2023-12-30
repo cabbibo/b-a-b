@@ -96,10 +96,7 @@ namespace IMMATERIA
                 {
 
                     Vector3 tT = transform.TransformDirection(HELP.ToV3(tans[i]));
-                    if (i < 10)
-                    {
-                        DebugThis("" + tT.x);
-                    }
+
 
                     if (transformVerts) { tans[i] = new Vector4(tT.x, tT.y, tT.z, tans[i].w); }
 
