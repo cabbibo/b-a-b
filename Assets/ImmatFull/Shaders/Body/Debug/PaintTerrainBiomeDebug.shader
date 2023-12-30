@@ -1,8 +1,11 @@
 
-Shader "Debug/PaintTerrainValueDebug" {
+Shader "Debug/PaintTerrainBiomeDebug" {
     Properties {
 
-    _Color ("Color", Color) = (1,1,1,1)
+    _BiomeColor1 ("_BiomeColor1", Color) = (1,1,1,1)
+    _BiomeColor2 ("_BiomeColor2", Color) = (1,1,1,1)
+    _BiomeColor3 ("_BiomeColor3", Color) = (1,1,1,1)
+    _BiomeColor4 ("_BiomeColor4", Color) = (1,1,1,1)
     _Size ("Size", float) = .01
     _Up ("Up", float) = .01
     }
@@ -38,6 +41,12 @@ Shader "Debug/PaintTerrainValueDebug" {
       int _TotalBrushes;
       int _BaseBrush;
       int _ShownBrushes;
+
+
+      float4 _BiomeColor1;
+      float4 _BiomeColor2;
+      float4 _BiomeColor3;
+      float4 _BiomeColor4;
       
 
 
@@ -98,7 +107,9 @@ varyings vert (uint id : SV_VertexID){
 
  float4 v = _VertBuffer[base];
 
- float value = v[(_WhichBrush+whichBrushAdd)%_TotalBrushes];
+ int actualBrush = (_WhichBrush+whichBrushAdd)%_TotalBrushes;
+
+ float value = v[actualBrush];
 
 float3 dir = float3(0,1,0) *value ;
 
@@ -116,7 +127,7 @@ float3 yVal =  normalize( -cross( dir , viewDir ));
 
   o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
   o.value = value;
-  o.whichBrush = (_WhichBrush+whichBrushAdd)%_TotalBrushes;
+  o.whichBrush = actualBrush;
 
 
   return o;
@@ -128,7 +139,17 @@ float3 yVal =  normalize( -cross( dir , viewDir ));
 
   //Pixel function returns a solid color for each point.
   float4 frag (varyings v) : COLOR {
-    return float4(hsv(v.whichBrush/_TotalBrushes,1,1),1 );
+
+       if( v.whichBrush < .5 ){
+      return _BiomeColor1;
+      }else if( v.whichBrush >= .5 && v.whichBrush < 1.5){
+      return _BiomeColor2;
+      }else if(v.whichBrush >= 1.5 && v.whichBrush < 2.5){
+      return _BiomeColor3;
+      }else if( v.whichBrush >= 2.5 && v.whichBrush < 3.5){
+      return _BiomeColor4;
+      }
+
       return 1;
   }
 

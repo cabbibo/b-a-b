@@ -12,6 +12,8 @@ public class TerrainPainter : Simulation
 {
 
 
+
+
   // Makes it so we have the right scale for our windows display
   public float displayScale;
   public int brushType;
@@ -113,7 +115,8 @@ public class TerrainPainter : Simulation
     // rebuild shouldn't override;
     if (currentTexture == null)
     {
-      currentTexture = new Texture2D(startTexture.width, startTexture.height);
+
+      currentTexture = new Texture2D(verts.width, verts.width, TextureFormat.RGBAFloat, -1, true);
       Graphics.CopyTexture(startTexture, currentTexture);
 
     }
@@ -152,7 +155,7 @@ public class TerrainPainter : Simulation
   public void SaveTexture()
   {
 
-    if (currentTexture == null) { currentTexture = new Texture2D(verts.width, verts.width, TextureFormat.RGBAFloat, -1, true); }
+    currentTexture = new Texture2D(verts.width, verts.width, TextureFormat.RGBAFloat, -1, true);
     ExtractColors();
 
     currentTexture.SetPixels(colors);
@@ -230,13 +233,21 @@ public class TerrainPainter : Simulation
   }
 
 
+  public bool showValues = true;
+
 
   public int debugDrawMultiplier = 1;
+
+
   public override void WhileDebug()
   {
-
-
+    DrawValues();
+  }
+  public void DrawValues()
+  {
     //paintTipRenderer.enabled = isPainting == 1 ? true : false;
+
+
 
     mpb.SetBuffer("_VertBuffer", verts._buffer);
 
@@ -249,16 +260,10 @@ public class TerrainPainter : Simulation
     mpb.SetTexture("_HeightMap", WrenUtils.God.terrainData.heightmapTexture);
     mpb.SetVector("_MapSize", WrenUtils.God.terrainData.size);
 
-    if (debug)
-    {
+    mpb.SetInt("_ShownBrushes", debugDrawMultiplier);
 
 
-
-      Graphics.DrawProcedural(debugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, (verts.count * debugDrawMultiplier) * 3, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-
-
-
-    }
+    Graphics.DrawProcedural(debugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, (verts.count * debugDrawMultiplier) * 3, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
 
   }
 
@@ -266,17 +271,26 @@ public class TerrainPainter : Simulation
 
 
 
-
+  public void OnGUIDisable()
+  {
+    paintTip.gameObject.SetActive(false);
+  }
+  public void OnGUIEnable()
+  {
+    paintTip.gameObject.SetActive(true);
+  }
 
   public void MouseMove(Ray ray)
   {
 
 
 
-
     // paintPosition = data.land.Trace( ray.origin, ray.direction);
     paintTip.position = paintPosition;
     paintTip.localScale = new Vector3(paintSize, paintSize, paintSize);
+    paintTip.rotation = Quaternion.LookRotation(paintDirection);
+
+
 
     paintDirection = -(paintDirection - paintPosition);
     //print( Camera.current.transform.Inverseray.direction );
@@ -341,7 +355,7 @@ public class TerrainPainter : Simulation
 
     paintTipRenderer.enabled = true;
 
-
+    ///print(gameObject.name);
     isPainting = 1;
 
     //print( Camera.current.transform.Inverseray.direction );
@@ -456,11 +470,15 @@ public class TerrainPainter : Simulation
     propogateUndoBuffer();
     UpdateLand();
 
+    SaveTexture();
+
     print("ULTRA SAVE");
     string path = "StreamingAssets/Terrain/" + safeName;
     Saveable.Save(verts, path);
 
     SaveTextureAsPNG(currentTexture, Application.dataPath + "/" + path);
+    SaveTextureAsEXR(currentTexture, Application.dataPath + "/" + path);
+    SaveCompressedTexture(currentTexture, Application.dataPath + "/" + path);
 
   }
 
@@ -477,8 +495,13 @@ public class TerrainPainter : Simulation
 
       byte[] fileData = System.IO.File.ReadAllBytes(path);
 
+
+      print(fileData.Length);
+
       Texture2D texture = new Texture2D(2, 2);
-      texture.LoadImage(fileData); //..this will auto-resize the texture dimensions.
+      ImageConversion.LoadImage(texture, fileData); //..this will auto-resize the texture dimensions.
+
+      // texture = (Texture2D)Resources.Load(path);
       return texture;
     }
     else
@@ -577,6 +600,20 @@ public class TerrainPainter : Simulation
 
 
 
+  public static void SaveTextureAsEXR(Texture2D _texture, string _fullPath)
+  {
+    byte[] _bytes = ImageConversion.EncodeToEXR(_texture, Texture2D.EXRFlags.OutputAsFloat);
+    System.IO.File.WriteAllBytes(_fullPath + ".exr", _bytes);
+    Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullPath + ".exr");
+  }
+
+
+  public static void SaveCompressedTexture()
+  {
+
+  }
+
+
   // Extracting colors using request
   public override void WhileLiving(float v)
   {
@@ -603,6 +640,9 @@ public class TerrainPainter : Simulation
         break;
       }
     }
+
+
+    DrawValues();
   }
 
 
