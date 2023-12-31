@@ -38,16 +38,18 @@ public class IslandData : MonoBehaviour
     void OnEnable()
     {
 
-        windMap = windPainter.LoadTexture(); ;
         //biomeMap = painter.biomeMap;
         heightMap = God.terrainData.heightmapTexture;
         size = God.terrainData.size;
 
-        biomeMap1 = biomePainter1.LoadTexture();
-        biomeMap2 = biomePainter2.LoadTexture();
+        windMap = windPainter.GenerateTexture();
+        biomeMap1 = biomePainter1.GenerateTexture();
+        biomeMap2 = biomePainter2.GenerateTexture();
 
 
         Shader.SetGlobalTexture("_WindMap", windMap);
+        Shader.SetGlobalTexture("_BiomeMap1", biomeMap1);
+        Shader.SetGlobalTexture("_BiomeMap2", biomeMap2);
         // Shader.SetGlobalTexture("_BiomeMap");
 
     }
@@ -89,6 +91,24 @@ public class IslandData : MonoBehaviour
     public LineRenderer lr;
 
     public Transform debugValueTransform;
+
+
+    public float maxBiomeValue;
+    public float secondMaxBiomeValue;
+
+    public float oMaxBiomeValue;
+    public float oSecondMaxBiomeValue;
+
+
+    public int maxBiomeID;
+    public int secondMaxBiomeID;
+
+
+
+    public int oMaxBiomeID;
+    public int oSecondMaxBiomeID;
+
+
     void Update()
     {
 
@@ -107,6 +127,44 @@ public class IslandData : MonoBehaviour
         currentBiomeValues = GetBiomeValues(positionToCheck);
 
 
+        oSecondMaxBiomeValue = secondMaxBiomeValue;
+        oMaxBiomeID = maxBiomeID;
+
+        oMaxBiomeValue = maxBiomeValue;
+        oSecondMaxBiomeValue = secondMaxBiomeValue;
+
+        maxBiomeValue = 0;
+        secondMaxBiomeValue = 0;
+
+        maxBiomeID = -1;
+        oSecondMaxBiomeID = -1;
+        for (int i = 0; i < currentBiomeValues.Length; i++)
+        {
+            if (currentBiomeValues[i] > maxBiomeValue)
+            {
+                secondMaxBiomeValue = maxBiomeValue;
+                secondMaxBiomeID = maxBiomeID;
+                if (secondMaxBiomeValue == 0)
+                {
+                    secondMaxBiomeValue = currentBiomeValues[i];
+                    secondMaxBiomeID = i;
+                }
+                maxBiomeValue = currentBiomeValues[i];
+                maxBiomeID = i;
+            }
+        }
+
+
+
+        if (maxBiomeID != oMaxBiomeID)
+        {
+            OnBiomeChange(oMaxBiomeID, maxBiomeID);
+        }
+
+
+
+
+
 
     }
 
@@ -120,9 +178,6 @@ public class IslandData : MonoBehaviour
 
         Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
         Color c = windMap.GetPixelBilinear(uv.x, uv.z);
-
-        print(uv);
-        print(c);
         return new Vector3(c.r, c.g, c.b);
 
     }
@@ -135,6 +190,57 @@ public class IslandData : MonoBehaviour
         Color c2 = biomeMap2.GetPixelBilinear(uv.x, uv.z);
 
         return new float[] { c1.r, c1.g, c1.b, c1.a, c2.r, c2.g, c2.b, c2.a };
+
+    }
+
+
+    public Helpers.DoubleIntEvent BiomeChangeEvent;
+    public void OnBiomeChange(int oldBiome, int newBiome)
+    {
+        OnExitBiome(oldBiome);
+        OnEnterBiome(newBiome);
+
+        print("old Biome : " + oldBiome);
+        print(" new Biome : " + newBiome);
+
+
+        BiomeChangeEvent.Invoke(oldBiome, newBiome);
+
+
+    }
+
+
+    public void OnExitBiome(int oldBiome)
+    {
+        if (oldBiome == -1)
+        {
+            LeaveNeutralZone();
+        }
+        else
+        {
+
+        }
+    }
+
+    public void OnEnterBiome(int newBiome)
+    {
+        if (newBiome == -1)
+        {
+            EnterNeutralZone();
+        }
+        else
+        {
+
+        }
+    }
+
+    public void EnterNeutralZone()
+    {
+
+    }
+
+    public void LeaveNeutralZone()
+    {
 
     }
 

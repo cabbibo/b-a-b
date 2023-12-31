@@ -324,6 +324,7 @@ public class TerrainPainter : Simulation
   {
 
 
+    if (isPainting == 0) return;
     paintTipRenderer.enabled = true;
 
 
@@ -353,10 +354,10 @@ public class TerrainPainter : Simulation
   public void WhileDown(Ray ray)
   {
 
+    if (isPainting == 0) return;
+
     paintTipRenderer.enabled = true;
 
-    ///print(gameObject.name);
-    isPainting = 1;
 
     //print( Camera.current.transform.Inverseray.direction );
     paintDirection = paintPosition;
@@ -450,6 +451,20 @@ public class TerrainPainter : Simulation
   }
 
 
+  public Texture2D GenerateTexture()
+  {
+
+    ExtractColors();
+
+    Texture2D t = new Texture2D(verts.width, verts.width, TextureFormat.RGBAFloat, -1, true);
+
+    t.SetPixels(colors, 0);
+    t.Apply(true);
+
+    return t;
+
+  }
+
 
 
   // only need to update the textures we are interested in!
@@ -478,7 +493,7 @@ public class TerrainPainter : Simulation
 
     SaveTextureAsPNG(currentTexture, Application.dataPath + "/" + path);
     SaveTextureAsEXR(currentTexture, Application.dataPath + "/" + path);
-    SaveCompressedTexture(currentTexture, Application.dataPath + "/" + path);
+    //SaveCompressedTexture(currentTexture, Application.dataPath + "/" + path);
 
   }
 

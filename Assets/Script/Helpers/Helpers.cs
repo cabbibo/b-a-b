@@ -15,6 +15,10 @@ public static class Helpers
 
 
   [System.Serializable]
+  public class DoubleIntEvent : UnityEvent<int, int> { }
+
+
+  [System.Serializable]
   public class PositionGameObjectEvent : UnityEvent<Vector3, GameObject> { }
 
   public static T GetOrAddComponent<T>(this GameObject go) where T : Component
