@@ -8,7 +8,7 @@ public class CopyPainterTexture : MonoBehaviour
 {
 
 
-    public TerrainPainter painter;
+    public IslandData islandData;
 
 
     // Start is called before the first frame update
@@ -20,12 +20,8 @@ public class CopyPainterTexture : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        this.GetComponent<Renderer>().material.mainTexture = painter.LoadTexture();
+        this.GetComponent<Renderer>().sharedMaterial.mainTexture = islandData.biomeMap2;
     }
 
 
-    public Texture2D GetTexture()
-    {
-        return painter.LoadTexture();
-    }
 }

@@ -16,6 +16,9 @@ public class TerrainPainterEditor : Editor
 
     TerrainPainter painter = (TerrainPainter)target;
     painter.OnGUIEnable();
+    painter.isPainting = 0;
+    painter.life.active = false;
+
 
   }
 
@@ -24,6 +27,9 @@ public class TerrainPainterEditor : Editor
     Debug.Log("DISABLE");
     TerrainPainter painter = (TerrainPainter)target;
     painter.OnGUIDisable();
+
+    painter.isPainting = 0;
+    painter.life.active = false;
 
   }
   public void OnSceneGUI()
@@ -36,7 +42,6 @@ public class TerrainPainterEditor : Editor
 
 
     TerrainPainter painter = (TerrainPainter)target;
-
 
 
     if (Event.current.type == EventType.KeyDown)
@@ -91,6 +96,8 @@ public class TerrainPainterEditor : Editor
     {
 
 
+      Debug.Log("WHAT");
+      painter.isPainting = 1;
 
       Vector2 mousePos = Event.current.mousePosition * painter.displayScale;
       mousePos.y = Camera.current.pixelHeight - mousePos.y;
@@ -107,6 +114,9 @@ public class TerrainPainterEditor : Editor
     if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
     {
 
+      Debug.Log("WHAT");
+
+      painter.isPainting = 1;
       Vector2 mousePos = Event.current.mousePosition * painter.displayScale;
       mousePos.y = Camera.current.pixelHeight - mousePos.y;
       Ray ray = Camera.current.ScreenPointToRay(mousePos);

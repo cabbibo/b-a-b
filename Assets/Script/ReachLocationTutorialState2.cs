@@ -30,8 +30,9 @@ public class ReachLocationTutorialState2 : TutorialState
     public AudioClip[] nowOnClips;
 
 
-    void OnEnable(){
-        
+    void OnEnable()
+    {
+
         startTime = Time.time;
     }
     public override void OnStart()
@@ -45,7 +46,7 @@ public class ReachLocationTutorialState2 : TutorialState
         OnStartEvent.Invoke();
         hasFired = false;
 
-                God.targetableObjects.Remove(this.transform);
+        God.targetableObjects.Remove(this.transform);
         GetComponent<Collider>().enabled = true;
 
         isNowOn = false;
@@ -64,39 +65,44 @@ public class ReachLocationTutorialState2 : TutorialState
         God.audio.Play(God.sounds.tutorialSuccessSound);
         OnCompleteEvent.Invoke();
 
-                God.targetableObjects.Remove(this.transform);
+        God.targetableObjects.Remove(this.transform);
     }
 
 
     public void Update()
     {
 
-        print(Time.time - startTime - timeTilPulseStart);
+        //        print(Time.time - startTime - timeTilPulseStart);
 
-        if( Time.time - startTime > timeTilPulseStart && !isNowOn && shouldTurnOn ){
+        if (Time.time - startTime > timeTilPulseStart && !isNowOn && shouldTurnOn)
+        {
             isNowOn = true;
 
-            for( int i = 0; i < nowOnClips.Length; i++ ){
-                God.audio.Play( nowOnClips[i],1,.3f);
+            for (int i = 0; i < nowOnClips.Length; i++)
+            {
+                God.audio.Play(nowOnClips[i], 1, .3f);
             }
-            
+
             God.targetableObjects.Add(this.transform);
         }
 
 
-    if( isNowOn ){
-        print("updating this tutorial state");
+        if (isNowOn)
+        {
+            print("updating this tutorial state");
 
-        float value = Mathf.Sin((Time.time-startTime) * timeBetweenPulses);
-        value = Mathf.Clamp(value, .5f, 1);
-        value -= .5f;
-        value *= 2;
+            float value = Mathf.Sin((Time.time - startTime) * timeBetweenPulses);
+            value = Mathf.Clamp(value, .5f, 1);
+            value -= .5f;
+            value *= 2;
 
-        textMesh.color = new Color(1, 1, 1, value);
-    }else{
-        
-        textMesh.color = new Color(1, 1, 1, 0);
-    }
+            textMesh.color = new Color(1, 1, 1, value);
+        }
+        else
+        {
+
+            textMesh.color = new Color(1, 1, 1, 0);
+        }
 
 
     }
@@ -111,15 +117,15 @@ public class ReachLocationTutorialState2 : TutorialState
         if (c.attachedRigidbody == God.wren.physics.rb && hasFired == false)
         {
 
-            
-                God.targetableObjects.Remove(this.transform);
+
+            God.targetableObjects.Remove(this.transform);
             print("Tutorial Reach Location Trigger Enter has correct body");
             OnLocationReached.Invoke();
             God.audio.Play(God.sounds.tutorialSuccessSound);
             hasFired = true;
 
-            
-        GetComponent<Collider>().enabled = false;
+
+            GetComponent<Collider>().enabled = false;
 
             tutorial.ReachLocationStateHit(this);
             OnComplete();
