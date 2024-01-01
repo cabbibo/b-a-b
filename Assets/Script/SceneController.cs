@@ -370,7 +370,7 @@ public class SceneController : MonoBehaviour
         if (graybox)
         {
 
-            currentSceneID = 2;
+            currentSceneID = 3;
             biome = 0;
         }
 
