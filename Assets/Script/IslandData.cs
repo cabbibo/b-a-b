@@ -27,10 +27,12 @@ public class IslandData : MonoBehaviour
 
     public Texture2D biomeMap1;
     public Texture2D biomeMap2;
+    public Texture2D foodMap;
 
 
 
     public Vector3 size;
+    public Vector4 currentFoodValues;
 
 
     public bool debugWind;
@@ -45,11 +47,13 @@ public class IslandData : MonoBehaviour
         windMap = windPainter.GenerateTexture();
         biomeMap1 = biomePainter1.GenerateTexture();
         biomeMap2 = biomePainter2.GenerateTexture();
+        foodMap = foodPainter.GenerateTexture();
 
 
         Shader.SetGlobalTexture("_WindMap", windMap);
         Shader.SetGlobalTexture("_BiomeMap1", biomeMap1);
         Shader.SetGlobalTexture("_BiomeMap2", biomeMap2);
+        Shader.SetGlobalTexture("_FoodMap", foodMap);
         // Shader.SetGlobalTexture("_BiomeMap");
 
     }
@@ -125,6 +129,7 @@ public class IslandData : MonoBehaviour
 
         currentWindDirection = GetWind(positionToCheck);
         currentBiomeValues = GetBiomeValues(positionToCheck);
+        currentFoodValues = GetFood(positionToCheck);
 
 
         oSecondMaxBiomeValue = secondMaxBiomeValue;
@@ -179,6 +184,15 @@ public class IslandData : MonoBehaviour
         Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
         Color c = windMap.GetPixelBilinear(uv.x, uv.z);
         return new Vector3(c.r, c.g, c.b);
+
+    }
+
+    public Vector3 GetFood(Vector3 p)
+    {
+
+        Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
+        Color c = foodMap.GetPixelBilinear(uv.x, uv.z);
+        return new Vector4(c.r, c.g, c.b, c.r);
 
     }
 
