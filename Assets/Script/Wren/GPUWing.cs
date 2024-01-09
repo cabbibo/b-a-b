@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
- using WrenUtils;
+using WrenUtils;
 
 public class GPUWing : MonoBehaviour
 {
 
     public FullBird bird;
     public Wing1 wing;
-    
+
     public Material featherDebugMaterial;
     public Material featherMaterial;
 
@@ -26,7 +26,7 @@ public class GPUWing : MonoBehaviour
     public Mesh lesserCovert;
 
 
-    
+
     public ComputeBuffer lineBuffer;
     public ComputeBuffer featherBuffer;
     public ComputeShader shader;
@@ -34,7 +34,7 @@ public class GPUWing : MonoBehaviour
     public ComputeBuffer vertBuffer;
     public ComputeBuffer triBuffer;
     public Mesh[] meshes;
-    
+
 
     public int totalFeathers;
 
@@ -46,16 +46,20 @@ public class GPUWing : MonoBehaviour
     public int numGroups;
     public uint numThreads;
 
-    
+
     public float lockedValue;
 
     public MaterialPropertyBlock mpb;
-    public void Create(){
+    public void Create()
+    {
 
-        
-        mpb = new MaterialPropertyBlock();
-        
-        
+
+        if (mpb == null)
+        {
+
+            mpb = new MaterialPropertyBlock();
+        }
+
         totalFeathers = numberLesserCovertsRows * numberLesserCovertsCols;
         totalFeathers += numberPrimaryFeathers + numberPrimaryCoverts;
 
@@ -74,44 +78,47 @@ public class GPUWing : MonoBehaviour
         totalMeshPoints = meshes.Length * meshes[0].vertices.Length;
         totalTris = meshes.Length * meshes[0].triangles.Length;
 
-        vertBuffer = new ComputeBuffer( totalMeshPoints , 8 * sizeof(float));
-        triBuffer = new ComputeBuffer( totalTris , sizeof(int));
+        vertBuffer = new ComputeBuffer(totalMeshPoints, 8 * sizeof(float));
+        triBuffer = new ComputeBuffer(totalTris, sizeof(int));
 
         featherBuffer = new ComputeBuffer(totalFeathers, 32 * sizeof(float));
 
-   
+
         populateMeshData();
-        
-    
-    
+
+
+
     }
 
-    public void populateMeshData(){
+    public void populateMeshData()
+    {
 
         float[] values = new float[totalMeshPoints * 8];
-        
-        for( int i =0; i < meshes.Length; i++ ){
+
+        for (int i = 0; i < meshes.Length; i++)
+        {
             int baseID = i * 8 * vertsPerMesh;
 
             Vector3[] positions = meshes[i].vertices;
             Vector3[] normals = meshes[i].normals;
             Vector2[] uvs = meshes[i].uv;
 
-           //print(meshes[i].vertices.Length);
-           //print(totalMeshPoints/8);
+            //print(meshes[i].vertices.Length);
+            //print(totalMeshPoints/8);
 
-            for( int j = 0; j < meshes[i].vertices.Length; j++){
+            for (int j = 0; j < meshes[i].vertices.Length; j++)
+            {
 
-                values[ baseID + j * 8 + 0] = positions[j].x;
-                values[ baseID + j * 8 + 1] = positions[j].y;
-                values[ baseID + j * 8 + 2] = positions[j].z;
+                values[baseID + j * 8 + 0] = positions[j].x;
+                values[baseID + j * 8 + 1] = positions[j].y;
+                values[baseID + j * 8 + 2] = positions[j].z;
 
-                values[ baseID + j * 8 + 3] = normals[j].x;
-                values[ baseID + j * 8 + 4] = normals[j].y;
-                values[ baseID + j * 8 + 5] = normals[j].z;
+                values[baseID + j * 8 + 3] = normals[j].x;
+                values[baseID + j * 8 + 4] = normals[j].y;
+                values[baseID + j * 8 + 5] = normals[j].z;
 
-                values[ baseID + j * 8 + 6] = uvs[j].x;
-                values[ baseID + j * 8 + 7] = uvs[j].y;
+                values[baseID + j * 8 + 6] = uvs[j].x;
+                values[baseID + j * 8 + 7] = uvs[j].y;
 
             }
 
@@ -121,16 +128,18 @@ public class GPUWing : MonoBehaviour
 
 
         int[] v2 = new int[totalTris];
-        
-        for( int i =0; i < meshes.Length; i++ ){
-           
+
+        for (int i = 0; i < meshes.Length; i++)
+        {
+
             int baseID = i * trisPerMesh;
             int baseVertID = i * vertsPerMesh;
-            int[] tris =  meshes[i].triangles;
+            int[] tris = meshes[i].triangles;
 
-            for( int j = 0; j < tris.Length; j++){
+            for (int j = 0; j < tris.Length; j++)
+            {
 
-                v2[ baseID + j ] = tris[j] + baseVertID;
+                v2[baseID + j] = tris[j] + baseVertID;
 
             }
 
@@ -143,69 +152,72 @@ public class GPUWing : MonoBehaviour
 
 
     // Start is called before the first frame update
-    public void Destroy(){
-        if( lineBuffer != null ){ lineBuffer.Release(); }
+    public void Destroy()
+    {
+        if (lineBuffer != null) { lineBuffer.Release(); }
 
-        
-        if(vertBuffer != null ){vertBuffer.Dispose();}
-        if(triBuffer != null ){triBuffer.Dispose();}
-        if(featherBuffer != null ){featherBuffer.Dispose();}
+
+        if (vertBuffer != null) { vertBuffer.Dispose(); }
+        if (triBuffer != null) { triBuffer.Dispose(); }
+        if (featherBuffer != null) { featherBuffer.Dispose(); }
 
     }
 
     // Update is called once per frame
-    public void UpdateFeathers(){
+    public void UpdateFeathers()
+    {
 
 
 
-        if( featherBuffer != null ){
+        if (featherBuffer != null)
+        {
 
-                uint y; uint z;
-            shader.GetKernelThreadGroupSizes(0, out numThreads , out y, out z);
-           
+            uint y; uint z;
+            shader.GetKernelThreadGroupSizes(0, out numThreads, out y, out z);
 
 
-            int renderedFeathers = (int)Mathf.Floor( bird.percentageRendered * (float)totalFeathers );
 
-          
+            int renderedFeathers = (int)Mathf.Floor(bird.percentageRendered * (float)totalFeathers);
 
-          // print( God.instance.terrainData.heightmapTexture  );
-          // print( God.instance.terrainData.size  );
-           
-            shader.SetBuffer( 0, "_FeatherBuffer" , featherBuffer );
+
+
+            // print( God.instance.terrainData.heightmapTexture  );
+            // print( God.instance.terrainData.size  );
+
+            shader.SetBuffer(0, "_FeatherBuffer", featherBuffer);
 
 
             God.instance.SetTerrainCompute(0, shader);
-           
-            shader.SetBool("_LeftOrRight" , wing.leftOrRight );
-            shader.SetMatrix( "_Shoulder"   , wing.bones[0].localToWorldMatrix    );
-            shader.SetMatrix( "_Elbow"      , wing.bones[1].localToWorldMatrix    );
-            shader.SetMatrix( "_Hand"       , wing.bones[2].localToWorldMatrix    );
-            shader.SetMatrix( "_Finger"     , wing.bones[3].localToWorldMatrix    );
-     
-            shader.SetMatrix( "_Chest"      , bird.shoulder.localToWorldMatrix    );
-            
 
-    // Coming in from bird 
-            bird.SetBirdParameters( shader );
+            shader.SetBool("_LeftOrRight", wing.leftOrRight);
+            shader.SetMatrix("_Shoulder", wing.bones[0].localToWorldMatrix);
+            shader.SetMatrix("_Elbow", wing.bones[1].localToWorldMatrix);
+            shader.SetMatrix("_Hand", wing.bones[2].localToWorldMatrix);
+            shader.SetMatrix("_Finger", wing.bones[3].localToWorldMatrix);
+
+            shader.SetMatrix("_Chest", bird.shoulder.localToWorldMatrix);
 
 
-            numGroups = (renderedFeathers+((int)numThreads-1))/(int)numThreads;
-            if( numGroups <= 0 ){ numGroups = 1; }
-            shader.Dispatch( 0,numGroups ,1,1);
+            // Coming in from bird 
+            bird.SetBirdParameters(shader);
 
-             mpb.SetBuffer("_FeatherBuffer", featherBuffer );
-             mpb.SetBuffer("_VertBuffer", vertBuffer );
-             mpb.SetBuffer("_TriBuffer", triBuffer );
-             mpb.SetInt("_TrisPerMesh",trisPerMesh);
-             mpb.SetInt("_NumberMeshes",meshes.Length);
-            
+
+            numGroups = (renderedFeathers + ((int)numThreads - 1)) / (int)numThreads;
+            if (numGroups <= 0) { numGroups = 1; }
+            shader.Dispatch(0, numGroups, 1, 1);
+
+            mpb.SetBuffer("_FeatherBuffer", featherBuffer);
+            mpb.SetBuffer("_VertBuffer", vertBuffer);
+            mpb.SetBuffer("_TriBuffer", triBuffer);
+            mpb.SetInt("_TrisPerMesh", trisPerMesh);
+            mpb.SetInt("_NumberMeshes", meshes.Length);
+
 
 
             // Graphics.DrawProcedural( featherDebugMaterial ,  new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles,renderedFeathers * 3 * 2 , 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-              Graphics.DrawProcedural( featherMaterial ,  new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles,renderedFeathers * trisPerMesh , 1, null, mpb, ShadowCastingMode.TwoSided, true, gameObject.layer);
-       
-       
+            Graphics.DrawProcedural(featherMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * trisPerMesh, 1, null, mpb, ShadowCastingMode.TwoSided, true, gameObject.layer);
+
+
         }
 
 

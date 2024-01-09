@@ -84,7 +84,7 @@ public class FoodSpawner : MonoBehaviour
         if (Time.time - lastFoodSpawnTime > foodSpawnTimeMultiplier / v)
         {
 
-            print("helllo");
+            //            print("helllo");
             SpawnFood();
         }
 
