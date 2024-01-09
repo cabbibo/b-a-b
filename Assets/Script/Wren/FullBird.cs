@@ -263,6 +263,8 @@ public class FullBird : MonoBehaviour
 
       ResetFeatherValues();
       SetMaterialProperties();
+
+
    }
 
    void OnDisable()
@@ -603,6 +605,16 @@ public class FullBird : MonoBehaviour
 
    public void SetMaterialProperties()
    {
+      print(wren);
+      print(wren.state);
+      print(leftWing_gpu);
+
+      if (leftWing_gpu.mpb == null)
+      {
+         OnEnable();
+      }
+
+
       leftWing_gpu.mpb.SetFloat("_Hue1", wren.state.hue1);
       leftWing_gpu.mpb.SetFloat("_Hue2", wren.state.hue2);
       leftWing_gpu.mpb.SetFloat("_Hue3", wren.state.hue3);
@@ -610,10 +622,14 @@ public class FullBird : MonoBehaviour
 
 
 
+
       rightWing_gpu.mpb.SetFloat("_Hue1", wren.state.hue1);
       rightWing_gpu.mpb.SetFloat("_Hue2", wren.state.hue2);
       rightWing_gpu.mpb.SetFloat("_Hue3", wren.state.hue3);
       rightWing_gpu.mpb.SetFloat("_Hue4", wren.state.hue4);
+
+
+
 
 
       body_gpu.mpb.SetFloat("_Hue1", wren.state.hue1);

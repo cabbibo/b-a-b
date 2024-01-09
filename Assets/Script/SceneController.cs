@@ -409,8 +409,8 @@ public class SceneController : MonoBehaviour
 
         int c = SceneManager.loadedSceneCount;
 
-        print(c);
-        print(SceneManager.sceneCount);
+        //        print(c);
+        //       print(SceneManager.sceneCount);
 
         // TODO:
         // this isn't loading the correct scenes
@@ -418,7 +418,7 @@ public class SceneController : MonoBehaviour
         {
             UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt(i);
 
-            print(scene.name);
+            //            print(scene.name);
             if (scene.name != "BaseScene")
             {
                 SceneManager.UnloadScene(scene);

@@ -90,7 +90,7 @@ public class ButterflySpawner : MonoBehaviour
             bug.GetComponent<Butterfly>().bs = this;
             bug.transform.parent = this.transform;
 
-            print(bug);
+            //            print(bug);
             butterflys[i] = bug;
             positions[i] = fPos;
             active[i] = true;
@@ -104,7 +104,7 @@ public class ButterflySpawner : MonoBehaviour
 
         if (tbParent.living)
         {
-            print("alive");
+            //  print("alive");
             tbParent.JumpStart(tb);
         }
         else
@@ -122,7 +122,7 @@ public class ButterflySpawner : MonoBehaviour
     {
         if (tbParent.living)
         {
-            print("alive");
+            //   print("alive");
             tbParent.JumpDeath(tb);
         }
         else
