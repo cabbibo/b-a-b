@@ -570,7 +570,11 @@ void Simple (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     int col = pID % 2;
     Vert baseParticle  = _SkeletonBuffer[ safeID(particleID * _NumVertsPerHair, _SkeletonBuffer_COUNT) ];
     Vert tipParticle  = _SkeletonBuffer[ safeID(particleID * _NumVertsPerHair + _NumVertsPerHair-1, _SkeletonBuffer_COUNT) ];
-    float rowVal = float(row) / float(_RibbonLength-1);
+
+
+
+
+    float rowVal = float(row)/ float(_RibbonLength-1);
     float colVal =  (float(col)/float(2)) ;
 
     float3 upPos; float3 doPos;
@@ -600,6 +604,18 @@ void Simple (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     v.debug = float2(float(particleID),baseParticle.debug.y);
     v.pos = pos;
     v.nor = baseParticle.nor;
+
+
+
+    
+    if( tipParticle.debug.y <= 0 || tipParticle.debug.y >= 1 ){
+      v.pos = 0;
+      }
+    
+
+       if( baseParticle.debug.y <= 0 || baseParticle.debug.y >= 1 ){
+      v.pos = 0;
+      }
     
    // v.nor = normalize(nor);//normalize(tang);
     //v.tangent = normalize(tang);//nor;// * ((float(pID)%2)-.5); //-normalize(cross(nor,tang));

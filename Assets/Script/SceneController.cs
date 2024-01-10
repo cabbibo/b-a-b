@@ -413,6 +413,9 @@ public class SceneController : MonoBehaviour
         //        print(c);
         //       print(SceneManager.sceneCount);
 
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
+
         // TODO:
         // this isn't loading the correct scenes
         for (int i = 0; i < c; i++)
@@ -426,9 +429,6 @@ public class SceneController : MonoBehaviour
             }
         }
         //  OnStart();
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        SceneManager.sceneUnloaded += OnSceneUnloaded;
-
 
     }
 

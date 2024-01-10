@@ -306,7 +306,7 @@ public class MenuController : MonoBehaviour
 
     }
 
-    void OnSceneLoaded()
+    public void OnSceneLoaded()
     {
         print("Scene Loaded");
         God.sceneController.OnSceneLoadEvent.RemoveListener(OnSceneLoaded);
