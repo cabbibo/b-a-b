@@ -46,7 +46,7 @@ float3 windDir( float3 pos ){
 
 
 void DoInit( inout Vert vert , float pID ){
-    vert.life = hash(float(pID));
+    vert.life = 1;//hash(float(pID));
 }
 
 float _Time;
