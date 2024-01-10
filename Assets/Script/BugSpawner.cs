@@ -99,11 +99,17 @@ public class BugSpawner : MonoBehaviour
             GameObject bug = Instantiate(bugPrefab, fPos, Quaternion.identity);
             bug.SetActive(true);
 
+
             // Get the bug spinning
 
             Bug bugComp = bug.GetComponent<Bug>();
             bugComp.enabled = true;
             bugComp.bugSpawner = this;
+
+            if (Cage != null)
+            {
+                bugComp.cage = Cage;
+            }
 
             bugComp.speed = speed;
             bugComp.drag = drag;

@@ -33,6 +33,7 @@ public class SceneController : MonoBehaviour
 
 
     public bool graybox;
+    public int grayboxScene = 3;
 
 
 
@@ -370,7 +371,7 @@ public class SceneController : MonoBehaviour
         if (graybox)
         {
 
-            currentSceneID = 3;
+            currentSceneID = grayboxScene;
             biome = 0;
         }
 
