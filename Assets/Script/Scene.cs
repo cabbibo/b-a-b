@@ -58,10 +58,20 @@ namespace WrenUtils
                 if (God.state.currentBiomeID >= 0)
                 {
 
-                    print("BIOME IS " + God.state.currentBiomeID);
-                    // return / spawn at gate that is our current biome!
-                    // when bird dies, we respawn at our first starting position
-                    God.wren.startingPosition = portals[God.state.currentBiomeID].startPoint;
+                    if (God.state.currentBiomeID >= portals.Length)
+                    {
+                        God.wren.startingPosition = baseStartPosition;
+                        God.state.SetCurrentBiome(-1);
+                    }
+                    else
+                    {
+
+                        // return / spawn at gate that is our current biome!
+                        // when bird dies, we respawn at our first starting position
+                        God.wren.startingPosition = portals[God.state.currentBiomeID].startPoint;
+                    }
+
+
 
                 }
                 else
