@@ -26263,6 +26263,7 @@ MonoBehaviour:
   rt_Tranform: {fileID: 9160943688313912047}
   canMove: 0
   growth: {fileID: 1447400220214749194}
+  autoTakeOff: 1
   lastFlapTime: 0
 --- !u!54 &9160943688313912040
 Rigidbody:
@@ -26747,9 +26748,9 @@ MonoBehaviour:
   networkInfo: {fileID: 0}
   state: {fileID: 9156686790671013125}
   stats: {fileID: 6744424082612651983}
-  hurtCollisionMultiplier: 0.01
+  hurtCollisionMultiplier: 0
   hurtCollisionCutoff: 0
-  flapStaminaSubtractor: 0.02
+  flapStaminaSubtractor: 0
   flapStaminaSubtractorMin: 0
   flapStaminaSubtractorMax: 0
   staminaCooldownTime: 3
@@ -26776,7 +26777,7 @@ MonoBehaviour:
   sleepRefillSpeed: 0
   sleepRefillSpeedMin: 0
   sleepRefillSpeedMax: 0.01
-  thirstGrowSpeed: 0.00003
+  thirstGrowSpeed: 0
   thirstGrowSpeedMin: 0
   thirstGrowSpeedMax: 0.01
   sadnessGrowSpeed: 0
@@ -26785,9 +26786,9 @@ MonoBehaviour:
   boredomGrowSpeed: 0
   boredomGrowSpeedMin: 0
   boredomGrowSpeedMax: 0
-  hungryHealthSubtractor: 0.0003
-  thirstyHealthSubtractor: 0.0003
-  tiredHealthSubtractor: 0.0003
+  hungryHealthSubtractor: 0
+  thirstyHealthSubtractor: 0
+  tiredHealthSubtractor: 0
   sadnessHealthSubtractor: 0
   boredomHealthSubtractor: 0
   satisfiedHealthAdder: 0.0003
