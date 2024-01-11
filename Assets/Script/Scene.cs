@@ -55,13 +55,13 @@ namespace WrenUtils
                 God.wren.parameters.Load(physicsParameters);
 
 
-                if (God.sceneController.biome >= 0)
+                if (God.state.currentBiomeID >= 0)
                 {
 
-                    print("BIOME IS " + God.sceneController.biome);
+                    print("BIOME IS " + God.state.currentBiomeID);
                     // return / spawn at gate that is our current biome!
                     // when bird dies, we respawn at our first starting position
-                    God.wren.startingPosition = portals[God.sceneController.biome].startPoint;
+                    God.wren.startingPosition = portals[God.state.currentBiomeID].startPoint;
 
                 }
                 else
