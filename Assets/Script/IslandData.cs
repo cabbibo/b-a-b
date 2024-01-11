@@ -120,7 +120,10 @@ public class IslandData : MonoBehaviour
 
         // In editor ( no wren ) have a debug transform we can check values with!
 
-        Vector3 positionToCheck = debugValueTransform.position;
+
+        Vector3 positionToCheck = Vector3.zero;
+
+        if (debugValueTransform != null) { positionToCheck = debugValueTransform.position; }
         if (God.wren != null)
         {
             positionToCheck = God.wren.transform.position;
