@@ -289,9 +289,13 @@ public class SceneController : MonoBehaviour
         }
         else
         {
-            Debug.LogError("current biome getting loaded / unloaded wrong");
-            Debug.LogError(God.state.currentBiomeID);
-            Debug.LogError(wrenScene.portals.Length);
+
+            // if we dont have the right biome ( or its intentiaonlly -1 )
+            // we go to default start point
+
+            // Debug.LogError("current biome getting loaded / unloaded wrong");
+            // Debug.LogError(God.state.currentBiomeID);
+            // Debug.LogError(wrenScene.portals.Length);
 
         }
 
