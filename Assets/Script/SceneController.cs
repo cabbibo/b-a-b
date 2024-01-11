@@ -11,7 +11,7 @@ public class SceneController : MonoBehaviour
 
     public bool loadOnStart;
     public string[] scenes;
-    public int currentSceneID = -1;
+    //public int God.state.currentSceneID = -1;
     public int oldScene = -1;
 
     public bool sceneLoaded = false;
@@ -21,7 +21,6 @@ public class SceneController : MonoBehaviour
 
     int loadedScene = -1;
 
-    public int biome = 0;
 
     // mountain
     // temple
@@ -107,7 +106,7 @@ public class SceneController : MonoBehaviour
             yield return null;
         }
 
-        biome = portal.biome;
+        God.state.SetCurrentBiome(portal.biome);
         LoadScene(portal.sceneID);
 
     }
@@ -139,7 +138,7 @@ public class SceneController : MonoBehaviour
             yield return null;
         }
 
-        biome = portal.biome;
+        God.state.SetCurrentBiome(portal.biome);
         OnDemoEnd();
 
     }
@@ -161,12 +160,12 @@ public class SceneController : MonoBehaviour
 
         if (dontLoadOnStart == false)
         {
-            StartCoroutine(SceneSwitch(id, currentSceneID));
+            StartCoroutine(SceneSwitch(id, God.state.currentSceneID));
         }
         else
         {
             OnSceneLoaded();
-            SetNewScene(id, currentSceneID);
+            SetNewScene(id, God.state.currentSceneID);
         }
 
 
@@ -174,7 +173,7 @@ public class SceneController : MonoBehaviour
 
     public void Death()
     {
-        biome = -1;
+        God.state.SetCurrentBiome(-1);
         HardLoad(0);
     }
 
@@ -261,11 +260,14 @@ public class SceneController : MonoBehaviour
 
         God.wren.canMove = true;
 
-        PlayerPrefs.SetInt("_CurrentScene", newSceneID);
-        PlayerPrefs.SetInt("_CurrentBiome", biome);
-        oldScene = currentSceneID;
-        currentSceneID = newSceneID;
-        loadedScene = currentSceneID;
+        // PlayerPrefs.SetInt("_CurrentScene", newSceneID);
+        // PlayerPrefs.SetInt("_CurrentBiome", biome);
+        oldScene = God.state.currentSceneID;
+
+        God.state.SetCurrentScene(newSceneID);
+        // TODO am i getting the right biome
+
+        loadedScene = God.state.currentSceneID;
 
         currentMainScene = SceneManager.GetSceneByName(scenes[newSceneID]);
 
@@ -281,9 +283,16 @@ public class SceneController : MonoBehaviour
 
         //print( biome );
         // Only animate in if we have animation!
-        if (biome >= 0 && biome < wrenScene.portals.Length && God.wren != null)
+        if (God.state.currentBiomeID >= 0 && God.state.currentBiomeID < wrenScene.portals.Length && God.wren != null)
         {
-            StartCoroutine(PortalAnimationIn(wrenScene.portals[biome]));
+            StartCoroutine(PortalAnimationIn(wrenScene.portals[God.state.currentBiomeID]));
+        }
+        else
+        {
+            Debug.LogError("current biome getting loaded / unloaded wrong");
+            Debug.LogError(God.state.currentBiomeID);
+            Debug.LogError(wrenScene.portals.Length);
+
         }
 
     }
@@ -337,21 +346,29 @@ public class SceneController : MonoBehaviour
 
     public void NewGame()
     {
-        PlayerPrefs.DeleteAll();
+        //PlayerPrefs.DeleteAll();
+        God.state.ResetAll();
         OnStart();
     }
 
     public void ResetSave()
     {
+
+        God.state.ResetAll();
+
+        /*
         PlayerPrefs.DeleteAll();
-        currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
+
+        God.state.currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
         biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
 
         int gameStarted = PlayerPrefs.GetInt("_GameStarted", 0);
         if (gameStarted == 0)
         {
             gameStarted = 1;
-        }
+        }*/
+
+
 
     }
 
@@ -359,48 +376,46 @@ public class SceneController : MonoBehaviour
     public void HardStart()
     {
 
+        // TODO DO I NEED?
+        /*
         if (useStartScene == false)
         {
-            currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
+            God.state.currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
         }
+*/
 
-
-        biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
+        //  biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
 
 
         if (graybox)
         {
 
-            currentSceneID = grayboxScene;
-            biome = 0;
+            God.state.SetCurrentScene(grayboxScene);
+            God.state.SetCurrentBiome(0);
         }
 
+        God.state.OnGameStart();
 
-        int gameStarted = PlayerPrefs.GetInt("_GameStarted", 0);
-        if (gameStarted == 0)
-        {
-            gameStarted = 1;
-        }
-
-        PlayerPrefs.SetInt("_GameStarted", 1);
-        HardLoad(currentSceneID);
+        HardLoad(God.state.currentSceneID);
 
     }
 
     public void OnStart()
     {
 
-        currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
-        biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
+        God.state.OnGameStart();
 
-        int gameStarted = PlayerPrefs.GetInt("_GameStarted", 0);
-        if (gameStarted == 0)
-        {
-            gameStarted = 1;
-        }
+        /* God.state.currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
+         biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
 
-        PlayerPrefs.SetInt("_GameStarted", 1);
-        LoadScene(currentSceneID);
+         int gameStarted = PlayerPrefs.GetInt("_GameStarted", 0);
+         if (gameStarted == 0)
+         {
+             gameStarted = 1;
+         }*/
+
+        //PlayerPrefs.SetInt("_GameStarted", 1);
+        LoadScene(God.state.currentSceneID);
 
     }
 

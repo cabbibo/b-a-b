@@ -38,7 +38,7 @@ public class Tutorial : MonoBehaviour
 
 
 
-        tutorialComplete = PlayerPrefs.GetInt("_TutorialComplete", 0);
+        tutorialComplete = God.state.tutorialFinished ? 1 : 0;// PlayerPrefs.GetInt("_TutorialComplete", 0);
 
 
         // If we have completed, 
@@ -156,7 +156,7 @@ public class Tutorial : MonoBehaviour
             {
                 // Take Off
                 God.wren.state.canTakeOff = true;
-                if (God.wren.input.o_ex < .5 && God.wren.input.ex > .5 ) { stateComplete = 11; UpdatingState(); }
+                if (God.wren.input.o_ex < .5 && God.wren.input.ex > .5) { stateComplete = 11; UpdatingState(); }
             }
             else if (state == 8)
             {
@@ -204,7 +204,7 @@ public class Tutorial : MonoBehaviour
             else if (state == 16)
             {
                 God.wren.state.canTakeOff = true;
-                if (God.wren.input.o_ex < .5 && God.wren.input.ex > .5 ) { stateComplete = 11; UpdatingState(); }
+                if (God.wren.input.o_ex < .5 && God.wren.input.ex > .5) { stateComplete = 11; UpdatingState(); }
             }
             else if (state == 17)
             {
@@ -268,7 +268,8 @@ public class Tutorial : MonoBehaviour
 
     void OnFinishTutorial()
     {
-        PlayerPrefs.SetInt("_TutorialComplete", 1);
+        God.state.OnTutorialFinish();
+        //PlayerPrefs.SetInt("_TutorialComplete", 1);
     }
 
 
