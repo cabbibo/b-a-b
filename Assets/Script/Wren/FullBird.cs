@@ -605,9 +605,6 @@ public class FullBird : MonoBehaviour
 
    public void SetMaterialProperties()
    {
-      print(wren);
-      print(wren.state);
-      print(leftWing_gpu);
 
       if (leftWing_gpu.mpb == null)
       {
