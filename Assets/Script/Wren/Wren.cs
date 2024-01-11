@@ -67,6 +67,8 @@ public class Wren : MonoBehaviour
 
     public WrenGrowthManager growth;
 
+    public bool autoTakeOff;
+
 
     void OnEnable()
     {
@@ -134,6 +136,10 @@ public class Wren : MonoBehaviour
     {
         physics.TransportToPosition(GroundIntersection(p) + Vector3.up * physics.groundUpVal, Vector3.zero);
         state.HitGround();
+        if (autoTakeOff)
+        {
+            state.TakeOff();
+        }
     }
 
 
@@ -593,7 +599,10 @@ public class Wren : MonoBehaviour
 
             //}
 
-            // state.TakeOff();
+            if (autoTakeOff)
+            {
+                state.TakeOff();
+            }
         }
     }
     void OnTriggerEnter(Collider c)
