@@ -26263,6 +26263,7 @@ MonoBehaviour:
   rt_Tranform: {fileID: 9160943688313912047}
   canMove: 0
   growth: {fileID: 1447400220214749194}
+  autoTakeOff: 0
   lastFlapTime: 0
 --- !u!54 &9160943688313912040
 Rigidbody:

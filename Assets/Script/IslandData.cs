@@ -44,11 +44,26 @@ public class IslandData : MonoBehaviour
         heightMap = God.terrainData.heightmapTexture;
         size = God.terrainData.size;
 
-        windMap = windPainter.GenerateTexture();
-        biomeMap1 = biomePainter1.GenerateTexture();
-        biomeMap2 = biomePainter2.GenerateTexture();
-        foodMap = foodPainter.GenerateTexture();
 
+        if (windMap == null)
+        {
+            windMap = windPainter.GenerateTexture();
+        }
+
+        if (biomeMap1 == null)
+        {
+            biomeMap1 = biomePainter1.GenerateTexture();
+        }
+
+        if (biomeMap2 == null)
+        {
+            biomeMap2 = biomePainter2.GenerateTexture();
+        }
+
+        if (foodMap == null)
+        {
+            foodMap = foodPainter.GenerateTexture();
+        }
 
         Shader.SetGlobalTexture("_WindMap", windMap);
         Shader.SetGlobalTexture("_BiomeMap1", biomeMap1);
