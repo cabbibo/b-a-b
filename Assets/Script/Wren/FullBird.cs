@@ -450,6 +450,21 @@ public class FullBird : MonoBehaviour
    }
 
 
+   public void PhaseShift(Vector3 v)
+   {
+
+      _ResetValue = 3;
+      _ResetLocation = v;
+
+      leftWing_gpu.UpdateFeathers();
+      rightWing_gpu.UpdateFeathers();
+      body_gpu.UpdateFeathers();
+
+      _ResetValue = 0;
+
+   }
+
+
    public void HitGround()
    {
 
