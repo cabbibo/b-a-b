@@ -115,7 +115,7 @@ int instanceID = 0;
 #ifdef INSTANCING_ON
     instanceID = vert.instanceID;
 #endif
-    float flooredTime = floor(_Time.y *_WindChangeSpeed + float(vert.instanceID) * .4);
+    float flooredTime = floor(_Time.y *_WindChangeSpeed + float(instanceID) * .4);
 
 
     float3 windDirection = float3(1,0,0);

@@ -8,7 +8,7 @@ using UnityEngine.Events;
 namespace WrenUtils
 {
 
-    [ExecuteAlways]
+    //[ExecuteAlways]
     public class Scene : MonoBehaviour
     {
 

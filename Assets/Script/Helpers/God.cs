@@ -63,6 +63,49 @@ namespace WrenUtils
         public Texture fullColorMap;
 
 
+
+
+        private static God _instance;
+        public static God instance
+        {
+
+            get
+            {
+                if (_instance == null)
+                {
+                    print("getting instance");
+                    _instance = Object.FindObjectOfType<God>();//WithTag GetComponent
+                    print("INTSNACE");
+                    print(_instance);
+
+                    if (_instance != null && Application.isPlaying)
+                    {
+                        print("dont do it");
+                        DontDestroyOnLoad(_instance.gameObject);
+                    }
+
+                }
+
+                return _instance;
+            }
+
+        }
+
+
+        void Awake()
+        {
+            if (_instance == null)
+            {
+                _instance = this;
+                if (Application.isPlaying) { DontDestroyOnLoad(this.gameObject); }
+            }
+            else if (_instance != this)
+            {
+                DestroyImmediate(gameObject);
+            }
+        }
+
+
         public WrenUtils.Scene _currentScene;
         public static WrenUtils.Scene currentScene
         {
@@ -70,7 +113,6 @@ namespace WrenUtils
             get { return instance._currentScene; }
 
         }
-
 
         public static LerpTo lerpTo
         {
@@ -106,28 +148,6 @@ namespace WrenUtils
         public static SceneController sceneController
         {
             get { return instance._sceneController; }
-        }
-        private static God _instance;
-        public static God instance
-        {
-
-            get
-            {
-                if (_instance == null)
-                {
-                    print("getting instance");
-                    _instance = Object.FindObjectOfType<God>();//WithTag GetComponent
-                    print("INTSNACE");
-                    print(_instance);
-                }
-                if (Application.isPlaying)
-                {
-                    print("dont do it");
-                    DontDestroyOnLoad(_instance);
-                }
-                return _instance;
-            }
-
         }
 
         public static ControllerTest input

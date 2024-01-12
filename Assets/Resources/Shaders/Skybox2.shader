@@ -18,6 +18,7 @@ Shader "Custom/RaytracedNoiseSkyboxShader" {
         float _Parallax;
         int _Steps;
         float _Intensity;
+        samplerCUBE _TexCube;
 
         struct Input {
             float3 worldPos;
@@ -47,7 +48,7 @@ Shader "Custom/RaytracedNoiseSkyboxShader" {
         void surf (Input IN, inout SurfaceOutput o) {
             float3 viewDirection = rayDirection(IN.worldPos, _WorldSpaceCameraPos);
             float3 raymarchedDirection = raymarch(viewDirection, viewDirection, _Steps);
-            o.Emission = texCUBE(_MainTex, raymarchedDirection).rgb * _Intensity;
+            o.Emission = texCUBE(_TexCube, raymarchedDirection).rgb * _Intensity;
             o.Albedo = 0;
         }
         ENDCG
