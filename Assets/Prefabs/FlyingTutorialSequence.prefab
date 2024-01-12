@@ -134,6 +134,97 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &1702913573114506565
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8638848612436228050}
+  - component: {fileID: 4912360217952107538}
+  m_Layer: 0
+  m_Name: Cinematic Cameras
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8638848612436228050
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1702913573114506565}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2846188984467705497}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4912360217952107538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1702913573114506565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1007ad0ae4d75f640963626ab0f0f077, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  armed: 1
+  tutorialCameras:
+  - Name: Eye
+    posOffset: {x: 0, y: 0, z: 0}
+    lookOffset: {x: 0, y: 0, z: 0}
+    fov: 2.43
+    orbit: 1
+    orbitAngle: 0.93
+    orbitRadius: 4
+    orbitHeight: 0.6
+    bodyTarget: 0
+    aimTarget: 1
+    parentToBird: 0
+  - Name: Head
+    posOffset: {x: 0, y: 0, z: 0.19}
+    lookOffset: {x: 0, y: 0, z: 0}
+    fov: 11.1
+    orbit: 1
+    orbitAngle: 0.135
+    orbitRadius: 4
+    orbitHeight: 0.12
+    bodyTarget: 1
+    aimTarget: 1
+    parentToBird: 0
+  - Name: Mid Close Head
+    posOffset: {x: -0.21, y: 0, z: 14.35}
+    lookOffset: {x: 0, y: 0, z: 0.11}
+    fov: 4.42
+    orbit: 1
+    orbitAngle: 0.373
+    orbitRadius: 4
+    orbitHeight: -0.48
+    bodyTarget: 0
+    aimTarget: 1
+    parentToBird: 0
+  - Name: Below
+    posOffset: {x: 16.4, y: -9.46, z: 2.68}
+    lookOffset: {x: -12.25, y: -2.66, z: 2.66}
+    fov: 48.1
+    orbit: 1
+    orbitAngle: 0.238
+    orbitRadius: 4
+    orbitHeight: 0.12
+    bodyTarget: 0
+    aimTarget: 0
+    parentToBird: 0
+  tutorialCameraIdx: 3
 --- !u!1 &2379449114230607870
 GameObject:
   m_ObjectHideFlags: 0
@@ -258,6 +349,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8078558295666688174}
+  - {fileID: 8638848612436228050}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &683480967283595971
@@ -272,6 +364,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe4cb165a592a4b4ca898825c54b62d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cinematicCamera: {fileID: 4912360217952107538}
   groupContainer: {fileID: 3447699408956290312}
   controllerText: {fileID: 2734629090906545715}
   groupSticks: {fileID: 1471094664115994885}
