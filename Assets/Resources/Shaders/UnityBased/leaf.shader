@@ -122,7 +122,7 @@ Shader "Custom/leaf" {
           
           float3 newP = p;// - float3( 0. ,5. *  _Time.x , 0. );
 
-          float noiseVal = triNoise3D(  newP * _NoiseSize / 100. * float3( 1. , 1. , 2. )  , 10. , _Time * _NoiseSpeed );//length( sin( p * 10.));
+          float noiseVal = 1;// triNoise3D(  newP * _NoiseSize / 100. * float3( 1. , 1. , 2. )  , 10. , _Time * _NoiseSpeed );//length( sin( p * 10.));
           /*acc += noiseVal;
           col += hsv( acc * _HueSize + _BaseHue , 1. , 1. ) * noiseVal * acc * 2.;*/
 

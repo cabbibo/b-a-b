@@ -1,5 +1,4 @@
 
-
             int _TotalCurvePoints;
             int _Resolution;
             int _ResolutionX;
@@ -22,6 +21,14 @@
             return value;
 
             }
+
+            
+  #if defined(SHADER_API_D3D11) || defined(SHADER_API_PSSL) || defined(SHADER_API_METAL) || defined(SHADER_API_GLCORE) || defined(SHADER_API_GLES3) || defined(SHADER_API_VULKAN) || defined(SHADER_API_SWITCH) // D3D11, D3D12, XB1, PS4, iOS, macOS, tvOS, glcore, gles3, webgl2.0, Switch
+
+StructuredBuffer<float4x4> _PointBuffer;
+StructuredBuffer<float3> _PowerBuffer;
+
+#endif
 
             void GetCubicInformation( float val , out float3 position , out float3 direction , out float3 tangent ,out float width){
 
@@ -49,9 +56,13 @@
 
             if( baseUp == baseDown  || (base % 1) == 0){
 
+
+                
                 float4x4 pointMatrix = _PointBuffer[base];
 
                 float3 pointPower = _PowerBuffer[base];
+
+                
                 position = mul( pointMatrix , float4(0,0,0,1)).xyz;
                 direction = normalize(mul( pointMatrix , float4(0,0,1,0)).xyz);
 

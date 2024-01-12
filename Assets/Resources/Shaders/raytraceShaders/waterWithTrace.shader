@@ -265,7 +265,7 @@ float3 nT3D( float3 pos ){
                 //return float3( pos.x ,pos.y, pos.z);
             }
 
-
+sampler2D _BackgroundTexture;
 #include "../Chunks/hsv.cginc"
 #include "../Chunks/noise.cginc"
 //Pixel function returns a solid color for each point.
