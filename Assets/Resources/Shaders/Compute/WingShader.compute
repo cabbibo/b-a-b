@@ -321,7 +321,7 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
       
    }
   
-    if( _ResetValue > 1.5 ){
+    if( _ResetValue > 1.5 && _ResetValue < 2.5 ){
 
      // reseting at position w/ a bit of offset to give it vortex
       float3 centerPos = _ResetLocation;
@@ -340,6 +340,14 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
      feather.touchingGround = 0;
      feather.debug = 0;
      vel = 0;
+   }
+
+
+   
+   if( _ResetValue>2.5){
+
+      feather.pos += _ResetLocation;
+   
    }
 
 

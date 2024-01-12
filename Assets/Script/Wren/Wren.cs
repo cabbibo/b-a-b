@@ -114,6 +114,27 @@ public class Wren : MonoBehaviour
         if (beacon) { beacon.Demolish(); }
     }
 
+    public void PhaseShift(Vector3 p)
+    {
+
+        // teleport bird
+        // teleport camera
+        //gpu bird teleport
+
+        print("PHASE SHIFT");
+        print(p);
+
+        cameraWork.Offset(p - transform.position);
+        bird.PhaseShift(p - transform.position);
+
+        physics.TransportToPosition(p, physics.rb.velocity);
+
+
+        /// bird.TeleportToLocation();
+        /// 
+
+    }
+
     public void FullReset()
     {
 

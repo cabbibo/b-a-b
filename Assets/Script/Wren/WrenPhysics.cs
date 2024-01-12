@@ -1105,6 +1105,22 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+    public void DoBasicGroundControlForces()
+    {
+
+
+        if (wren.state.inInterface == false)
+        {
+            rb.AddForceAtPosition(transform.forward * input.rightY * groundPower, transform.position + transform.right * groundOut);
+            rb.AddForceAtPosition(transform.right * input.rightX * groundPower, transform.position + transform.right * groundOut);
+            rb.AddForceAtPosition(transform.forward * input.leftY * groundPower, transform.position - transform.right * groundOut);
+            rb.AddForceAtPosition(transform.right * input.leftX * groundPower, transform.position - transform.right * groundOut);
+        }
+
+
+
+    }
+
     public void Boost(float boostVal)
     {
         rb.AddForce(rb.velocity * boostVal);
