@@ -60,6 +60,8 @@ public class TerrainPainter : Simulation
   public float fn;
 
 
+
+
   public float isPainting;
 
   public Material debugMaterial;
@@ -74,6 +76,10 @@ public class TerrainPainter : Simulation
 
   public Transform paintTip;
   private MaterialPropertyBlock mpb;
+
+
+
+  public RenderTexture saveRenderTexture;
 
   Texture2D dataTexture;
 
@@ -491,9 +497,24 @@ public class TerrainPainter : Simulation
     string path = "StreamingAssets/Terrain/" + safeName;
     Saveable.Save(verts, path);
 
-    SaveTextureAsPNG(currentTexture, Application.dataPath + "/" + path);
-    SaveTextureAsEXR(currentTexture, Application.dataPath + "/" + path);
+    SaveTextureAsEXR(currentTexture, Application.dataPath + "/Resources/Terrains/Data/" + safeName);
+
+    // SaveTextureAsPNG(currentTexture, Application.dataPath + "/" + path);
     //SaveCompressedTexture(currentTexture, Application.dataPath + "/" + path);
+    //SaveRenderTexture(currentTexture);
+    //SaveTextureAsAsset(currentTexture, Application.dataPath + "/Resources/Terrains/Data/" + safeName);
+
+  }
+
+  public void SaveRenderTexture(Texture2D t)
+  {
+
+    if (t.width != saveRenderTexture.width || t.height != saveRenderTexture.height)
+    {
+      Debug.LogError("Render Texture Size Mismatch");
+    }
+
+    Graphics.Blit(t, saveRenderTexture);
 
   }
 
@@ -604,7 +625,12 @@ public class TerrainPainter : Simulation
 
   }
 
+  public static void SaveTextureAsAsset(Texture2D _texture, string _fullPath)
+  {
+    AssetDatabase.CreateAsset(_texture, _fullPath + ".asset");
+    Debug.Log("Saved as: " + _fullPath + ".asset");
 
+  }
 
   public static void SaveTextureAsPNG(Texture2D _texture, string _fullPath)
   {

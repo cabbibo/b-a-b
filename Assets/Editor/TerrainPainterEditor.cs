@@ -114,7 +114,6 @@ public class TerrainPainterEditor : Editor
     if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
     {
 
-      Debug.Log("WHAT");
 
       painter.isPainting = 1;
       Vector2 mousePos = Event.current.mousePosition * painter.displayScale;
