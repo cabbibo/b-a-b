@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using System.IO;
-using System.Collections;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 
@@ -16,7 +15,8 @@ public class WrenParams : MonoBehaviour
     public Wren wren;
     public string[] paramFiles;
     public int paramID;
-    public int oParamID;
+
+    public string paramSetName;
 
 
     public void OnEnable()
@@ -49,7 +49,6 @@ public class WrenParams : MonoBehaviour
     public virtual void loadParams(int id)
     {
         Load(paramFiles[id]);
-        oParamID = paramID;
     }
 
 
@@ -61,7 +60,7 @@ public class WrenParams : MonoBehaviour
     {
         string name = "controlSet" + Mathf.Floor(Random.Range(0.001f, .999f) * 100000);
         paramID = paramFiles.Length;
-        oParamID = paramID;
+
         Save(name);
         paramFiles = allNames();
     }
@@ -69,9 +68,7 @@ public class WrenParams : MonoBehaviour
 
     public void Load()
     {
-
         Load(paramFiles[paramID]);
-        oParamID = paramID;
     }
 
     public void Save()
@@ -279,12 +276,14 @@ public class WrenParams : MonoBehaviour
 
     public string[] allNames()
     {
-
+        print("LOADING111");
         DirectoryInfo dir = new DirectoryInfo(baseName());
         FileInfo[] info = dir.GetFiles("*.*");
         List<string> paramNames = new List<string>();///sting paramNames = new string[ info.Length ];
 
-        //print("LOADING");
+        print("LOADING");
+
+
         foreach (FileInfo f in info)
         {
 
