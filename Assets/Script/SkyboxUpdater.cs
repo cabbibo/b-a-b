@@ -69,6 +69,9 @@ public class SkyboxUpdater : MonoBehaviour
 
     public void UpdateSkybox()
     {
+
+        if (commandBuffer == null) { OnEnable(); }
+
         Graphics.ExecuteCommandBuffer(commandBuffer);
     }
 }
