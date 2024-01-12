@@ -61,7 +61,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         controllerText.text = "Hold to DIVE";
 
         yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
-        yield return new WaitForSecondsRealtime(1);
+        yield return new WaitForSecondsRealtime(0.25f);
 
         // TODO: wait for diving enough time
 
@@ -69,16 +69,18 @@ public class FlyingTutorialSequence : MonoBehaviour
         while(diveT < 1)
         {
             if (God.input.l2 > .5f && God.input.r2 > .5f)
-                diveT += Time.deltaTime * .5f;
+                diveT += Time.deltaTime * .45f;
+            else
+                diveT = Mathf.Clamp01(diveT - Time.deltaTime * 1.25f);
+
             ShowProgress(diveT);
             yield return null;
         }
         ShowProgress(0);
-
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
         OnTutorialFinished();
 
-        yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
 
     }
@@ -104,6 +106,6 @@ public class FlyingTutorialSequence : MonoBehaviour
 
     void OnTutorialFinished()
     {
-        OnTutorialDiveFinished.Invoke();
+        OnTutorialDiveFinished?.Invoke();
     }
 }
