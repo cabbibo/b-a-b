@@ -45,6 +45,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         groupSticks.SetActive(false);
         groupDive.SetActive(false);
         ShowProgress(0);
+        cinematicCamera.armed = false;
 
         while(God.wren == null)
             yield return null;
@@ -56,24 +57,80 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         cinematicCamera.armed = true;
         
-        while (true)
-        {
-            yield return null;
-        }
+        cinematicCamera.tutorialCameraIdx = 3; // below
+        yield return new WaitForSecondsRealtime(5);
         
-        yield return new WaitForSecondsRealtime(10);
-
-        cinematicCamera.armed = false;
-
         // Sticks
         {
             groupSticks.SetActive(true);
             controllerText.text = "Wings";
             
             yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
-            yield return new WaitForSecondsRealtime(8);
+            yield return new WaitForSecondsRealtime(12);
             yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
         }
+        groupSticks.SetActive(false);
+
+        // Cam 1
+        {
+            controllerText.text = "X Continue";
+            
+            yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
+            while (God.wren.input.ex < .5f)
+                yield return null;
+            groupContainer.alpha = 0;
+        }
+
+        cinematicCamera.tutorialCameraIdx = 0; //eye
+        yield return new WaitForSecondsRealtime(9);
+        // Cam 1
+        {
+            controllerText.text = "X Continue";
+            
+            yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
+            while (God.wren.input.ex < .5f)
+                yield return null;
+            groupContainer.alpha = 0;
+        }
+        cinematicCamera.tutorialCameraIdx = 1;
+        yield return new WaitForSecondsRealtime(6);
+        // Cam 1
+        {
+            controllerText.text = "X Continue";
+            
+            yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
+            while (God.wren.input.ex < .5f)
+                yield return null;
+            groupContainer.alpha = 0;
+        }
+
+        cinematicCamera.tutorialCameraIdx = 2;
+        yield return new WaitForSecondsRealtime(6);
+        // Cam 1
+        {
+            controllerText.text = "X Continue";
+            
+            yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
+            while (God.wren.input.ex < .5f)
+                yield return null;
+            groupContainer.alpha = 0;
+        }
+        
+        cinematicCamera.armed = false;
+        yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
+        
+
+        // // Sticks
+        // {
+        //     groupSticks.SetActive(true);
+        //     controllerText.text = "Wings";
+            
+        //     yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
+        //     yield return new WaitForSecondsRealtime(8);
+        //     yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
+        // }
+
+        yield return new WaitForSecondsRealtime(8);
 
         // Dive
         {
