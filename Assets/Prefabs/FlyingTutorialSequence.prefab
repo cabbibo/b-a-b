@@ -214,8 +214,8 @@ MonoBehaviour:
     aimTarget: 1
     parentToBird: 0
   - Name: Below
-    posOffset: {x: 16.4, y: -9.46, z: 2.68}
-    lookOffset: {x: -12.25, y: -2.66, z: 2.66}
+    posOffset: {x: 0, y: -9.46, z: 2.68}
+    lookOffset: {x: 0, y: -2.66, z: 2.66}
     fov: 48.1
     orbit: 1
     orbitAngle: 0.238
