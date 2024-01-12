@@ -26458,7 +26458,7 @@ MonoBehaviour:
   v1: {x: 0, y: 0, z: 0}
   v2: {x: 0, y: 0, z: 0}
   raycastDirections: 5
-  doBasicGroundControls: 1
+  doBasicGroundControls: 0
   basicGroundLookControls_lookSpeed: 3
   basicGroundLookControls_moveSpeed: 0
 --- !u!114 &6676056819307743982
@@ -26644,15 +26644,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   wren: {fileID: 9160943688313912041}
   paramFiles:
-  - BaseLevelBomb
-  - bendy2
-  - controlSet47168
-  - controlSet83978
-  - groundFast
-  - harderCurve
-  - isaacFav
-  - isaacFav2
-  - isaacFav3
+  - controlSet45938
+  - FriendlyBird
   - NoGravity
   - NoGravity2
   - SmallBird

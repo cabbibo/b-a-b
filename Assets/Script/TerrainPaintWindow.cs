@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
+#if UNITY_EDITOR
 public class CustomEditorWindow : EditorWindow
 {
     Color backgroundColor;
@@ -313,3 +314,5 @@ public class CustomEditorWindow : EditorWindow
 
     }
 }
+
+#endif
