@@ -7,6 +7,8 @@ using System.Collections;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 
+
+[ExecuteAlways]
 public class WrenParams : MonoBehaviour
 {
 
@@ -43,6 +45,7 @@ public class WrenParams : MonoBehaviour
         if (paramID < 0) { paramID = paramFiles.Length - 1; }
         loadParams(paramID);
     }
+
     public virtual void loadParams(int id)
     {
         Load(paramFiles[id]);
@@ -57,6 +60,8 @@ public class WrenParams : MonoBehaviour
     public void SaveNewParamSet()
     {
         string name = "controlSet" + Mathf.Floor(Random.Range(0.001f, .999f) * 100000);
+        paramID = paramFiles.Length;
+        oParamID = paramID;
         Save(name);
         paramFiles = allNames();
     }

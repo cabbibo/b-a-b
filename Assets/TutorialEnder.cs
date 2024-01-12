@@ -6,7 +6,76 @@ using WrenUtils;
 public class TutorialEnder : MonoBehaviour
 {
 
+    public Transform[] tutorialObjects;
 
+    public GameObject island;
+    public GameObject portal;
+
+    public float timeBetweenSpawns = 10;
+
+    float lastSpawnTime;
+    public void OnEnable()
+    {
+        ended = false;
+        lastSpawnTime = Time.time;
+        StartTutorial();
+
+    }
+
+
+    public bool ended = false;
+
+    public void EndTutorial()
+    {
+
+        Vector3 shift = transform.position - God.wren.transform.position;
+        foreach (Transform t in tutorialObjects)
+        {
+            t.position += shift;
+        }
+
+        God.wren.PhaseShift(transform.position);
+        //island.SetActive(true);
+    }
+
+
+    public void StartTutorial()
+    {
+
+        God.wren.PhaseShift(transform.position);
+    }
+
+    public void Update()
+    {
+
+
+        if (ended)
+        {
+            island.SetActive(true);
+            portal.SetActive(true);
+        }
+        else
+        {
+            island.SetActive(false);
+            portal.SetActive(false);
+        }
+        if (Time.time - lastSpawnTime > timeBetweenSpawns)
+        {
+            lastSpawnTime = Time.time;
+            ended = !ended;
+
+
+
+            if (ended)
+            {
+                EndTutorial();
+            }
+            else
+            {
+                StartTutorial();
+            }
+        }
+    }
 
 
 }

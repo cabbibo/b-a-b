@@ -26413,9 +26413,6 @@ MonoBehaviour:
   takeOffForwardForce: 10
   takeOffUpForce: 10
   paintedWindForceMultiplier: 1
-  paramFiles: []
-  paramID: 0
-  oParamID: 0
   showDebugForces: 0
   reset: 0
   distToGround: 0
@@ -26461,6 +26458,9 @@ MonoBehaviour:
   v1: {x: 0, y: 0, z: 0}
   v2: {x: 0, y: 0, z: 0}
   raycastDirections: 5
+  doBasicGroundControls: 0
+  basicGroundLookControls_lookSpeed: 0
+  basicGroundLookControls_moveSpeed: 0
 --- !u!114 &6676056819307743982
 MonoBehaviour:
   m_ObjectHideFlags: 0
