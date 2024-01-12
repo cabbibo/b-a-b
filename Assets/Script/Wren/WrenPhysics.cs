@@ -156,9 +156,9 @@ public class WrenPhysics : MonoBehaviour
 
     */
 
-    public string[] paramFiles;
-    public int paramID;
-    public int oParamID;
+    //public string[] paramFiles;
+    //public int paramID;
+    //public int oParamID;
 
     public bool showDebugForces;
     public bool reset;
@@ -1032,89 +1032,106 @@ public class WrenPhysics : MonoBehaviour
 
     */
 
+    public bool doBasicGroundControls;
     public void WhileOnGround()
     {
 
 
-
-        Vector3 forward = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
-
-        transform.LookAt(transform.position + forward, new Vector3(0, 1, 0));
-
-        if (wren.state.inInterface == false)
+        if (doBasicGroundControls)
         {
-            rb.AddForceAtPosition(transform.forward * input.rightY * groundPower, transform.position + transform.right * groundOut);
-            rb.AddForceAtPosition(transform.right * input.rightX * groundPower, transform.position + transform.right * groundOut);
-            rb.AddForceAtPosition(transform.forward * input.leftY * groundPower, transform.position - transform.right * groundOut);
-            rb.AddForceAtPosition(transform.right * input.leftX * groundPower, transform.position - transform.right * groundOut);
+            DoBasicGroundControlForces();
+
         }
-
-
-
-
-
-        Vector3 targetPos = wren.GroundIntersection(rb.position) + Vector3.up * groundUpVal;
-        rb.AddForce((targetPos - rb.position) * groundUpForce);
-
-
-
-        if (wren.cameraWork.objectTargeted != null)
+        else
         {
-            v1 = Vector3.Cross((transform.position - wren.cameraWork.objectTargeted.position).normalized, transform.forward);
-            rb.AddTorque(v1 * rotateTowardsTargetOnGround);
-        }
-
-        rb.velocity *= groundDampening;
 
 
-        //print( Vector3.Dot(groundDirection.normalized,Vector3.up));
+            Vector3 forward = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
 
+            transform.LookAt(transform.position + forward, new Vector3(0, 1, 0));
 
-        //print( distToGround );
-        // print( groundDirection );
-
-
-
-
-        /*
-                Vector3 targetPos = rb.position;
-            if( wren.state.inInterface == false ){
-
-                targetPos += transform.forward * input.leftY * .3f;
-                targetPos += transform.right * input.leftX * .3f;
+            if (wren.state.inInterface == false)
+            {
+                rb.AddForceAtPosition(transform.forward * input.rightY * groundPower, transform.position + transform.right * groundOut);
+                rb.AddForceAtPosition(transform.right * input.rightX * groundPower, transform.position + transform.right * groundOut);
+                rb.AddForceAtPosition(transform.forward * input.leftY * groundPower, transform.position - transform.right * groundOut);
+                rb.AddForceAtPosition(transform.right * input.leftX * groundPower, transform.position - transform.right * groundOut);
             }
 
-                rb.velocity *= .95f;
 
-                targetPos = wren.GroundIntersection(targetPos) + Vector3.up * 10;
 
-                rb.AddForce( (targetPos-rb.position) * 100 );
 
-                rb.AddForce(Vector3.up * -90);
 
+            Vector3 targetPos = wren.GroundIntersection(rb.position) + Vector3.up * groundUpVal;
+            rb.AddForce((targetPos - rb.position) * groundUpForce);
+
+
+
+            if (wren.cameraWork.objectTargeted != null)
+            {
+                v1 = Vector3.Cross((transform.position - wren.cameraWork.objectTargeted.position).normalized, transform.forward);
+                rb.AddTorque(v1 * rotateTowardsTargetOnGround);
+            }
+
+            rb.velocity *= groundDampening;
+
+
+            //print( Vector3.Dot(groundDirection.normalized,Vector3.up));
+
+
+            //print( distToGround );
+            // print( groundDirection );
+
+
+
+
+            /*
+                    Vector3 targetPos = rb.position;
                 if( wren.state.inInterface == false ){
-                    transform.LookAt( transform.position + transform.forward + transform.right * input.rightX * .02f + transform.up * input.rightY * .02f - transform.up * .01f * Vector3.Dot( transform.forward , Vector3.up ) ,new Vector3(0,1,0));
+
+                    targetPos += transform.forward * input.leftY * .3f;
+                    targetPos += transform.right * input.leftX * .3f;
                 }
 
-                */
-        //}
+                    rb.velocity *= .95f;
 
+                    targetPos = wren.GroundIntersection(targetPos) + Vector3.up * 10;
+
+                    rb.AddForce( (targetPos-rb.position) * 100 );
+
+                    rb.AddForce(Vector3.up * -90);
+
+                    if( wren.state.inInterface == false ){
+                        transform.LookAt( transform.position + transform.forward + transform.right * input.rightX * .02f + transform.up * input.rightY * .02f - transform.up * .01f * Vector3.Dot( transform.forward , Vector3.up ) ,new Vector3(0,1,0));
+                    }
+
+                    */
+            //}
+
+        }
 
 
     }
 
 
 
+    public float basicGroundLookControls_lookSpeed;
+    public float basicGroundLookControls_moveSpeed;
     public void DoBasicGroundControlForces()
     {
 
 
         if (wren.state.inInterface == false)
         {
-            rb.AddForceAtPosition(transform.forward * input.rightY * groundPower, transform.position + transform.right * groundOut);
-            rb.AddForceAtPosition(transform.right * input.rightX * groundPower, transform.position + transform.right * groundOut);
-            rb.AddForceAtPosition(transform.forward * input.leftY * groundPower, transform.position - transform.right * groundOut);
-            rb.AddForceAtPosition(transform.right * input.leftX * groundPower, transform.position - transform.right * groundOut);
+            Vector3 torque = new Vector3(0, input.rightX * basicGroundLookControls_lookSpeed, 0f);
+
+            rb.AddTorque(torque);
+            // rb.AddTorque(transform.right * input.rightY * basicGroundLookControls_lookSpeed);
+            //rb.AddTorque(transform.up * input.rightX * basicGroundLookControls_lookSpeed);
+            // rb.AddForceAtPosition(transform.forward * input.rightY * groundPower, transform.position + transform.right * groundOut);
+            //rb.AddForceAtPosition(transform.right * input.rightX * groundPower, transform.position + transform.right * groundOut);
+            //rb.AddForceAtPosition(transform.forward * input.leftY * groundPower, transform.position - transform.right * groundOut);
+            //rb.AddForceAtPosition(transform.right * input.leftX * groundPower, transform.position - transform.right * groundOut);
         }
 
 

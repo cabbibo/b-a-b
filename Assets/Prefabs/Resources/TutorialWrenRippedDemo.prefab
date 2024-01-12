@@ -26197,7 +26197,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &9160943688313912038
 Transform:
   m_ObjectHideFlags: 0
@@ -26413,9 +26413,6 @@ MonoBehaviour:
   takeOffForwardForce: 10
   takeOffUpForce: 10
   paintedWindForceMultiplier: 1
-  paramFiles: []
-  paramID: 0
-  oParamID: 0
   showDebugForces: 0
   reset: 0
   distToGround: 0
@@ -26461,6 +26458,9 @@ MonoBehaviour:
   v1: {x: 0, y: 0, z: 0}
   v2: {x: 0, y: 0, z: 0}
   raycastDirections: 5
+  doBasicGroundControls: 1
+  basicGroundLookControls_lookSpeed: 3
+  basicGroundLookControls_moveSpeed: 0
 --- !u!114 &6676056819307743982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26643,9 +26643,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wren: {fileID: 9160943688313912041}
-  paramFiles: []
-  paramID: 8
-  oParamID: 0
+  paramFiles:
+  - BaseLevelBomb
+  - bendy2
+  - controlSet47168
+  - controlSet83978
+  - groundFast
+  - harderCurve
+  - isaacFav
+  - isaacFav2
+  - isaacFav3
+  - NoGravity
+  - NoGravity2
+  - SmallBird
+  paramID: 3
+  oParamID: 3
 --- !u!114 &3856516255870990745
 MonoBehaviour:
   m_ObjectHideFlags: 0
