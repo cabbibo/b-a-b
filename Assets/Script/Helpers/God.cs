@@ -115,9 +115,16 @@ namespace WrenUtils
             {
                 if (_instance == null)
                 {
+                    print("getting instance");
                     _instance = Object.FindObjectOfType<God>();//WithTag GetComponent
+                    print("INTSNACE");
+                    print(_instance);
                 }
-                if (Application.isPlaying) { DontDestroyOnLoad(_instance); }
+                if (Application.isPlaying)
+                {
+                    print("dont do it");
+                    DontDestroyOnLoad(_instance);
+                }
                 return _instance;
             }
 
@@ -288,6 +295,8 @@ namespace WrenUtils
         {
             get
             {
+                print(instance);
+                print(instance._skyboxUpdater);
                 return instance._skyboxUpdater;
             }
         }

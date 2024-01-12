@@ -12,7 +12,7 @@ public class FlyingTutorialSequence : MonoBehaviour
     // public static bool 
 
     public CinematicCameraHandler cinematicCamera;
-    
+
     public CanvasGroup groupContainer;
 
     public TextMeshProUGUI controllerText;
@@ -22,18 +22,20 @@ public class FlyingTutorialSequence : MonoBehaviour
     public RectTransform progressBar;
 
 
+
+
     void Start()
     {
         StartCoroutine(TutorialSequence());
 
-        
+
     }
 
 
     void Update()
     {
-        
-        
+
+
     }
 
     IEnumerator TutorialSequence()
@@ -47,7 +49,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         ShowProgress(0);
         cinematicCamera.armed = false;
 
-        while(God.wren == null)
+        while (God.wren == null)
             yield return null;
 
         yield return new WaitForSecondsRealtime(2);
@@ -56,15 +58,15 @@ public class FlyingTutorialSequence : MonoBehaviour
             yield return null;
 
         cinematicCamera.armed = true;
-        
+
         cinematicCamera.tutorialCameraIdx = 3; // below
         yield return new WaitForSecondsRealtime(5);
-        
+
         // Sticks
         {
             groupSticks.SetActive(true);
             controllerText.text = "Wings";
-            
+
             yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
             yield return new WaitForSecondsRealtime(12);
             yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
@@ -74,7 +76,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         // Cam 1
         {
             controllerText.text = "X Continue";
-            
+
             yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
             while (God.wren.input.ex < .5f)
                 yield return null;
@@ -86,7 +88,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         // Cam 1
         {
             controllerText.text = "X Continue";
-            
+
             yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
             while (God.wren.input.ex < .5f)
                 yield return null;
@@ -97,7 +99,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         // Cam 1
         {
             controllerText.text = "X Continue";
-            
+
             yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
             while (God.wren.input.ex < .5f)
                 yield return null;
@@ -109,22 +111,22 @@ public class FlyingTutorialSequence : MonoBehaviour
         // Cam 1
         {
             controllerText.text = "X Continue";
-            
+
             yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
             while (God.wren.input.ex < .5f)
                 yield return null;
             groupContainer.alpha = 0;
         }
-        
+
         cinematicCamera.armed = false;
         yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
-        
+
 
         // // Sticks
         // {
         //     groupSticks.SetActive(true);
         //     controllerText.text = "Wings";
-            
+
         //     yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
         //     yield return new WaitForSecondsRealtime(8);
         //     yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
@@ -144,7 +146,7 @@ public class FlyingTutorialSequence : MonoBehaviour
             // TODO: wait for diving enough time
 
             float diveT = 0;
-            while(diveT < 1)
+            while (diveT < 1)
             {
                 if (God.input.l2 > .5f && God.input.r2 > .5f)
                     diveT += Time.deltaTime * .45f;
@@ -174,7 +176,7 @@ public class FlyingTutorialSequence : MonoBehaviour
     {
         float t = 0;
         float duration = 1.5f;
-        while(t < duration)
+        while (t < duration)
         {
             group.alpha = Mathf.Lerp(from, to, t);
             t += Time.deltaTime;
