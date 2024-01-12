@@ -26197,7 +26197,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &9160943688313912038
 Transform:
   m_ObjectHideFlags: 0
@@ -26644,7 +26644,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   wren: {fileID: 9160943688313912041}
   paramFiles: []
-  paramID: 8
+  paramID: 0
   paramSetName: 
 --- !u!114 &3856516255870990745
 MonoBehaviour:

@@ -19,14 +19,17 @@ public class IslandData : MonoBehaviour
 
 
     public Texture2D BiomeMap;
-
-
-    public Texture2D windMap;
     public RenderTexture heightMap;
 
 
+
+    public Texture2D windMap;
+
     public Texture2D biomeMap1;
+
+
     public Texture2D biomeMap2;
+
     public Texture2D foodMap;
 
 
@@ -45,25 +48,7 @@ public class IslandData : MonoBehaviour
         size = God.terrainData.size;
 
 
-        if (windMap == null)
-        {
-            windMap = windPainter.GenerateTexture();
-        }
 
-        if (biomeMap1 == null)
-        {
-            biomeMap1 = biomePainter1.GenerateTexture();
-        }
-
-        if (biomeMap2 == null)
-        {
-            biomeMap2 = biomePainter2.GenerateTexture();
-        }
-
-        if (foodMap == null)
-        {
-            foodMap = foodPainter.GenerateTexture();
-        }
 
         Shader.SetGlobalTexture("_WindMap", windMap);
         Shader.SetGlobalTexture("_BiomeMap1", biomeMap1);
@@ -76,6 +61,8 @@ public class IslandData : MonoBehaviour
 
     public Vector3 GetWindPower(Vector3 p)
     {
+
+
 
         Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
         Color c = windMap.GetPixelBilinear(uv.x, uv.z);
