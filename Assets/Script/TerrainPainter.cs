@@ -497,7 +497,9 @@ public class TerrainPainter : Simulation
     string path = "StreamingAssets/Terrain/" + safeName;
     Saveable.Save(verts, path);
 
-    SaveTextureAsEXR(currentTexture, Application.dataPath + "/Resources/Terrains/Data/" + safeName);
+    // saving to new folder
+
+    SaveTextureAsEXR(currentTexture, Application.dataPath + "/Terrains/Data/" + safeName);
 
     // SaveTextureAsPNG(currentTexture, Application.dataPath + "/" + path);
     //SaveCompressedTexture(currentTexture, Application.dataPath + "/" + path);
@@ -622,13 +624,6 @@ public class TerrainPainter : Simulation
 
     currentTexture.SetPixels(colors, 0);
     currentTexture.Apply(true);
-
-  }
-
-  public static void SaveTextureAsAsset(Texture2D _texture, string _fullPath)
-  {
-    AssetDatabase.CreateAsset(_texture, _fullPath + ".asset");
-    Debug.Log("Saved as: " + _fullPath + ".asset");
 
   }
 
