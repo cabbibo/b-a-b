@@ -3,6 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(PlacePrefabsOnTerrain))]
+public class PlacePrefabsOnTerrainEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        PlacePrefabsOnTerrain sc = (PlacePrefabsOnTerrain)target;
+        if (!sc.enabled)
+            return;
+        EditorGUI.BeginChangeCheck();
+        base.OnInspectorGUI();
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            sc.Regenerate();
+        }
+    }
+}
+#endif
+
 
 [ExecuteAlways]
 public class PlacePrefabsOnTerrain : MonoBehaviour
@@ -41,7 +63,7 @@ public class PlacePrefabsOnTerrain : MonoBehaviour
 
         if (allGameObjects == null)
             allGameObjects = new List<GameObject>();
-            
+
         allGameObjects.Clear();
         // CLEAR
         transforms = new Transform[count];
