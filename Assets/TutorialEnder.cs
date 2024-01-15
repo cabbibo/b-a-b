@@ -23,6 +23,11 @@ public class TutorialEnder : MonoBehaviour
         // StartTutorial();
 
     }
+    public void OnDisable()
+    {
+
+        FlyingTutorialSequence.OnTutorialDiveFinished -= EndTutorial;
+    }
 
 
     public bool ended = false;
