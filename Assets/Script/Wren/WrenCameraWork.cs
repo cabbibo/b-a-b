@@ -64,16 +64,24 @@ public class WrenCameraWork : MonoBehaviour
     Camera.main.transform.LookAt(transform.position);//SetLookRotation(transform.forward);
   }
 
+
+  // Jumping the camera to a different position
   public void Offset(Vector3 v)
   {
 
-    print(v);
 
     transform.position += v;
     fLookTarget = transform.position;
     camTarget.position += v;
     Camera.main.transform.position += v;
   }
+
+
+  public Vector3 tmpUp;
+  public Vector3 tmpForward;
+  public Vector3 tmpRight;
+  public Vector3 wrenTmpUp;
+
 
   float oLook;
   public void CameraWork()
@@ -108,6 +116,10 @@ public class WrenCameraWork : MonoBehaviour
     Vector3 upVal = Vector3.up;
     if (inDeadZone) upVal = deadZoneUp;
 
+    tmpUp = Vector3.Lerp(tmpUp, transform.up, .1f);
+    tmpRight = Vector3.Lerp(tmpRight, transform.right, .1f);
+    tmpForward = Vector3.Lerp(tmpForward, transform.forward, .1f);
+    wrenTmpUp = Vector3.Lerp(wrenTmpUp, wren.transform.up, .1f);
 
     if (wren.physics.onGround)
     {
@@ -153,6 +165,10 @@ public class WrenCameraWork : MonoBehaviour
     }
     else
     {
+
+
+
+
       /*
       Tweens out FOV
       if we are going fast enough
@@ -160,6 +176,8 @@ public class WrenCameraWork : MonoBehaviour
       fov = Mathf.Clamp(wren.physics.vel.magnitude * .7f, slowFOV, fastFOV);
       if (objectTargeted == null)
       {
+
+
 
 
 
@@ -172,19 +190,21 @@ public class WrenCameraWork : MonoBehaviour
         oLook = Mathf.Lerp(oLook, lookEulers, .04f);
 
 
-        camTarget.position = transform.position + transform.up * upAmount - transform.forward * wren._ScaleMultiplier * backAmount - transform.right * lookEulers * leftAmount * wren._ScaleMultiplier;
+        camTarget.position = transform.position + tmpUp * upAmount - tmpForward * wren._ScaleMultiplier * backAmount - tmpRight * lookEulers * leftAmount * wren._ScaleMultiplier;
         //lookTarget =  camTarget.position + Vector3.Lerp( camTarget.forward, wrenHead.forward.normalized , lerpTowardHeadLook );
 
 
         Vector3 lookForwardDirection = Vector3.Lerp(camTarget.forward, wrenHead.forward.normalized, lerpTowardHeadLook);
         lookTarget = transform.position;//+  Vector3.Lerp( camTarget.forward, wrenHead.forward.normalized , lerpTowardHeadLook ) * headLookForwardAmount;
                                         // Check to make sure we aren't in the terrain
+
+
         lookTarget += lookForwardDirection * forwardLookVal * wren._ScaleMultiplier;
 
 
         // try and look ahead
 
-        lookTarget += wren.transform.up * lookUpAmount;
+        lookTarget += wrenTmpUp * lookUpAmount;
 
 
         fLookTarget = Vector3.Lerp(fLookTarget, lookTarget, .1f);

@@ -58,10 +58,18 @@ public class WrenParams : MonoBehaviour
 
     public void SaveNewParamSet()
     {
-        string name = "controlSet" + Mathf.Floor(Random.Range(0.001f, .999f) * 100000);
         paramID = paramFiles.Length;
+        for (int i = 0; i < paramFiles.Length; i++)
+        {
+            if (paramFiles[i] == paramSetName)
+            {
+                Debug.Log("NAME ALREADY EXISTS");
+                return;
+            }
+        }
 
-        Save(name);
+        print("SAVING NEW PARAM SET");
+        Save(paramSetName);
         paramFiles = allNames();
     }
 
