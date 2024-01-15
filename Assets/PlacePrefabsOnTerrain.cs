@@ -39,7 +39,9 @@ public class PlacePrefabsOnTerrain : MonoBehaviour
     public void Regenerate()
     {
 
-
+        if (allGameObjects == null)
+            allGameObjects = new List<GameObject>();
+            
         allGameObjects.Clear();
         // CLEAR
         transforms = new Transform[count];
