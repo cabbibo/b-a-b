@@ -2111,7 +2111,7 @@ MonoBehaviour:
   controller: {fileID: 0}
   lerpSpeed: 0.2
   leftWingTuck: 0
-  leftWingTurnLeft: 0
+  leftWingTurnLeft: 0.097
   leftWingTurnRight: 0
   leftWingTwistUp: 0
   leftWingTwistDown: 0
@@ -25450,8 +25450,8 @@ MonoBehaviour:
   featherDebugMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a,
     type: 2}
   featherMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a, type: 2}
-  debugLinePoints: 0
-  debugFeatherPoints: 0
+  debugLinePoints: 1
+  debugFeatherPoints: 1
   drawFeathers: 1
   numberScapularColumns: 60
   numberScapularRows: 40
@@ -26197,7 +26197,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &9160943688313912038
 Transform:
   m_ObjectHideFlags: 0
