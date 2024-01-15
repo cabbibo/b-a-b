@@ -21,12 +21,19 @@ public class FlyingTutorialSequence : MonoBehaviour
     public GameObject groupDive;
     public RectTransform progressBar;
 
+    public bool debug;
+    public int debugCamIdx = 0;
 
+    Coroutine tutSequence;
 
 
     void Start()
     {
-        StartCoroutine(TutorialSequence());
+        if (!Application.isEditor)
+            debug = false;
+
+        
+        tutSequence = StartCoroutine(TutorialSequence());
 
 
     }
@@ -34,7 +41,15 @@ public class FlyingTutorialSequence : MonoBehaviour
 
     void Update()
     {
-
+        if (Application.isEditor)
+        {
+            if (tutSequence != null && Input.GetKeyDown(KeyCode.Tab))
+            {
+                StopCoroutine(tutSequence);
+                
+                OnTutorialFinished();
+            }
+        }
 
     }
 
@@ -58,6 +73,12 @@ public class FlyingTutorialSequence : MonoBehaviour
             yield return null;
 
         cinematicCamera.armed = true;
+
+        while(debug)
+        {
+            cinematicCamera.tutorialCameraIdx = debugCamIdx;
+            yield return null;
+        }
 
         cinematicCamera.tutorialCameraIdx = 3; // below
         yield return new WaitForSecondsRealtime(5);
@@ -187,6 +208,10 @@ public class FlyingTutorialSequence : MonoBehaviour
 
     void OnTutorialFinished()
     {
+        cinematicCamera.armed = false;
+        ShowProgress(0);
+        groupContainer.alpha = 0;
+        
         OnTutorialDiveFinished?.Invoke();
     }
 }
