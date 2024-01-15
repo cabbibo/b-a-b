@@ -30,6 +30,9 @@ public class TutorialEnder : MonoBehaviour
     public void EndTutorial()
     {
 
+
+        print(God.wren);
+        print(God.instance);
         Vector3 shift = transform.position - God.wren.transform.position;
         foreach (Transform t in tutorialObjects)
         {

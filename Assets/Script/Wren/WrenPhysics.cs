@@ -64,7 +64,6 @@ public class WrenPhysics : MonoBehaviour
     public float closeForwardBoostVal;
     public float thrustForceMultiplier;
 
-    public float rightingForce;
     public float strafeVal;
 
 
@@ -84,6 +83,13 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+    /*
+        Righting
+    */
+    public float horizonRightingForceVal;
+
+    public float rightingForce;
+    public float rightingDependentOnNotTouchingVal;
 
 
     /*
@@ -99,7 +105,6 @@ public class WrenPhysics : MonoBehaviour
     public float tuckReduceUpdraftVal;
     public float windAmountToTheSide;
 
-    public float rightingDependentOnNotTouchingVal;
 
     public float groundForceTweenVal;
 
@@ -393,6 +398,7 @@ public class WrenPhysics : MonoBehaviour
             GroundBoost();
             RightingForces();
             PaintedWindForce();
+            HorizonRightingForces();
 
 
             ApplyForces();
@@ -973,6 +979,37 @@ public class WrenPhysics : MonoBehaviour
     }
 
 
+
+    public Vector3 horizonRightingForce;
+    public Vector3 horizonRightingForcePosition;
+
+    public virtual void HorizonRightingForces()
+    {
+
+
+        // Only rights if we are NOT touching stuff
+        float maxVal = Mathf.Max(new float[]{
+        Mathf.Abs(input.leftY) ,
+        Mathf.Abs(input.leftX) ,
+        Mathf.Abs(input.rightY) ,
+        Mathf.Abs(input.rightX) ,
+        Mathf.Abs(input.left2) ,
+        Mathf.Abs(input.right2)
+    });
+
+
+        float forceFactor = Mathf.Pow(1 - Mathf.Pow(Vector3.Dot(vel.normalized, Vector3.forward), 2), 2);
+
+        //print( forceFactor );
+
+
+        horizonRightingForce = Vector3.up * -vel.normalized.y * horizonRightingForceVal * (1 - maxVal * rightingDependentOnNotTouchingVal);
+        horizonRightingForcePosition = transform.position + transform.forward;
+
+    }
+
+
+
     void ApplyForces()
     {
 
@@ -987,6 +1024,7 @@ public class WrenPhysics : MonoBehaviour
         rb.AddForceAtPosition(rightWingUpdraftForce, rightWingUpdraftForcePosition);
         rb.AddForceAtPosition(groundBoostForce, groundBoostForcePosition);
         rb.AddForceAtPosition(upwardsRightingForce, upwardsRightingForcePosition);
+        rb.AddForceAtPosition(horizonRightingForce, horizonRightingForcePosition);
         rb.AddForceAtPosition(paintedWindForce, paintedWindForcePosition);
 
         // Straightens out!
