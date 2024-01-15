@@ -80,3 +80,7 @@ crashlytics-build.properties
 /[Aa]ssets/StreamingAssets/DNA/*
 /[Aa]ssets/StreamingAssets/dna/*
 
+/[Aa]ssets/StreamingAssets/DNA/
+/[Aa]ssets/StreamingAssets/dna/
+
+
