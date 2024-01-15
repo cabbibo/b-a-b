@@ -77,3 +77,6 @@ crashlytics-build.properties
 /[Rr]ecordings/
 [Rr]ecordings/
 
+/[Aa]ssets/StreamingAssets/DNA/*
+/[Aa]ssets/StreamingAssets/dna/*
+
