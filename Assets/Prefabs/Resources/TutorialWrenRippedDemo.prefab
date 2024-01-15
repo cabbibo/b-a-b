@@ -26263,7 +26263,7 @@ MonoBehaviour:
   rt_Tranform: {fileID: 9160943688313912047}
   canMove: 0
   growth: {fileID: 1447400220214749194}
-  autoTakeOff: 0
+  autoTakeOff: 1
   lastFlapTime: 0
 --- !u!54 &9160943688313912040
 Rigidbody:
@@ -26385,7 +26385,6 @@ MonoBehaviour:
   tuckReduceLiftVal: 0
   closeForwardBoostVal: 100
   thrustForceMultiplier: 3
-  rightingForce: -8
   strafeVal: 10
   tuckedAngularDrag: 0
   untuckedAngularDrag: 6
@@ -26395,13 +26394,15 @@ MonoBehaviour:
   flapToSide: 0.1
   flapPowerUp: 300
   flapPowerForward: 60
+  horizonRightingForceVal: 0
+  rightingForce: -8
+  rightingDependentOnNotTouchingVal: 0.4
   closestHeight: 0
   furthestHeight: 150
   closestForce: 40
   furthestForce: 0
   tuckReduceUpdraftVal: 0.8
   windAmountToTheSide: 2
-  rightingDependentOnNotTouchingVal: 0.4
   groundForceTweenVal: 0.2
   velMatchMultiplier: 0
   groundPower: 10
@@ -26458,6 +26459,8 @@ MonoBehaviour:
   v1: {x: 0, y: 0, z: 0}
   v2: {x: 0, y: 0, z: 0}
   raycastDirections: 5
+  horizonRightingForce: {x: 0, y: 0, z: 0}
+  horizonRightingForcePosition: {x: 0, y: 0, z: 0}
   doBasicGroundControls: 0
   basicGroundLookControls_lookSpeed: 3
   basicGroundLookControls_moveSpeed: 0
@@ -26628,6 +26631,10 @@ MonoBehaviour:
   lookAtTargetLookSpeedAir: 1
   lookAtTargetLookSpeedGround: 1
   lookUpAmount: 1
+  tmpUp: {x: 0, y: 0, z: 0}
+  tmpForward: {x: 0, y: 0, z: 0}
+  tmpRight: {x: 0, y: 0, z: 0}
+  wrenTmpUp: {x: 0, y: 0, z: 0}
   deadZoneUp: {x: 0, y: 0, z: 0}
   inDeadZone: 0
 --- !u!114 &5119402594301017824
