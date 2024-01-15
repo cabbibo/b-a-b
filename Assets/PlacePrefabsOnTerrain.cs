@@ -14,6 +14,9 @@ public class PlacePrefabsOnTerrainEditor : Editor
         PlacePrefabsOnTerrain sc = (PlacePrefabsOnTerrain)target;
         if (!sc.enabled)
             return;
+        
+        sc.minSteepness = Mathf.Min(sc.minSteepness, sc.maxSteepness);
+        sc.maxSteepness = Mathf.Max(sc.maxSteepness, sc.minSteepness);
         EditorGUI.BeginChangeCheck();
         base.OnInspectorGUI();
 
@@ -40,8 +43,8 @@ public class PlacePrefabsOnTerrain : MonoBehaviour
     public float minScale = 10;
     public float maxScale = 30;
 
-    public float minSteepness;
-    public float maxSteepness;
+    [Range(0,1)]public float minSteepness;
+    [Range(0,1)]public float maxSteepness;
 
     public float matchTerrainNormal;
 
