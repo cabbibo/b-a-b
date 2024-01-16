@@ -26625,7 +26625,7 @@ MonoBehaviour:
   groundBackAmount: 12
   oMatchWithVert: 0
   matchWithVert: 0
-  lerpTowardHeadLook: 0.9
+  lerpTowardHeadLook: 0.1
   forwardLookVal: 11
   deadZoneCutoff: 0.8
   lookAtTargetLookSpeedAir: 1
