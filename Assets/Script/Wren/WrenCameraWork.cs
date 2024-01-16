@@ -188,7 +188,6 @@ public class WrenCameraWork : MonoBehaviour
 
 
         oLook = Mathf.Lerp(oLook, lookEulers, .04f);
-        print(oLook);
 
 
         camTarget.position = transform.position + tmpUp * upAmount - tmpForward * wren._ScaleMultiplier * backAmount - tmpRight * lookEulers * leftAmount * wren._ScaleMultiplier;
