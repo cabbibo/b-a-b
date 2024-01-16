@@ -25450,8 +25450,8 @@ MonoBehaviour:
   featherDebugMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a,
     type: 2}
   featherMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a, type: 2}
-  debugLinePoints: 1
-  debugFeatherPoints: 1
+  debugLinePoints: 0
+  debugFeatherPoints: 0
   drawFeathers: 1
   numberScapularColumns: 60
   numberScapularRows: 40
@@ -26379,6 +26379,9 @@ MonoBehaviour:
   twistLerpSpeed: 0.3
   bendLerpSpeed: 0.3
   maxSpeed: 400
+  maxSpeedDamper: 0.1
+  baseSpeed: 2
+  baseSpeedDamper: 0.001
   twistForceVal: 3
   slowestAmountToSide: 0.06
   fastestAmountToSide: 0.05
@@ -26394,7 +26397,7 @@ MonoBehaviour:
   flapToSide: 0.1
   flapPowerUp: 300
   flapPowerForward: 60
-  horizonRightingForceVal: 0
+  horizonRightingForceVal: 3
   rightingForce: -8
   rightingDependentOnNotTouchingVal: 0.4
   closestHeight: 0
@@ -26657,6 +26660,7 @@ MonoBehaviour:
   - NoGravity
   - NoGravity2
   - SmallBird
+  - Tutorial1
   - TutorialWrenRippedDemo(Clone)
   paramID: 0
   paramSetName: 
