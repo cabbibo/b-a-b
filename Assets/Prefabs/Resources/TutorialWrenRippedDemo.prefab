@@ -26263,7 +26263,7 @@ MonoBehaviour:
   rt_Tranform: {fileID: 9160943688313912047}
   canMove: 0
   growth: {fileID: 1447400220214749194}
-  autoTakeOff: 0
+  autoTakeOff: 1
   lastFlapTime: 0
 --- !u!54 &9160943688313912040
 Rigidbody:
@@ -26628,7 +26628,7 @@ MonoBehaviour:
   groundBackAmount: 12
   oMatchWithVert: 0
   matchWithVert: 0
-  lerpTowardHeadLook: 0.9
+  lerpTowardHeadLook: 0.1
   forwardLookVal: 11
   deadZoneCutoff: 0.8
   lookAtTargetLookSpeedAir: 0.1
