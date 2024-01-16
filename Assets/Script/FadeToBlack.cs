@@ -12,17 +12,20 @@ public class FadeToBlack : MonoBehaviour
 {
     public AnimationCurve FadeCurve = new AnimationCurve(new Keyframe(0, 1), new Keyframe(0.6f, 0.7f, -1.8f, -1.2f), new Keyframe(1, 0));
 
-    private Material _material;
+    // private Material _material;
     public float startFadeSpeed;
 
     public bool startFadeOut;
-
+    MaterialPropertyBlock _mpr;
+    Renderer _r;
     public void OnEnable()
     {
+        _mpr = new MaterialPropertyBlock();
+        _r = GetComponent<Renderer>();
+        
+        // _material = GetComponent<Renderer>().sharedMaterial;
 
-        _material = GetComponent<Renderer>().sharedMaterial;
-
-        _material.SetColor("_Color", new Color(1, 1, 1, 1));
+        SetColor(new Color(1, 1, 1, 1));
 
         fadeColor = new Color(1, 1, 1, 1); ;
         currentOpacity = 1;
@@ -60,7 +63,7 @@ public class FadeToBlack : MonoBehaviour
         currentOpacity = 1;
         startOpacity = 1;
         fadeOpacity = 0;
-        _material.SetColor("_Color", new Color(0, 0, 0, 1));
+        SetColor(new Color(0, 0, 0, 1));
     }
     public void FadeOut(Color color, float time)
     {
@@ -101,6 +104,15 @@ public class FadeToBlack : MonoBehaviour
 
     }
 
+    void SetColor(Color color)
+    {
+        if (!_r) return;
+        if (_mpr == null) _mpr = new MaterialPropertyBlock();
+        _r.GetPropertyBlock(_mpr);
+        _mpr.SetColor("_Color", color);
+        _r.SetPropertyBlock(_mpr);
+    }
+
     public void Update()
     {
 
@@ -115,7 +127,7 @@ public class FadeToBlack : MonoBehaviour
                 
                 // Always finish doing the fade
                 currentOpacity = Mathf.Lerp(fadeOpacity, startOpacity, FadeCurve.Evaluate(v));
-                _material.SetColor("_Color", new Color(fadeColor.r, fadeColor.g, fadeColor.b, currentOpacity));
+                SetColor(new Color(fadeColor.r, fadeColor.g, fadeColor.b, currentOpacity));
             
                 fading = false;
                 if( onCompleteFunction != null ){
@@ -128,7 +140,7 @@ public class FadeToBlack : MonoBehaviour
             {
 
                 currentOpacity = Mathf.Lerp(fadeOpacity, startOpacity, FadeCurve.Evaluate(v));
-                _material.SetColor("_Color", new Color(fadeColor.r, fadeColor.g, fadeColor.b, currentOpacity));
+                SetColor(new Color(fadeColor.r, fadeColor.g, fadeColor.b, currentOpacity));
             }
 
         }
