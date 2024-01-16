@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
 using WrenUtils;
 
+
+[ExecuteAlways]
 public class PreyManager : MonoBehaviour
 {
 
 
-    [Header( "Spawn Settings" )]
+    [Header("Spawn Settings")]
     public float spawnTime;
 
     [SerializeField]
@@ -18,7 +20,7 @@ public class PreyManager : MonoBehaviour
     float lastSpawnTime;
 
 
-    [Header( "On Eat Effects" )]
+    [Header("On Eat Effects")]
     [SerializeField]
     AudioClip gotAteClip;
 
@@ -35,14 +37,16 @@ public class PreyManager : MonoBehaviour
 
     void Update()
     {
-        if( Time.time - lastSpawnTime > spawnTime ){
+        if (Time.time - lastSpawnTime > spawnTime)
+        {
             SpawnNewBug();
         }
     }
 
     void SpawnNewBug()
     {
-        if( God.wren ){
+        if (God.wren)
+        {
 
             Vector3 spawnPos = God.wren.transform.position;
 
@@ -50,26 +54,44 @@ public class PreyManager : MonoBehaviour
 
             spawnPos += offset;
 
-            PreyController newPrey = Instantiate( preyPrefab, spawnPos, Quaternion.identity ).GetComponent<PreyController>();
+            PreyController newPrey = Instantiate(preyPrefab, spawnPos, Quaternion.identity).GetComponent<PreyController>();
 
-            newPrey.Initialize( preyConfig, this );
+            newPrey.Initialize(preyConfig, this);
 
 
             newPrey.transform.parent = transform;
             lastSpawnTime = Time.time;
         }
+        else
+        {
+
+            Vector3 spawnPos = transform.position;
+
+            Vector3 offset = Random.insideUnitSphere * spawnRadius;
+
+            spawnPos += offset;
+
+            PreyController newPrey = Instantiate(preyPrefab, spawnPos, Quaternion.identity).GetComponent<PreyController>();
+
+            newPrey.Initialize(preyConfig, this);
+
+
+            newPrey.transform.parent = transform;
+            lastSpawnTime = Time.time;
+
+        }
     }
 
 
-    public void PreyGotAte( PreyController b )
+    public void PreyGotAte(PreyController b)
     {
         gotAteParticleSystem.Play();
         gotAteParticleSystem.transform.position = b.transform.position;
 
-        God.audio.Play( gotAteClip );
+        God.audio.Play(gotAteClip);
 
-        God.wren.stats.FullnessAdd( preyFullnessIncrease );
-        God.wren.stats.StaminaAdd( preyStaminaIncrease );
+        God.wren.stats.FullnessAdd(preyFullnessIncrease);
+        God.wren.stats.StaminaAdd(preyStaminaIncrease);
 
     }
 }

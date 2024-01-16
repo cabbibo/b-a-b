@@ -65,7 +65,10 @@ public class Booster : Cycle
 
 
 
-        boostSim.OnBoost(this);
+        if (boostSim != null)
+        {
+            boostSim.OnBoost(this);
+        }
 
 
     }
@@ -90,7 +93,10 @@ public class Booster : Cycle
     {
 
         lifeBoostVal = v * boostVal;
-        boostSim.OnBoost(this);
+        if (boostSim != null)
+        {
+            boostSim.OnBoost(this);
+        }
 
     }
 
