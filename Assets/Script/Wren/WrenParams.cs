@@ -81,7 +81,20 @@ public class WrenParams : MonoBehaviour
 
     public void Save()
     {
-        Save(paramFiles[paramID]);
+
+
+        /* bool alreadySaved = false;
+         for (int i = 0; i < paramFiles.Length; i++)
+         {
+             if (paramFiles[i] == paramSetName)
+             {
+                 alreadySaved = true;
+             }
+         }*/
+
+        Save(paramSetName);
+
+
     }
 
 
@@ -256,12 +269,33 @@ public class WrenParams : MonoBehaviour
     {
         if (File.Exists(fullName(name)))
         {
-
             BinaryFormatter bf = new BinaryFormatter();
             FileStream file = File.Open(fullName(name), FileMode.Open);
             MechanicParams PamPam = (MechanicParams)bf.Deserialize(file);
             file.Close();
             SetWrenMechanics(PamPam);
+
+
+            paramSetName = name;
+
+            paramFiles = allNames();
+            bool found = false;
+            for (int i = 0; i < paramFiles.Length; i++)
+            {
+                if (paramFiles[i] == name)
+                {
+                    print("FOUND");
+                    paramID = i;
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+                print("NOT FOUND");
+                print(name);
+                Debug.LogError("paramID not found   ");
+            }
         }
         else
         {

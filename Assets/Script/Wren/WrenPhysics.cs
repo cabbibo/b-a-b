@@ -54,6 +54,11 @@ public class WrenPhysics : MonoBehaviour
 
     public float maxSpeed;
 
+    public float maxSpeedDamper;
+
+    public float baseSpeed;
+    public float baseSpeedDamper;
+
     public float twistForceVal;
 
     public float slowestAmountToSide;
@@ -145,7 +150,6 @@ public class WrenPhysics : MonoBehaviour
     */
 
     public float paintedWindForceMultiplier = 10;
-
 
 
 
@@ -465,7 +469,23 @@ public class WrenPhysics : MonoBehaviour
 
         if (vel.magnitude > maxSpeed)
         {
-            vel = vel.normalized * maxSpeed;
+            vel -= vel.normalized * (vel.magnitude - maxSpeed) * maxSpeedDamper;
+        }
+
+        // Only rights if we are NOT touching stuff
+        float maxVal = Mathf.Max(new float[]{
+            Mathf.Abs(input.leftY) ,
+            Mathf.Abs(input.leftX) ,
+            Mathf.Abs(input.rightY) ,
+            Mathf.Abs(input.rightX) ,
+            Mathf.Abs(input.left2) ,
+            Mathf.Abs(input.right2)
+        });
+
+
+        if (vel.magnitude > baseSpeed)
+        {
+            vel -= vel.normalized * (vel.magnitude - baseSpeed) * baseSpeedDamper * Mathf.Pow((1 - maxVal), 2);
         }
 
         speed = vel.magnitude;
