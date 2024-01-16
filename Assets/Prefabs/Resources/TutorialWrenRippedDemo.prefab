@@ -25450,8 +25450,8 @@ MonoBehaviour:
   featherDebugMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a,
     type: 2}
   featherMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a, type: 2}
-  debugLinePoints: 1
-  debugFeatherPoints: 1
+  debugLinePoints: 0
+  debugFeatherPoints: 0
   drawFeathers: 1
   numberScapularColumns: 60
   numberScapularRows: 40
@@ -26263,7 +26263,7 @@ MonoBehaviour:
   rt_Tranform: {fileID: 9160943688313912047}
   canMove: 0
   growth: {fileID: 1447400220214749194}
-  autoTakeOff: 1
+  autoTakeOff: 0
   lastFlapTime: 0
 --- !u!54 &9160943688313912040
 Rigidbody:
@@ -26379,6 +26379,9 @@ MonoBehaviour:
   twistLerpSpeed: 0.3
   bendLerpSpeed: 0.3
   maxSpeed: 400
+  maxSpeedDamper: 0.1
+  baseSpeed: 2
+  baseSpeedDamper: 0.001
   twistForceVal: 3
   slowestAmountToSide: 0.06
   fastestAmountToSide: 0.05
@@ -26394,7 +26397,7 @@ MonoBehaviour:
   flapToSide: 0.1
   flapPowerUp: 300
   flapPowerForward: 60
-  horizonRightingForceVal: 0
+  horizonRightingForceVal: 3
   rightingForce: -8
   rightingDependentOnNotTouchingVal: 0.4
   closestHeight: 0
@@ -26625,11 +26628,11 @@ MonoBehaviour:
   groundBackAmount: 12
   oMatchWithVert: 0
   matchWithVert: 0
-  lerpTowardHeadLook: 0.1
+  lerpTowardHeadLook: 0.9
   forwardLookVal: 11
   deadZoneCutoff: 0.8
-  lookAtTargetLookSpeedAir: 1
-  lookAtTargetLookSpeedGround: 1
+  lookAtTargetLookSpeedAir: 0.1
+  lookAtTargetLookSpeedGround: 0.3
   lookUpAmount: 1
   tmpUp: {x: 0, y: 0, z: 0}
   tmpForward: {x: 0, y: 0, z: 0}
@@ -26651,11 +26654,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   wren: {fileID: 9160943688313912041}
   paramFiles:
+  - controlSet34861
   - controlSet45938
   - FriendlyBird
   - NoGravity
   - NoGravity2
   - SmallBird
+  - Tutorial1
+  - TutorialWrenRippedDemo(Clone)
   paramID: 0
   paramSetName: 
 --- !u!114 &3856516255870990745

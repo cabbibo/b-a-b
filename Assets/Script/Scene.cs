@@ -23,6 +23,7 @@ namespace WrenUtils
         public Transform baseStartPosition;
 
         public bool isDemo;
+        public bool startInFlight;
 
 
 
@@ -80,6 +81,10 @@ namespace WrenUtils
                 }
 
                 God.wren.FullReset();
+                if (startInFlight)
+                {
+                    God.wren.state.TakeOff();
+                }
             }
 
 
