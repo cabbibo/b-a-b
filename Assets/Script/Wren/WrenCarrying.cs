@@ -146,7 +146,7 @@ public class WrenCarrying : MonoBehaviour
     public void GroundHit(Carryable.DropSettings dropSettings = null)
     {
 
-        int index = 0;
+        /*int index = 0;
         foreach (var c in CarriedItems)
         {
             if (c.dropOnGroundHit)
@@ -154,6 +154,18 @@ public class WrenCarrying : MonoBehaviour
                 DropCarriedItemAtIndex(index, dropSettings);
             }
             index++;
+        }*/
+
+
+        for (var i = 0; i < CarriedItems.Count; i++)
+        {
+            if (CarriedItems[i].dropOnGroundHit)
+            {
+                if (DropCarriedItemAtIndex(i, dropSettings))
+                {
+                    i--;
+                }
+            }
         }
     }
 

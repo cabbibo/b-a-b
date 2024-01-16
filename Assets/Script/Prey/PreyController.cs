@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using WrenUtils;
 
+
+
+[ExecuteAlways]
 public class PreyController : MonoBehaviour
 {
 
@@ -20,48 +23,54 @@ public class PreyController : MonoBehaviour
     void Update()
     {
 
-        if( God.wren ){
-            Wren wren = God.ClosestWren( transform.position );
+        if (God.wren)
+        {
+            Wren wren = God.ClosestWren(transform.position);
 
-            life -= dieRate;
+
 
             Vector3 d = wren.transform.position - transform.position;
 
-            thisRigidbody.AddForce( -d.normalized * Mathf.Clamp( speed * 1 / (.4f + d.magnitude * .02f), 0, maxSpeed ) );
-            thisRigidbody.AddForce( d.normalized * speed * .1f );
+            thisRigidbody.AddForce(-d.normalized * Mathf.Clamp(speed * 1 / (.4f + d.magnitude * .02f), 0, maxSpeed));
+            thisRigidbody.AddForce(d.normalized * speed * .1f);
             thisRigidbody.drag = drag;
 
-            if( thisRigidbody.velocity.magnitude > 0 ){
+            if (thisRigidbody.velocity.magnitude > 0)
+            {
                 thisRigidbody.rotation = Quaternion.RotateTowards(
                                 thisRigidbody.rotation,
-                                Quaternion.LookRotation( thisRigidbody.velocity, Vector3.up ),
+                                Quaternion.LookRotation(thisRigidbody.velocity, Vector3.up),
                                 thisRigidbody.velocity.magnitude
                         );
             }
 
 
-            transform.localScale = Vector3.one * maxScale * Mathf.Clamp( Mathf.Min( (1 - life) * 4, life ), 0, 1 );
-
-
-            if( life < 0 ){
-                Destroy( gameObject );
-            }
 
         }
+
+        transform.localScale = Vector3.one * maxScale * Mathf.Clamp(Mathf.Min((1 - life) * 4, life), 0, 1);
+
+        life -= dieRate;
+        if (life < 0)
+        {
+            DestroyImmediate(gameObject);
+        }
+
     }
 
 
 
-    void OnCollisionEnter( Collision c )
+    void OnCollisionEnter(Collision c)
     {
-        if( God.IsOurWren( c ) ){
-            manager.PreyGotAte( this );
-            Destroy( gameObject );
+        if (God.IsOurWren(c))
+        {
+            manager.PreyGotAte(this);
+            Destroy(gameObject);
         }
     }
 
 
-    public void Initialize( PreyConfigSO config, PreyManager manager )
+    public void Initialize(PreyConfigSO config, PreyManager manager)
     {
 
         enabled = true;
