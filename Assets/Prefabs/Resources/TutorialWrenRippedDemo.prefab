@@ -26416,7 +26416,7 @@ MonoBehaviour:
   groundUpVal: 0.25
   takeOffForwardForce: 10
   takeOffUpForce: 10
-  paintedWindForceMultiplier: 1
+  paintedWindForceMultiplier: 0
   showDebugForces: 0
   reset: 0
   distToGround: 0
