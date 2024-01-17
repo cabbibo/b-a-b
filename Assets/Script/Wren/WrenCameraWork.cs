@@ -70,10 +70,16 @@ public class WrenCameraWork : MonoBehaviour
   {
 
 
-    transform.position += v;
-    fLookTarget = transform.position;
+    //fLookTarget = transform.position;
+    lookTarget += v;
+    fLookTarget += v;
+
+    //transform.position += v;
     camTarget.position += v;
     Camera.main.transform.position += v;
+    CameraWork();
+
+
   }
 
 
@@ -188,6 +194,7 @@ public class WrenCameraWork : MonoBehaviour
 
 
         oLook = Mathf.Lerp(oLook, lookEulers, .04f);
+        //        print(oLook);
 
 
         camTarget.position = transform.position + tmpUp * upAmount - tmpForward * wren._ScaleMultiplier * backAmount - tmpRight * lookEulers * leftAmount * wren._ScaleMultiplier;

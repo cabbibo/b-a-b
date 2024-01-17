@@ -8,7 +8,7 @@ using UnityEngine.Events;
 namespace WrenUtils
 {
 
-    //[ExecuteAlways]
+    [ExecuteAlways]
     public class Scene : MonoBehaviour
     {
 
@@ -38,6 +38,9 @@ namespace WrenUtils
         public void SceneLoaded()
         {
 
+
+
+            print("hello");
             RenderSettings.skybox = skyboxMaterial;
             God.skyboxUpdater.material = skyboxMaterial;
             God.skyboxUpdater.UpdateSkybox();

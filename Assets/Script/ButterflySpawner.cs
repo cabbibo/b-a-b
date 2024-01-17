@@ -100,16 +100,21 @@ public class ButterflySpawner : MonoBehaviour
         }
 
 
-        tbParent.SafeInsert(tb);
 
-        if (tbParent.living)
+
+        if (tbParent != null)
         {
-            //  print("alive");
-            tbParent.JumpStart(tb);
-        }
-        else
-        {
-            tb.Activate();
+            tbParent.SafeInsert(tb);
+
+            if (tbParent.living)
+            {
+                //  print("alive");
+                tbParent.JumpStart(tb);
+            }
+            else
+            {
+                tb.Activate();
+            }
         }
 
 
@@ -120,25 +125,47 @@ public class ButterflySpawner : MonoBehaviour
 
     void OnDisable()
     {
-        if (tbParent.living)
+
+        if (tbParent != null)
         {
-            //   print("alive");
-            tbParent.JumpDeath(tb);
+            if (tbParent.living)
+            {
+                //   print("alive");
+                tbParent.JumpDeath(tb);
+            }
+            else
+            {
+                tb.Deactivate();
+            }
         }
-        else
-        {
-            tb.Deactivate();
-        }
+
 
 
         for (int i = this.transform.childCount; i > 0; --i)
+        {
             DestroyImmediate(this.transform.GetChild(0).gameObject);
+            butterflys = new GameObject[0];
+
+            positions = new float3[0];
+            velocities = new float3[0];
+            active = new bool[0];
+
+
+        }
     }
 
     void Destroy()
     {
         for (int i = this.transform.childCount; i > 0; --i)
+        {
             DestroyImmediate(this.transform.GetChild(0).gameObject);
+
+            butterflys = new GameObject[0];
+
+            positions = new float3[0];
+            velocities = new float3[0];
+            active = new bool[0];
+        }
     }
 
     public float maxSpeed = 1;
@@ -179,6 +206,7 @@ public class ButterflySpawner : MonoBehaviour
 
         // always update at least 1!
         numToUpdate = Mathf.Max(1, numToUpdate);
+
 
 
         float3 force;
