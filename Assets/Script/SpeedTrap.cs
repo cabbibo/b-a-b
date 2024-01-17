@@ -43,7 +43,7 @@ public class SpeedTrap : MonoBehaviour
         if (ps)
         {
             print("hit");
-            ps.Emit(100);
+            ps.Emit(20);
         }
         if (raceLeaderboard)
         {
@@ -51,6 +51,19 @@ public class SpeedTrap : MonoBehaviour
             raceLeaderboard.AddEntry(id, currentSpeed);
             raceLeaderboard.RefreshUI();
         }
+
+    }
+
+
+    public void OnBallHit()
+    {
+
+        if (ps)
+        {
+            print("hit");
+            ps.Emit(200);
+        }
+
 
     }
 
@@ -63,7 +76,11 @@ public class SpeedTrap : MonoBehaviour
         {
             OnHit();
         }
-        print("trigggered");
+
+        if (collider.tag == "Ball")
+        {
+            OnBallHit();
+        }
 
     }
 
