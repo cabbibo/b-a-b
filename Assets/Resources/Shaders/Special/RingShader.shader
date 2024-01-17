@@ -25,7 +25,7 @@
             #pragma vertex vert
             #pragma fragment frag
             
-            #pragma multi_compile_instancing
+        //    #pragma multi_compile_instancing
             // make fog work
 
             #include "UnityCG.cginc"
