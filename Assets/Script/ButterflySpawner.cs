@@ -258,13 +258,31 @@ public class ButterflySpawner : MonoBehaviour
 
     }
 
+
+    float3 projectPointOnLine(float3 linePoint, float3 lineVec, float3 point)
+    {
+        //get vector from point on line to point in space
+        float3 linePointToPoint = point - linePoint;
+
+        float t = dot(linePointToPoint, lineVec);
+
+        return linePoint + lineVec * t;
+
+    }
+
     float3 SharkRepelForce(int i)
     {
         float3 diff = positions[i] - sharkPos;
         float dist = length(diff);
+
         if (dist < sharkRepelRadius)
         {
-            return diff * sharkRepelForce * length(sharkSpeed);
+
+            if (length(sharkSpeed) < .01f) return 0;
+            float3 p = projectPointOnLine(sharkPos, normalize(sharkSpeed), positions[i]);
+            diff = positions[i] - p;
+
+            return (normalize(diff) / dist) * sharkRepelForce;// * length(sharkSpeed);
         }
         else
         {
