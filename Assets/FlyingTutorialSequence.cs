@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -23,6 +24,9 @@ public class FlyingTutorialSequence : MonoBehaviour
 
     public bool debug;
     public int debugCamIdx = 0;
+
+    public Gradient fadeGradient;
+    public Renderer fade;
 
     Coroutine tutSequence;
 
@@ -51,6 +55,8 @@ public class FlyingTutorialSequence : MonoBehaviour
             }
         }
 
+        fade.transform.position = God.camera.transform.position;
+
     }
 
     IEnumerator TutorialSequence()
@@ -63,6 +69,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         groupDive.SetActive(false);
         ShowProgress(0);
         cinematicCamera.armed = false;
+        SetBGFade(1);
 
         while (God.wren == null)
             yield return null;
@@ -80,68 +87,36 @@ public class FlyingTutorialSequence : MonoBehaviour
             yield return null;
         }
 
-        cinematicCamera.tutorialCameraIdx = 3; // below
+        cinematicCamera.tutorialCameraIdx = 0;
         yield return new WaitForSecondsRealtime(5);
 
         // Sticks
         {
             groupSticks.SetActive(true);
-            controllerText.text = "Wings";
+            controllerText.text = "";
 
             yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
-            yield return new WaitForSecondsRealtime(12);
-            yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
         }
+        yield return CameraSequence();
+        yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
         groupSticks.SetActive(false);
 
-        // Cam 1
-        {
-            controllerText.text = "X Continue";
+        cinematicCamera.tutorialCameraIdx++; // 1
+        yield return CameraSequence();
+        cinematicCamera.tutorialCameraIdx++; // 2
+        yield return CameraSequence();
+        cinematicCamera.tutorialCameraIdx++; // 3
+        yield return CameraSequence();
+        cinematicCamera.tutorialCameraIdx++; // 4
+        yield return CameraSequence();
+        cinematicCamera.tutorialCameraIdx++; // 5
+        yield return CameraSequence();
 
-            yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
-            while (God.wren.input.ex < .5f)
-                yield return null;
-            groupContainer.alpha = 0;
-        }
-
-        cinematicCamera.tutorialCameraIdx = 0; //eye
-        yield return new WaitForSecondsRealtime(9);
-        // Cam 1
-        {
-            controllerText.text = "X Continue";
-
-            yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
-            while (God.wren.input.ex < .5f)
-                yield return null;
-            groupContainer.alpha = 0;
-        }
-        cinematicCamera.tutorialCameraIdx = 1;
-        yield return new WaitForSecondsRealtime(6);
-        // Cam 1
-        {
-            controllerText.text = "X Continue";
-
-            yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
-            while (God.wren.input.ex < .5f)
-                yield return null;
-            groupContainer.alpha = 0;
-        }
-
-        cinematicCamera.tutorialCameraIdx = 2;
-        yield return new WaitForSecondsRealtime(6);
-        // Cam 1
-        {
-            controllerText.text = "X Continue";
-
-            yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
-            while (God.wren.input.ex < .5f)
-                yield return null;
-            groupContainer.alpha = 0;
-        }
-
+        // Game cam
         cinematicCamera.armed = false;
         yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
+        yield return new WaitForSecondsRealtime(10);
 
         // // Sticks
         // {
@@ -152,13 +127,21 @@ public class FlyingTutorialSequence : MonoBehaviour
         //     yield return new WaitForSecondsRealtime(8);
         //     yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
         // }
-
-        yield return new WaitForSecondsRealtime(8);
+        float bgT = 1;
+        while(bgT > 0)
+        {
+            SetBGFade(bgT);
+            bgT -= Time.deltaTime * .6f;
+            yield return null;
+        }
+        SetBGFade(0);
+        yield return new WaitForSecondsRealtime(15);
 
         // Dive
         {
             groupSticks.SetActive(false);
             groupDive.SetActive(true);
+            controllerText.transform.parent.gameObject.SetActive(true);
             controllerText.text = "Hold to DIVE";
 
             yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
@@ -187,10 +170,54 @@ public class FlyingTutorialSequence : MonoBehaviour
 
     }
 
+    MaterialPropertyBlock bgMpr;
+    void SetBGFade(float t)
+    {
+        if (bgMpr == null)
+            bgMpr = new MaterialPropertyBlock();
+        fade.gameObject.SetActive(t > 0);
+        if (Mathf.Approximately(t, 0))
+            return;
+        fade.GetPropertyBlock(bgMpr);
+        bgMpr.SetColor("_Color", fadeGradient.Evaluate(t));
+        fade.SetPropertyBlock(bgMpr);
+    }
+
+    IEnumerator CameraSequence()
+    {
+        var t = 0f;
+        groupContainer.alpha = 1;
+        ShowProgress(t);
+        // yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
+        while (HandleSticksProgress(ref t, speed: 1.7f, gravity: true))
+            yield return null;
+        groupContainer.alpha = 0;
+    }
+
+    bool HandleSticksProgress(ref float t, float speed = 2f, bool gravity = true)
+    {
+        if (
+            Mathf.Abs(God.input.leftX) > .1f || 
+            Mathf.Abs(God.input.leftY) > .1f || 
+            Mathf.Abs(God.input.rightX) > .1f || 
+            Mathf.Abs(God.input.rightY) > .1f || 
+            
+            God.input.l2 > 0.1f || 
+            God.input.r2 > 0.1f
+        )
+            t += Time.deltaTime * .1f * speed;
+        else if (gravity)
+            t = Mathf.Clamp01(t - Time.deltaTime * .05f);
+
+        ShowProgress(t);
+        Debug.Log(t);
+        return t < 1;
+    }
+
     void ShowProgress(float t = 0)
     {
-        progressBar.gameObject.SetActive(t > 0);
-        progressBar.localScale = new Vector3(Mathf.Clamp01(t), 1, 1);
+        progressBar.transform.parent.gameObject.SetActive(t > 0);
+        progressBar.localScale = new Vector3(Mathf.Clamp01(t * t), 1, 1);
     }
 
     IEnumerator FadeGroup(CanvasGroup group, float from = 0, float to = 1)
@@ -211,7 +238,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         cinematicCamera.armed = false;
         ShowProgress(0);
         groupContainer.alpha = 0;
-        
+
         OnTutorialDiveFinished?.Invoke();
     }
 }
