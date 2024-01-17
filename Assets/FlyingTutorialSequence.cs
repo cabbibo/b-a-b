@@ -28,6 +28,8 @@ public class FlyingTutorialSequence : MonoBehaviour
     public Gradient fadeGradient;
     public Renderer fade;
 
+    public TutorialEnder ender;
+
     Coroutine tutSequence;
 
 
@@ -36,10 +38,10 @@ public class FlyingTutorialSequence : MonoBehaviour
         if (!Application.isEditor)
             debug = false;
 
-        
+        if (!ender)
+            ender = FindObjectOfType<TutorialEnder>();
+
         tutSequence = StartCoroutine(TutorialSequence());
-
-
     }
 
 
@@ -52,6 +54,8 @@ public class FlyingTutorialSequence : MonoBehaviour
                 StopCoroutine(tutSequence);
                 
                 OnTutorialFinished();
+
+                God.wren.PhaseShift(ender.transform.position + Vector3.down * 180);
             }
         }
 
@@ -110,6 +114,15 @@ public class FlyingTutorialSequence : MonoBehaviour
         cinematicCamera.tutorialCameraIdx++; // 4
         yield return CameraSequence();
         cinematicCamera.tutorialCameraIdx++; // 5
+        float bgT = 1;
+        while(bgT > 0)
+        {
+            SetBGFade(bgT);
+            bgT -= Time.deltaTime * .2f;
+            yield return null;
+        }
+        SetBGFade(0);
+        yield return new WaitForSecondsRealtime(6);
         yield return CameraSequence();
 
         // Game cam
@@ -127,14 +140,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         //     yield return new WaitForSecondsRealtime(8);
         //     yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
         // }
-        float bgT = 1;
-        while(bgT > 0)
-        {
-            SetBGFade(bgT);
-            bgT -= Time.deltaTime * .6f;
-            yield return null;
-        }
-        SetBGFade(0);
+        
         yield return new WaitForSecondsRealtime(15);
 
         // Dive
@@ -237,6 +243,7 @@ public class FlyingTutorialSequence : MonoBehaviour
     {
         cinematicCamera.armed = false;
         ShowProgress(0);
+        SetBGFade(0);
         groupContainer.alpha = 0;
 
         OnTutorialDiveFinished?.Invoke();
