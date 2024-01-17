@@ -962,16 +962,79 @@ namespace MagicCurve
         }
 
 
+        // id1, id2, lerpVal
+        public Vector3 GetClosestPointData(Vector3 point)
+        {
+
+
+            float closestDist = 1000000;
+            int closestID = -10;
+            for (int i = 0; i < bakedPoints.Length; i++)
+            {
+
+                float dist = (bakedPoints[i] - point).magnitude;
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestID = i;
+                }
+
+            }
+
+
+            int secondClosestID = closestID;
+            float secondClosestDistance = 1000;
+
+            if (closestID > 0)
+            {
+
+                float dist = (bakedPoints[closestID - 1] - point).magnitude;
+                if (dist < secondClosestDistance)
+                {
+                    secondClosestID = closestID - 1;
+                    secondClosestDistance = dist;
+                }
+            }
+
+            if (closestID < bakedPoints.Length - 1)
+            {
+
+                float dist = (bakedPoints[closestID + 1] - point).magnitude;
+                if (dist < secondClosestDistance)
+                {
+                    secondClosestID = closestID + 1;
+                    secondClosestDistance = dist;
+                }
+
+            }
+
+
+            /// project point onto line between two points;
+            /// 
+            Vector3 p1 = bakedPoints[closestID];
+            Vector3 p2 = bakedPoints[secondClosestID];
+
+            Vector3 dir = (p2 - p1).normalized;
+            Vector3 p1ToP = point - p1;
+            Vector3 projectedPoint = p1 + dir * Vector3.Dot(p1ToP, dir);
+
+
+            Vector3 p1ToP2 = p2 - p1;
+            Vector3 p1ToProjectedPoint = projectedPoint - p1;
+            float lerpVal = (p1ToProjectedPoint).magnitude / (p1ToP2).magnitude;
 
 
 
 
+            return new Vector3(closestID, secondClosestID, lerpVal);
 
+
+
+        }
 
 
 
     }
-
 
     /*
     EVENTS
@@ -980,9 +1043,13 @@ namespace MagicCurve
     public class CurveEvent : UnityEvent<Curve>
     {
     }
-
-
 }
+
+
+
+
+
+
 
 
 

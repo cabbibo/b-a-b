@@ -234,6 +234,7 @@ public static class Helpers
 
   public static bool isWrenCollision(Collider c)
   {
+    if (God.wren == null) return false;
     return (c.attachedRigidbody == God.wren.physics.rb);
   }
 

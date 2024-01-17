@@ -10150,7 +10150,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &3650603334714497527
 Transform:
   m_ObjectHideFlags: 0
@@ -26197,7 +26197,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &9160943688313912038
 Transform:
   m_ObjectHideFlags: 0
@@ -26379,6 +26379,9 @@ MonoBehaviour:
   twistLerpSpeed: 0.3
   bendLerpSpeed: 0.3
   maxSpeed: 400
+  maxSpeedDamper: 0.1
+  baseSpeed: 3
+  baseSpeedDamper: 0.001
   twistForceVal: 3
   slowestAmountToSide: 0.06
   fastestAmountToSide: 0.05
@@ -26625,12 +26628,16 @@ MonoBehaviour:
   groundBackAmount: 12
   oMatchWithVert: 0
   matchWithVert: 0
-  lerpTowardHeadLook: 0.9
+  lerpTowardHeadLook: 0.1
   forwardLookVal: 11
   deadZoneCutoff: 0.8
   lookAtTargetLookSpeedAir: 1
   lookAtTargetLookSpeedGround: 1
   lookUpAmount: 1
+  tmpUp: {x: 0, y: 0, z: 0}
+  tmpForward: {x: 0, y: 0, z: 0}
+  tmpRight: {x: 0, y: 0, z: 0}
+  wrenTmpUp: {x: 0, y: 0, z: 0}
   deadZoneUp: {x: 0, y: 0, z: 0}
   inDeadZone: 0
 --- !u!114 &5119402594301017824
@@ -26646,7 +26653,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wren: {fileID: 9160943688313912041}
-  paramFiles: []
+  paramFiles:
+  - controlSet34861
+  - controlSet45938
+  - FriendlyBird
+  - NoGravity
+  - NoGravity2
+  - SmallBird
+  - Tutorial1
+  - TutorialWrenRippedDemo(Clone)
   paramID: 0
   paramSetName: 
 --- !u!114 &3856516255870990745
