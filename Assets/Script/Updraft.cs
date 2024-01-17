@@ -41,4 +41,11 @@ public class Updraft : MonoBehaviour
 
     }
 
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, distanceCutoff);
+        
+    }
+
 }

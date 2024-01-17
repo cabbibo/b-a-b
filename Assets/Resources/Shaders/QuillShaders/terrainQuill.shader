@@ -85,6 +85,20 @@ Shader "Unlit/quillTerrain"{
         [HideInInspector] _Color ("Main Color", Color) = (1,1,1,1)
 
 
+        _FogColor ("Fog Color", Color) = (1,1,1,1)
+        _FogAmount("_Fog Amount", Range(0,1)) = 0
+        _FogStart("_Fog Start", float) = 100
+        _FogEnd("_Fog End", float) = 1000
+        _FogNoiseAmount("_Fog Noise Amount", float) = 0
+        _FogNoiseScale("_Fog Noise Scale", float) = 1
+        _HeightFogColor ("Height Fog Color", Color) = (1,1,1,1)
+        _HeightFogAmount("_Height Fog Amount", Range(0,1)) = 0
+        _HeightFogStart("_Height Fog Start", float) = 100
+        _HeightFogEnd("_Height Fog End", float) = 1000
+        _HeightFogMinDistance("_Height Fog Min Distance", float) = 0
+        _HeightFogMaxDistance("_Height Fog Max Distance", float) = 1000
+        _HeightFogNoiseAmount("_Height Fog Noise Amount", float) = 0
+        _HeightFogNoiseScale("_Height Fog Noise Scale", float) = 1
 
     }
 
@@ -171,7 +185,22 @@ Shader "Unlit/quillTerrain"{
         half _Smoothness3;
 
         float4 _MainTex_ST;
-    
+  
+      half4 _FogColor;
+      float _FogStart;
+      float _FogEnd;
+      float _FogAmount;
+      float _FogNoiseAmount;
+      float _FogNoiseScale;
+
+      half4 _HeightFogColor;
+      float _HeightFogStart;
+      float _HeightFogEnd;
+      float _HeightFogAmount;
+      float _HeightFogMinDistance;
+      float _HeightFogMaxDistance;
+      float _HeightFogNoiseAmount;
+      float _HeightFogNoiseScale;
 /*struct Input
 {
     float4 tc;
@@ -1013,6 +1042,24 @@ col = lerp(col ,cityColor,cityValue);
 
 
  //col *= mixedDiffuse;//floor( mixedDiffuse.xyz*10)/10;
+
+ // fog
+ float fogZ = distance(_WorldSpaceCameraPos, v.worldPos);
+ float ff = saturate((fogZ-_FogStart)/(_FogEnd-_FogStart));
+ // use noise
+ff += clamp(_FogNoiseAmount * (triNoise3D(v.worldPos * _FogNoiseScale * .01, 0, 0) - 0.5f) * ff, -1 ,1);
+ff *= ff;
+ col.rgb = lerp( col.rgb, _FogColor.rgb, ff * _FogAmount);
+
+ // height fog
+  float heightFog = saturate((v.worldPos.y-_HeightFogStart)/(_HeightFogEnd-_HeightFogStart));
+  // use min max distance
+  heightFog *= saturate((_HeightFogMaxDistance - fogZ) / (_HeightFogMaxDistance - _HeightFogMinDistance));
+
+  // add noise
+  heightFog += _HeightFogNoiseAmount * (triNoise3D(v.worldPos * _HeightFogNoiseScale * .01 + float3(0,_Time.y*0.01,0), 0, 0) - 0.5f) * heightFog;
+  heightFog *= heightFog;
+  col.rgb = lerp( col.rgb, _HeightFogColor.rgb, heightFog * _HeightFogAmount);
  
     return float4(col,1);
 }

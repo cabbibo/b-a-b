@@ -526,6 +526,7 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   fade: {fileID: 4052178327609603398}
+  ender: {fileID: 0}
 --- !u!1 &2985678735892472477
 GameObject:
   m_ObjectHideFlags: 0
@@ -718,17 +719,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugArmed: 0
-  fov: 29.2
+  fov: 20.56
   orbit: 1
-  orbitAngle: 0.429
-  orbitRadius: 4.22
-  orbitHeight: -45.5
+  orbitAngle: 0.498
+  orbitRadius: 3.33
+  orbitHeight: -13.1
   parentToBird: 1
   bodyTarget: 0
   posOffset: {x: 0, y: 0, z: 0.19}
   aimTarget: 0
   aimPosOffset: {x: 0, y: 0, z: 0.16}
-  rotationOffset: {x: -3.11, y: 5.51, z: 0.2}
+  rotationOffset: {x: 0.57, y: -0.51, z: 0.2}
   rotation: 0
 --- !u!1 &4679777290701523950
 GameObject:
@@ -765,7 +766,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.4, y: 1}
   m_AnchorMax: {x: 0.6, y: 1}
-  m_AnchoredPosition: {x: 0, y: -16.62}
+  m_AnchoredPosition: {x: 0, y: -16.620117}
   m_SizeDelta: {x: 0, y: 23.380005}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3158009509614110021
@@ -1018,7 +1019,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6464141074996702646}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
