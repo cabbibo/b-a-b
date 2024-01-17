@@ -23,7 +23,10 @@ public class TransportWren : MonoBehaviour
         if (Time.time - lastSpawnTime > timeBetweenSpawns)
         {
             lastSpawnTime = Time.time;
-            God.wren.PhaseShift(transform.position);
+            if (God.wren)
+            {
+                God.wren.PhaseShift(transform.position);
+            }
         }
     }
 

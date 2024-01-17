@@ -130,8 +130,7 @@ public class Wren : MonoBehaviour
         physics.TransportToPosition(p, physics.rb.velocity);
 
 
-        /// bird.TeleportToLocation();
-        /// 
+
 
     }
 
