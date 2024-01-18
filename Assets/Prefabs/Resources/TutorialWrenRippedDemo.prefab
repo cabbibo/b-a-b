@@ -26379,9 +26379,9 @@ MonoBehaviour:
   twistLerpSpeed: 0.3
   bendLerpSpeed: 0.3
   maxSpeed: 400
-  maxSpeedDamper: 0.1
+  maxSpeedDamper: 0.03
   baseSpeed: 2
-  baseSpeedDamper: 0.001
+  baseSpeedDamper: 0.002
   twistForceVal: 3
   slowestAmountToSide: 0.06
   fastestAmountToSide: 0.05

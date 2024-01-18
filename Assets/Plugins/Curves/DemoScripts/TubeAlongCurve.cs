@@ -25,6 +25,7 @@ public class TubeAlongCurve : MonoBehaviour
     Vector3[] normals;
     Vector4[] tangents;
     Vector2[] uvs;
+    Vector2[] uvs2;
     int[] triangles;
 
     public int totalVertCount;
@@ -32,35 +33,41 @@ public class TubeAlongCurve : MonoBehaviour
 
     MeshFilter filter;
 
-    public void OnEnable(){
+    public void OnEnable()
+    {
         filter = GetComponent<MeshFilter>();
         curve = GetComponent<Curve>();
         curve.BakeChanged.AddListener(BuildMesh);
 
     }
 
-    public void OnDisable(){
+    public void OnDisable()
+    {
         curve.BakeChanged.AddListener(BuildMesh);
     }
 
 
 
-    void BuildMesh(Curve c){
-        
+    void BuildMesh(Curve c)
+    {
+
         totalVertCount = lengthSegments * radialSegments;
-        totalTriCount = (lengthSegments-1) * (radialSegments-1) * 3 * 2;
+        totalTriCount = (lengthSegments - 1) * (radialSegments - 1) * 3 * 2;
 
         positions = new Vector3[totalVertCount];
         normals = new Vector3[totalVertCount];
         tangents = new Vector4[totalVertCount];
         uvs = new Vector2[totalVertCount];
+        uvs2 = new Vector2[totalVertCount];
         triangles = new int[totalTriCount];
 
         // Building the triangles first
-        int index  = 0;
-        for( int i = 0; i < lengthSegments-1; i++){
-            for( int j = 0; j < radialSegments-1; j++ ){
-                
+        int index = 0;
+        for (int i = 0; i < lengthSegments - 1; i++)
+        {
+            for (int j = 0; j < radialSegments - 1; j++)
+            {
+
 
                 // Getting indicies to build a tube
                 int baseID = radialSegments * i + j;
@@ -80,29 +87,34 @@ public class TubeAlongCurve : MonoBehaviour
         }
 
         // reset index of array
-        index  = 0;
-        for( int i = 0; i < lengthSegments; i++){
-            
-            float lengthAlongTube = (float)i/(lengthSegments-1);
-            float3 centerPos = curve.GetPositionFromValueAlongCurve( lengthAlongTube );
+        index = 0;
+        for (int i = 0; i < lengthSegments; i++)
+        {
+
+            float lengthAlongTube = (float)i / (lengthSegments - 1);
+            float3 centerPos = curve.GetPositionFromValueAlongCurve(lengthAlongTube);
             float3 forward = curve.GetForwardFromValueAlongCurve(lengthAlongTube);
-            for( int j = 0; j < radialSegments; j++ ){
-                
-                float aroundness = ((float)j/(radialSegments-1));
-                float angle = aroundness * Mathf.PI*2;
+            for (int j = 0; j < radialSegments; j++)
+            {
+
+                float aroundness = ((float)j / (radialSegments - 1));
+                float angle = aroundness * Mathf.PI * 2;
 
                 float xAmount = Mathf.Sin(angle);
                 float yAmount = Mathf.Cos(angle);
                 float w = curve.GetWidthFromValueAlongCurve(lengthAlongTube);
-                float3 fPos = curve.GetOffsetPositionFromValueAlongCurve( lengthAlongTube , xAmount*w*radius, yAmount*w*radius );
+                float3 fPos = curve.GetOffsetPositionFromValueAlongCurve(lengthAlongTube, xAmount * w * radius, yAmount * w * radius);
                 float3 normal = fPos - centerPos;
-                float4 tangent = float4(cross(normal,forward),1);
-                float2 uv = float2( lengthAlongTube, aroundness);
+                float4 tangent = float4(cross(normal, forward), 1);
+                float2 uv = float2(lengthAlongTube, aroundness);
 
+
+                float2 uv2 = float2(i, 0);
                 positions[index] = transform.InverseTransformPoint(fPos);
-                tangents[index] = float4(transform.InverseTransformDirection(tangent.xyz),1);
+                tangents[index] = float4(transform.InverseTransformDirection(tangent.xyz), 1);
                 normals[index] = transform.InverseTransformDirection(normal);
-                uvs[ index] = uv;
+                uvs[index] = uv;
+                uvs2[index] = uv2;
 
                 index++;
 
@@ -112,13 +124,14 @@ public class TubeAlongCurve : MonoBehaviour
 
         Mesh m = new Mesh();
 
-        
+
         m.Clear();
 
         m.vertices = positions;
         m.tangents = tangents;
         m.normals = normals;
         m.uv = uvs;
+        m.uv2 = uvs2;
         m.triangles = triangles;
 
         filter.mesh = m;

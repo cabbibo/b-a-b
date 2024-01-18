@@ -32,10 +32,11 @@ public class SetGatesOnCurve : MonoBehaviour
         if (regenerate)
         {
             //Delete all children
-            foreach (Transform child in ringParent)
+
+            while (ringParent.childCount > 0)
             {
-                cycle.JumpDeath(child.GetComponent<Cycle>());
-                DestroyImmediate(child.gameObject);
+                cycle.JumpDeath(ringParent.GetChild(0).GetComponent<Cycle>());
+                DestroyImmediate(ringParent.GetChild(0).gameObject);
 
             }
 

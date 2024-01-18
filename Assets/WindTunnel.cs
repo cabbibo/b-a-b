@@ -49,10 +49,14 @@ public class WindTunnel : MonoBehaviour
 
         Vector3 curveInfo = curve.GetClosestPointData(fPos);
 
+        //        print(curveInfo);
+
         float lerpVal = Mathf.Clamp(curveInfo.z, 0, 1);
 
 
         Vector3 closestPos = Vector3.Lerp(curve.bakedPoints[(int)curveInfo.x], curve.bakedPoints[(int)curveInfo.y], lerpVal);
+
+
 
         Vector3 inDir = (closestPos - fPos).normalized;
         float dist = Vector3.Distance(closestPos, fPos);
@@ -90,9 +94,17 @@ public class WindTunnel : MonoBehaviour
         if (God.wren != null)
         {
 
-            God.wren.physics.rb.AddForce(closestForward * tunnelForwardForce * (1 / tunnelForceFalloff * dist));
-            God.wren.physics.rb.AddForce(inDir * tunnelInForce * (1 / tunnelForceFalloff * dist));
-            God.wren.physics.rb.AddForce(-God.wren.physics.vel * dampenForce * (1 / tunnelForceFalloff * dist));
+            //  print(dist);
+            //  print((1 / tunnelForceFalloff * dist));
+            //  print(closestForward);
+
+            // dont add forces before or at end of tunnel
+            if (lerpVal != 0)
+            {
+                God.wren.physics.rb.AddForce(closestForward * tunnelForwardForce * (1 / tunnelForceFalloff * dist));
+                God.wren.physics.rb.AddForce(inDir * tunnelInForce * (1 / tunnelForceFalloff * dist));
+                God.wren.physics.rb.AddForce(-God.wren.physics.vel * dampenForce * (1 / tunnelForceFalloff * dist));
+            }
 
         }
 
