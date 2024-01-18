@@ -15,25 +15,15 @@ public class Caller : MonoBehaviour
 
     public AudioMixer mixer;
     public string group;
-    // Update is called once per frame
-    void Update()
-    {
-
-        if (wren.input.o_circle < .5 && wren.input.circle > .5)
-        {
-            Call();
-        }
-
-    }
 
     public void Call()
     {
 
 
         // Play in correct Location
-        God.audio.Play(possibleClips[Random.Range(0, possibleClips.Length)], 1, 1, 0, 10, mixer, group, wren.transform.position);
+        God.audio.Play(possibleClips[Random.Range(0, possibleClips.Length)], 1, 1, 0, 10, mixer, group, God.wren.transform.position);
         particles.Play();
-        particles.transform.position = wren.transform.position;
+        particles.transform.position = God.wren.transform.position;
 
     }
 }
