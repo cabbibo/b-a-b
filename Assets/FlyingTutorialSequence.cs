@@ -9,12 +9,14 @@ using WrenUtils;
 
 public class FlyingTutorialSequence : MonoBehaviour
 {
+    public static UnityAction OnTutorialStart;
     public static UnityAction OnTutorialDiveFinished;
     // public static bool 
 
     public CinematicCameraHandler cinematicCamera;
 
     public CanvasGroup groupContainer;
+    public CanvasGroup xToContinue;
 
     public TextMeshProUGUI controllerText;
 
@@ -67,7 +69,13 @@ public class FlyingTutorialSequence : MonoBehaviour
     {
         yield return null;
 
+        OnTutorialStart?.Invoke();
+
+        God.fade.FadeIn(3);
+
         groupContainer.alpha = 0;
+        ShowContinue(false);
+        ShowText();
 
         groupSticks.SetActive(false);
         groupDive.SetActive(false);
@@ -101,8 +109,10 @@ public class FlyingTutorialSequence : MonoBehaviour
 
             yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
         }
+        yield return new WaitForSecondsRealtime(5);
+        
         yield return CameraSequence();
-        yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
+        groupContainer.alpha = 0;
         groupSticks.SetActive(false);
 
         cinematicCamera.tutorialCameraIdx++; // 1
@@ -129,7 +139,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         cinematicCamera.armed = false;
         yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
-        yield return new WaitForSecondsRealtime(10);
+        // yield return new WaitForSecondsRealtime(10);
 
         // // Sticks
         // {
@@ -189,15 +199,56 @@ public class FlyingTutorialSequence : MonoBehaviour
         fade.SetPropertyBlock(bgMpr);
     }
 
+    void ShowText(string text = null)
+    {
+        controllerText.transform.parent.gameObject.SetActive(!string.IsNullOrEmpty(text));
+        controllerText.text = text;
+    }
+
+    void ShowContinue(bool bShow)
+    {
+        xToContinue.gameObject.SetActive(bShow);
+    }
+
     IEnumerator CameraSequence()
     {
+        bool wait = true;
         var t = 0f;
         groupContainer.alpha = 1;
         ShowProgress(t);
-        // yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
-        while (HandleSticksProgress(ref t, speed: 1.7f, gravity: true))
+
+        ShowContinue(false);
+
+        yield return new WaitForSecondsRealtime(0.5f);
+        bool lastX = God.input.x;
+        wait = true; t = 0;
+        while(wait)
+        {
+            if (!lastX && God.input.x)
+                wait = false;
+            lastX = God.input.x;
+            
+            t += Time.deltaTime;
+            if (t > 7)
+                wait = false;
             yield return null;
+        }
+
+        ShowContinue(true);
+        wait = true;
+        while(wait)
+        {
+            if (God.input.x)
+                wait = false;
+            else
+                yield return null;
+        }
+        // yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
+        // while (HandleSticksProgress(ref t, speed: 1.7f, gravity: true))
+        //     yield return null;
+
         groupContainer.alpha = 0;
+        ShowContinue(false);
     }
 
     bool HandleSticksProgress(ref float t, float speed = 2f, bool gravity = true)
