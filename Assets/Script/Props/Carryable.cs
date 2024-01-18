@@ -27,6 +27,8 @@ public class Carryable : RealtimeComponent<CarryableModel>
     public bool dropOnGroundHit = true;
     public float carryingDrag = 3f;
     public float releasedDrag = .25f;
+
+    public bool gravityOnDrop = false;
     private const float CarryCooldown = 0.5f;
 
     private Rigidbody _rigidbody;
@@ -145,6 +147,7 @@ public class Carryable : RealtimeComponent<CarryableModel>
         _carrier = null;
 
         _rigidbody.drag = releasedDrag;
+        _rigidbody.useGravity = gravityOnDrop;
         //_transform.localScale = new Vector3(4,4,4);
 
         if (dropSettings != null)
