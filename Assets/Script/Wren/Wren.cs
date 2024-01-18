@@ -47,6 +47,8 @@ public class Wren : MonoBehaviour
     public WrenWaterController waterController;
 
 
+    public Caller caller;
+    public Reseter reseter;
     public Collection collection;
 
     public FullInterface fullInterface;
@@ -68,6 +70,9 @@ public class Wren : MonoBehaviour
     public WrenGrowthManager growth;
 
     public bool autoTakeOff;
+
+    public bool doInterface;
+
 
 
     void OnEnable()
@@ -243,13 +248,33 @@ public class Wren : MonoBehaviour
 
             // state.inInterface = God.menu.menuOn;
 
-            // Only drop items in air ( is that correct? )
-            if (input.o_triangle < .5 && input.triangle > .5 && state.canTakeOff)
+
+
+
+            if (doInterface)
             {
-                if (compass != null)
+
+                if (input.o_circle < .5 && input.circle > .5)
                 {
-                    compass.Toggle();
+                    caller.Call();
                 }
+
+
+                // Only drop items in air ( is that correct? )
+                if (input.o_square < .5 && input.square > .5 && state.canTakeOff)
+                {
+                    reseter.Reset();
+                }
+
+                // Only drop items in air ( is that correct? )
+                if (input.o_triangle < .5 && input.triangle > .5 && state.canTakeOff)
+                {
+                    if (compass != null)
+                    {
+                        compass.Toggle();
+                    }
+                }
+
             }
 
             if (canMove)
@@ -267,9 +292,6 @@ public class Wren : MonoBehaviour
                     God.audio.Play(God.sounds.takeoffClip);
                     state.TakeOff();
                 }
-
-
-
 
 
 
@@ -337,8 +359,10 @@ public class Wren : MonoBehaviour
                 // ONLY do interface stuff when we aren't 
                 // in the ether!
 
-                if (!inEther)
+                if (!inEther && doInterface)
                 {
+
+
                     if (input.o_circle < .5 && input.circle > .5)
                     {
                         state.inInterface = !state.inInterface;
