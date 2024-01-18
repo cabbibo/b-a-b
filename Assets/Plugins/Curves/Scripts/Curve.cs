@@ -733,6 +733,17 @@ namespace MagicCurve
             }
             else
             {
+
+                if ((int)min < 0)
+                {
+                    print("ERROR");
+                    print(v);
+                }
+                else if ((int)max > bakedDists.Length - 1)
+                {
+                    print("erro2");
+                    print(v);
+                }
                 float lerpVal = (segment - min);
                 float evenDist = lerp(bakedDists[(int)min], bakedDists[(int)max], (segment - min));
                 return evenDist;
@@ -1022,6 +1033,11 @@ namespace MagicCurve
             Vector3 p1ToP2 = p2 - p1;
             Vector3 p1ToProjectedPoint = projectedPoint - p1;
             float lerpVal = (p1ToProjectedPoint).magnitude / (p1ToP2).magnitude;
+
+            if (closestID == secondClosestID)
+            {
+                lerpVal = 0;
+            }
 
 
 

@@ -1,4 +1,4 @@
-﻿Shader "Unlit/Magic Threads"
+﻿Shader "Unlit/MagicThreads"
 {
     Properties
     {
@@ -112,6 +112,8 @@ Blend One One // Additive
 
                 col *= clamp( pow( i.uv.x ,2) * 3000 , 0 , 1);
                 col *= clamp( pow( 1-i.uv.x ,2) * 3000 , 0 , 1);
+
+                //col = 1;
 
                 if( length( col ) < .2 ){
                     discard;

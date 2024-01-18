@@ -12,7 +12,7 @@
     }
     SubShader
     {
-        Tags { "RenderType"="Transparent"  "Queue" ="Transparent"}
+        //Tags { "RenderType"="Transparent"  "Queue" ="Transparent"}
         LOD 100
 
         Blend One One
@@ -25,7 +25,7 @@
             #pragma vertex vert
             #pragma fragment frag
             
-        //    #pragma multi_compile_instancing
+         //   #pragma multi_compile_instancing
             // make fog work
 
             #include "UnityCG.cginc"
@@ -228,6 +228,8 @@ float3 shadowCol = 0;
 
                 // apply fog
                 //UNITY_APPLY_FOG(v.fogCoord, col);
+
+                col = float3(1,0,1);;
                 return float4(col,1);
             }
             ENDCG
