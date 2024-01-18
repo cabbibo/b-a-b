@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Normal.Realtime;
- using WrenUtils;
+using WrenUtils;
 
 public class TimingCarryable : MonoBehaviour
 {
@@ -31,7 +31,7 @@ public class TimingCarryable : MonoBehaviour
 
     public ParticleSystem particles;
 
-    
+
     // Update is called once per frame
     void Update()
     {
@@ -39,10 +39,12 @@ public class TimingCarryable : MonoBehaviour
 
         // currently carrying in a location where
         // the water is fading away
-        if( drying == true ){
+        if (drying == true)
+        {
             currentAmount -= dripSpeed;
 
-            if( currentAmount < 0  ){
+            if (currentAmount < 0)
+            {
                 currentAmount = 0;
                 OnDry();
             }
@@ -51,10 +53,12 @@ public class TimingCarryable : MonoBehaviour
 
         // currently at one of the ponds
         // filling up our water
-        if( filling ){
+        if (filling)
+        {
             currentAmount += fillSpeed;
 
-            if( currentAmount > maxAmount ){
+            if (currentAmount > maxAmount)
+            {
                 currentAmount = maxAmount;
                 OnFull();
             }
@@ -62,101 +66,119 @@ public class TimingCarryable : MonoBehaviour
         }
 
 
-        transform.localScale = Vector3.one * maxScale * (currentAmount / maxAmount);
-        
-        if( carryable.BeingCarried != true && beingCarried == true  ){
+        transform.localScale = Vector3.one * Mathf.Max(maxScale * (currentAmount / maxAmount), .01f);
+
+        if (carryable.BeingCarried != true && beingCarried == true)
+        {
             Drop();
         }
 
-        if( carryable.BeingCarried == true && beingCarried == false  ){
+        if (carryable.BeingCarried == true && beingCarried == false)
+        {
             Pickup();
         }
-    
+
     }
 
-    void OnEnable(){
+    void OnEnable()
+    {
         Reset();
     }
 
 
     Loop fillLoop;
-    Loop  carryLoop;
+    Loop carryLoop;
 
-    void Drop(){
+    void Drop()
+    {
         beingCarried = false;
     }
 
-    void Pickup(){
+    void Pickup()
+    {
         beingCarried = true;
         OnStartDrying();
     }
 
 
-    public void OnStartFilling(){
+    public void OnStartFilling()
+    {
 
-        
+
         currentAmount = 0;
         drying = false;
         filling = true;
 
     }
 
-    public void OnFull(){
+    public void OnFull()
+    {
         filling = false;
     }
 
-    public void OnStartDrying(){
+    public void OnStartDrying()
+    {
 
         drying = true;
         filling = false;
     }
 
-    public void OnDry(){
+    public void OnDry()
+    {
 
         Reset();
         Destroy();
-      
+
     }
 
 
-    public void Reset(){
+    public void Reset()
+    {
         currentAmount = 0;
-        foreach( Wren w in God.wrens ){
+        foreach (Wren w in God.wrens)
+        {
             w.carrying.DropIfCarrying(carryable);
         }
 
         drying = false;
 
-        if( respawnTransform == null ){
+        if (respawnTransform == null)
+        {
             respawnTransform = transform.parent;
         }
-        
-        if( respawnTransform ){
+
+        if (respawnTransform)
+        {
             transform.position = respawnTransform.position + respawnOffset;
         }
 
         transform.GetComponent<Rigidbody>().position = transform.position;
         transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
 
-        if( autoRefill ){
+        if (autoRefill)
+        {
             OnStartFilling();
         }
 
-        if( beingCarried ){
+        if (beingCarried)
+        {
             carryable.TryToDrop(carryable.carrier);
         }
 
     }
 
-    public void Destroy(){
-          if( destroyOnDry ){
-            Realtime.Destroy( this.gameObject );
+    public void Destroy()
+    {
+        if (destroyOnDry)
+        {
+            Realtime.Destroy(this.gameObject);
         }
 
     }
 
-    public void OnSpawn(){
-        
+    public void OnSpawn()
+    {
+
     }
 
 

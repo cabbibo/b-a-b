@@ -100,7 +100,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -153,8 +153,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5438728391862287703}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.6016084, y: 0.75055104, z: 0.17381313, w: -0.21102019}
-  m_LocalPosition: {x: 210.18642, y: 43.315628, z: -60.803772}
+  m_LocalRotation: {x: -0.11947942, y: -0.2675521, z: 0.9557703, w: 0.025370603}
+  m_LocalPosition: {x: -58.939926, y: 8.796752, z: -101.97017}
   m_LocalScale: {x: 3.3587556, y: 3.3587556, z: 3.3587556}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2484,4 +2484,4 @@ MonoBehaviour:
   - 0.1
   updateInEditMode: 1
   positionsAlongPath:
-  - 671.5454
+  - 1131.3331
