@@ -1,5 +1,49 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &66421282811211866
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7393795817767669597}
+  - component: {fileID: 2762107815857605068}
+  m_Layer: 0
+  m_Name: Reseter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7393795817767669597
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 66421282811211866}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9160943688313912038}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2762107815857605068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 66421282811211866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b49f57181561204d999a483d09c965b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &113227047087039091
 GameObject:
   m_ObjectHideFlags: 0
@@ -16101,51 +16145,6 @@ MonoBehaviour:
   currentStep: 0
   currentStepID: 0
   randomOffset: 0
---- !u!1 &4370280696018138945
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2565178313679424437}
-  - component: {fileID: 689587160295333979}
-  m_Layer: 10
-  m_Name: RESETER _ shoud this be in here?
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2565178313679424437
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4370280696018138945}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 9160943688313912038}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &689587160295333979
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4370280696018138945}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b49f57181561204d999a483d09c965b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  wren: {fileID: 9160943688313912041}
 --- !u!1 &4429790787611798160
 GameObject:
   m_ObjectHideFlags: 0
@@ -26221,8 +26220,8 @@ Transform:
   - {fileID: 2019148487153684004}
   - {fileID: 2281156210320072470}
   - {fileID: 7107987762259873162}
-  - {fileID: 2565178313679424437}
   - {fileID: 8632518003310521803}
+  - {fileID: 7393795817767669597}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &9160943688313912041
@@ -26245,7 +26244,7 @@ MonoBehaviour:
   cameraWork: {fileID: 7282418919974470726}
   sounds: {fileID: 2641606511133191620}
   carrying: {fileID: 1611942776538486195}
-  compass: {fileID: 0}
+  compass: {fileID: 9104227358775535175}
   parameters: {fileID: 5119402594301017824}
   state: {fileID: 9156686790671013125}
   stats: {fileID: 6744424082612651983}
@@ -26253,6 +26252,8 @@ MonoBehaviour:
   beacon: {fileID: 1499124320774614241}
   colors: {fileID: 3856516255870990745}
   waterController: {fileID: 3650603336123196005}
+  caller: {fileID: 4017670710845976570}
+  reseter: {fileID: 2762107815857605068}
   collection: {fileID: 0}
   fullInterface: {fileID: 0}
   airInterface: {fileID: 0}
@@ -26264,6 +26265,7 @@ MonoBehaviour:
   canMove: 0
   growth: {fileID: 1447400220214749194}
   autoTakeOff: 1
+  doInterface: 0
   lastFlapTime: 0
 --- !u!54 &9160943688313912040
 Rigidbody:
@@ -26462,6 +26464,9 @@ MonoBehaviour:
   v1: {x: 0, y: 0, z: 0}
   v2: {x: 0, y: 0, z: 0}
   raycastDirections: 5
+  straightDownIntersectionPosition: {x: 0, y: 0, z: 0}
+  straightDownIntersectionNormal: {x: 0, y: 0, z: 0}
+  straightDownDistance: 0
   horizonRightingForce: {x: 0, y: 0, z: 0}
   horizonRightingForcePosition: {x: 0, y: 0, z: 0}
   doBasicGroundControls: 0

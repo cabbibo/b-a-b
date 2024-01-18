@@ -736,6 +736,10 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+    public Vector3 straightDownIntersectionPosition;
+    public Vector3 straightDownIntersectionNormal;
+    public float straightDownDistance;
+
 
     public virtual void GetGroundDistanceInfo()
     {
@@ -770,6 +774,10 @@ public class WrenPhysics : MonoBehaviour
             tmpNorm = hit.normal;
             tmpDir = -Vector3.up;
         }
+
+        straightDownDistance = tmpDist;
+        straightDownIntersectionNormal = tmpNorm;
+        straightDownIntersectionPosition = transform.position + tmpDir * tmpDist;
 
         bool hitVal = false;
         Ray ray = new Ray();
