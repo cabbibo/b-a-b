@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-[CreateAssetMenu( fileName = "PreyConfigSO", menuName = "Prey/PreyConfigSO", order = 1 )]
+[CreateAssetMenu(fileName = "PreyConfigSO", menuName = "Prey/PreyConfigSO", order = 1)]
 public class PreyConfigSO : ScriptableObject
 {
 
@@ -12,4 +12,13 @@ public class PreyConfigSO : ScriptableObject
 
     public float maxSpeed;
     public float maxScale;
+
+    public float oscilationSize;
+    public float oscilationSpeed;
+    public float cageCutOff;
+    public float cagePushBack;
+    public float cageCurl;
+    public float runForce;
+    public float runRadius;
+
 }
