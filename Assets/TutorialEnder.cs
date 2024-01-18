@@ -9,6 +9,7 @@ public class TutorialEnder : MonoBehaviour
     public Transform[] tutorialObjects;
 
     public GameObject island;
+    public GameObject island2;
     public GameObject portal;
 
     public float timeBetweenSpawns = 10;
@@ -17,6 +18,7 @@ public class TutorialEnder : MonoBehaviour
     public void OnEnable()
     {
 
+        FlyingTutorialSequence.OnTutorialStart += StartTutorial;
         FlyingTutorialSequence.OnTutorialDiveFinished += EndTutorial;
         //ended = false;
         //lastSpawnTime = Time.time;
@@ -26,16 +28,13 @@ public class TutorialEnder : MonoBehaviour
     public void OnDisable()
     {
 
+        FlyingTutorialSequence.OnTutorialStart -= StartTutorial;
         FlyingTutorialSequence.OnTutorialDiveFinished -= EndTutorial;
     }
 
 
-    public bool ended = false;
-
     public void EndTutorial()
     {
-
-
         print(God.wren);
         print(God.instance);
         Vector3 shift = transform.position - God.wren.transform.position;
@@ -43,32 +42,22 @@ public class TutorialEnder : MonoBehaviour
         {
             t.position += shift;
         }
-        ended = true;
         God.wren.PhaseShift(transform.position);
         //island.SetActive(true);
+
+        island.SetActive(true);
+        island2.SetActive(true);
+        portal.SetActive(true);
     }
 
 
     public void StartTutorial()
     {
-        ended = false;
         God.wren.PhaseShift(transform.position);
-    }
 
-    public void Update()
-    {
-
-
-        if (ended)
-        {
-            island.SetActive(true);
-            portal.SetActive(true);
-        }
-        else
-        {
-            island.SetActive(false);
-            portal.SetActive(false);
-        }
+        island.SetActive(false);
+        island2.SetActive(false);
+        portal.SetActive(false);
     }
 
 
