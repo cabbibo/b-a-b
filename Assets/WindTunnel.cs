@@ -5,8 +5,6 @@ using UnityEngine;
 using MagicCurve;
 using WrenUtils;
 
-
-[ExecuteAlways]
 public class WindTunnel : MonoBehaviour
 {
 

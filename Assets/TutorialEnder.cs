@@ -10,6 +10,7 @@ public class TutorialEnder : MonoBehaviour
 
     public GameObject island;
     public GameObject island2;
+    public GameObject tutorialOcean;
     public GameObject portal;
 
     public float timeBetweenSpawns = 10;
@@ -46,17 +47,22 @@ public class TutorialEnder : MonoBehaviour
         //island.SetActive(true);
 
         island.SetActive(true);
-        island2.SetActive(true);
+        tutorialOcean.SetActive(false);
+        //  island2.SetActive(true);
         portal.SetActive(true);
     }
 
 
     public void StartTutorial()
     {
-        God.wren.PhaseShift(transform.position);
+        if (God.wren)
+        {
+            God.wren.PhaseShift(transform.position);
+        }
 
         island.SetActive(false);
-        island2.SetActive(false);
+        tutorialOcean.SetActive(true);
+        //island2.SetActive(false);
         portal.SetActive(false);
     }
 

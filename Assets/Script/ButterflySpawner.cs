@@ -8,8 +8,6 @@ using static Helpers;
 using static Unity.Mathematics.math;
 using Unity.Mathematics;
 
-
-[ExecuteAlways]
 public class ButterflySpawner : MonoBehaviour
 {
 
