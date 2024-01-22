@@ -27,7 +27,7 @@ public class Updraft : MonoBehaviour
 
 
 
-            if (mag < distanceCutoff) { upForce = (multiplier) / (divisionMultiplier * mag + 10); }
+            if (mag < distanceCutoff) { upForce = (multiplier) / (divisionMultiplier * mag + 1); }
 
 
             upForce /= 1 + God.wren.transform.position.y * upLessForceMultiplier;
@@ -45,7 +45,7 @@ public class Updraft : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, distanceCutoff);
-        
+
     }
 
 }
