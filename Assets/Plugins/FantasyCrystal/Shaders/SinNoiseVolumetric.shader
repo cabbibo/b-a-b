@@ -177,13 +177,13 @@ float triangularNoise( float3 p ){
 
    float speed = 1.1;
  
-   p +=  tri3(p.xyz * .3 ) *2.6;
+   p +=  tri3(p.xyz * .3 + _Time.x ) *2.6;
    totalFog += triAdd(p.yxz * .3) * .2;
     
-   p +=  tri3(p.xyz * .8 + 121 ) * 1;
+   p +=  tri3(p.xyz * .8 + 121+ _Time.y * .2 ) * 1;
    totalFog += triAdd(p.yxz * 1) * .2;
     
-   p +=  tri3(p.xyz * 1.8 + 121 ) * 1;
+   p +=  tri3(p.xyz * 1.8 + 121 + _Time.y * .3) * 1;
    totalFog += triAdd(p.yxz* 1.3) * .2;
 
   return totalFog;
