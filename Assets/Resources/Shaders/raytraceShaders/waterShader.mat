@@ -79,6 +79,8 @@ Material:
     - _SrcBlend: 1
     - _UVSec: 0
     - _WaterClarity: 0.1
+    - _WrenShadowRadius: 1.51
+    - _WrenShadowThickness: 6.03
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
@@ -86,4 +88,5 @@ Material:
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _NoiseOffset: {r: 0, g: 0, b: 0, a: 1}
     - _SurfaceColor: {r: 0.39498043, g: 0.61614573, b: 0.6603774, a: 1}
+    - _WrenShadowColor: {r: 0.006289184, g: 0.0058738603, b: 0.0058738603, a: 0.5882353}
   m_BuildTextureStacks: []

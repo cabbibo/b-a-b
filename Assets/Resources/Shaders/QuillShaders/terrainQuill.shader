@@ -100,6 +100,10 @@ Shader "Unlit/quillTerrain"{
         _HeightFogNoiseAmount("_Height Fog Noise Amount", float) = 0
         _HeightFogNoiseScale("_Height Fog Noise Scale", float) = 1
 
+        _WrenShadowColor ("Player Shadow Color", Color) = (1,1,1,1)
+        _WrenShadowRadius("Player shadow Radius", float) = 1
+        _WrenShadowThickness("Player shadow Thickness", float) = 0.2
+
     }
 
 
@@ -201,6 +205,10 @@ Shader "Unlit/quillTerrain"{
       float _HeightFogMaxDistance;
       float _HeightFogNoiseAmount;
       float _HeightFogNoiseScale;
+
+      half4 _WrenShadowColor;
+      float _WrenShadowRadius;
+      float _WrenShadowThickness;
 /*struct Input
 {
     float4 tc;
@@ -924,7 +932,6 @@ if( baseVert < .3 ){
 
 
 
-
 sampler2D _BiomeMap;
 
 float _BiomeMapWeight;
@@ -990,26 +997,26 @@ if( control.b > control.r){
 }*/
 
 
-float max = 0;
+float max1 = 0;
 float maxID = 0;
 float max2 = 0;
 float maxID2 = 0;
 
 for( int i= 0; i < 4; i++ ){
 
-  if( control[i] > max){
-    max = control[i];
+  if( control[i] > max1){
+    max1 = control[i];
     maxID = i;
   }
 
-  if( control[i] < max && control[i]> max2 ){
+  if( control[i] < max1 && control[i]> max2 ){
     max2 = control[i];
     maxID2 = i;
   }
 }
 
 
-float d = max - max2;
+float d = max1 - max2;
 
 
 // DEBUG Borders;
@@ -1043,6 +1050,17 @@ col = lerp(col ,cityColor,cityValue);
 
  //col *= mixedDiffuse;//floor( mixedDiffuse.xyz*10)/10;
 
+
+  // player shadow
+  float2 pos = _WrenPos.xz;
+  float shdist = length(pos - v.worldPos.xz);
+  float radius = abs(_WrenPos.y - v.worldPos.y) * _WrenShadowRadius - 0.5;
+  float shouter = shdist - radius;
+  float shinner = shdist - (radius-_WrenShadowThickness);
+  float sh = 1 - saturate(max(-shinner, shouter));
+  // sh *= sh * sh * sh * sh;
+  float sha = lerp (0, _WrenShadowColor.a, 1-((radius-5) / 10));
+
  // fog
  float fogZ = distance(_WorldSpaceCameraPos, v.worldPos);
  float ff = saturate((fogZ-_FogStart)/(_FogEnd-_FogStart));
@@ -1060,9 +1078,13 @@ ff *= ff;
   heightFog += _HeightFogNoiseAmount * (triNoise3D(v.worldPos * _HeightFogNoiseScale * .01 + float3(0,_Time.y*0.01,0), 0, 0) - 0.5f) * heightFog;
   heightFog *= heightFog;
   col.rgb = lerp( col.rgb, _HeightFogColor.rgb, heightFog * _HeightFogAmount);
+
+  col.rgb = lerp(col, _WrenShadowColor.rgb, sh * sha);
  
     return float4(col,1);
 }
+
+
 
       ENDCG
 
