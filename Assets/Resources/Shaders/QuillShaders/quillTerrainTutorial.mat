@@ -140,6 +140,8 @@ Material:
     - _HeightFogStart: 180.9
     - _Metallic: 0
     - _Mode: 0
+    - _NoiseTextureBase: 1
+    - _NoiseTextureStrength: 0.4
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _PlayerShadowRadius: 1

@@ -28,6 +28,11 @@ Shader "Unlit/quillTerrain"{
  _SandSpecularPower2("_SandSpecularPower2",float) = 1
 
 
+ 
+ _NoiseTextureStrength("_NoiseTextureStrength",float) = .2
+ _NoiseTextureBase("_NoiseTextureBase",float) = 1
+
+
   _CityFresnelColor("_CityFresnelColor",Color) = (1,1,1,1)
 
  _CityBaseColor("_CityBaseColor",Color) = (1,1,1,1)
@@ -136,6 +141,13 @@ Shader "Unlit/quillTerrain"{
             #include "../Chunks/hsv.cginc"
             #include "../Chunks/noise.cginc"
 
+            float sdCapsule( float3 p, float3 a, float3 b, float r )
+{
+    float3 pa = p - a, ba = b - a;
+    float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
+    return length( pa - ba*h ) - r;
+}
+
 
 
 
@@ -209,6 +221,9 @@ Shader "Unlit/quillTerrain"{
       half4 _WrenShadowColor;
       float _WrenShadowRadius;
       float _WrenShadowThickness;
+
+      float _NoiseTextureStrength;
+      float _NoiseTextureBase;
 /*struct Input
 {
     float4 tc;
@@ -1080,6 +1095,23 @@ ff *= ff;
   col.rgb = lerp( col.rgb, _HeightFogColor.rgb, heightFog * _HeightFogAmount);
 
   col.rgb = lerp(col, _WrenShadowColor.rgb, sh * sha);
+
+
+   // Discards around bird!
+
+  float noiseVal2 = snoise(v.worldPos * 1.3);
+
+  float capDistance =sdCapsule(v.worldPos , _WorldSpaceCameraPos , _WrenPos , 1 );
+  capDistance -= noiseVal2 * .2;
+
+  col *= noiseVal2 * _NoiseTextureStrength * (1/(1+ .1*fogZ)) + _NoiseTextureBase;
+
+  if( capDistance < 0 ){
+    discard;
+  }else{
+
+    col *= saturate(capDistance * 10);
+  }
  
     return float4(col,1);
 }
