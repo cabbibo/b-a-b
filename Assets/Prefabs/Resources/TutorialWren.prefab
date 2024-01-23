@@ -26354,6 +26354,7 @@ MonoBehaviour:
   flapToSide: 0.1
   flapPowerUp: 300
   flapPowerForward: 60
+  straightLiftForce: 0
   horizonRightingForceVal: 0
   rightingForce: -8
   rightingDependentOnNotTouchingVal: 0.4
@@ -26377,6 +26378,9 @@ MonoBehaviour:
   showDebugForces: 0
   reset: 0
   distToGround: 0
+  rawDistToGround: 0
+  rawGroundPoint: {x: 0, y: 0, z: 0}
+  groundPoint: {x: 0, y: 0, z: 0}
   groundNormal: {x: 0, y: 0, z: 0}
   groundDirection: {x: 0, y: 0, z: 0}
   vel: {x: 0, y: 0, z: 0}

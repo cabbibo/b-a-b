@@ -87,6 +87,8 @@ public class WrenPhysics : MonoBehaviour
     public float flapPowerForward;
 
 
+    public float straightLiftForce;
+
 
     /*
         Righting
@@ -173,6 +175,9 @@ public class WrenPhysics : MonoBehaviour
     public bool reset;
 
     public float distToGround;
+    public float rawDistToGround;
+    public Vector3 rawGroundPoint;
+    public Vector3 groundPoint;
     public Vector3 groundNormal;
     public Vector3 groundDirection;
     public Vector3 vel;
@@ -663,6 +668,8 @@ public class WrenPhysics : MonoBehaviour
 
     }
 
+
+
     public virtual void LiftForces()
     {
         /*
@@ -732,6 +739,24 @@ public class WrenPhysics : MonoBehaviour
         //rb.AddForceAtPosition( transform.right * controller.rightX * twistForce2 , transform.position + transform.forward );
 
 
+        // dont add if going straight up
+        // dont add if not twisting 
+
+
+        Vector3 wingDif = (rightWing.position - leftWing.position);
+        Vector3 wingDifUp = Vector3.Cross(wingDif, transform.forward);
+
+        float wingDifMatch = Mathf.Pow((Mathf.Abs(Vector3.Dot(Vector3.up, wingDif.normalized))), 2);
+        float forwardMatch = (1 - Mathf.Abs(Vector3.Dot(Vector3.up, transform.forward)));
+
+        forwardMatch = 1;
+
+        Vector3 fForce = -wingDifUp.normalized * straightLiftForce * wingDifMatch * forwardMatch;
+
+        // dont take up into account
+        fForce = Vector3.Scale(fForce, Vector3.forward + Vector3.right);
+
+        rb.AddForce(fForce);
     }
 
 
@@ -760,11 +785,13 @@ public class WrenPhysics : MonoBehaviour
         float tmpDist;
         Vector3 tmpDir;
         Vector3 tmpNorm;
+        Vector3 tmpPos;
 
         Vector3 closestDirection;
 
         tmpNorm = Vector3.up;
         tmpDir = -Vector3.up;
+        tmpPos = Vector3.one * -1000;
         RaycastHit hit;
 
         tmpDist = 1000000;
@@ -816,6 +843,7 @@ public class WrenPhysics : MonoBehaviour
                         tmpDist = hit.distance;
                         tmpNorm = hit.normal;
                         tmpDir = dir;
+                        tmpPos = hit.point;
                     }
 
 
@@ -836,13 +864,18 @@ public class WrenPhysics : MonoBehaviour
             tmpDist = 3000;
             tmpNorm = Vector3.up;
             tmpDir = -Vector3.up;
+            tmpPos = Vector3.one * -1000;
         }
 
 
+        rawDistToGround = tmpDist;
+        rawGroundPoint = tmpPos;
         // we smooth our values to make the transition between areas less jarring
         distToGround = Mathf.Lerp(distToGround, tmpDist, groundForceTweenVal);
         groundNormal = Vector3.Lerp(groundNormal, tmpNorm, groundForceTweenVal);
         groundDirection = Vector3.Lerp(groundDirection, tmpDir, groundForceTweenVal);
+        groundPoint = Vector3.Lerp(groundPoint, tmpPos, groundForceTweenVal);
+
 
 
         // Originally was making it so that you can be
@@ -1001,6 +1034,7 @@ public class WrenPhysics : MonoBehaviour
         // upwardsRightingForce = -transform.right*multi * .1f * angleToUp * rightingForce;// * (1-maxVal*rightingDependentOnNotTouchingVal);
         */
         upwardsRightingForcePosition = transform.position + transform.up;
+
 
 
 
