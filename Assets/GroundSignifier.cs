@@ -69,6 +69,8 @@ public class GroundSignifier : MonoBehaviour
                 }
 
             }
+
+          //  float leftWingDif = Mathf.Abs(God.wren.physics.leftWing.position.y - -God.wren.physics.leftWingAngleAtRest);
         }
         else
         {
