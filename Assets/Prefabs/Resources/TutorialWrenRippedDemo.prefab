@@ -26381,7 +26381,7 @@ MonoBehaviour:
   twistLerpSpeed: 0.3
   bendLerpSpeed: 0.3
   maxSpeed: 400
-  maxSpeedDamper: 0.03
+  maxSpeedDamper: 0.004
   baseSpeed: 2
   baseSpeedDamper: 0.002
   twistForceVal: 3
@@ -26399,7 +26399,8 @@ MonoBehaviour:
   flapToSide: 0.1
   flapPowerUp: 300
   flapPowerForward: 60
-  horizonRightingForceVal: 3
+  straightLiftForce: 15
+  horizonRightingForceVal: 1
   rightingForce: -8
   rightingDependentOnNotTouchingVal: 0.4
   closestHeight: 0
@@ -26422,6 +26423,9 @@ MonoBehaviour:
   showDebugForces: 0
   reset: 0
   distToGround: 0
+  rawDistToGround: 0
+  rawGroundPoint: {x: 0, y: 0, z: 0}
+  groundPoint: {x: 0, y: 0, z: 0}
   groundNormal: {x: 0, y: 0, z: 0}
   groundDirection: {x: 0, y: 0, z: 0}
   vel: {x: 0, y: 0, z: 0}
