@@ -7,6 +7,10 @@ Shader "water/trace"
     _SurfaceColor ("SurfaceColor", Color) = (1,1,1,1)
     _DeepColor ("DeepColor", Color) = (1,1,1,1)
     _WaterClarity ("_WaterClarity",float ) = .05
+
+    _WrenShadowColor ("Player Shadow Color", Color) = (1,1,1,1)
+        _WrenShadowRadius("Player shadow Radius", float) = 1
+        _WrenShadowThickness("Player shadow Thickness", float) = 0.2
     }
     
     
@@ -80,7 +84,12 @@ Shader "water/trace"
                  float4 _SurfaceColor;
                  float4 _DeepColor;
                  float _WaterClarity;
-
+            
+                 float3 _WrenPos;
+                 half4 _WrenShadowColor;
+            float _WrenShadowRadius;
+            float _WrenShadowThickness;
+            
      float3 _MapSize;
             float terrainHeight( float3 pos ){
                 float height = tex2Dlod( _HeightMap , float4(((pos.xz)) / _MapSize.xz + .5, 0 ,0)).x;// , 1).x * 4000
@@ -212,6 +221,18 @@ float4 backgroundCol = tex2Dproj(_BackgroundTexture, refractedBGPos);
                 if( foamLine > .6+ noise(v.ro * .1 + _Time.y) * .1 && foamLine < 1){
                     col += 1;
                 }
+
+                // player shadow
+                float2 pos = _WrenPos.xz;
+                float shdist = length(pos - v.worldPos.xz);
+                float radius = abs(_WrenPos.y - v.worldPos.y) * _WrenShadowRadius - 0.5;
+                float shouter = shdist - radius;
+                float shinner = shdist - (radius-_WrenShadowThickness);
+                float sh = 1 - saturate(max(-shinner, shouter));
+                // sh *= sh * sh * sh * sh;
+                float sha = lerp (0, _WrenShadowColor.a, 1-((radius-5) / 10));
+                col.rgb = lerp(col, _WrenShadowColor.rgb, sh * sha);
+
                 return float4(col,1);
             }
             ENDCG

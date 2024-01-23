@@ -142,6 +142,8 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _PlayerShadowRadius: 1
+    - _PlayerShadowThickness: 0.2
     - _SandBrightness: 0.6
     - _SandMatchMultiplier: 3
     - _SandSaturation: 1
@@ -156,6 +158,8 @@ Material:
     - _SrcBlend: 1
     - _TriplanarSharpness: 1
     - _UVSec: 0
+    - _WrenShadowRadius: 1.51
+    - _WrenShadowThickness: 42.89
     - _ZWrite: 1
     m_Colors:
     - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
@@ -174,6 +178,7 @@ Material:
     - _MeadowColor: {r: 0.8651153, g: 0.9528302, b: 0.7056337, a: 1}
     - _MossColor1: {r: 0.43835524, g: 0.6509434, b: 0.40837488, a: 1}
     - _MossColor2: {r: 0, g: 1, b: 0.70425534, a: 1}
+    - _PlayerShadowColor: {r: 1, g: 1, b: 1, a: 1}
     - _SandBaseColor: {r: 0.46226418, g: 0.36647293, b: 0.26383945, a: 1}
     - _SandFresnelColor: {r: 0.9496855, g: 0.72018963, b: 0.6181914, a: 1}
     - _SandSpecularColor1: {r: 0.7830189, g: 0.55913746, b: 0.44691172, a: 1}
@@ -182,4 +187,5 @@ Material:
     - _SandStriationColorLight: {r: 0.7960785, g: 0.7294118, b: 0.52156866, a: 1}
     - _SandStriationSize: {r: 0.1, g: 6, b: 0.1, a: 1}
     - _TriplanarMultiplier: {r: 0.1, g: 0.1, b: 0.1, a: 100}
+    - _WrenShadowColor: {r: 0, g: 0, b: 0, a: 0.34117648}
   m_BuildTextureStacks: []
