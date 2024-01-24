@@ -784,11 +784,11 @@ MonoBehaviour:
   wing: {fileID: 687666778210607441}
   featherDebugMaterial: {fileID: 0}
   featherMaterial: {fileID: 2100000, guid: 4a3492afae97ee148b24306d79f6a269, type: 2}
-  count: 1000
+  count: 10000
   shader: {fileID: 7200000, guid: b285f0e13175cb4428bf78b70e24b31a, type: 3}
   numGroups: 40
   numThreads: 128
-  emitting: 0
+  emitting: 1
   active: 1
 --- !u!1 &687666778219455867
 GameObject:
@@ -2055,11 +2055,11 @@ MonoBehaviour:
   wing: {fileID: 687666779443224187}
   featherDebugMaterial: {fileID: 0}
   featherMaterial: {fileID: 2100000, guid: 4a3492afae97ee148b24306d79f6a269, type: 2}
-  count: 1000
+  count: 10000
   shader: {fileID: 7200000, guid: b285f0e13175cb4428bf78b70e24b31a, type: 3}
   numGroups: 40
   numThreads: 128
-  emitting: 0
+  emitting: 1
   active: 1
 --- !u!1 &687666779572013904
 GameObject:

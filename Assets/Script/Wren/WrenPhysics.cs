@@ -242,29 +242,30 @@ public class WrenPhysics : MonoBehaviour
     // temp vectors for maths
     public Vector3 v1 = new Vector3();
     public Vector3 v2 = new Vector3();
-    protected Vector3 lookTarget = new Vector3();
-    protected float oTwistR;
-    protected float oTwistL;
-    protected float oBendL;
-    protected float oBendR;
+    public Vector3 lookTarget = new Vector3();
+    public float oTwistR;
+    public float oTwistL;
+    public float oBendL;
+    public float oBendR;
 
-    protected bool oDLeft;
-    protected bool oDRight;
-    protected bool oDUp;
+    public bool oDLeft;
+    public bool oDRight;
+    public bool oDUp;
 
-    protected bool oTriangle;
-    protected bool oSquare;
-    protected bool oX;
-    protected bool oCircle;
+    public bool oTriangle;
+    public bool oSquare;
+    public bool oX;
+    public bool oCircle;
 
 
 
-    protected Vector3 upP;
-    protected Vector3 upS;
-    protected Vector3 d;
-    protected float flapVel;
+    public Vector3 upP;
+    public Vector3 upS;
+    public Vector3 d;
+    public float flapVelL;
+    public float flapVelR;
 
-    protected float distToGroundVal;
+    public float distToGroundVal;
 
     public int raycastDirections = 5;
 
@@ -594,15 +595,15 @@ public class WrenPhysics : MonoBehaviour
         |/         (_______/  |/     \|  |/       
 
         */
-        flapVel = tuckAmountL - input.left2;
+        flapVelL = tuckAmountL - input.left2;
         tuckAmountL = Mathf.Lerp(tuckAmountL, input.left2, tuckLerpSpeed);
-        leftFlapForce = Mathf.Clamp(-flapVel, 0, 1) * (leftWing.up * flapPowerUp + leftWing.forward * flapPowerForward);
+        leftFlapForce = Mathf.Clamp(-flapVelL, 0, 1) * (leftWing.up * flapPowerUp + leftWing.forward * flapPowerForward);
         leftFlapForcePosition = Vector3.Lerp(transform.position, leftWing.position, flapToSide);
 
-        flapVel = tuckAmountR - input.right2;
+        flapVelR = tuckAmountR - input.right2;
         tuckAmountR = Mathf.Lerp(tuckAmountR, input.right2, tuckLerpSpeed);
 
-        rightFlapForce = Mathf.Clamp(-flapVel, 0, 1) * (rightWing.up * flapPowerUp + rightWing.forward * flapPowerForward);
+        rightFlapForce = Mathf.Clamp(-flapVelR, 0, 1) * (rightWing.up * flapPowerUp + rightWing.forward * flapPowerForward);
         rightFlapForcePosition = Vector3.Lerp(transform.position, rightWing.position, flapToSide);
 
 

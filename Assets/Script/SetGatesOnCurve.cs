@@ -35,7 +35,7 @@ public class SetGatesOnCurve : MonoBehaviour
 
             while (ringParent.childCount > 0)
             {
-                cycle.JumpDeath(ringParent.GetChild(0).GetComponent<Cycle>());
+                //cycle.JumpDeath(ringParent.GetChild(0).GetComponent<Cycle>());
                 DestroyImmediate(ringParent.GetChild(0).gameObject);
 
             }
@@ -51,7 +51,7 @@ public class SetGatesOnCurve : MonoBehaviour
                 gate.transform.parent = ringParent;
                 curve.SetTransformFromValueAlongCurve(v, gate.transform, widthMultiplier);
                 gate.SetActive(true);
-                cycle.JumpStart(gate.GetComponent<Cycle>());
+                // cycle.JumpStart(gate.GetComponent<Cycle>());
 
             }
 

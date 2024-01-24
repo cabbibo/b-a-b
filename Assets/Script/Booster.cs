@@ -7,7 +7,7 @@ using static Unity.Mathematics.math;
 using Unity.Mathematics;
 
 [ExecuteAlways]
-public class Booster : Cycle
+public class Booster : MonoBehaviour
 {
     public bool debug2;
     public float boostVal = 1;
@@ -27,6 +27,14 @@ public class Booster : Cycle
     public Vector2 lastHitLocation;
 
     public BoostSim boostSim;
+
+    public ParticleSystem particles;
+
+    public float minParticleEmit = 0;
+    public float maxParticleEmit = 100;
+
+    public TurnOnWrenTrails trails;
+    //
 
     public void OnBoost(Wren w)
     {
@@ -70,6 +78,18 @@ public class Booster : Cycle
             boostSim.OnBoost(this);
         }
 
+        if (particles != null)
+        {
+            //  particles.transform.position = w.transform.position;
+            // particles.transform.rotation = w.transform.rotation;
+
+            particles.Emit((int)Mathf.Lerp(minParticleEmit, maxParticleEmit, currentScore / 1000));
+        }
+
+        if (trails != null)
+        {
+            trails.AddToTrail();
+        }
 
     }
 
@@ -100,12 +120,13 @@ public class Booster : Cycle
 
     }
 
-    public override void OnLive()
+    public void OnEnable()
     {
 
 
         if (renderer == null) { renderer = GetComponent<Renderer>(); }
-        if (mpb == null) { mpb = new MaterialPropertyBlock(); }
+
+        mpb = new MaterialPropertyBlock();
 
         lastHitLocation = Vector2.one * 100 * UnityEngine.Random.Range(0.5f, 1.0f);
         currentScore = UnityEngine.Random.Range(0.5f, 1.0f);
@@ -126,7 +147,7 @@ public class Booster : Cycle
     public Vector2 tv2;
     public float tScore;
 
-    public override void WhileLiving(float v)
+    public void Update()
     {
 
 

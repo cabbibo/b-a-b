@@ -26422,6 +26422,24 @@ MonoBehaviour:
   angleToUp: 0
   v1: {x: 0, y: 0, z: 0}
   v2: {x: 0, y: 0, z: 0}
+  lookTarget: {x: 0, y: 0, z: 0}
+  oTwistR: 0
+  oTwistL: 0
+  oBendL: 0
+  oBendR: 0
+  oDLeft: 0
+  oDRight: 0
+  oDUp: 0
+  oTriangle: 0
+  oSquare: 0
+  oX: 0
+  oCircle: 0
+  upP: {x: 0, y: 0, z: 0}
+  upS: {x: 0, y: 0, z: 0}
+  d: {x: 0, y: 0, z: 0}
+  flapVelL: 0
+  flapVelR: 0
+  distToGroundVal: 0
   raycastDirections: 5
   straightDownIntersectionPosition: {x: 0, y: 0, z: 0}
   straightDownIntersectionNormal: {x: 0, y: 0, z: 0}
