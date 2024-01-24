@@ -1074,7 +1074,7 @@ col = lerp(col ,cityColor,cityValue);
   float shinner = shdist - (radius-_WrenShadowThickness);
   float sh = 1 - saturate(max(-shinner, shouter));
   // sh *= sh * sh * sh * sh;
-  float sha = lerp (0, _WrenShadowColor.a, 1-((radius-5) / 10));
+  float sha = lerp (0, _WrenShadowColor.a, saturate(1-((radius-5) / 10)));
 
  // fog
  float fogZ = distance(_WorldSpaceCameraPos, v.worldPos);
