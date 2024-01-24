@@ -59,6 +59,20 @@ public class FlyingTutorialSequence : MonoBehaviour
 
                 God.wren.PhaseShift(ender.transform.position + Vector3.down * 180);
             }
+
+            if (Input.GetKey(KeyCode.LeftAlt))
+            {
+                // wind tunnel 1
+                if (Input.GetKeyDown(KeyCode.Alpha1))
+                {
+                    God.wren.PhaseShift(new Vector3(-5012,183,-544));
+                }
+                // wind tunnel 2
+                if (Input.GetKeyDown(KeyCode.Alpha2))
+                {
+                    God.wren.PhaseShift(new Vector3(-3859,287,-1337));
+                }
+            }
         }
 
         fade.transform.position = God.camera.transform.position;
