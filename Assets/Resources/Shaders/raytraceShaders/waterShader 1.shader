@@ -230,7 +230,7 @@ float4 backgroundCol = tex2Dproj(_BackgroundTexture, refractedBGPos);
                 float shinner = shdist - (radius-_WrenShadowThickness);
                 float sh = 1 - saturate(max(-shinner, shouter));
                 // sh *= sh * sh * sh * sh;
-                float sha = lerp (0, _WrenShadowColor.a, 1-((radius-5) / 10));
+                float sha = lerp (0, _WrenShadowColor.a, saturate(1-((radius-5) / 10)));
                 col.rgb = lerp(col, _WrenShadowColor.rgb, sh * sha);
 
                 return float4(col,1);
