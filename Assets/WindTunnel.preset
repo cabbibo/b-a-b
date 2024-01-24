@@ -39,23 +39,23 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: tunnelForwardForce
-    value: 50
+    value: 36.8
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: tunnelInForce
-    value: 5
-    objectReference: {fileID: 0}
-  - target: {fileID: 0}
-    propertyPath: tunnelForceFalloff
-    value: 20
+    value: 14.6
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: dampenForce
-    value: 0.1
+    value: 0.22
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: maxDistance
     value: 200
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: tunnelForceFalloff
+    value: 20
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: debug
@@ -607,6 +607,10 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: outerRange
-    value: 1.4
+    value: 1.28
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: easeFwdForce
+    value: 0
     objectReference: {fileID: 0}
   m_ExcludedProperties: []
