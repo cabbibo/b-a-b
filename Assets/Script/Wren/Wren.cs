@@ -159,6 +159,8 @@ public class Wren : MonoBehaviour
 
     public void Crash(Vector3 p)
     {
+
+        print("crash1");
         physics.TransportToPosition(GroundIntersection(p) + Vector3.up * physics.groundUpVal, Vector3.zero);
         state.HitGround();
         if (autoTakeOff)
@@ -275,6 +277,35 @@ public class Wren : MonoBehaviour
                     }
                 }
 
+                if (canMove)
+                {
+
+                    if (input.left1 > .1f && !physics.onGround)
+                    {
+                        // God.audio.FadeLoop(God.sounds.dropParticlesLoop , 1 , .01f);
+                        bird.leftWingTrailFromFeathers_gpu.emitting = 1;
+                    }
+                    else
+                    {
+                        // God.audio.FadeLoop(God.sounds.dropParticlesLoop , 0, .01f);
+                        bird.leftWingTrailFromFeathers_gpu.emitting = 0;
+                    }
+
+
+                    if (input.right1 > .1f && !physics.onGround)
+                    {
+                        //God.audio.FadeLoop(God.sounds.dropParticlesLoop , 1 , .01f);
+                        bird.rightWingTrailFromFeathers_gpu.emitting = 1;
+                    }
+                    else
+                    {
+                        //God.audio.FadeLoop(God.sounds.dropParticlesLoop , 0, .01f);
+                        bird.rightWingTrailFromFeathers_gpu.emitting = 0;
+                    }
+
+                }
+
+
             }
 
             if (canMove)
@@ -298,29 +329,6 @@ public class Wren : MonoBehaviour
 
 
 
-
-                if (input.left1 > .1f && !physics.onGround)
-                {
-                    // God.audio.FadeLoop(God.sounds.dropParticlesLoop , 1 , .01f);
-                    bird.leftWingTrailFromFeathers_gpu.emitting = 1;
-                }
-                else
-                {
-                    // God.audio.FadeLoop(God.sounds.dropParticlesLoop , 0, .01f);
-                    bird.leftWingTrailFromFeathers_gpu.emitting = 0;
-                }
-
-
-                if (input.right1 > .1f && !physics.onGround)
-                {
-                    //God.audio.FadeLoop(God.sounds.dropParticlesLoop , 1 , .01f);
-                    bird.rightWingTrailFromFeathers_gpu.emitting = 1;
-                }
-                else
-                {
-                    //God.audio.FadeLoop(God.sounds.dropParticlesLoop , 0, .01f);
-                    bird.rightWingTrailFromFeathers_gpu.emitting = 0;
-                }
 
 
                 /*
@@ -624,6 +632,7 @@ public class Wren : MonoBehaviour
 
     public void Crash(Collision c)
     {
+        print("crash2");
         if (!state.onGround)
         {
             //if( c.impulse.magnitude != 0 ){
@@ -645,6 +654,9 @@ public class Wren : MonoBehaviour
 
             if (autoTakeOff)
             {
+                //                state.
+
+                state.TransportToPosition(c.contacts[0].point + c.contacts[0].normal * 1, c.contacts[0].normal);
                 state.TakeOff();
             }
         }

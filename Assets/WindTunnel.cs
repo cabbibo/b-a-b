@@ -124,8 +124,8 @@ public class WindTunnel : MonoBehaviour
                 
                 var trigger_force = 1 + Mathf.Max(God.input.l2, God.input.r2);
                 force_in *= trigger_force * 1.25f;
-                force_fwd *= trigger_force * .8f;
-                force_dampen *= trigger_force * .45f;
+                force_fwd *= trigger_force * .9f;
+                force_dampen *= trigger_force * .25f;
 
                 if (easeFwdForce > 0)
                 {
