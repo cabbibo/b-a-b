@@ -19,6 +19,8 @@ public class LookAtLocation : MonoBehaviour
     public bool isTargeting;
 
     public float tmpStrength;
+
+    public LineRenderer lineRenderer;
     // Start is called before the first frame update
     void Start()
     {
@@ -26,8 +28,12 @@ public class LookAtLocation : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
+        if (isTargeting)
+        {
+            God.feedbackSystems.UpdateTargetLineRenderer(objectToTarget);
+        }
 
     }
 

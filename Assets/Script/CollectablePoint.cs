@@ -21,65 +21,74 @@ public class CollectablePoint : MonoBehaviour
 
 
 
-    public void OnCollect(){ 
-    
-        // AKA collecting in real time
-        if( collected == false ){
-           
-            collected = true;
-            God.audio.Play( God.sounds.pointCollectedSounds );
-            collectable.PointCollected(this);
-            God.smallSuccessSystem.transform.position = transform.position;
-            God.smallSuccessSystem.Play();
+    public void OnCollect()
+    {
 
-            God.tween.AddTween( 3 , TweenOn);
+        // AKA collecting in real time
+        if (collected == false)
+        {
+
+            collected = true;
+            God.audio.Play(God.sounds.pointCollectedSounds);
+            collectable.PointCollected(this);
+            God.particleSystems.smallSuccessParticleSystem.transform.position = transform.position;
+            God.particleSystems.smallSuccessParticleSystem.Play();
+
+            God.tween.AddTween(3, TweenOn);
         }
 
     }
 
-    public void Uncollect(){
-        
+    public void Uncollect()
+    {
+
         collected = false;
         ResetEvent.Invoke();
     }
 
-    public void OnEnable(){
-        
+    public void OnEnable()
+    {
+
         renderer = GetComponent<MeshRenderer>();
         lineRenderer = GetComponent<LineRenderer>();
     }
 
-    public void OnEnter(){
+    public void OnEnter()
+    {
         renderer = GetComponent<MeshRenderer>();
         lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.positionCount = 2;
-        
+
 
         collectFade = 0;
 
     }
 
-    public void OnExit(){
+    public void OnExit()
+    {
 
     }
 
-    void TweenOn( float v ){
-        renderer.material.SetFloat("_On" , v);
-        lineRenderer.material.SetFloat("_On" , v);
+    void TweenOn(float v)
+    {
+        renderer.material.SetFloat("_On", v);
+        lineRenderer.material.SetFloat("_On", v);
     }
 
     float collectFade;
-    void Update(){
+    void Update()
+    {
 
-     
+
 
     }
 
-    public void SetCollected(){
+    public void SetCollected()
+    {
         collected = true;
-        OnCollect();   
-        lineRenderer.material.SetFloat("_On",1);
-        renderer.material.SetFloat("_On",1);
+        OnCollect();
+        lineRenderer.material.SetFloat("_On", 1);
+        renderer.material.SetFloat("_On", 1);
     }
 
 

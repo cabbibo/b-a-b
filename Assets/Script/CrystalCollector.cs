@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using WrenUtils;
 
 public class CrystalCollector : MonoBehaviour
 {
@@ -14,12 +15,15 @@ public class CrystalCollector : MonoBehaviour
 
 
 
+
     public int crystalsCollected;
     public int oCrystalsCollected;
 
     public float collectionDist = 6;
 
     public float attractForce = .01f;
+
+    public float insideDrag = 10;
 
 
 
@@ -28,6 +32,8 @@ public class CrystalCollector : MonoBehaviour
     {
         oCrystalsCollected = crystalsCollected;
         crystalsCollected = 0;
+
+
         for (int i = 0; i < possibleCrystals.Length; i++)
         {
 
@@ -35,16 +41,17 @@ public class CrystalCollector : MonoBehaviour
 
             if (d < collectionDist)
             {
-                //  possibleCrystalsColliders[i].enabled = false;
 
+                possibleCrystalsColliders[i].enabled = false;
 
                 //print("collected");
-                //possibleCrystalsRB[i].AddForce((possibleCrystals[i].transform.position - transform.position) * attractForce);
+                possibleCrystalsRB[i].drag = insideDrag;
+                possibleCrystalsRB[i].AddForce((possibleCrystals[i].transform.position - transform.position) * attractForce);
                 crystalsCollected++;
             }
             else
             {
-                //possibleCrystalsColliders[i].enabled = true;
+                possibleCrystalsColliders[i].enabled = true;
             }
         }
 
@@ -78,6 +85,11 @@ public class CrystalCollector : MonoBehaviour
     public void OnCollect()
     {
 
+        God.particleSystems.largeSuccessParticleSystem.transform.position = transform.position;
+        God.particleSystems.largeSuccessParticleSystem.Emit(100);
+        God.audio.Play(God.sounds.smallSuccessSound);
+
+
     }
 
     public void OnLose()
@@ -88,6 +100,11 @@ public class CrystalCollector : MonoBehaviour
 
     public void OnAllCollect()
     {
+
+        God.particleSystems.largeSuccessParticleSystem.transform.position = transform.position;
+        God.particleSystems.largeSuccessParticleSystem.Emit(3000);
+
+        God.audio.Play(God.sounds.largeSuccessSound);
         print("something big");
     }
 

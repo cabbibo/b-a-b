@@ -42,7 +42,6 @@ public class ButterflySpawner : MonoBehaviour
 
 
 
-    public ParticleSystem gotAteParticleSystem;
     public AudioClip[] gotAteClips;
 
     public float clipVolumeFalloff;
@@ -59,6 +58,8 @@ public class ButterflySpawner : MonoBehaviour
 
     public float bugFullnessAdd;
     public float bugStaminaAdd;
+
+    public bool destroyOnEat;
 
 
     // Start is called before the first frame update
@@ -387,23 +388,32 @@ public class ButterflySpawner : MonoBehaviour
 
     public void GotAte(Butterfly b)
     {
-
-        gotAteParticleSystem.Play();
-        gotAteParticleSystem.transform.position = b.transform.position;
-        gotAteParticleSystem.transform.LookAt(WrenUtils.God.camera.transform.position);
-
         float d = length(b.transform.position - WrenUtils.God.wren.transform.position);
+
+
+        ParticleSystem ps = WrenUtils.God.particleSystems.smallCollectionParticleSystem;
+
+        ps.transform.position = WrenUtils.God.wren.transform.position; //b.transform.position;
+        ps.transform.LookAt(WrenUtils.God.camera.transform.position);
+        ps.Emit((int)(30 / length(d)));
+
+
         float pitch = Mathf.Lerp(clipPitchLow, clipPitchHigh, (d - clipPitchDistanceLow) / (clipPitchDistanceHigh - clipPitchDistanceLow));
 
 
         WrenUtils.God.audio.Play(gotAteClips, 1, pitch);
-        /*b.gameObject.SetActive(false);
-        for (int i = 0; i < butterflys.Length; i++)
-        {
-            if (b.gameObject == butterflys[i])
-                active[i] = false;
 
-        }*/
+        if (destroyOnEat)
+        {
+            // TODO remove from transform buffer, and from list that is calculating forces
+            b.gameObject.SetActive(false);
+            for (int i = 0; i < butterflys.Length; i++)
+            {
+                if (b.gameObject == butterflys[i])
+                    active[i] = false;
+
+            }
+        }
 
 
         // OnEat.Invoke(bugFullnessAdd);

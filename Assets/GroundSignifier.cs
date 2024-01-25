@@ -61,8 +61,8 @@ public class GroundSignifier : MonoBehaviour
             {
 
                 emitParams.position = God.wren.physics.straightDownIntersectionPosition;
-                emitParams.startSize = Mathf.Clamp(kickUpDustHeight / God.wren.physics.straightDownDistance, 0, 5);
-                for (int i = 0; i < 10; i++)
+                emitParams.startSize = Mathf.Clamp(kickUpDustHeight / God.wren.physics.straightDownDistance, 0, 10);
+                for (int i = 0; i < (int)emitParams.startSize; i++)
                 {
                     emitParams.position = God.wren.physics.straightDownIntersectionPosition + Random.insideUnitSphere * .4f;
                     kickUpDustParticles.Emit(emitParams, 1);

@@ -18,7 +18,7 @@ public class Sounds : MonoBehaviour
 
     public AudioClip onGroundLoop;
 
-    
+
 
     public AudioClip raceEndSound;
 
@@ -67,5 +67,8 @@ public class Sounds : MonoBehaviour
     public AudioClip tutorialSuccessSound;
     public AudioClip tutorialSectionStartSound;
 
-    
+    public AudioClip smallSuccessSound;
+    public AudioClip largeSuccessSound;
+
+
 }

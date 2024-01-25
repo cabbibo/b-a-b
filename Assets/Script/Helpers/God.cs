@@ -34,14 +34,17 @@ namespace WrenUtils
         public AirInterface _airInterface;
 
 
+
         public CollectableController _collectableController;
 
 
         public GlitchHit _glitchHit;
 
 
-        public ParticleSystem _smallSuccessSystem;
-        public ParticleSystem _largeSuccessSystem;
+
+
+        public ParticleSystems _particleSystems;
+        public FeedbackSystems _feedbackSystems;
 
 
         public List<Transform> _targetableObjects;
@@ -172,6 +175,23 @@ namespace WrenUtils
             }
         }
 
+        public static ParticleSystems particleSystems
+        {
+            get
+            {
+                return instance._particleSystems;
+            }
+        }
+
+        public static FeedbackSystems feedbackSystems
+        {
+            get
+            {
+                return instance._feedbackSystems;
+            }
+        }
+
+
         public static AudioPlayer audio
         {
             get
@@ -276,21 +296,6 @@ namespace WrenUtils
             }
         }
 
-        public static ParticleSystem smallSuccessSystem
-        {
-            get
-            {
-                return instance._smallSuccessSystem;
-            }
-        }
-
-        public static ParticleSystem largeSuccessSystem
-        {
-            get
-            {
-                return instance._largeSuccessSystem;
-            }
-        }
 
 
 
