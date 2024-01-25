@@ -5201,6 +5201,9 @@ MonoBehaviour:
   locationIndicatorSystem: {fileID: 6471102342867502598}
   collector: {fileID: 8089576009770843876}
   c: {fileID: 0}
+  collectableTargets: []
+  closestTarget: {fileID: 0}
+  maxLength: 0
 --- !u!82 &1162867460247392045
 AudioSource:
   m_ObjectHideFlags: 0
@@ -15243,6 +15246,9 @@ MonoBehaviour:
   locationIndicatorSystem: {fileID: 6471102342867502598}
   collector: {fileID: 8089576009770843876}
   c: {fileID: 0}
+  collectableTargets: []
+  closestTarget: {fileID: 0}
+  maxLength: 0
 --- !u!82 &5152464445385481121
 AudioSource:
   m_ObjectHideFlags: 0
@@ -49997,6 +50003,9 @@ MonoBehaviour:
   locationIndicatorSystem: {fileID: 6471102342867502598}
   collector: {fileID: 8089576009770843876}
   c: {fileID: 0}
+  collectableTargets: []
+  closestTarget: {fileID: 0}
+  maxLength: 0
 --- !u!82 &5719204719632641113
 AudioSource:
   m_ObjectHideFlags: 0
@@ -50335,6 +50344,9 @@ MonoBehaviour:
   locationIndicatorSystem: {fileID: 6471102342867502598}
   collector: {fileID: 8089576009770843876}
   c: {fileID: 0}
+  collectableTargets: []
+  closestTarget: {fileID: 0}
+  maxLength: 0
 --- !u!82 &5878345658165231212
 AudioSource:
   m_ObjectHideFlags: 0
@@ -50673,6 +50685,9 @@ MonoBehaviour:
   locationIndicatorSystem: {fileID: 6471102342867502598}
   collector: {fileID: 8089576009770843876}
   c: {fileID: 0}
+  collectableTargets: []
+  closestTarget: {fileID: 0}
+  maxLength: 0
 --- !u!82 &4489731933983458803
 AudioSource:
   m_ObjectHideFlags: 0
@@ -51210,6 +51225,9 @@ MonoBehaviour:
   locationIndicatorSystem: {fileID: 6471102342867502598}
   collector: {fileID: 8089576009770843876}
   c: {fileID: 0}
+  collectableTargets: []
+  closestTarget: {fileID: 0}
+  maxLength: 0
 --- !u!82 &3268011765738128137
 AudioSource:
   m_ObjectHideFlags: 0
@@ -56507,6 +56525,9 @@ MonoBehaviour:
   locationIndicatorSystem: {fileID: 6471102342867502598}
   collector: {fileID: 8089576009770843876}
   c: {fileID: 0}
+  collectableTargets: []
+  closestTarget: {fileID: 0}
+  maxLength: 0
 --- !u!82 &1914696041932384027
 AudioSource:
   m_ObjectHideFlags: 0
@@ -56845,6 +56866,9 @@ MonoBehaviour:
   locationIndicatorSystem: {fileID: 6471102342867502598}
   collector: {fileID: 8089576009770843876}
   c: {fileID: 0}
+  collectableTargets: []
+  closestTarget: {fileID: 0}
+  maxLength: 0
 --- !u!82 &2794642420540674194
 AudioSource:
   m_ObjectHideFlags: 0
@@ -62249,6 +62273,9 @@ MonoBehaviour:
   locationIndicatorSystem: {fileID: 6471102342867502598}
   collector: {fileID: 8089576009770843876}
   c: {fileID: 0}
+  collectableTargets: []
+  closestTarget: {fileID: 0}
+  maxLength: 0
 --- !u!82 &7436126137868350472
 AudioSource:
   m_ObjectHideFlags: 0
