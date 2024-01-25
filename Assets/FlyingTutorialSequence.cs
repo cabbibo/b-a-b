@@ -33,7 +33,7 @@ public class FlyingTutorialSequence : MonoBehaviour
     public TutorialEnder ender;
 
     Coroutine tutSequence;
-
+    float _lastSequenceTime;
 
     void Start()
     {
@@ -137,7 +137,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         yield return CameraSequence();
         cinematicCamera.tutorialCameraIdx++; // 4
         yield return CameraSequence();
-        cinematicCamera.tutorialCameraIdx++; // 5
+        yield return new WaitForSecondsRealtime(3);
         float bgT = 1;
         while(bgT > 0)
         {
@@ -238,9 +238,9 @@ public class FlyingTutorialSequence : MonoBehaviour
         wait = true; t = 0;
         while(wait)
         {
-            if (!lastX && God.input.x)
-                wait = false;
-            lastX = God.input.x;
+            // if (!lastX && God.input.x && Time.time - _lastSequenceTime > 3)
+            //     wait = false;
+            // lastX = God.input.x;
             
             t += Time.deltaTime;
             if (t > 7)
@@ -249,14 +249,19 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
 
         ShowContinue(true);
+        yield return new WaitForSecondsRealtime(0.5f);
         wait = true;
         while(wait)
         {
-            if (God.input.x)
+            if (!lastX && God.input.x && Time.time - _lastSequenceTime > 3)
                 wait = false;
-            else
+            lastX = God.input.x;
+            // if (God.input.x)
+                // wait = false;
+            // else
                 yield return null;
         }
+        _lastSequenceTime = Time.time;
         // yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
         // while (HandleSticksProgress(ref t, speed: 1.7f, gravity: true))
         //     yield return null;
