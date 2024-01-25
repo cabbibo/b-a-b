@@ -61,7 +61,7 @@ public class GroundSignifier : MonoBehaviour
             {
 
                 emitParams.position = God.wren.physics.straightDownIntersectionPosition;
-                emitParams.startSize = Mathf.Clamp(10 / God.wren.physics.straightDownDistance, 0, 5);
+                emitParams.startSize = Mathf.Clamp(kickUpDustHeight / God.wren.physics.straightDownDistance, 0, 5);
                 for (int i = 0; i < 10; i++)
                 {
                     emitParams.position = God.wren.physics.straightDownIntersectionPosition + Random.insideUnitSphere * .4f;
@@ -70,7 +70,7 @@ public class GroundSignifier : MonoBehaviour
 
             }
 
-          //  float leftWingDif = Mathf.Abs(God.wren.physics.leftWing.position.y - -God.wren.physics.leftWingAngleAtRest);
+            //  float leftWingDif = Mathf.Abs(God.wren.physics.leftWing.position.y - -God.wren.physics.leftWingAngleAtRest);
         }
         else
         {
