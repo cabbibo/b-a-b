@@ -414,7 +414,7 @@ public class Flapper : MonoBehaviour
     void DoTrail()
     {
 
-        float total = (wren.input.left1 + wren.input.right1) / 2;
+        float total = ((float)(wren.bird.rightWingTrailFromFeathers_gpu.emitting + wren.bird.leftWingTrailFromFeathers_gpu.emitting)) / 2;
         trail.volume = total * total * trailMultiplier;
     }
 

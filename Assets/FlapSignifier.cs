@@ -23,7 +23,7 @@ public class FlapSignifier : MonoBehaviour
 
         if (God.wren)
         {
-            print(God.wren.physics.flapVelL);
+            //            print(God.wren.physics.flapVelL);
             psL.transform.position = God.wren.bird.leftWing.transform.position + God.wren.bird.leftWing.transform.right * -.5f;
             psR.transform.position = God.wren.bird.rightWing.transform.position + God.wren.bird.leftWing.transform.right * .5f; ;
             psL.transform.rotation = God.wren.bird.leftWing.transform.rotation;

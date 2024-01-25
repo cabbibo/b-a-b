@@ -63,7 +63,7 @@ public class PreyController : MonoBehaviour
                 if (i == 2) { fDir = Vector3.forward; }
 
 
-                print("pushing back " + fDir + " " + Mathf.Sign(localPosition[i]) * cagePushBack);
+              //  print("pushing back " + fDir + " " + Mathf.Sign(localPosition[i]) * cagePushBack);
 
                 // push back in
                 rb.AddForce(cage.TransformDirection(fDir * Mathf.Sign(localPosition[i]) * cagePushBack));
