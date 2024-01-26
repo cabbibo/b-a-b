@@ -13,6 +13,62 @@ using WrenUtils;
 public class CinematicCameraHandler : MonoBehaviour
 {
 
+  [System.Serializable]
+  public class CameraDescriptor
+  {
+      public float fov = 80;
+
+      [Header("Orbit")]
+      public bool orbit = true;
+      [Range(0,1)] public float orbitAngle = 0;
+      public float orbitRadius = 2;
+      [Range(-90,90)]
+      public float orbitHeight = 1f;
+
+      public enum BodyTarget {
+          None,
+          Body,
+          Head,
+          Eye
+      }
+      public bool parentToBird = false;
+
+      [Header("Targets")]
+      public BodyTarget bodyTarget = BodyTarget.None;
+      public Vector3 posOffset = new Vector3(0,0.6f,-2);
+      public BodyTarget aimTarget = BodyTarget.None;
+      public Vector3 aimPosOffset = new Vector3(0,0,.8f);
+      public Vector3 rotationOffset = new Vector3(0,0,.8f);
+
+      public enum Rotation {
+          None,
+          UseBodyRotation,
+          UseAimRotation,
+          LookAt,
+          WorldUp
+      }
+      public Rotation rotation = Rotation.LookAt;
+
+
+      public static CameraDescriptor Lerp(CameraDescriptor a, CameraDescriptor b, float t)
+      {
+          return new CameraDescriptor() {
+              fov = Mathf.Lerp(a.fov, b.fov, t),
+              orbit = t > .5f ? b.orbit : a.orbit,
+              orbitAngle = Mathf.LerpAngle(a.orbitAngle, b.orbitAngle, t),
+              orbitRadius = Mathf.Lerp(a.orbitRadius, b.orbitRadius, t),
+              orbitHeight = Mathf.Lerp(a.orbitHeight, b.orbitHeight, t),
+              parentToBird = t > .5f ? b.parentToBird : a.parentToBird,
+              bodyTarget = a.bodyTarget,
+              posOffset = Vector3.Lerp(a.posOffset, b.posOffset, t),
+              aimTarget = a.aimTarget,
+              aimPosOffset = Vector3.Lerp(a.aimPosOffset, b.aimPosOffset, t),
+              rotationOffset = Vector3.Lerp(a.rotationOffset, b.rotationOffset, t),
+              rotation = a.rotation
+          };
+      }
+  }
+
   Transform BirdTransform
   {
     get
@@ -37,36 +93,12 @@ public class CinematicCameraHandler : MonoBehaviour
   }
 
   public bool armed = false;
-
-  [System.Serializable]
-  public class CinematicCamera
-  {
-    public string Name = "";
-    public Vector3 posOffset = new Vector3(0, 0.6f, -2);
-    public Vector3 lookOffset = new Vector3(0, 0, .8f);
-    public float fov = 80;
-    public bool orbit = true;
-    [Range(0, 1)] public float orbitAngle = 0;
-    public float orbitRadius = 2;
-    public float orbitHeight = 1f;
-
-    public enum BodyTarget
-    {
-      None,
-      Head
-    }
-    public BodyTarget bodyTarget = BodyTarget.None;
-    public BodyTarget aimTarget = BodyTarget.None;
-    public bool parentToBird = false;
-
-  }
-  public CinematicCamera[] tutorialCameras;
-  public CinematicCameraDescriptor[] _cams;
-  public int tutorialCameraIdx;
+  public CinematicCamera[] _cams;
+  public float tutorialCameraIdx;
 
   void Start()
   {
-    _cams = GetComponentsInChildren<CinematicCameraDescriptor>();
+    _cams = GetComponentsInChildren<CinematicCamera>();
   }
 
   void LateUpdate()
@@ -76,42 +108,44 @@ public class CinematicCameraHandler : MonoBehaviour
 
     if (armed && _cams.Length > 0)
     {
-      var c = _cams[(int)Mathf.Clamp(tutorialCameraIdx, 0, _cams.Length - 1)];
+      var c1 = _cams[(int)Mathf.Clamp(Mathf.Floor(tutorialCameraIdx), 0, _cams.Length - 1)];
+      var c2 = _cams[(int)Mathf.Clamp(Mathf.Ceil(tutorialCameraIdx), 0, _cams.Length - 1)];
 
 
 #if UNITY_EDITOR
       if (Application.isEditor)
       {
-        foreach (var ct in GetComponentsInChildren<CinematicCameraDescriptor>())
+        foreach (var ct in GetComponentsInChildren<CinematicCamera>())
         {
           if (ct.debugArmed)
           {
-            c = ct;
+            c1 = ct;
           }
         }
       }
 
 
 #endif
-
-      GetCustomCameraPositions(c, out var cPos, out var tPos);
-
+      if (c1 == c2)
+        GetCustomCameraPositions(c1.descriptor, out var cPos, out var tPos);
+      else
+        GetCustomCameraPositions(CameraDescriptor.Lerp(c1.descriptor, c2.descriptor, tutorialCameraIdx % 1), out var cPos, out var tPos);
     }
 
   }
 
-  Transform GetTarget(CinematicCameraDescriptor.BodyTarget target)
+  Transform GetTarget(CameraDescriptor.BodyTarget target)
   {
     switch (target)
     {
-      case CinematicCameraDescriptor.BodyTarget.Head:
-      case CinematicCameraDescriptor.BodyTarget.Eye:
+      case CameraDescriptor.BodyTarget.Head:
+      case CameraDescriptor.BodyTarget.Eye:
         return Head;
     }
     return BirdTransform;
   }
 
-  void GetCustomCameraPositions(CinematicCameraDescriptor cam, out Vector3 pos, out Vector3 lookPos)
+  void GetCustomCameraPositions(CameraDescriptor cam, out Vector3 pos, out Vector3 lookPos)
   {
 
     var bodyTarget = GetTarget(cam.bodyTarget);
@@ -119,7 +153,7 @@ public class CinematicCameraHandler : MonoBehaviour
 
     pos = cam.posOffset;
     lookPos = aimTarget.position + cam.aimPosOffset;
-    if (cam.aimTarget == CinematicCameraDescriptor.BodyTarget.Eye)
+    if (cam.aimTarget == CameraDescriptor.BodyTarget.Eye)
       lookPos = EyePositionRight + cam.aimPosOffset;
 
     if (cam.orbit)
@@ -147,24 +181,59 @@ public class CinematicCameraHandler : MonoBehaviour
       God.camera.transform.rotation = bodyTarget.rotation;
     }
     // Rotation
-    if (cam.rotation == CinematicCameraDescriptor.Rotation.UseBodyRotation)
-      God.camera.transform.rotation = bodyTarget.rotation;
-    else if (cam.rotation == CinematicCameraDescriptor.Rotation.UseAimRotation)
-      God.camera.transform.rotation = aimTarget.rotation;
-    else if (cam.rotation == CinematicCameraDescriptor.Rotation.LookAt)
-      God.camera.transform.LookAt(lookPos, Vector3.up);
-    else
-      God.camera.transform.LookAt(lookPos, bodyTarget.up);
+    // Quaternion rotation = Quaternion.identity;
+    // switch(cam.rotation)
+    // {
+    //   case CameraDescriptor.Rotation.UseBodyRotation:
+    //     rotation = bodyTarget.rotation;
+    //     break;
+    //   case CameraDescriptor.Rotation.UseAimRotation:
+    //     rotation = aimTarget.rotation;
+    //     break;
+    //   case CameraDescriptor.Rotation.LookAt:
+    //     rotation = Quaternion.LookRotation(lookPos, Vector3.up);
+    //     break;
+    //   case CameraDescriptor.Rotation.WorldUp:
+    //     rotation = Quaternion.identity;
+    //     break;
+    //     case CameraDescriptor.Rotation.None:
+    //     rotation = Quaternion.LookRotation(lookPos, bodyTarget.up);
+    //     break;
+    // }
+    // God.camera.transform.rotation = rotation;
+    
+    Quaternion rotation = Quaternion.identity;
+    switch (cam.rotation)
+    {
+      case CameraDescriptor.Rotation.UseBodyRotation:
+        rotation = bodyTarget.rotation;
+        break;
+      case CameraDescriptor.Rotation.UseAimRotation:
+        rotation = aimTarget.rotation;
+        break;
+      case CameraDescriptor.Rotation.LookAt:
+        rotation = Quaternion.LookRotation(lookPos - God.camera.transform.position, Vector3.up);
+        break;
+      case CameraDescriptor.Rotation.WorldUp:
+        // use forward of body target but keep level with horizon
+        rotation = Quaternion.LookRotation(lookPos - God.camera.transform.position, Vector3.up);
+        rotation = Quaternion.Euler(0, rotation.eulerAngles.y, 0);
+        break;
+      default:
+        rotation = Quaternion.LookRotation(lookPos - God.camera.transform.position, bodyTarget.up);
+        break;
+    }
+    God.camera.transform.rotation = rotation;
 
     God.camera.transform.Rotate(cam.rotationOffset, Space.Self);
 
     // Etc
     God.camera.fieldOfView = cam.fov;
 
-    cam.transform.position = God.camera.transform.position;
-    cam.transform.rotation = God.camera.transform.rotation;
+    // cam.transform.position = God.camera.transform.position;
+    // cam.transform.rotation = God.camera.transform.rotation;
 
-    Debug.DrawLine(cam.transform.position, lookPos);
+    // Debug.DrawLine(cam.transform.position, lookPos);
 
   }
 
