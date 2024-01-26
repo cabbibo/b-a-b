@@ -258,25 +258,13 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         ShowContinue(false);
 
-        yield return WaitWithCheat(0.5f);
-        bool lastX = God.input.x;
-        wait = true; t = 0;
-        while(wait)
-        {
-            // if (!lastX && God.input.x && Time.time - _lastSequenceTime > 3)
-            //     wait = false;
-            // lastX = God.input.x;
-            
-            t += Time.deltaTime;
-            if (t > 7)
-                wait = false;
-            if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
-                wait = false;
-            yield return null;
-        }
+        yield return WaitWithCheat(6);
 
         ShowContinue(true);
+        
         yield return WaitWithCheat(0.5f);
+
+        bool lastX = God.input.x;
         wait = true;
         while(wait)
         {
