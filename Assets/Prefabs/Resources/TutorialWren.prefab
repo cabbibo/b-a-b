@@ -26366,6 +26366,7 @@ MonoBehaviour:
   windAmountToTheSide: 2
   groundForceTweenVal: 0.2
   velMatchMultiplier: 0
+  bumperForce: 0
   groundPower: 10
   groundOut: 0.03
   groundDampening: 0.9
@@ -26446,6 +26447,10 @@ MonoBehaviour:
   straightDownDistance: 0
   horizonRightingForce: {x: 0, y: 0, z: 0}
   horizonRightingForcePosition: {x: 0, y: 0, z: 0}
+  bumperApplicationForceL: {x: 0, y: 0, z: 0}
+  bumperApplicationForceR: {x: 0, y: 0, z: 0}
+  oLeft1: 0
+  oRight1: 0
   doBasicGroundControls: 0
   basicGroundLookControls_lookSpeed: 0
   basicGroundLookControls_moveSpeed: 0

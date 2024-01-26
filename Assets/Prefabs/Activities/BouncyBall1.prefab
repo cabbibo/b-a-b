@@ -218,6 +218,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80ad636a3d4059b4e894302d90012208, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  carryForce: 10
+  carryBackDistance: 0.4
+  carryUpDistance: 0
   setPositionOnPickup: 0
   dropOnGroundHit: 1
   carryingDrag: 3
@@ -338,6 +341,7 @@ MonoBehaviour:
   onlyOnGround: 0
   isTargeting: 0
   tmpStrength: 0
+  lineRenderer: {fileID: 0}
 --- !u!1 &5568605489486910699
 GameObject:
   m_ObjectHideFlags: 0

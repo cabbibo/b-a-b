@@ -38,7 +38,7 @@ public class CrystalCollectable : MonoBehaviour
 
     public void OnTriggerEnter(Collider c)
     {
-        if (c.gameObject.name == "CrystalCollection")
+        if (c.gameObject.tag == "Collector")
         {
             if (God.wren != null)
             {

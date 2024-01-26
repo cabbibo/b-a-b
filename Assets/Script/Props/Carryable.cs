@@ -23,6 +23,12 @@ public class Carryable : RealtimeComponent<CarryableModel>
         }
     }
 
+    public float carryForce = 10;
+    public float carryBackDistance = .4f;
+    public float carryUpDistance = 0f;
+
+
+
     public bool setPositionOnPickup = false;
     public bool dropOnGroundHit = true;
     public float carryingDrag = 3f;
@@ -137,7 +143,7 @@ public class Carryable : RealtimeComponent<CarryableModel>
 
     public void UpdateCarriedPosition(WrenCarrying carrier, Vector3 targetPosition)
     {
-        _rigidbody.AddForce(-30f * (transform.position - targetPosition));
+        _rigidbody.AddForce(carryForce * (targetPosition - transform.position));
     }
 
     public bool TryToDrop(WrenCarrying carrier, DropSettings dropSettings = null)

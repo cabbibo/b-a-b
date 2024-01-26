@@ -103,7 +103,7 @@ public class WrenCarrying : MonoBehaviour
         Vector3 targetPosition = transform.position;
         foreach (var c in CarriedItems)
         {
-            targetPosition -= transform.up * upDistCarrying - transform.forward * backDistCarrying;
+            targetPosition -= transform.up * c.carryUpDistance - transform.forward * c.carryBackDistance;
             c.UpdateCarriedPosition(this, targetPosition);
 
             //g.GetComponent<Rigidbody>().AddForce( -30 * (g.transform.position - targetPosition));
