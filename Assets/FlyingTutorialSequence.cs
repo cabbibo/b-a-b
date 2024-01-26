@@ -78,6 +78,18 @@ public class FlyingTutorialSequence : MonoBehaviour
         fade.transform.position = God.camera.transform.position;
 
     }
+    
+    IEnumerator WaitWithCheat(float seconds)
+    {
+        float t = 0;
+        while(t < seconds)
+        {
+            if (Input.GetKey(KeyCode.Space))
+                break;
+            t += Time.deltaTime;
+            yield return null;
+        }
+    }
 
     IEnumerator TutorialSequence()
     {
@@ -100,7 +112,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         while (God.wren == null)
             yield return null;
 
-        yield return new WaitForSecondsRealtime(2);
+        yield return WaitWithCheat(2);
 
         while (God.wren.physics.onGround)
             yield return null;
@@ -114,7 +126,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
 
         cinematicCamera.tutorialCameraIdx = 0;
-        yield return new WaitForSecondsRealtime(5);
+        yield return WaitWithCheat(5);
 
         // Sticks
         {
@@ -123,7 +135,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
             yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
         }
-        yield return new WaitForSecondsRealtime(5);
+        yield return WaitWithCheat(5);
         
         yield return CameraSequence();
         groupContainer.alpha = 0;
@@ -137,20 +149,33 @@ public class FlyingTutorialSequence : MonoBehaviour
         yield return CameraSequence();
         cinematicCamera.tutorialCameraIdx++; // 4
         yield return CameraSequence();
-        yield return new WaitForSecondsRealtime(3);
+
+        float cT = 0;
+        float _prevIdx = cinematicCamera.tutorialCameraIdx;
+        while(cT < 1)
+        {
+            cinematicCamera.tutorialCameraIdx = Mathf.Lerp(_prevIdx, _prevIdx + 2, Mathf.SmoothStep(0,1,cT));
+            cT += Time.deltaTime * .1f;
+            yield return null;
+        }
+        // cinematicCamera.tutorialCameraIdx++; // 5
+        
+        yield return WaitWithCheat(0.2f);
+        cinematicCamera.armed = false;
+        yield return WaitWithCheat(5f);
+        
         float bgT = 1;
         while(bgT > 0)
         {
             SetBGFade(bgT);
-            bgT -= Time.deltaTime * .2f;
+            bgT -= Time.deltaTime * .1f;
             yield return null;
         }
         SetBGFade(0);
-        yield return new WaitForSecondsRealtime(6);
-        yield return CameraSequence();
+        yield return WaitWithCheat(6);
+        // yield return CameraSequence();
 
         // Game cam
-        cinematicCamera.armed = false;
         yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
         // yield return new WaitForSecondsRealtime(10);
@@ -233,7 +258,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         ShowContinue(false);
 
-        yield return new WaitForSecondsRealtime(0.5f);
+        yield return WaitWithCheat(0.5f);
         bool lastX = God.input.x;
         wait = true; t = 0;
         while(wait)
@@ -245,15 +270,19 @@ public class FlyingTutorialSequence : MonoBehaviour
             t += Time.deltaTime;
             if (t > 7)
                 wait = false;
+            if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
+                wait = false;
             yield return null;
         }
 
         ShowContinue(true);
-        yield return new WaitForSecondsRealtime(0.5f);
+        yield return WaitWithCheat(0.5f);
         wait = true;
         while(wait)
         {
             if (!lastX && God.input.x && Time.time - _lastSequenceTime > 3)
+                wait = false;
+            if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
                 wait = false;
             lastX = God.input.x;
             // if (God.input.x)
