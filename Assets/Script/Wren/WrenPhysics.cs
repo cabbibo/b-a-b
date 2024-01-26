@@ -122,6 +122,9 @@ public class WrenPhysics : MonoBehaviour
     public float velMatchMultiplier;
 
 
+    public float bumperForce;
+
+
 
 
 
@@ -409,6 +412,7 @@ public class WrenPhysics : MonoBehaviour
             RightingForces();
             PaintedWindForce();
             HorizonRightingForces();
+            BumperForces();
 
 
             ApplyForces();
@@ -1072,6 +1076,48 @@ public class WrenPhysics : MonoBehaviour
     }
 
 
+    public Vector3 bumperApplicationForceL;
+    public Vector3 bumperApplicationForceR;
+
+    public float oLeft1;
+    public float oRight1;
+
+
+    public virtual void BumperForces()
+    {
+
+
+
+
+
+        float velLeft1 = input.left1 - oLeft1;
+        float velRight1 = input.right1 - oRight1;
+
+        velLeft1 = Mathf.Clamp(velLeft1, 0, 1);
+        velRight1 = Mathf.Clamp(velRight1, 0, 1);
+
+
+
+        bumperApplicationForceL = transform.right * velLeft1 * bumperForce * -1;
+        bumperApplicationForceR = transform.right * velRight1 * bumperForce * 1;
+
+        bumperApplicationForceL = Vector3.Scale(bumperApplicationForceL, Vector3.right + Vector3.forward);
+        bumperApplicationForceR = Vector3.Scale(bumperApplicationForceR, Vector3.right + Vector3.forward);
+
+
+
+        //bumperApplicationForceL = Vector3.Scale(bumperApplicationForceL, Vector3.up);
+        //bumperApplicationForceR = Vector3.Scale(bumperApplicationForceR, Vector3.up);
+
+        oLeft1 = input.left1;
+        oRight1 = input.right1;
+
+
+
+
+    }
+
+
 
     void ApplyForces()
     {
@@ -1089,6 +1135,8 @@ public class WrenPhysics : MonoBehaviour
         rb.AddForceAtPosition(upwardsRightingForce, upwardsRightingForcePosition);
         rb.AddForceAtPosition(horizonRightingForce, horizonRightingForcePosition);
         rb.AddForceAtPosition(paintedWindForce, paintedWindForcePosition);
+        rb.AddForceAtPosition(bumperApplicationForceL, leftWing.position);
+        rb.AddForceAtPosition(bumperApplicationForceR, rightWing.position);
 
         // Straightens out!
         v1 = Vector3.Cross(rb.velocity, transform.forward);
