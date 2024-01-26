@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4136790617104448635}
-  - component: {fileID: 6471698192962243686}
+  - component: {fileID: 367570804285097608}
   m_Layer: 0
   m_Name: Behind_Feathers
   m_TagString: Untagged
@@ -32,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8638848612436228050}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6471698192962243686
+--- !u!114 &367570804285097608
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,22 +41,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 1317352220852914546}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3baa8b488eaf8ae4c9f7bb1dc4a970ac, type: 3}
+  m_Script: {fileID: 11500000, guid: 925eb7d9a60e88e41af97cb0758fcece, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  descriptor:
+    fov: 2.09
+    orbit: 1
+    orbitAngle: 0.238
+    orbitRadius: 3.18
+    orbitHeight: 53
+    parentToBird: 1
+    bodyTarget: 1
+    posOffset: {x: 0.76, y: 0, z: 0}
+    aimTarget: 0
+    aimPosOffset: {x: 0, y: 0.09, z: 0.25}
+    rotationOffset: {x: 0.71, y: 0, z: 0.26}
+    rotation: 0
   debugArmed: 0
-  fov: 2.09
-  orbit: 1
-  orbitAngle: 0.238
-  orbitRadius: 3.18
-  orbitHeight: 53
-  parentToBird: 1
-  bodyTarget: 1
-  posOffset: {x: 0.76, y: 0, z: 0}
-  aimTarget: 0
-  aimPosOffset: {x: 0, y: 0.09, z: 0.25}
-  rotationOffset: {x: 0.71, y: 0, z: 0.26}
-  rotation: 0
 --- !u!1 &1360568897293650477
 GameObject:
   m_ObjectHideFlags: 0
@@ -287,6 +288,7 @@ Transform:
   - {fileID: 143150900174707274}
   - {fileID: 2405721186906827008}
   - {fileID: 5809217997008806457}
+  - {fileID: 2363128376740164707}
   - {fileID: 3829714323114439566}
   m_Father: {fileID: 2846188984467705497}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -303,51 +305,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   armed: 1
-  tutorialCameras:
-  - Name: Eye
-    posOffset: {x: 0, y: 0, z: 0}
-    lookOffset: {x: 0, y: 0, z: 0}
-    fov: 2.43
-    orbit: 1
-    orbitAngle: 0.93
-    orbitRadius: 4
-    orbitHeight: 0.6
-    bodyTarget: 0
-    aimTarget: 1
-    parentToBird: 0
-  - Name: Head
-    posOffset: {x: 0, y: 0, z: 0.19}
-    lookOffset: {x: 0, y: 0, z: 0}
-    fov: 11.1
-    orbit: 1
-    orbitAngle: 0.135
-    orbitRadius: 4
-    orbitHeight: 0.12
-    bodyTarget: 1
-    aimTarget: 1
-    parentToBird: 0
-  - Name: Mid Close Head
-    posOffset: {x: -0.21, y: 0, z: 14.35}
-    lookOffset: {x: 0, y: 0, z: 0.11}
-    fov: 4.42
-    orbit: 1
-    orbitAngle: 0.373
-    orbitRadius: 4
-    orbitHeight: -0.48
-    bodyTarget: 0
-    aimTarget: 1
-    parentToBird: 0
-  - Name: Below
-    posOffset: {x: 0, y: -9.46, z: 2.68}
-    lookOffset: {x: 0, y: -2.66, z: 2.66}
-    fov: 48.1
-    orbit: 1
-    orbitAngle: 0.238
-    orbitRadius: 4
-    orbitHeight: 0.12
-    bodyTarget: 0
-    aimTarget: 0
-    parentToBird: 0
   _cams: []
   tutorialCameraIdx: 3
 --- !u!1 &2176518622474639496
@@ -359,7 +316,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5809217997008806457}
-  - component: {fileID: 7236097656152872871}
+  - component: {fileID: 1909056563483116973}
   m_Layer: 0
   m_Name: Behind Close L
   m_TagString: Untagged
@@ -382,7 +339,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8638848612436228050}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7236097656152872871
+--- !u!114 &1909056563483116973
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -391,22 +348,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 2176518622474639496}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3baa8b488eaf8ae4c9f7bb1dc4a970ac, type: 3}
+  m_Script: {fileID: 11500000, guid: 925eb7d9a60e88e41af97cb0758fcece, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  descriptor:
+    fov: 42.2
+    orbit: 1
+    orbitAngle: 0.956
+    orbitRadius: 1.56
+    orbitHeight: 9.3
+    parentToBird: 1
+    bodyTarget: 0
+    posOffset: {x: 0, y: 0, z: 0.36}
+    aimTarget: 0
+    aimPosOffset: {x: 0, y: 0, z: 0.26}
+    rotationOffset: {x: -3.52, y: -4.44, z: 0}
+    rotation: 0
   debugArmed: 0
-  fov: 42.2
-  orbit: 1
-  orbitAngle: 0.956
-  orbitRadius: 1.56
-  orbitHeight: 9.3
-  parentToBird: 1
-  bodyTarget: 0
-  posOffset: {x: 0, y: 0, z: 0.36}
-  aimTarget: 0
-  aimPosOffset: {x: 0, y: 0, z: 0.26}
-  rotationOffset: {x: -3.52, y: -4.44, z: 0}
-  rotation: 0
 --- !u!1 &2379449114230607870
 GameObject:
   m_ObjectHideFlags: 0
@@ -687,7 +645,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1056324349329527465}
-  - component: {fileID: 32437586271414326}
+  - component: {fileID: 4321353378511533685}
   m_Layer: 0
   m_Name: Wing Closeup R
   m_TagString: Untagged
@@ -710,7 +668,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8638848612436228050}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &32437586271414326
+--- !u!114 &4321353378511533685
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -719,22 +677,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 3617359189163646237}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3baa8b488eaf8ae4c9f7bb1dc4a970ac, type: 3}
+  m_Script: {fileID: 11500000, guid: 925eb7d9a60e88e41af97cb0758fcece, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  descriptor:
+    fov: 6
+    orbit: 1
+    orbitAngle: 1
+    orbitRadius: 4.68
+    orbitHeight: 83
+    parentToBird: 1
+    bodyTarget: 1
+    posOffset: {x: 0, y: -1.73, z: 0.82}
+    aimTarget: 0
+    aimPosOffset: {x: 0, y: 0, z: 0.26}
+    rotationOffset: {x: 89, y: -1.1, z: 0}
+    rotation: 1
   debugArmed: 0
-  fov: 6
-  orbit: 1
-  orbitAngle: 1
-  orbitRadius: 4.68
-  orbitHeight: 83
-  parentToBird: 1
-  bodyTarget: 1
-  posOffset: {x: 0, y: -1.73, z: 0.82}
-  aimTarget: 0
-  aimPosOffset: {x: 0, y: 0, z: 0.26}
-  rotationOffset: {x: 89, y: -1.1, z: 0}
-  rotation: 1
 --- !u!1 &3845207305985627591
 GameObject:
   m_ObjectHideFlags: 0
@@ -744,7 +703,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2405721186906827008}
-  - component: {fileID: 3775687612968527879}
+  - component: {fileID: 6660426142054938430}
   m_Layer: 0
   m_Name: Below
   m_TagString: Untagged
@@ -767,7 +726,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8638848612436228050}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3775687612968527879
+--- !u!114 &6660426142054938430
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -776,22 +735,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 3845207305985627591}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3baa8b488eaf8ae4c9f7bb1dc4a970ac, type: 3}
+  m_Script: {fileID: 11500000, guid: 925eb7d9a60e88e41af97cb0758fcece, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  descriptor:
+    fov: 20.56
+    orbit: 1
+    orbitAngle: 0.498
+    orbitRadius: 3.33
+    orbitHeight: -13.1
+    parentToBird: 1
+    bodyTarget: 0
+    posOffset: {x: 0, y: 0, z: 0.19}
+    aimTarget: 0
+    aimPosOffset: {x: 0, y: 0, z: 0.16}
+    rotationOffset: {x: 0.57, y: -0.51, z: 0.2}
+    rotation: 0
   debugArmed: 0
-  fov: 20.56
-  orbit: 1
-  orbitAngle: 0.498
-  orbitRadius: 3.33
-  orbitHeight: -13.1
-  parentToBird: 1
-  bodyTarget: 0
-  posOffset: {x: 0, y: 0, z: 0.19}
-  aimTarget: 0
-  aimPosOffset: {x: 0, y: 0, z: 0.16}
-  rotationOffset: {x: 0.57, y: -0.51, z: 0.2}
-  rotation: 0
 --- !u!1 &4679777290701523950
 GameObject:
   m_ObjectHideFlags: 0
@@ -1119,7 +1079,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 143150900174707274}
-  - component: {fileID: 8672246514146535464}
+  - component: {fileID: 7654768910984486504}
   m_Layer: 0
   m_Name: Top
   m_TagString: Untagged
@@ -1142,7 +1102,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8638848612436228050}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8672246514146535464
+--- !u!114 &7654768910984486504
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1151,22 +1111,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 5733547669298441655}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3baa8b488eaf8ae4c9f7bb1dc4a970ac, type: 3}
+  m_Script: {fileID: 11500000, guid: 925eb7d9a60e88e41af97cb0758fcece, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  descriptor:
+    fov: 3.7
+    orbit: 1
+    orbitAngle: 0
+    orbitRadius: 27
+    orbitHeight: 89.6
+    parentToBird: 1
+    bodyTarget: 0
+    posOffset: {x: 0, y: 0, z: 0}
+    aimTarget: 0
+    aimPosOffset: {x: 0, y: 0, z: 0.3}
+    rotationOffset: {x: 0, y: 0, z: 0}
+    rotation: 0
   debugArmed: 0
-  fov: 3.7
-  orbit: 1
-  orbitAngle: 0
-  orbitRadius: 27
-  orbitHeight: 89.6
-  parentToBird: 1
-  bodyTarget: 0
-  posOffset: {x: 0, y: 0, z: 0}
-  aimTarget: 0
-  aimPosOffset: {x: 0, y: 0, z: 0.3}
-  rotationOffset: {x: 0, y: 0, z: 0}
-  rotation: 0
 --- !u!1 &5910843700977883692
 GameObject:
   m_ObjectHideFlags: 0
@@ -1582,7 +1543,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7037053600971584364}
-  - component: {fileID: 8635287964538773414}
+  - component: {fileID: 6355300264013726179}
   m_Layer: 0
   m_Name: Eye
   m_TagString: Untagged
@@ -1605,7 +1566,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8638848612436228050}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8635287964538773414
+--- !u!114 &6355300264013726179
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1614,22 +1575,81 @@ MonoBehaviour:
   m_GameObject: {fileID: 6917503000007974303}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3baa8b488eaf8ae4c9f7bb1dc4a970ac, type: 3}
+  m_Script: {fileID: 11500000, guid: 925eb7d9a60e88e41af97cb0758fcece, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  descriptor:
+    fov: 8.77
+    orbit: 0
+    orbitAngle: 0.93
+    orbitRadius: 4
+    orbitHeight: 0.6
+    parentToBird: 1
+    bodyTarget: 3
+    posOffset: {x: 2.56, y: 0, z: 0}
+    aimTarget: 0
+    aimPosOffset: {x: 0, y: 0.02, z: 0}
+    rotationOffset: {x: 0.4, y: -88.2, z: 0}
+    rotation: 1
   debugArmed: 0
-  fov: 8.77
-  orbit: 0
-  orbitAngle: 0.93
-  orbitRadius: 4
-  orbitHeight: 0.6
-  parentToBird: 1
-  bodyTarget: 3
-  posOffset: {x: 2.56, y: 0, z: 0}
-  aimTarget: 0
-  aimPosOffset: {x: 0, y: 0.02, z: 0}
-  rotationOffset: {x: 0.4, y: -88.2, z: 0}
-  rotation: 1
+--- !u!1 &7472980279939757229
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2363128376740164707}
+  - component: {fileID: 3682214719979174805}
+  m_Layer: 0
+  m_Name: Play Cam
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2363128376740164707
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7472980279939757229}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.11904779, y: 0.7395832, z: -0.10884523, w: 0.6534502}
+  m_LocalPosition: {x: -14505.617, y: -9702.69, z: 911.67645}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8638848612436228050}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3682214719979174805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7472980279939757229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 925eb7d9a60e88e41af97cb0758fcece, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  descriptor:
+    fov: 70
+    orbit: 1
+    orbitAngle: 1
+    orbitRadius: 3.02
+    orbitHeight: 21
+    parentToBird: 1
+    bodyTarget: 0
+    posOffset: {x: 0, y: 0, z: 0}
+    aimTarget: 0
+    aimPosOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: -19.65, y: 0, z: 0}
+    rotation: 0
+  debugArmed: 0
 --- !u!1 &7576900656629964616
 GameObject:
   m_ObjectHideFlags: 0
@@ -1759,7 +1779,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3829714323114439566}
-  - component: {fileID: 4698275303342896479}
+  - component: {fileID: 6520659668677776413}
   m_Layer: 0
   m_Name: Side
   m_TagString: Untagged
@@ -1782,7 +1802,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8638848612436228050}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4698275303342896479
+--- !u!114 &6520659668677776413
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1791,22 +1811,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 8096804376677958006}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3baa8b488eaf8ae4c9f7bb1dc4a970ac, type: 3}
+  m_Script: {fileID: 11500000, guid: 925eb7d9a60e88e41af97cb0758fcece, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  descriptor:
+    fov: 1.85
+    orbit: 1
+    orbitAngle: 0.25
+    orbitRadius: 58.21
+    orbitHeight: 0
+    parentToBird: 1
+    bodyTarget: 0
+    posOffset: {x: 0, y: 0, z: 0}
+    aimTarget: 0
+    aimPosOffset: {x: 0, y: 0, z: 0.42}
+    rotationOffset: {x: 0, y: 0, z: 0}
+    rotation: 0
   debugArmed: 0
-  fov: 1.85
-  orbit: 1
-  orbitAngle: 0.25
-  orbitRadius: 58.21
-  orbitHeight: 0
-  parentToBird: 1
-  bodyTarget: 0
-  posOffset: {x: 0, y: 0, z: 0}
-  aimTarget: 0
-  aimPosOffset: {x: 0, y: 0, z: 0.42}
-  rotationOffset: {x: 0, y: 0, z: 0}
-  rotation: 0
 --- !u!1 &8368296199954516776
 GameObject:
   m_ObjectHideFlags: 0
