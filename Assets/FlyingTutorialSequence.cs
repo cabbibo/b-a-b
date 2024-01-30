@@ -32,6 +32,13 @@ public class FlyingTutorialSequence : MonoBehaviour
 
     public TutorialEnder ender;
 
+    [Header("Tooltip Cards")]
+    public CanvasGroup groupCard;
+    public CanvasGroup groupXToContinue;
+    public TextMeshProUGUI cardTitle;
+    public TextMeshProUGUI cardText;
+
+
     Coroutine tutSequence;
     float _lastSequenceTime;
 
@@ -44,6 +51,8 @@ public class FlyingTutorialSequence : MonoBehaviour
             ender = FindObjectOfType<TutorialEnder>();
 
         tutSequence = StartCoroutine(TutorialSequence());
+
+        groupCard.gameObject.SetActive(false);
     }
 
 
@@ -73,9 +82,14 @@ public class FlyingTutorialSequence : MonoBehaviour
                     God.wren.PhaseShift(new Vector3(-3859,287,-1337));
                 }
             }
+            if (Input.GetKeyDown(KeyCode.O))
+            {
+                ShowCard("Wings", "Use the left stick to steer and the right stick to control your wings.");
+            }
         }
 
         fade.transform.position = God.camera.transform.position;
+
 
     }
     
@@ -86,7 +100,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.Space))
                 break;
-            t += Time.deltaTime;
+            t += Time.unscaledDeltaTime;
             yield return null;
         }
     }
@@ -155,7 +169,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         while(cT < 1)
         {
             cinematicCamera.tutorialCameraIdx = Mathf.Lerp(_prevIdx, _prevIdx + 2, Mathf.SmoothStep(0,1,cT));
-            cT += Time.deltaTime * .1f;
+            cT += Time.unscaledDeltaTime * .1f;
             yield return null;
         }
         // cinematicCamera.tutorialCameraIdx++; // 5
@@ -168,7 +182,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         while(bgT > 0)
         {
             SetBGFade(bgT);
-            bgT -= Time.deltaTime * .1f;
+            bgT -= Time.unscaledDeltaTime * .1f;
             yield return null;
         }
         SetBGFade(0);
@@ -208,9 +222,9 @@ public class FlyingTutorialSequence : MonoBehaviour
             while (diveT < 1)
             {
                 if (God.input.l2 > .5f && God.input.r2 > .5f)
-                    diveT += Time.deltaTime * .45f;
+                    diveT += Time.unscaledDeltaTime * .45f;
                 else
-                    diveT = Mathf.Clamp01(diveT - Time.deltaTime * 1.25f);
+                    diveT = Mathf.Clamp01(diveT - Time.unscaledDeltaTime * 1.25f);
 
                 ShowProgress(diveT);
                 yield return null;
@@ -278,7 +292,7 @@ public class FlyingTutorialSequence : MonoBehaviour
             // else
                 yield return null;
         }
-        _lastSequenceTime = Time.time;
+        _lastSequenceTime = Time.unscaledTime;
         // yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
         // while (HandleSticksProgress(ref t, speed: 1.7f, gravity: true))
         //     yield return null;
@@ -298,9 +312,9 @@ public class FlyingTutorialSequence : MonoBehaviour
             God.input.l2 > 0.1f || 
             God.input.r2 > 0.1f
         )
-            t += Time.deltaTime * .1f * speed;
+            t += Time.unscaledDeltaTime * .1f * speed;
         else if (gravity)
-            t = Mathf.Clamp01(t - Time.deltaTime * .05f);
+            t = Mathf.Clamp01(t - Time.unscaledDeltaTime * .05f);
 
         ShowProgress(t);
         Debug.Log(t);
@@ -313,14 +327,20 @@ public class FlyingTutorialSequence : MonoBehaviour
         progressBar.localScale = new Vector3(Mathf.Clamp01(t * t), 1, 1);
     }
 
-    IEnumerator FadeGroup(CanvasGroup group, float from = 0, float to = 1)
+    IEnumerator FadeGroup(CanvasGroup group, float from = 0, float to = 1, float delay = 0)
     {
         float t = 0;
         float duration = 1.5f;
+        float _ct = Time.unscaledTime;
         while (t < duration)
         {
+            if (delay > 0 && Time.unscaledTime - _ct < delay)
+            {
+                yield return null;
+                continue;
+            }
             group.alpha = Mathf.Lerp(from, to, t);
-            t += Time.deltaTime;
+            t += Time.unscaledDeltaTime;
             yield return null;
         }
         group.alpha = to;
@@ -334,5 +354,65 @@ public class FlyingTutorialSequence : MonoBehaviour
         groupContainer.alpha = 0;
 
         OnTutorialDiveFinished?.Invoke();
+    }
+
+
+    // Cards
+
+    public void ShowCard(string title, string text)
+    {
+        groupCard.gameObject.SetActive(true);
+        groupXToContinue.gameObject.SetActive(true);
+        cardTitle.text = title;
+        cardText.text = text;
+
+        StartCoroutine(CardSequence());
+    }
+
+    IEnumerator CardSequence()
+    {
+        bool wait = true;
+        groupCard.alpha = 0;
+        groupXToContinue.alpha = 0;
+
+        StartCoroutine(FadeGroup(groupCard, 0, 1));
+
+        float t = 1;
+        var prevTimescale = Time.timeScale;
+        while(t > 0)
+        {
+            t -= Time.unscaledDeltaTime * 1.2f;
+            Time.timeScale = Mathf.Lerp(.1f,1f, t);
+            
+            yield return null;
+        }
+
+        yield return WaitWithCheat(3);
+
+        groupXToContinue.alpha = 1;
+
+        bool lastX = God.input.x;
+        wait = true;
+        while(wait)
+        {
+            if (!lastX && God.input.x)
+                wait = false;
+            lastX = God.input.x;
+            yield return null;
+        }
+
+        t = 0;
+        while(t < 1)
+        {
+            t += Time.unscaledDeltaTime * .5f;
+            groupCard.alpha = 1 - t;
+            Time.timeScale = Mathf.Lerp(0.1f, 1, Mathf.Clamp01(t));
+            
+            yield return null;
+        }
+
+        Time.timeScale = 1;
+        groupCard.alpha = 0;
+        groupXToContinue.alpha = 0;
     }
 }
