@@ -11,7 +11,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 {
     public static UnityAction OnTutorialStart;
     public static UnityAction OnTutorialDiveFinished;
-    // public static bool 
+    
 
     public CinematicCameraHandler cinematicCamera;
 
@@ -41,6 +41,15 @@ public class FlyingTutorialSequence : MonoBehaviour
 
     Coroutine tutSequence;
     float _lastSequenceTime;
+
+    static FlyingTutorialSequence _instance;
+    public static FlyingTutorialSequence Instance { 
+        get {
+            if (!_instance)
+                _instance = FindObjectOfType<FlyingTutorialSequence>();
+            return _instance;
+        }
+    }
 
     void Start()
     {
@@ -84,7 +93,7 @@ public class FlyingTutorialSequence : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.O))
             {
-                ShowCard("Wings", "Use the left stick to steer and the right stick to control your wings.");
+                TryShowCard(CardType.ActivityRings);
             }
         }
 
@@ -354,26 +363,103 @@ public class FlyingTutorialSequence : MonoBehaviour
         groupContainer.alpha = 0;
 
         OnTutorialDiveFinished?.Invoke();
+
+        TryShowCard(CardType.RevealIsland, true, 1);
     }
 
 
     // Cards
 
-    public void ShowCard(string title, string text)
+    // public static bool 
+    public void OnTutorialCardTriggered(CardType cardType)
     {
-        groupCard.gameObject.SetActive(true);
-        groupXToContinue.gameObject.SetActive(true);
+        TryShowCard(cardType);
+    }
+
+    public enum CardType
+    {
+        None, 
+
+        RevealIsland,
+        FlyCloseToGround,
+
+        // activities
+        ActivityRings, ActivityWindTunnel, ActivitySpeedGate, ActivityButterflies, ActivityBigBird
+        
+
+
+    }
+
+    private Dictionary<CardType, bool> _cardShown = new Dictionary<CardType, bool>();
+
+    public void GetCardInfo(CardType type, out string title, out string text)
+    {
+        title = "";
+        text = "";
+        switch(type)
+        {
+            case CardType.RevealIsland:
+                title = "Bird Island";
+                text = "Welcome to Bird Island. Fly around freely and explore.\nWhen you're ready, go to the gate at the top of the mountain";
+                break;
+            
+            case CardType.FlyCloseToGround:
+                title = "Close to Ground";
+                text = "Fly close to the ground to gain speed.";
+                break;
+
+            case CardType.ActivityRings:
+                title = "Rings";
+                text = "Rings give you a boost when you fly through them.";
+                break;
+            case CardType.ActivityWindTunnel:
+                title = "Wind Tunnel";
+                text = "Take a ride on a wind tunnel. Tuck your wings (L and R triggers) to go faster.";
+                break;
+            case CardType.ActivitySpeedGate:
+                title = "Speed Gate";
+                text = "Fly through a speed gate as fast as you can.";
+                break;
+            case CardType.ActivityButterflies:
+                title = "Butterflies";
+                text = "Collect butterflies to eat.";
+                break;
+            case CardType.ActivityBigBird:
+                title = "Big Bird";
+                text = "Follow the giant bird. Get close to hear its rumble.";
+                break;
+        }
+    }
+    public void TryShowCard(CardType cardType, bool evenIfShown = false, float delay = 0)
+    {
+        if (_cardShown == null)
+            _cardShown = new Dictionary<CardType, bool>();
+        
+        if (!evenIfShown && _cardShown.ContainsKey(cardType) && _cardShown[cardType])
+            return;
+
+        string title, text;
+        GetCardInfo(cardType, out title, out text);
+
         cardTitle.text = title;
         cardText.text = text;
 
-        StartCoroutine(CardSequence());
+        _cardShown[cardType] = true;
+
+        StartCoroutine(ShowCardSequence(delay));
     }
 
-    IEnumerator CardSequence()
+    IEnumerator ShowCardSequence(float delay = 0)
     {
         bool wait = true;
         groupCard.alpha = 0;
         groupXToContinue.alpha = 0;
+
+        groupCard.gameObject.SetActive(true);
+        groupXToContinue.gameObject.SetActive(true);
+
+        if (delay > 0)
+            yield return WaitWithCheat(delay);
 
         StartCoroutine(FadeGroup(groupCard, 0, 1));
 
