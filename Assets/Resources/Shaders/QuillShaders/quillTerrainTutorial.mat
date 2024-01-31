@@ -123,21 +123,21 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _Fade: 1
-    - _FogAmount: 0.726
-    - _FogEnd: 2831.5
+    - _FogAmount: 0.851
+    - _FogEnd: 1872
     - _FogNoiseAmount: 0.23
     - _FogNoiseScale: 0.05
-    - _FogStart: 671
+    - _FogStart: 23
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _HeightFogAmount: 1
-    - _HeightFogEnd: 115
-    - _HeightFogMaxDistance: -2097
-    - _HeightFogMinDistance: 1469.4
-    - _HeightFogNoiseAmount: -0.8
+    - _HeightFogAmount: 0.359
+    - _HeightFogEnd: 80
+    - _HeightFogMaxDistance: -2107
+    - _HeightFogMinDistance: 1198.3
+    - _HeightFogNoiseAmount: -0.81
     - _HeightFogNoiseScale: 0.02
-    - _HeightFogStart: 180.9
+    - _HeightFogStart: 603.9
     - _Metallic: 0
     - _Mode: 0
     - _NoiseTextureBase: 1
