@@ -242,6 +242,8 @@ public class WindTunnel : MonoBehaviour
     public bool drawForceLines = false;
     void OnDrawGizmos()
     {
+        if (!curve)
+            curve = GetComponent<Curve>();
 
         Gizmos.color = new Color(1, .5f, .2f);
         if (God.wren)
