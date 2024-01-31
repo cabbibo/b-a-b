@@ -122,180 +122,8 @@ public class FlyingTutorialSequence : MonoBehaviour
         groupUp.SetActive(hint == ControllerHint.Up);
         groupDown.SetActive(hint == ControllerHint.Down);
         groupDive.SetActive(hint == ControllerHint.Dive);
-    }
-    
-    IEnumerator WaitWithCheat(float seconds)
-    {
-        float t = 0;
-        while(t < seconds)
-        {
-            if (Input.GetKey(KeyCode.Space))
-                break;
-            t += Time.unscaledDeltaTime;
-            yield return null;
-        }
-    }
 
-    IEnumerator LerpCamera()
-    {
-        float cT = 0;
-        float _prevIdx = cinematicCamera.tutorialCameraIdx;
-        while(cT < 1)
-        {
-            cinematicCamera.tutorialCameraIdx = Mathf.Lerp(_prevIdx, _prevIdx + 2, Mathf.SmoothStep(0,1,cT));
-            cT += Time.unscaledDeltaTime * .1f;
-            yield return null;
-        }
-    }
-
-    IEnumerator TutorialSequence()
-    {
-        yield return null;
-
-        OnTutorialStart?.Invoke();
-
-        God.fade.FadeIn(3);
-
-        groupContainer.alpha = 0;
-        ShowContinue(false);
-        ShowText();
-
-        SetControllerHint(ControllerHint.None);
-        ShowProgress(0);
-        cinematicCamera.armed = false;
-        SetBGFade(1);
-
-        while (God.wren == null)
-            yield return null;
-
-        yield return StartCoroutine(WaitWithCheat(2));
-
-        while (God.wren.physics.onGround)
-            yield return null;
-
-        cinematicCamera.armed = true;
-
-        while(debug)
-        {
-            cinematicCamera.tutorialCameraIdx = debugCamIdx;
-            yield return null;
-        }
-
-        cinematicCamera.tutorialCameraIdx = 0; // close
-        yield return StartCoroutine(WaitWithCheat(5));
-
-        // Sticks
-        {
-            groupSticks.SetActive(true);
-            controllerText.text = "";
-
-            yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
-        }
-        
-        yield return CameraSequence();
-        groupContainer.alpha = 0;
-        groupSticks.SetActive(false);
-        
-        cinematicCamera.tutorialCameraIdx++; // 1 wing closuep
-
-        yield return CameraSequence();
-
-        yield return StartCoroutine(LerpCamera()); // to 2 top
-        // cinematicCamera.tutorialCameraIdx++; // 2 top
-        yield return CameraSequence();
-        
-
-        cinematicCamera.tutorialCameraIdx++; // 3 front
-        // yield return CameraSequence();
-        // cinematicCamera.tutorialCameraIdx++; // 4
-        // yield return CameraSequence(false);
-
-        yield return StartCoroutine(LerpCamera());
-        // cinematicCamera.tutorialCameraIdx++; // 5
-        
-        cinematicCamera.armed = false;
-        yield return StartCoroutine(WaitWithCheat(3f));
-        
-        float bgT = 1;
-        while(bgT > 0)
-        {
-            SetBGFade(bgT);
-            bgT -= Time.unscaledDeltaTime * .1f;
-            yield return null;
-        }
-        SetBGFade(0);
-        // yield return CameraSequence();
-
-        // Game cam
-        yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
-
-        // yield return new WaitForSecondsRealtime(10);
-
-        // // Sticks
-        // {
-        //     groupSticks.SetActive(true);
-        //     controllerText.text = "Wings";
-
-        //     yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
-        //     yield return new WaitForSecondsRealtime(8);
-        //     yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
-        // }
-        // Left
-        yield return StartCoroutine(ControllerHintSequence(ControllerHint.Left));
-        yield return StartCoroutine(WaitWithCheat(0.5f));
-
-        // Right
-        yield return StartCoroutine(ControllerHintSequence(ControllerHint.Right));
-        yield return StartCoroutine(WaitWithCheat(0.5f));
-
-        // Up
-        yield return StartCoroutine(ControllerHintSequence(ControllerHint.Up));
-        yield return StartCoroutine(WaitWithCheat(0.5f));
-
-        // Down
-        yield return StartCoroutine(ControllerHintSequence(ControllerHint.Down));   
-        yield return StartCoroutine(WaitWithCheat(0.5f));
-
-        // Space to fly
-        yield return StartCoroutine(WaitWithCheat(7));
-
-
-        // Dive
-        {
-            SetControllerHint(ControllerHint.Dive);
-            controllerText.transform.parent.gameObject.SetActive(true);
-            controllerText.text = "Hold to DIVE";
-
-            yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
-            yield return new WaitForSecondsRealtime(0.25f);
-
-            // TODO: wait for diving enough time
-
-            float diveT = 0;
-            while (diveT < 1)
-            {
-                if (God.input.l2 > .5f && God.input.r2 > .5f)
-                    diveT += Time.unscaledDeltaTime * .45f;
-                else
-                    diveT = Mathf.Clamp01(diveT - Time.unscaledDeltaTime * 1.25f);
-
-                ShowProgress(diveT);
-                yield return null;
-            }
-        }
-        ShowProgress(0);
-        StartCoroutine(FadeGroup(groupContainer, 1, 0));
-
-        OnTutorialFinished();
-
-
-
-    }
-
-    IEnumerator ControllerHintSequence(ControllerHint hint)
-    {
-        SetControllerHint(hint);
-        controllerText.transform.parent.gameObject.SetActive(true);
+        controllerText.transform.parent.gameObject.SetActive(hint != ControllerHint.None);
         switch(hint)
         {
             case ControllerHint.Dive:
@@ -314,9 +142,155 @@ public class FlyingTutorialSequence : MonoBehaviour
                 controllerText.text = "Both sticks down to FLY UP";
                 break;
         }
+    }
+    
+    IEnumerator WaitWithCheat(float seconds)
+    {
+        float t = 0;
+        while(t < seconds)
+        {
+            if (Input.GetKey(KeyCode.Space))
+                break;
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+    }
+
+    IEnumerator LerpCamera(float from, float to)
+    {
+        float cT = 0;
+        while(cT < 1)
+        {
+            cinematicCamera.tutorialCameraIdx = Mathf.Lerp(from, to, Mathf.SmoothStep(0,1,cT));
+            cT += Time.unscaledDeltaTime * .1f;
+            yield return null;
+        }
+    }
+
+    enum Camera { 
+        Closeup = 0, 
+        TopClose = 1, 
+        TopFar = 2, 
+        Front = 3, 
+        Behind = 4, 
+        Play = 5 
+    }
+
+    IEnumerator TutorialSequence()
+    {
+        yield return null;
+
+        OnTutorialStart?.Invoke();
+
+        God.fade.FadeIn(3);
+
+        groupContainer.alpha = 0;
+        ShowContinue(false);
+        ShowText();
+
+        SetControllerHint(ControllerHint.None);
+        ShowProgress(0);
+        cinematicCamera.armed = false;
+        
+        float bgT = 1f;
+        SetBGFade(bgT);
+
+        while (God.wren == null)
+            yield return null;
+
+        yield return WaitWithCheat(2);
+
+        while (God.wren.physics.onGround)
+            yield return null;
+
+        cinematicCamera.armed = true;
+
+        while(debug)
+        {
+            cinematicCamera.tutorialCameraIdx = debugCamIdx;
+            yield return null;
+        }
+
+        cinematicCamera.tutorialCameraIdx = (float)Camera.Closeup;
+
+        yield return WaitWithCheat(5);
+
+        // Sticks
+        {
+            groupSticks.SetActive(true);
+            controllerText.text = "";
+
+            yield return FadeGroup(groupContainer, 0, 1);
+        }
+        
+        yield return WaitWithCheat(5f);
+        yield return WaitForXToContinue();
+
+        groupSticks.SetActive(false);
+        cinematicCamera.tutorialCameraIdx = (float)Camera.TopClose;
+
+        yield return WaitWithCheat(5f);
+        yield return WaitForXToContinue();
+
+        yield return LerpCamera((float)Camera.TopClose, (float)Camera.TopFar); 
+        
+        yield return WaitWithCheat(5f);
+        yield return WaitForXToContinue();
+        
+        cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
+        yield return WaitWithCheat(.3f);
+        yield return LerpCamera((float)Camera.Front, (float)Camera.Play);
+        
+        yield return WaitWithCheat(1f);
+        
+        cinematicCamera.armed = false;
+
+        yield return WaitWithCheat(0.5f);
+        
+        while(bgT > 0)
+        {
+            SetBGFade(bgT);
+            bgT -= Time.unscaledDeltaTime * .1f;
+            yield return null;
+        }
+        SetBGFade(0);
+
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
+        // Left
+        yield return ControllerHintSequence(ControllerHint.Left);
+        yield return WaitWithCheat(0.5f);
+
+        // Right
+        yield return ControllerHintSequence(ControllerHint.Right);
+        yield return WaitWithCheat(0.5f);
+
+        // Up
+        yield return ControllerHintSequence(ControllerHint.Up);
+        yield return WaitWithCheat(0.5f);
+
+        // Down
+        yield return ControllerHintSequence(ControllerHint.Down);   
+        yield return WaitWithCheat(0.5f);
+
+        // Space to fly
+        yield return WaitWithCheat(7);
+
+        // Dive
+        yield return ControllerHintSequence(ControllerHint.Dive);   
+       
+        ShowProgress(0);
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
+        OnTutorialFinished();
+    }
+
+    IEnumerator ControllerHintSequence(ControllerHint hint)
+    {
+        SetControllerHint(hint);
 
         StartCoroutine(FadeGroup(groupContainer, 0, 1));
-        yield return StartCoroutine(WaitWithCheat(0.25f));
+        yield return WaitWithCheat(0.25f);
 
         float t = 0;
         while (t < 1)
@@ -331,6 +305,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
 
         ShowProgress(0);
+        SetControllerHint(ControllerHint.None);
     }
     bool TestControllerHint(ControllerHint hint)
     {
@@ -374,24 +349,20 @@ public class FlyingTutorialSequence : MonoBehaviour
         xToContinue.gameObject.SetActive(bShow);
     }
 
-    IEnumerator CameraSequence(bool waitForContinue = true)
+    IEnumerator WaitForXToContinue()
     {
         bool wait = true;
         var t = 0f;
         groupContainer.alpha = 1;
         ShowProgress(t);
 
-        ShowContinue(false);
-
-        yield return StartCoroutine(WaitWithCheat(6));
-
         ShowContinue(true);
         
-        yield return StartCoroutine(WaitWithCheat(0.5f));
+        yield return WaitWithCheat(0.5f);
 
         bool lastX = God.input.x;
         wait = true;
-        while(waitForContinue && wait)
+        while(wait)
         {
             if (!lastX && God.input.x && Time.time - _lastSequenceTime > 3)
                 wait = false;
@@ -404,7 +375,7 @@ public class FlyingTutorialSequence : MonoBehaviour
                 yield return null;
         }
         _lastSequenceTime = Time.unscaledTime;
-        // yield return StartCoroutine(FadeGroup(groupContainer, 0, 1));
+        // yield return FadeGroup(groupContainer, 0, 1));
         // while (HandleSticksProgress(ref t, speed: 1.7f, gravity: true))
         //     yield return null;
 
@@ -563,7 +534,7 @@ public class FlyingTutorialSequence : MonoBehaviour
             God.wren.cameraWork.objectTargeted = target;
         Debug.Log(target + ", " + God.wren.cameraWork.objectTargeted);
         if (delay > 0)
-            yield return StartCoroutine(WaitWithCheat(delay));
+            yield return WaitWithCheat(delay);
 
         StartCoroutine(FadeGroup(groupCard, 0, 1));
 
@@ -579,7 +550,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         groupXToContinue.alpha = 1;
 
-        yield return StartCoroutine(WaitWithCheat(0.4f));
+        yield return WaitWithCheat(0.4f);
 
         bool lastX = God.input.x;
         wait = true;
