@@ -112,7 +112,12 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         fade.transform.position = God.camera.transform.position;
 
-
+        // if (God.wren)
+        // {
+        //     fade.GetPropertyBlock(bgMpr);
+        //     bgMpr.SetVector("_WrenDirection", God.wren.physics.rb.transform.forward);
+        //     fade.SetPropertyBlock(bgMpr);
+        // }
     }
 
     void SetControllerHint(ControllerHint hint)
@@ -274,7 +279,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         yield return WaitWithCheat(0.5f);
 
         // Space to fly
-        yield return WaitWithCheat(7);
+        yield return WaitWithCheat(11);
 
         // Dive
         yield return ControllerHintSequence(ControllerHint.Dive);   
@@ -412,7 +417,7 @@ public class FlyingTutorialSequence : MonoBehaviour
     IEnumerator FadeGroup(CanvasGroup group, float from = 0, float to = 1, float delay = 0)
     {
         float t = 0;
-        float duration = 0.7f;
+        float duration = 0.3f;
         float _ct = Time.unscaledTime;
         while (t < duration)
         {
@@ -505,7 +510,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         if (_cardShown == null)
             _cardShown = new Dictionary<CardType, bool>();
             
-        if (_cardShown.ContainsKey(cardType) && _cardShown[cardType])
+        if (_showingCard || _cardShown.ContainsKey(cardType) && _cardShown[cardType])
             return;
 
         string title, text;
@@ -519,9 +524,12 @@ public class FlyingTutorialSequence : MonoBehaviour
         StartCoroutine(ShowCardSequence(delay, target, pause));
     }
 
+    bool _showingCard = false;
     IEnumerator ShowCardSequence(float delay = 0, Transform target = null, bool pause = false)
     {
         const float TIMESCALE_LOW = 0.001f;
+
+        _showingCard = true;
 
         bool wait = true;
         groupCard.alpha = 0;
@@ -578,5 +586,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         Time.timeScale = 1;
         groupCard.alpha = 0;
         groupXToContinue.alpha = 0;
+
+        _showingCard = false;
     }
 }
