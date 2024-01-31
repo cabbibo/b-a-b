@@ -14,10 +14,11 @@ public class TutorialCardTrigger : MonoBehaviour
     public Transform followTransform;
     public float radius = 1;
     public bool lookAt = true;
+    public bool pause = false;
 
     void OnTriggered()
     {
-        FlyingTutorialSequence.Instance.OnTutorialCardTriggered(cardType, lookAt ? transform : null);
+        FlyingTutorialSequence.Instance.OnTutorialCardTriggered(cardType, target: lookAt ? transform : null, pause: pause);
         enabled = false;
     }
 
