@@ -769,6 +769,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2846188984467705497}
   - component: {fileID: 683480967283595971}
+  - component: {fileID: 1844839155505051644}
   m_Layer: 0
   m_Name: FlyingTutorialSequence
   m_TagString: Untagged
@@ -855,6 +856,23 @@ MonoBehaviour:
   groupXToContinue: {fileID: 6570409394432191668}
   cardTitle: {fileID: 7256705136603116308}
   cardText: {fileID: 684958652659693613}
+--- !u!320 &1844839155505051644
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2586067274501829633}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 29823a1e81eec954a95cf1f60590fab0, type: 2}
+  m_InitialState: 1
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings: []
+  m_ExposedReferences:
+    m_References: []
 --- !u!1 &2957933311881185086
 GameObject:
   m_ObjectHideFlags: 0
@@ -1125,18 +1143,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   descriptor:
-    fov: 6
+    fov: 2.87
     orbit: 1
-    orbitAngle: 1
-    orbitRadius: 4.68
+    orbitAngle: 0
+    orbitRadius: 6.26
     orbitHeight: 83
     parentToBird: 1
-    bodyTarget: 1
-    posOffset: {x: 0, y: -1.73, z: 0.82}
+    bodyTarget: 0
+    posOffset: {x: 0, y: 0, z: 0}
     aimTarget: 0
-    aimPosOffset: {x: 0, y: 0, z: 0.26}
-    rotationOffset: {x: 89, y: -1.1, z: 0}
-    rotation: 1
+    aimPosOffset: {x: 0, y: 0, z: 0.28}
+    rotationOffset: {x: 0.1, y: 0, z: 0}
+    rotation: 0
   debugArmed: 0
 --- !u!1 &3845207305985627591
 GameObject:
