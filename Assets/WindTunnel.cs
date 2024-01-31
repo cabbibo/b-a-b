@@ -170,6 +170,9 @@ public class WindTunnel : MonoBehaviour
             Gizmos.DrawSphere(debugTransform.position, 1);
         }
 
+        if (!curve)
+            curve = GetComponent<Curve>();
+
         Gizmos.color = Color.blue;
         for(int i = 0; i < 20; i++)
         {
