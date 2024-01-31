@@ -449,11 +449,11 @@ Transform:
   m_Children:
   - {fileID: 4136790617104448635}
   - {fileID: 1056324349329527465}
-  - {fileID: 7037053600971584364}
   - {fileID: 143150900174707274}
   - {fileID: 2405721186906827008}
   - {fileID: 5809217997008806457}
   - {fileID: 2363128376740164707}
+  - {fileID: 7037053600971584364}
   - {fileID: 3829714323114439566}
   m_Father: {fileID: 2846188984467705497}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -769,6 +769,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2846188984467705497}
   - component: {fileID: 683480967283595971}
+  - component: {fileID: 1844839155505051644}
   m_Layer: 0
   m_Name: FlyingTutorialSequence
   m_TagString: Untagged
@@ -810,8 +811,6 @@ MonoBehaviour:
   groupContainer: {fileID: 3447699408956290312}
   xToContinue: {fileID: 1775957305588938415}
   controllerText: {fileID: 2734629090906545715}
-  groupSticks: {fileID: 1471094664115994885}
-  groupDive: {fileID: 249985833421526634}
   progressBar: {fileID: 2154348908950069364}
   debug: 0
   debugCamIdx: 0
@@ -847,10 +846,33 @@ MonoBehaviour:
     m_NumAlphaKeys: 3
   fade: {fileID: 4052178327609603398}
   ender: {fileID: 0}
+  groupSticks: {fileID: 1471094664115994885}
+  groupDive: {fileID: 249985833421526634}
+  groupLeft: {fileID: 0}
+  groupRight: {fileID: 0}
+  groupUp: {fileID: 0}
+  groupDown: {fileID: 0}
   groupCard: {fileID: 8647510002932143783}
   groupXToContinue: {fileID: 6570409394432191668}
   cardTitle: {fileID: 7256705136603116308}
   cardText: {fileID: 684958652659693613}
+--- !u!320 &1844839155505051644
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2586067274501829633}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 29823a1e81eec954a95cf1f60590fab0, type: 2}
+  m_InitialState: 1
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings: []
+  m_ExposedReferences:
+    m_References: []
 --- !u!1 &2957933311881185086
 GameObject:
   m_ObjectHideFlags: 0
@@ -1121,18 +1143,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   descriptor:
-    fov: 6
+    fov: 2.87
     orbit: 1
-    orbitAngle: 1
-    orbitRadius: 4.68
+    orbitAngle: 0
+    orbitRadius: 6.26
     orbitHeight: 83
     parentToBird: 1
-    bodyTarget: 1
-    posOffset: {x: 0, y: -1.73, z: 0.82}
+    bodyTarget: 0
+    posOffset: {x: 0, y: 0, z: 0}
     aimTarget: 0
-    aimPosOffset: {x: 0, y: 0, z: 0.26}
-    rotationOffset: {x: 89, y: -1.1, z: 0}
-    rotation: 1
+    aimPosOffset: {x: 0, y: 0, z: 0.28}
+    rotationOffset: {x: 0.1, y: 0, z: 0}
+    rotation: 0
   debugArmed: 0
 --- !u!1 &3845207305985627591
 GameObject:
@@ -2486,7 +2508,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7037053600971584364
 Transform:
   m_ObjectHideFlags: 0

@@ -1092,6 +1092,9 @@ ff *= ff;
   // add noise
   heightFog += _HeightFogNoiseAmount * (triNoise3D(v.worldPos * _HeightFogNoiseScale * .01 + float3(0,_Time.y*0.01,0), 0, 0) - 0.5f) * heightFog;
   heightFog *= heightFog;
+  heightFog *= heightFog;
+  heightFog *= heightFog;
+  heightFog = clamp(heightFog, 0, 1);
   col.rgb = lerp( col.rgb, _HeightFogColor.rgb, heightFog * _HeightFogAmount);
 
   col.rgb = lerp(col, _WrenShadowColor.rgb, sh * sha);
