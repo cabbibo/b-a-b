@@ -13,10 +13,11 @@ public class TutorialCardTrigger : MonoBehaviour
 
     public Transform followTransform;
     public float radius = 1;
+    public bool lookAt = true;
 
     void OnTriggered()
     {
-        FlyingTutorialSequence.Instance.OnTutorialCardTriggered(cardType);
+        FlyingTutorialSequence.Instance.OnTutorialCardTriggered(cardType, lookAt ? transform : null);
         enabled = false;
     }
 
@@ -43,4 +44,32 @@ public class TutorialCardTrigger : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, Radius);
         Gizmos.color = Color.white;
     }
+
+    // void OnTriggerEnter(Collider c)
+    // {
+    //     // skip if only want on ground
+    //     if (onlyOnGround && !God.wren.state.onGround) return;
+
+    //     if (Helpers.isWrenCollision(c))
+    //     {
+
+    //         isTargeting = true;
+    //         tmpStrength = God.wren.physics.rotateTowardsTargetOnGround;
+    //         God.wren.cameraWork.objectTargeted = objectToTarget;
+
+    //     }
+    // }
+
+
+    // void OnTriggerExit(Collider c)
+    // {
+
+    //     if (Helpers.isWrenCollision(c))
+    //     {
+    //         isTargeting = false;
+    //         God.wren.physics.rotateTowardsTargetOnGround = tmpStrength;
+    //         God.wren.cameraWork.objectTargeted = null;
+    //     }
+
+    // }
 }
