@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -103,6 +104,10 @@ public class FlyingTutorialSequence : MonoBehaviour
             {
                 TryShowCard(CardType.ActivityRings);
             }
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                _cardShown = new Dictionary<CardType, bool>();
+            }
         }
 
         fade.transform.position = God.camera.transform.position;
@@ -131,6 +136,18 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
     }
 
+    IEnumerator LerpCamera()
+    {
+        float cT = 0;
+        float _prevIdx = cinematicCamera.tutorialCameraIdx;
+        while(cT < 1)
+        {
+            cinematicCamera.tutorialCameraIdx = Mathf.Lerp(_prevIdx, _prevIdx + 2, Mathf.SmoothStep(0,1,cT));
+            cT += Time.unscaledDeltaTime * .1f;
+            yield return null;
+        }
+    }
+
     IEnumerator TutorialSequence()
     {
         yield return null;
@@ -151,7 +168,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         while (God.wren == null)
             yield return null;
 
-        yield return WaitWithCheat(2);
+        yield return StartCoroutine(WaitWithCheat(2));
 
         while (God.wren.physics.onGround)
             yield return null;
@@ -164,8 +181,8 @@ public class FlyingTutorialSequence : MonoBehaviour
             yield return null;
         }
 
-        cinematicCamera.tutorialCameraIdx = 0;
-        yield return WaitWithCheat(5);
+        cinematicCamera.tutorialCameraIdx = 0; // close
+        yield return StartCoroutine(WaitWithCheat(5));
 
         // Sticks
         {
@@ -178,29 +195,26 @@ public class FlyingTutorialSequence : MonoBehaviour
         yield return CameraSequence();
         groupContainer.alpha = 0;
         groupSticks.SetActive(false);
+        
+        cinematicCamera.tutorialCameraIdx++; // 1 wing closuep
 
-        cinematicCamera.tutorialCameraIdx++; // 1
-        yield return CameraSequence();
-        cinematicCamera.tutorialCameraIdx++; // 2
-        yield return CameraSequence();
-        cinematicCamera.tutorialCameraIdx++; // 3
-        yield return CameraSequence();
-        cinematicCamera.tutorialCameraIdx++; // 4
         yield return CameraSequence();
 
-        float cT = 0;
-        float _prevIdx = cinematicCamera.tutorialCameraIdx;
-        while(cT < 1)
-        {
-            cinematicCamera.tutorialCameraIdx = Mathf.Lerp(_prevIdx, _prevIdx + 2, Mathf.SmoothStep(0,1,cT));
-            cT += Time.unscaledDeltaTime * .1f;
-            yield return null;
-        }
+        yield return StartCoroutine(LerpCamera()); // to 2 top
+        // cinematicCamera.tutorialCameraIdx++; // 2 top
+        yield return CameraSequence();
+        
+
+        cinematicCamera.tutorialCameraIdx++; // 3 front
+        // yield return CameraSequence();
+        // cinematicCamera.tutorialCameraIdx++; // 4
+        // yield return CameraSequence(false);
+
+        yield return StartCoroutine(LerpCamera());
         // cinematicCamera.tutorialCameraIdx++; // 5
         
-        yield return WaitWithCheat(0.2f);
         cinematicCamera.armed = false;
-        yield return WaitWithCheat(5f);
+        yield return StartCoroutine(WaitWithCheat(3f));
         
         float bgT = 1;
         while(bgT > 0)
@@ -210,7 +224,6 @@ public class FlyingTutorialSequence : MonoBehaviour
             yield return null;
         }
         SetBGFade(0);
-        yield return WaitWithCheat(6);
         // yield return CameraSequence();
 
         // Game cam
@@ -227,24 +240,24 @@ public class FlyingTutorialSequence : MonoBehaviour
         //     yield return new WaitForSecondsRealtime(8);
         //     yield return StartCoroutine(FadeGroup(groupContainer, 1, 0));
         // }
-        
-        yield return WaitWithCheat(3);
-
         // Left
         yield return StartCoroutine(ControllerHintSequence(ControllerHint.Left));
-        yield return WaitWithCheat(0.5f);
+        yield return StartCoroutine(WaitWithCheat(0.5f));
 
         // Right
         yield return StartCoroutine(ControllerHintSequence(ControllerHint.Right));
-        yield return WaitWithCheat(0.5f);
+        yield return StartCoroutine(WaitWithCheat(0.5f));
 
         // Up
         yield return StartCoroutine(ControllerHintSequence(ControllerHint.Up));
-        yield return WaitWithCheat(0.5f);
+        yield return StartCoroutine(WaitWithCheat(0.5f));
 
         // Down
         yield return StartCoroutine(ControllerHintSequence(ControllerHint.Down));   
-        yield return WaitWithCheat(0.5f);
+        yield return StartCoroutine(WaitWithCheat(0.5f));
+
+        // Space to fly
+        yield return StartCoroutine(WaitWithCheat(7));
 
 
         // Dive
@@ -295,15 +308,15 @@ public class FlyingTutorialSequence : MonoBehaviour
                 controllerText.text = "Both sticks to TURN RIGHT";
                 break;
             case ControllerHint.Up:
-                controllerText.text = "Both sticks up to FLY UP";
+                controllerText.text = "Both sticks up to FLY DOWN";
                 break;
             case ControllerHint.Down:
-                controllerText.text = "Both sticks down to FLY DOWN";
+                controllerText.text = "Both sticks down to FLY UP";
                 break;
         }
 
         StartCoroutine(FadeGroup(groupContainer, 0, 1));
-        yield return WaitWithCheat(0.25f);
+        yield return StartCoroutine(WaitWithCheat(0.25f));
 
         float t = 0;
         while (t < 1)
@@ -361,7 +374,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         xToContinue.gameObject.SetActive(bShow);
     }
 
-    IEnumerator CameraSequence()
+    IEnumerator CameraSequence(bool waitForContinue = true)
     {
         bool wait = true;
         var t = 0f;
@@ -370,15 +383,15 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         ShowContinue(false);
 
-        yield return WaitWithCheat(6);
+        yield return StartCoroutine(WaitWithCheat(6));
 
         ShowContinue(true);
         
-        yield return WaitWithCheat(0.5f);
+        yield return StartCoroutine(WaitWithCheat(0.5f));
 
         bool lastX = God.input.x;
         wait = true;
-        while(wait)
+        while(waitForContinue && wait)
         {
             if (!lastX && God.input.x && Time.time - _lastSequenceTime > 3)
                 wait = false;
@@ -460,9 +473,9 @@ public class FlyingTutorialSequence : MonoBehaviour
     // Cards
 
     // public static bool 
-    public void OnTutorialCardTriggered(CardType cardType, Transform target = null)
+    public void OnTutorialCardTriggered(CardType cardType, Transform target = null, bool pause = true)
     {
-        TryShowCard(cardType, target: target);
+        TryShowCard(cardType, target: target, pause: pause);
     }
 
     public enum CardType
@@ -516,7 +529,7 @@ public class FlyingTutorialSequence : MonoBehaviour
                 break;
         }
     }
-    public void TryShowCard(CardType cardType, float delay = 0, Transform target = null)
+    public void TryShowCard(CardType cardType, float delay = 0, Transform target = null, bool pause = false)
     {
         if (_cardShown == null)
             _cardShown = new Dictionary<CardType, bool>();
@@ -532,10 +545,10 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         _cardShown[cardType] = true;
 
-        StartCoroutine(ShowCardSequence(delay, target));
+        StartCoroutine(ShowCardSequence(delay, target, pause));
     }
 
-    IEnumerator ShowCardSequence(float delay = 0, Transform target = null)
+    IEnumerator ShowCardSequence(float delay = 0, Transform target = null, bool pause = false)
     {
         const float TIMESCALE_LOW = 0.001f;
 
@@ -550,13 +563,13 @@ public class FlyingTutorialSequence : MonoBehaviour
             God.wren.cameraWork.objectTargeted = target;
         Debug.Log(target + ", " + God.wren.cameraWork.objectTargeted);
         if (delay > 0)
-            yield return WaitWithCheat(delay);
+            yield return StartCoroutine(WaitWithCheat(delay));
 
         StartCoroutine(FadeGroup(groupCard, 0, 1));
 
         float t = 1;
         var prevTimescale = Time.timeScale;
-        while(t > 0)
+        while(pause && t > 0)
         {
             t -= Time.unscaledDeltaTime * 1.2f;
             Time.timeScale = Mathf.Lerp(TIMESCALE_LOW,prevTimescale, t);
@@ -566,7 +579,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         groupXToContinue.alpha = 1;
 
-        yield return WaitWithCheat(0.4f);
+        yield return StartCoroutine(WaitWithCheat(0.4f));
 
         bool lastX = God.input.x;
         wait = true;
@@ -579,7 +592,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
 
         t = 0;
-        while(t < 1)
+        while(pause && t < 1)
         {
             t += Time.unscaledDeltaTime * .5f;
             groupCard.alpha = 1 - t;
