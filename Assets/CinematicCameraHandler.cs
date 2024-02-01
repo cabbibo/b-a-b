@@ -104,7 +104,9 @@ public class CinematicCameraHandler : MonoBehaviour
     Activities,
     TutorialEnd
   }
-  public Mode mode = Mode.Disabled;
+  Mode _mode = Mode.Disabled;
+  float _lastModeChangeT;
+  public Mode mode { get { return _mode; } set { _mode = value; _lastModeChangeT = Time.unscaledTime; } }
 
   void Start()
   {
@@ -157,7 +159,7 @@ public class CinematicCameraHandler : MonoBehaviour
         r * Mathf.Sin(Mathf.Lerp(-Mathf.PI, Mathf.PI, a))
       );
       float secPerTrigger = 3;
-      var t = startTriggers[Mathf.FloorToInt((Time.unscaledTime / secPerTrigger) % startTriggers.Length)];
+      var t = startTriggers[Mathf.FloorToInt(((Time.unscaledTime-_lastModeChangeT) / secPerTrigger) % startTriggers.Length)];
       God.camera.transform.position = t.transform.position + pos;
       God.camera.transform.rotation = Quaternion.LookRotation(t.transform.position - God.camera.transform.position, Vector3.up);
       God.camera.fieldOfView = 60;
