@@ -576,6 +576,8 @@ public class Wren : MonoBehaviour
     }
 
 
+    public float grazeAngleMax;
+    public float grazeForceMax;
     void OnCollisionEnter(Collision c)
     {
         if (state.isLocal)
@@ -621,8 +623,29 @@ public class Wren : MonoBehaviour
             }
             else
             {
-                Crash(c);
 
+
+                // print(physics.rb.velocity.magnitude);
+                // print(physics.rb.velocity);
+                //print(c.impulse.magnitude);
+                // print(c.impulse);
+                //print(Vector3.Dot(c.impulse.normalized, physics.rb.velocity.normalized));
+                float dot = Vector3.Dot(c.impulse.normalized, physics.oVel.normalized);
+
+                print(dot);
+                if (dot < 0)
+                {
+                    dot = -dot;
+                }
+
+                if (dot < .8f)
+                {
+                    physics.rb.AddForce(c.impulse.normalized * c.impulse.magnitude * .3f, ForceMode.Impulse);
+                }
+                else
+                {
+                    Crash(c);
+                }
 
             }
         }
@@ -633,6 +656,9 @@ public class Wren : MonoBehaviour
     public void Crash(Collision c)
     {
         print("crash2");
+
+
+
         if (!state.onGround)
         {
             //if( c.impulse.magnitude != 0 ){
@@ -656,7 +682,9 @@ public class Wren : MonoBehaviour
             {
                 //                state.
 
+                Vector3 tmpVel = physics.rb.velocity;
                 state.TransportToPosition(c.contacts[0].point + c.contacts[0].normal * 1, c.contacts[0].normal);
+                physics.rb.velocity = tmpVel;
                 state.TakeOff();
             }
         }
