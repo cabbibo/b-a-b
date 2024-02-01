@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Runtime.Remoting;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -30,6 +31,11 @@ public class FlyingTutorialSequence : MonoBehaviour
     public Renderer fade;
 
     public TutorialEnder ender;
+
+    [Header("Start")]
+    public GameObject activeInTutorial;
+    public GameObject activeAfterTutorial;
+    public GameObject cloudParticles;
 
     [Header("Controller")]
     public GameObject groupSticks;
@@ -71,10 +77,13 @@ public class FlyingTutorialSequence : MonoBehaviour
         if (!ender)
             ender = FindObjectOfType<TutorialEnder>();
 
-        tutSequence = StartCoroutine(TutorialSequence());
-
         groupCard.gameObject.SetActive(false);
         groupEnd.alpha = 0;
+
+        activeAfterTutorial.SetActive(false);
+        activeInTutorial.SetActive(false);
+
+        tutSequence = StartCoroutine(TutorialSequence());
     }
 
 
@@ -121,12 +130,18 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         fade.transform.position = God.camera.transform.position;
 
-        // if (God.wren)
-        // {
+        if (God.wren)
+        {
         //     fade.GetPropertyBlock(bgMpr);
         //     bgMpr.SetVector("_WrenDirection", God.wren.physics.rb.transform.forward);
         //     fade.SetPropertyBlock(bgMpr);
-        // }
+
+            if (activeInTutorial.activeSelf)
+            {
+                var p = God.wren.physics.rb.transform.position;
+                cloudParticles.transform.position = new Vector3(p.x, p.y - 300, p.z);
+            }
+        }
     }
 
     void SetControllerHint(ControllerHint hint)
@@ -175,10 +190,13 @@ public class FlyingTutorialSequence : MonoBehaviour
         float cT = 0;
         while(cT < 1)
         {
+            if (Input.GetKey(KeyCode.Space))
+                break;
             cinematicCamera.tutorialCameraIdx = Mathf.Lerp(from, to, Mathf.SmoothStep(0,1,cT));
             cT += Time.unscaledDeltaTime * .1f;
             yield return null;
         }
+        cinematicCamera.tutorialCameraIdx = to;
     }
 
     enum Camera { 
@@ -198,13 +216,16 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         God.fade.FadeIn(3);
 
+        activeInTutorial.SetActive(true);
+        activeAfterTutorial.SetActive(false);
+
         groupContainer.alpha = 0;
         ShowContinue(false);
         ShowText();
 
         SetControllerHint(ControllerHint.None);
         ShowProgress(0);
-        cinematicCamera.armed = false;
+        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
         
         float bgT = 1f;
         SetBGFade(bgT);
@@ -212,12 +233,14 @@ public class FlyingTutorialSequence : MonoBehaviour
         while (God.wren == null)
             yield return null;
 
-        yield return WaitWithCheat(2);
+        // yield return WaitWithCheat(2);
 
         while (God.wren.physics.onGround)
             yield return null;
+        
 
-        cinematicCamera.armed = true;
+
+        cinematicCamera.mode = CinematicCameraHandler.Mode.Cinematic;
 
         while(debug)
         {
@@ -257,7 +280,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         
         yield return WaitWithCheat(1f);
         
-        cinematicCamera.armed = false;
+        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
 
         yield return WaitWithCheat(0.5f);
         
@@ -265,6 +288,8 @@ public class FlyingTutorialSequence : MonoBehaviour
         {
             SetBGFade(bgT);
             bgT -= Time.unscaledDeltaTime * .1f;
+            if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
+                break;
             yield return null;
         }
         SetBGFade(0);
@@ -279,13 +304,41 @@ public class FlyingTutorialSequence : MonoBehaviour
         yield return ControllerHintSequence(ControllerHint.Right);
         yield return WaitWithCheat(0.5f);
 
-        // Up
-        yield return ControllerHintSequence(ControllerHint.Up);
-        yield return WaitWithCheat(0.5f);
+        God.wren.PhaseShift(new Vector3(0,-1600,0));
 
-        // Down
-        yield return ControllerHintSequence(ControllerHint.Down);   
         yield return WaitWithCheat(0.5f);
+        groupContainer.alpha = 1;
+        groupXToContinue.alpha = 0;
+        int i = 0; float ct = 0;
+        while(true)
+        {
+            ct += Time.unscaledDeltaTime;
+            if (Mathf.Floor(ct % 1) == 0)
+                SetControllerHint(ControllerHint.Up);
+            else if (i == 1)
+                SetControllerHint(ControllerHint.Down);
+            
+            if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
+                ct = 2;
+                
+            groupXToContinue.alpha = ct > 2 ? 1 : 0;
+            if (groupXToContinue.alpha > 0 && God.input.xPressed)
+            {
+                break;
+            }
+            Debug.Log(ct);
+            yield return null;
+        }
+
+        // SetControllerHint(ControllerHint.Down);
+
+        // // Up
+        // yield return ControllerHintSequence(ControllerHint.Up);
+        // yield return WaitWithCheat(0.5f);
+
+        // // Down
+        // yield return ControllerHintSequence(ControllerHint.Down);   
+        // yield return WaitWithCheat(0.5f);
 
         // Space to fly
         yield return WaitWithCheat(11);
@@ -444,10 +497,12 @@ public class FlyingTutorialSequence : MonoBehaviour
 
     void OnTutorialFinished()
     {
-        cinematicCamera.armed = false;
+        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
         ShowProgress(0);
         SetBGFade(0);
         groupContainer.alpha = 0;
+        activeInTutorial.SetActive(false);
+        activeAfterTutorial.SetActive(true);
 
         OnTutorialDiveFinished?.Invoke();
 
@@ -471,7 +526,10 @@ public class FlyingTutorialSequence : MonoBehaviour
         FlyCloseToGround,
 
         // activities
-        ActivityRings, ActivityWindTunnel, ActivitySpeedGate, ActivityButterflies, ActivityBigBird
+        ActivityRings, ActivityWindTunnel, ActivitySpeedGate, ActivityButterflies, ActivityBigBird,
+
+        // custom
+        CycleThroughTriggers, TutorialEnd
     }
 
     private Dictionary<CardType, bool> _cardShown = new Dictionary<CardType, bool>();
@@ -484,7 +542,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         {
             case CardType.RevealIsland:
                 title = "Bird Island";
-                text = "Welcome to Bird Island. Fly around freely and explore.\nWhen you're ready, go to the gate at the top of the mountain";
+                text = "Welcome to Bird Island. Fly around freely and explore.";
                 break;
             
             case CardType.FlyCloseToGround:
@@ -512,6 +570,14 @@ public class FlyingTutorialSequence : MonoBehaviour
                 title = "Big Bird";
                 text = "Follow the giant bird. Get close to hear its rumble.";
                 break;
+            case CardType.CycleThroughTriggers:
+                title = "Activities";
+                text = "Find activities around the map.";
+                break;
+            case CardType.TutorialEnd:
+                title = "Gate";
+                text = "Enter the mountain gate to finish the demo.";
+                break;
         }
     }
     public void TryShowCard(CardType cardType, float delay = 0, Transform target = null, bool pause = false)
@@ -522,15 +588,21 @@ public class FlyingTutorialSequence : MonoBehaviour
         if (_showingCard || _cardShown.ContainsKey(cardType) && _cardShown[cardType])
             return;
 
-        string title, text;
-        GetCardInfo(cardType, out title, out text);
-
-        cardTitle.text = title;
-        cardText.text = text;
+        SetCardInfo(cardType);
 
         _cardShown[cardType] = true;
 
-        StartCoroutine(ShowCardSequence(delay, target, pause));
+        if (cardType == CardType.RevealIsland)
+            StartCoroutine(ShowTutorialStartCardSequence());
+        else
+            StartCoroutine(ShowCardSequence(delay, target, pause));
+    }
+
+    void SetCardInfo(CardType type)
+    {
+        GetCardInfo(type, out string title, out string text);
+        cardTitle.text = title;
+        cardText.text = text;
     }
 
     bool _showingCard = false;
@@ -549,7 +621,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         if (target)
             God.wren.cameraWork.objectTargeted = target;
-        Debug.Log(target + ", " + God.wren.cameraWork.objectTargeted);
+        
         if (delay > 0)
             yield return WaitWithCheat(delay);
 
@@ -593,6 +665,80 @@ public class FlyingTutorialSequence : MonoBehaviour
             God.wren.cameraWork.objectTargeted = null;
 
         Time.timeScale = 1;
+        groupCard.alpha = 0;
+        groupXToContinue.alpha = 0;
+
+        _showingCard = false;
+    }
+
+    IEnumerator ShowTutorialStartCardSequence()
+    {
+        _showingCard = true;
+
+        groupCard.alpha = 0;
+        groupXToContinue.alpha = 0;
+        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
+        groupXToContinue.gameObject.SetActive(true);
+
+        SetCardInfo(CardType.RevealIsland);
+
+        groupCard.gameObject.SetActive(true);
+        groupXToContinue.gameObject.SetActive(true);
+
+        God.wren.physics.rb.isKinematic = true;
+        
+        StartCoroutine(FadeGroup(groupCard, 0, 1));
+
+        yield return WaitWithCheat(1.5f);
+
+        groupXToContinue.alpha = 1;
+
+        bool wait = true, lastX = God.input.x;
+        while(wait)
+        {
+            if (!lastX && God.input.x)
+                wait = false;
+            lastX = God.input.x;
+            yield return null;
+        }
+
+        SetCardInfo(CardType.CycleThroughTriggers);
+
+        cinematicCamera.mode = CinematicCameraHandler.Mode.Activities;
+
+        groupXToContinue.alpha = 0;
+        yield return WaitWithCheat(1.5f);
+        groupXToContinue.alpha = 1;
+
+        wait = true;
+        while(wait)
+        {
+            if (!lastX && God.input.x)
+                wait = false;
+            lastX = God.input.x;
+            yield return null;
+        }
+
+        SetCardInfo(CardType.TutorialEnd);
+
+        cinematicCamera.mode = CinematicCameraHandler.Mode.TutorialEnd;
+
+        groupXToContinue.alpha = 0;
+        yield return WaitWithCheat(1.5f);
+        groupXToContinue.alpha = 1;
+
+        wait = true;
+        while(wait)
+        {
+            if (!lastX && God.input.x)
+                wait = false;
+            lastX = God.input.x;
+            yield return null;
+        }
+
+        God.wren.physics.rb.isKinematic = false;
+
+        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
         groupCard.alpha = 0;
         groupXToContinue.alpha = 0;
 

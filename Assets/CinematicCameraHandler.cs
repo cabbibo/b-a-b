@@ -92,9 +92,19 @@ public class CinematicCameraHandler : MonoBehaviour
     }
   }
 
-  public bool armed = false;
   public CinematicCamera[] _cams;
   public float tutorialCameraIdx;
+  public TutorialCardTrigger[] startTriggers;
+  public Transform endTransform;
+
+  public enum Mode
+  {
+    Disabled,
+    Cinematic,
+    Activities,
+    TutorialEnd
+  }
+  public Mode mode = Mode.Disabled;
 
   void Start()
   {
@@ -106,7 +116,7 @@ public class CinematicCameraHandler : MonoBehaviour
     if (!God.wren)
       return;
 
-    if (armed && _cams.Length > 0)
+    if (mode == Mode.Cinematic && _cams.Length > 0)
     {
       var c1 = _cams[(int)Mathf.Clamp(Mathf.Floor(tutorialCameraIdx), 0, _cams.Length - 1)];
       var c2 = _cams[(int)Mathf.Clamp(Mathf.Ceil(tutorialCameraIdx), 0, _cams.Length - 1)];
@@ -130,6 +140,33 @@ public class CinematicCameraHandler : MonoBehaviour
         GetCustomCameraPositions(c1.descriptor, out var cPos, out var tPos);
       else
         GetCustomCameraPositions(CameraDescriptor.Lerp(c1.descriptor, c2.descriptor, tutorialCameraIdx % 1), out var cPos, out var tPos);
+      
+      
+      
+    } else if (mode == Mode.Activities)
+    {
+      // orbit camera
+      float radius = 120;
+      var height = 15f;
+      var y = radius * Mathf.Sin(height * Mathf.Deg2Rad);
+      var r = radius * Mathf.Cos(height * Mathf.Deg2Rad);
+      var a = (Time.time * .01f) % 1;
+      var pos = new Vector3(
+        r * Mathf.Cos(Mathf.Lerp(-Mathf.PI, Mathf.PI, a)),
+        y,
+        r * Mathf.Sin(Mathf.Lerp(-Mathf.PI, Mathf.PI, a))
+      );
+      float secPerTrigger = 3;
+      var t = startTriggers[Mathf.FloorToInt((Time.unscaledTime / secPerTrigger) % startTriggers.Length)];
+      God.camera.transform.position = t.transform.position + pos;
+      God.camera.transform.rotation = Quaternion.LookRotation(t.transform.position - God.camera.transform.position, Vector3.up);
+      God.camera.fieldOfView = 60;
+    
+    } else if (mode == Mode.TutorialEnd)
+    {
+      God.camera.transform.position = endTransform.position;
+      God.camera.transform.rotation = endTransform.rotation;
+      God.camera.fieldOfView = 70;
     }
 
   }
