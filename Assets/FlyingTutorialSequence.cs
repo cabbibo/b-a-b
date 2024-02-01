@@ -53,6 +53,7 @@ public class FlyingTutorialSequence : MonoBehaviour
     public CanvasGroup groupXToContinue;
     public TextMeshProUGUI cardTitle;
     public TextMeshProUGUI cardText;
+    public GameObject cardFlyOnGround;
 
     [Header("Ending")]
     public CanvasGroup groupEnd;
@@ -83,6 +84,8 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         activeAfterTutorial.SetActive(false);
         activeInTutorial.SetActive(false);
+
+        cardFlyOnGround.SetActive(false);
 
         tutSequence = StartCoroutine(TutorialSequence());
     }
@@ -141,6 +144,11 @@ public class FlyingTutorialSequence : MonoBehaviour
             {
                 var p = God.wren.physics.rb.transform.position;
                 cloudParticles.transform.position = new Vector3(p.x, p.y - 300, p.z);
+
+                if (p.y < 100)
+                {
+                    God.wren.PhaseShift(new Vector3(p.x, p.y + 450, p.z));
+                }
             }
         }
     }
@@ -311,6 +319,9 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         // Hold
         yield return ControllerHintSequence(ControllerHint.Hold);
+
+        God.wren.physics.rb.AddRelativeForce(Vector3.forward * 1000, ForceMode.Force);
+        
         yield return WaitWithCheat(0.5f);
 
         // God.wren.PhaseShift(new Vector3(0,-1600,0));
@@ -540,7 +551,8 @@ public class FlyingTutorialSequence : MonoBehaviour
         ActivityRings, ActivityWindTunnel, ActivitySpeedGate, ActivityButterflies, ActivityBigBird,
 
         // custom
-        CycleThroughTriggers, TutorialEnd
+        CycleThroughTriggers = 100, 
+        TutorialEnd = 101
     }
 
     private Dictionary<CardType, bool> _cardShown = new Dictionary<CardType, bool>();
@@ -557,7 +569,7 @@ public class FlyingTutorialSequence : MonoBehaviour
                 break;
             
             case CardType.FlyCloseToGround:
-                title = "Close to Ground";
+                title = "Ground";
                 text = "Fly close to the ground to gain speed.";
                 break;
 
@@ -614,6 +626,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         GetCardInfo(type, out string title, out string text);
         cardTitle.text = title;
         cardText.text = text;
+        cardFlyOnGround.SetActive(type == CardType.FlyCloseToGround);
     }
 
     bool _showingCard = false;
@@ -700,7 +713,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         
         StartCoroutine(FadeGroup(groupCard, 0, 1));
 
-        yield return WaitWithCheat(1.5f);
+        yield return WaitWithCheat(2.5f);
 
         groupXToContinue.alpha = 1;
 
@@ -718,7 +731,22 @@ public class FlyingTutorialSequence : MonoBehaviour
         cinematicCamera.mode = CinematicCameraHandler.Mode.Activities;
 
         groupXToContinue.alpha = 0;
-        yield return WaitWithCheat(1.5f);
+        yield return WaitWithCheat(2.5f);
+        groupXToContinue.alpha = 1;
+
+        wait = true;
+        while(wait)
+        {
+            if (!lastX && God.input.x)
+                wait = false;
+            lastX = God.input.x;
+            yield return null;
+        }
+
+        SetCardInfo(CardType.FlyCloseToGround);
+        
+        groupXToContinue.alpha = 0;
+        yield return WaitWithCheat(2.5f);
         groupXToContinue.alpha = 1;
 
         wait = true;

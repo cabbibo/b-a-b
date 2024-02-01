@@ -1768,6 +1768,7 @@ MonoBehaviour:
   groupXToContinue: {fileID: 6570409394432191668}
   cardTitle: {fileID: 7256705136603116308}
   cardText: {fileID: 684958652659693613}
+  cardFlyOnGround: {fileID: 3961532291406491402}
   groupEnd: {fileID: 1348892480717852099}
 --- !u!1 &2806302979100157919
 GameObject:
@@ -2258,15 +2259,16 @@ MonoBehaviour:
       m_Calls: []
   m_text: PRESS
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 4804f29782c9093489700761ccb81075, type: 2}
+  m_sharedMaterial: {fileID: 5809369387821494603, guid: 4804f29782c9093489700761ccb81075,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4280218111
-  m_fontColor: {r: 1, g: 0.9450981, b: 0.11764707, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2289,7 +2291,7 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -2889,12 +2891,12 @@ GameObject:
   - component: {fileID: 1498177248046073960}
   - component: {fileID: 6156171080820404232}
   m_Layer: 0
-  m_Name: Image (1)
+  m_Name: Fly on ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &6165149485590823335
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2911,8 +2913,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -662.00024, y: -34.32007}
-  m_SizeDelta: {x: -1623.4286, y: -527.3593}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1498177248046073960
 CanvasRenderer:
@@ -2942,7 +2944,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 3291a29fa52049943a066de7ec83361b, type: 3}
+  m_Texture: {fileID: 2800000, guid: a8372c926aa1b7346af3a6be79b44933, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -12712,7 +12714,7 @@ PrefabInstance:
     - target: {fileID: 1418395924055694567, guid: b17e67abcf79be24a8fa12859dd25dfe,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1429677511604248564, guid: b17e67abcf79be24a8fa12859dd25dfe,
         type: 3}
@@ -13031,7 +13033,7 @@ PrefabInstance:
     - target: {fileID: 1418395924055694567, guid: b17e67abcf79be24a8fa12859dd25dfe,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1429677511604248564, guid: b17e67abcf79be24a8fa12859dd25dfe,
         type: 3}
