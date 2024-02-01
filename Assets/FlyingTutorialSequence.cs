@@ -47,6 +47,9 @@ public class FlyingTutorialSequence : MonoBehaviour
     public TextMeshProUGUI cardTitle;
     public TextMeshProUGUI cardText;
 
+    [Header("Ending")]
+    public CanvasGroup groupEnd;
+
 
     Coroutine tutSequence;
     float _lastSequenceTime;
@@ -71,6 +74,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         tutSequence = StartCoroutine(TutorialSequence());
 
         groupCard.gameObject.SetActive(false);
+        groupEnd.alpha = 0;
     }
 
 
@@ -98,6 +102,11 @@ public class FlyingTutorialSequence : MonoBehaviour
                 if (Input.GetKeyDown(KeyCode.Alpha2))
                 {
                     God.wren.PhaseShift(new Vector3(-3859,287,-1337));
+                }
+                // portal
+                if (Input.GetKeyDown(KeyCode.Alpha3))
+                {
+                    God.wren.PhaseShift(new Vector3(-5150,507,-659));
                 }
             }
             if (Input.GetKeyDown(KeyCode.O))
@@ -588,5 +597,35 @@ public class FlyingTutorialSequence : MonoBehaviour
         groupXToContinue.alpha = 0;
 
         _showingCard = false;
+    }
+
+    public void TryEndDemo(System.Action<bool> cb= null)
+    {
+        StartCoroutine(EndDemoSequence(cb));
+    }
+    IEnumerator EndDemoSequence(System.Action<bool> cb= null)
+    {
+        groupEnd.alpha = 1;
+
+        God.wren.physics.rb.isKinematic = true;
+        
+        bool wait = true;
+        while(wait)
+        {
+            if (God.input.squarePressed)
+            {
+                wait = false;
+            }
+            if (God.input.xPressed)
+            {
+                wait = false;
+                cb?.Invoke(true);
+            }
+            yield return null;
+        }
+        // cancel
+        God.wren.physics.rb.isKinematic = false;
+        groupEnd.alpha = 0;
+        cb?.Invoke(false);
     }
 }

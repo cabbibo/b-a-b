@@ -58,19 +58,35 @@ public class Portal : MonoBehaviour
         }
 
         collision = c;
-        if (demo)
+        System.Action doEnd = () => {
+            if (demo)
+            {
+                God.sceneController.EndDemo(this);
+            }
+            else
+            {
+                God.sceneController.LoadSceneFromPortal(this);
+            }
+            collider.enabled = false;
+        };
+
+        if (FlyingTutorialSequence.Instance)
         {
-            God.sceneController.EndDemo(this);
+            God.wren.physics.rb.velocity = Vector3.zero;
+            God.wren.physics.rb.angularVelocity = Vector3.zero;
+            FlyingTutorialSequence.Instance.TryEndDemo(endConfirmed => {
+                if (endConfirmed)
+                {
+                    doEnd();
+                } else {
+                    God.wren.physics.rb.velocity = Vector3.zero;
+                    God.wren.physics.rb.angularVelocity = Vector3.zero;
+                    God.wren.PhaseShift(new Vector3(-5150,507,-659));
+                }
+            });
+        } else {
+            doEnd();
         }
-        else
-        {
-            God.sceneController.LoadSceneFromPortal(this);
-        }
-
-
-
-
-        collider.enabled = false;
 
 
     }
