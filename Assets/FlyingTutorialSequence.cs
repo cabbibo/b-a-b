@@ -44,8 +44,9 @@ public class FlyingTutorialSequence : MonoBehaviour
     public GameObject groupRight;
     public GameObject groupUp;
     public GameObject groupDown;
+    public GameObject groupHold;
 
-    enum ControllerHint { None, Dive, Left, Right, Up, Down }
+    enum ControllerHint { None, Dive, Left, Right, Up, Down, Hold }
 
     [Header("Tooltip Cards")]
     public CanvasGroup groupCard;
@@ -151,6 +152,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         groupUp.SetActive(hint == ControllerHint.Up);
         groupDown.SetActive(hint == ControllerHint.Down);
         groupDive.SetActive(hint == ControllerHint.Dive);
+        groupHold.SetActive(hint == ControllerHint.Hold);
 
         controllerText.transform.parent.gameObject.SetActive(hint != ControllerHint.None);
         switch(hint)
@@ -169,6 +171,9 @@ public class FlyingTutorialSequence : MonoBehaviour
                 break;
             case ControllerHint.Down:
                 controllerText.text = "Both sticks down to FLY UP";
+                break;
+            case ControllerHint.Hold:
+                controllerText.text = "PRESS sticks to HOLD";
                 break;
         }
     }
@@ -304,31 +309,35 @@ public class FlyingTutorialSequence : MonoBehaviour
         yield return ControllerHintSequence(ControllerHint.Right);
         yield return WaitWithCheat(0.5f);
 
-        God.wren.PhaseShift(new Vector3(0,-1600,0));
-
+        // Hold
+        yield return ControllerHintSequence(ControllerHint.Hold);
         yield return WaitWithCheat(0.5f);
-        groupContainer.alpha = 1;
-        groupXToContinue.alpha = 0;
-        int i = 0; float ct = 0;
-        while(true)
-        {
-            ct += Time.unscaledDeltaTime;
-            if (Mathf.Floor(ct % 1) == 0)
-                SetControllerHint(ControllerHint.Up);
-            else if (i == 1)
-                SetControllerHint(ControllerHint.Down);
+
+        // God.wren.PhaseShift(new Vector3(0,-1600,0));
+
+        // yield return WaitWithCheat(0.5f);
+        // groupContainer.alpha = 1;
+        // groupXToContinue.alpha = 0;
+        // int i = 0; float ct = 0;
+        // while(true)
+        // {
+        //     ct += Time.unscaledDeltaTime;
+        //     if (Mathf.Floor(ct % 1) == 0)
+        //         SetControllerHint(ControllerHint.Up);
+        //     else if (i == 1)
+        //         SetControllerHint(ControllerHint.Down);
             
-            if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
-                ct = 2;
+        //     if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
+        //         ct = 2;
                 
-            groupXToContinue.alpha = ct > 2 ? 1 : 0;
-            if (groupXToContinue.alpha > 0 && God.input.xPressed)
-            {
-                break;
-            }
-            Debug.Log(ct);
-            yield return null;
-        }
+        //     groupXToContinue.alpha = ct > 2 ? 1 : 0;
+        //     if (groupXToContinue.alpha > 0 && God.input.xPressed)
+        //     {
+        //         break;
+        //     }
+        //     Debug.Log(ct);
+        //     yield return null;
+        // }
 
         // SetControllerHint(ControllerHint.Down);
 
@@ -388,6 +397,8 @@ public class FlyingTutorialSequence : MonoBehaviour
                 return God.input.leftY < -.5f && God.input.rightY < -.5f;
             case ControllerHint.Dive:
                 return God.input.l2 > .5f && God.input.r2 > .5f;
+            case ControllerHint.Hold:
+                return God.input.l3 && God.input.r3;
         }
         return false;
     }
