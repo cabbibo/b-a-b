@@ -656,7 +656,7 @@ public class Wren : MonoBehaviour
             {
                 //                state.
 
-                state.TransportToPosition(c.contacts[0].point + c.contacts[0].normal * 1, c.contacts[0].normal * 10);
+                state.TransportToPosition(c.contacts[0].point + c.contacts[0].normal * 1, c.contacts[0].normal * 1);
                 state.TakeOff();
             }
         }
