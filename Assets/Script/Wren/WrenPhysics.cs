@@ -924,10 +924,10 @@ public class WrenPhysics : MonoBehaviour
         */
 
 
-        leftWingUpdraftForce = Vector3.up * Mathf.Abs(Vector3.Dot(leftWing.up, Vector3.up)) * distToGroundVal * (1 - tuckAmountL * tuckReduceUpdraftVal);
+        leftWingUpdraftForce = -groundDirection * Mathf.Abs(Vector3.Dot(leftWing.up, Vector3.up)) * distToGroundVal * (1 - tuckAmountL * tuckReduceUpdraftVal);
         leftWingUpdraftForcePosition = Vector3.Lerp(transform.position, leftWing.position, windAmountToTheSide);
 
-        rightWingUpdraftForce = Vector3.up * Mathf.Abs(Vector3.Dot(rightWing.up, Vector3.up)) * distToGroundVal * (1 - tuckAmountR * tuckReduceUpdraftVal);
+        rightWingUpdraftForce = -groundDirection * Mathf.Abs(Vector3.Dot(rightWing.up, Vector3.up)) * distToGroundVal * (1 - tuckAmountR * tuckReduceUpdraftVal);
         rightWingUpdraftForcePosition = Vector3.Lerp(transform.position, rightWing.position, windAmountToTheSide);
     }
 
