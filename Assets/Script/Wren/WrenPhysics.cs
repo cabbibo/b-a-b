@@ -116,6 +116,9 @@ public class WrenPhysics : MonoBehaviour
     public float groundForceTweenVal;
 
 
+    public float forwardExtraBoostOnTuck;
+    public float tuckDampeningReduction;
+
 
 
 
@@ -479,7 +482,15 @@ public class WrenPhysics : MonoBehaviour
 
         if (vel.magnitude > maxSpeed)
         {
-            vel -= vel.normalized * (vel.magnitude - maxSpeed) * maxSpeedDamper;
+
+
+            float tuckVal = input.left2 + input.right2;
+            tuckVal /= 2;
+
+
+
+            vel -= vel.normalized * (vel.magnitude - maxSpeed) * maxSpeedDamper * (1 - tuckVal * tuckDampeningReduction);
+
         }
 
         // Only rights if we are NOT touching stuff
@@ -733,7 +744,9 @@ public class WrenPhysics : MonoBehaviour
         // this is the 'thrust' and in general should feel
         // like pretty much nothing to me 
         // ( though maybe it wou make it more interesting )
-        thrustForce = transform.forward * thrustForceMultiplier;
+        thrustForce = transform.forward * thrustForceMultiplier * (1 + input.right2 * forwardExtraBoostOnTuck + input.left2 * forwardExtraBoostOnTuck);
+
+
         thrustForcePosition = transform.position;
 
 
@@ -923,6 +936,7 @@ public class WrenPhysics : MonoBehaviour
 
         */
 
+        // Making ti so that it pushes away from whatever direciton the ground is in
 
         leftWingUpdraftForce = -groundDirection * Mathf.Abs(Vector3.Dot(leftWing.up, Vector3.up)) * distToGroundVal * (1 - tuckAmountL * tuckReduceUpdraftVal);
         leftWingUpdraftForcePosition = Vector3.Lerp(transform.position, leftWing.position, windAmountToTheSide);
@@ -1352,7 +1366,7 @@ public class WrenPhysics : MonoBehaviour
 
     public float normalizedSpeed
     {
-        get { return vel.magnitude / maxSpeed; }
+        get { return Mathf.Clamp(vel.magnitude / maxSpeed, 0, 1); }
     }
 
 

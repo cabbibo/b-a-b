@@ -26365,6 +26365,8 @@ MonoBehaviour:
   tuckReduceUpdraftVal: 0.8
   windAmountToTheSide: 2
   groundForceTweenVal: 0.2
+  forwardExtraBoostOnTuck: 0
+  tuckDampeningReduction: 0
   velMatchMultiplier: 0
   bumperForce: 0
   groundPower: 10
