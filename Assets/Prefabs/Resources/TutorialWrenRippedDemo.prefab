@@ -784,11 +784,11 @@ MonoBehaviour:
   wing: {fileID: 687666778210607441}
   featherDebugMaterial: {fileID: 0}
   featherMaterial: {fileID: 2100000, guid: 4a3492afae97ee148b24306d79f6a269, type: 2}
-  count: 10000
+  count: 4000
   shader: {fileID: 7200000, guid: b285f0e13175cb4428bf78b70e24b31a, type: 3}
   numGroups: 40
   numThreads: 128
-  emitting: 1
+  emitting: 0
   active: 1
 --- !u!1 &687666778219455867
 GameObject:
@@ -2055,11 +2055,11 @@ MonoBehaviour:
   wing: {fileID: 687666779443224187}
   featherDebugMaterial: {fileID: 0}
   featherMaterial: {fileID: 2100000, guid: 4a3492afae97ee148b24306d79f6a269, type: 2}
-  count: 10000
+  count: 4000
   shader: {fileID: 7200000, guid: b285f0e13175cb4428bf78b70e24b31a, type: 3}
   numGroups: 40
   numThreads: 128
-  emitting: 1
+  emitting: 0
   active: 1
 --- !u!1 &687666779572013904
 GameObject:
@@ -26190,6 +26190,7 @@ GameObject:
   - component: {fileID: 7998969256004650699}
   - component: {fileID: 1447400220214749194}
   - component: {fileID: 6744424082612651983}
+  - component: {fileID: 2761764884134458057}
   m_Layer: 10
   m_Name: TutorialWrenRippedDemo
   m_TagString: Wren
@@ -26381,9 +26382,9 @@ MonoBehaviour:
   twistLerpSpeed: 0.3
   bendLerpSpeed: 0.3
   maxSpeed: 400
-  maxSpeedDamper: 0.03
+  maxSpeedDamper: 0.005
   baseSpeed: 2
-  baseSpeedDamper: 0.002
+  baseSpeedDamper: 0.0005
   twistForceVal: 3
   slowestAmountToSide: 0.06
   fastestAmountToSide: 0.05
@@ -26411,7 +26412,7 @@ MonoBehaviour:
   windAmountToTheSide: 2
   groundForceTweenVal: 0.2
   velMatchMultiplier: 0
-  bumperForce: 500
+  bumperForce: 0
   groundPower: 10
   groundOut: 0.03
   groundDampening: 0.9
@@ -26874,6 +26875,18 @@ MonoBehaviour:
   maxExcitment: 0
   maxQuenchedness: 0
   maxAge: 0
+--- !u!114 &2761764884134458057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9160943688313912046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e70702ccb027fa64ca2b018b8c458908, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &9160943688594033059
 GameObject:
   m_ObjectHideFlags: 0

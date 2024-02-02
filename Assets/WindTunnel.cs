@@ -4,7 +4,7 @@ using UnityEngine;
 
 using MagicCurve;
 using WrenUtils;
-using UnityEditor.Media;
+//using UnityEditor.Media;
 
 public class WindTunnel : MonoBehaviour
 {
@@ -27,6 +27,10 @@ public class WindTunnel : MonoBehaviour
     public AnimationCurve inwardsForceCurve = AnimationCurve.Linear(-1, 0, 1, 1);
     public AnimationCurve forwardsForceCurve = AnimationCurve.Linear(-1, 0, 1, 1);
     public AnimationCurve dampenForceCurve = AnimationCurve.Linear(-1, 0, 1, 1);
+    public AnimationCurve lerpToForwardCurve = AnimationCurve.Linear(-1, 0, 1, 1);
+
+
+    public float lerpToForwardMultiplier = .01f;
     public float outerRange = 5;
     public float easeFwdForce = 0;
 
@@ -98,6 +102,9 @@ public class WindTunnel : MonoBehaviour
             God.wren.physics.rb.AddForce(finalForwardForce);
             God.wren.physics.rb.AddForce(finalDampenForce);
 
+
+            God.wren.physics.rb.velocity = Vector3.Lerp(God.wren.physics.rb.velocity, closestForward * God.wren.physics.rb.velocity.magnitude, finalLerpToForward);
+
             Debug.DrawLine(fPos, fPos + finalInwardForce, Color.red);
             Debug.DrawLine(fPos, fPos + finalForwardForce, Color.green);
             Debug.DrawLine(fPos, fPos + finalDampenForce, Color.yellow);
@@ -163,6 +170,9 @@ public class WindTunnel : MonoBehaviour
     Vector3 finalForwardForce;
     Vector3 finalInwardForce;
     Vector3 finalDampenForce;
+
+    float finalLerpToForward;
+
 
     float force_in;
     float force_fwd;
@@ -230,6 +240,8 @@ public class WindTunnel : MonoBehaviour
         {
             finalDampenForce = Vector3.zero;
         }
+
+        finalLerpToForward = lerpToForwardCurve.Evaluate(fVal) * lerpToForwardMultiplier;
 
 
 
