@@ -515,9 +515,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4e8510a03f76314f965fbdd7dc9c44c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardType: 4
+  cardType: 5
   followTransform: {fileID: 0}
   radius: 85.1
+  lookAt: 1
+  pause: 0
 --- !u!1 &3987279546684286626
 GameObject:
   m_ObjectHideFlags: 0
