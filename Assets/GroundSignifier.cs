@@ -103,7 +103,6 @@ public class GroundSignifier : MonoBehaviour
                 }
 
 
-
             }
             else
             {
@@ -116,65 +115,66 @@ public class GroundSignifier : MonoBehaviour
                     groundRepresent.localScale = Vector3.zero;
                 }
 
+            }
 
-                if (God.wren.physics.straightDownDistance < kickUpDustHeight)
+
+
+
+            if (God.wren.physics.straightDownDistance < kickUpDustHeight)
+            {
+
+                emitPos = God.wren.physics.straightDownIntersectionPosition;
+                emitParams.startSize = Mathf.Clamp(kickUpDustHeight / God.wren.physics.straightDownDistance, 0, 2);
+                for (int i = 0; i < (int)emitParams.startSize; i++)
                 {
 
-                    emitPos = God.wren.physics.straightDownIntersectionPosition;
-                    emitParams.startSize = Mathf.Clamp(kickUpDustHeight / God.wren.physics.straightDownDistance, 0, 2);
-                    for (int i = 0; i < (int)emitParams.startSize; i++)
-                    {
 
 
-
-                        // TODO how to make it be on the ground?
-                        emitPos = God.wren.physics.straightDownIntersectionPosition + Random.insideUnitSphere * .4f;
-                        emitPos += God.wren.transform.forward * God.wren.physics.vel.magnitude * .3f;
-                        emitPos.y = God.wren.physics.straightDownIntersectionPosition.y;
-                        emitParams.position = emitPos;
-
-                        kickUpDustParticles.Emit(emitParams, 1);
-                    }
-
-                }
-
-                // get delta of the wing
-                float leftWingDif = (God.wren.physics.leftWing.position.y - God.wren.physics.rb.position.y);
-
-
-
-                if (leftWingDif < 0 && God.wren.physics.straightDownDistance < wingKickUpHeight)
-                {
-
-                    emitPos = God.wren.physics.leftWing.position;
-                    //emitPos += God.wren.transform.forward * God.wren.physics.vel.magnitude * .3f;
+                    // TODO how to make it be on the ground?
+                    emitPos = God.wren.physics.straightDownIntersectionPosition + Random.insideUnitSphere * .4f;
+                    emitPos += God.wren.transform.forward * God.wren.physics.vel.magnitude * .3f;
                     emitPos.y = God.wren.physics.straightDownIntersectionPosition.y;
-                    leftWingParticles.transform.position = emitPos;
-                    leftWingParticles.Emit((int)(-leftWingDif * 1 * (wingKickUpHeight / God.wren.physics.straightDownDistance)));
+                    emitParams.position = emitPos;
+
+                    kickUpDustParticles.Emit(emitParams, 1);
                 }
-
-
-
-                // get delta of the wing
-                float rightWingDif = (God.wren.physics.rightWing.position.y - God.wren.physics.rb.position.y);
-
-                if (rightWingDif < 0 && God.wren.physics.straightDownDistance < wingKickUpHeight)
-                {
-                    emitPos = God.wren.physics.rightWing.position;
-                    //emitPos += God.wren.transform.forward * God.wren.physics.vel.magnitude * .3f;
-                    emitPos.y = God.wren.physics.straightDownIntersectionPosition.y;
-                    rightWingParticles.transform.position = emitPos;
-                    rightWingParticles.Emit((int)(-rightWingDif * 1 * (wingKickUpHeight / God.wren.physics.straightDownDistance)));
-                }
-
-
-
-
-
-
 
             }
 
+            // get delta of the wing
+            float leftWingDif = (God.wren.physics.leftWing.position.y - God.wren.physics.rb.position.y);
+
+
+
+            if (leftWingDif < 0 && God.wren.physics.straightDownDistance < wingKickUpHeight)
+            {
+
+                emitPos = God.wren.physics.leftWing.position;
+                //emitPos += God.wren.transform.forward * God.wren.physics.vel.magnitude * .3f;
+                emitPos.y = God.wren.physics.straightDownIntersectionPosition.y;
+                leftWingParticles.transform.position = emitPos;
+                leftWingParticles.Emit((int)(-leftWingDif * 1 * (wingKickUpHeight / God.wren.physics.straightDownDistance)));
+            }
+
+
+
+            // get delta of the wing
+            float rightWingDif = (God.wren.physics.rightWing.position.y - God.wren.physics.rb.position.y);
+
+            if (rightWingDif < 0 && God.wren.physics.straightDownDistance < wingKickUpHeight)
+            {
+                emitPos = God.wren.physics.rightWing.position;
+                //emitPos += God.wren.transform.forward * God.wren.physics.vel.magnitude * .3f;
+                emitPos.y = God.wren.physics.straightDownIntersectionPosition.y;
+                rightWingParticles.transform.position = emitPos;
+                rightWingParticles.Emit((int)(-rightWingDif * 1 * (wingKickUpHeight / God.wren.physics.straightDownDistance)));
+            }
+
+
+
+
         }
+
     }
 }
+
