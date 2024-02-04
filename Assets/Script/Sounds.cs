@@ -38,6 +38,8 @@ public class Sounds : MonoBehaviour
     public AudioClip menuSelectClip;
     public AudioClip teleportClip;
 
+    public AudioClip skimGroundClip;
+
 
     public AudioClip dropParticlesLoop;
 

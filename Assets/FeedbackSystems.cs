@@ -8,6 +8,7 @@ public class FeedbackSystems : MonoBehaviour
 
 
     public LineRenderer currentTargetLineRenderer;
+    public ParticleSystem skimParticles;
 
 
     // Start is called before the first frame update

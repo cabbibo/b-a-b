@@ -26268,6 +26268,9 @@ MonoBehaviour:
   autoTakeOff: 1
   doInterface: 0
   lastFlapTime: 0
+  grazeAngleMax: 0.5
+  grazeForceMax: 20
+  autoTakeoffVelocityReducer: 0.2
 --- !u!54 &9160943688313912040
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -26411,8 +26414,8 @@ MonoBehaviour:
   tuckReduceUpdraftVal: 0.8
   windAmountToTheSide: 2
   groundForceTweenVal: 0.2
-  forwardExtraBoostOnTuck: 0
-  tuckDampeningReduction: 0
+  forwardExtraBoostOnTuck: 3
+  tuckDampeningReduction: 0.8
   velMatchMultiplier: 0
   bumperForce: 0
   groundPower: 10
@@ -26695,6 +26698,7 @@ MonoBehaviour:
   - NoGravity
   - NoGravity2
   - SmallBird
+  - Superflight1
   - Tutorial1
   - TutorialWrenRippedDemo(Clone)
   paramID: 0
