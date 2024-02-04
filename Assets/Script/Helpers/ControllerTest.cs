@@ -17,6 +17,9 @@ public class ControllerTest : MonoBehaviour
     public bool invertX;
     public bool invertY;
 
+    public Vector2 baseLeft;
+    public Vector2 baseRight;
+
     public Vector2 left;
     public Vector2 right;
 
@@ -104,8 +107,17 @@ public class ControllerTest : MonoBehaviour
         float invX = 1;//invertX ? -1:1;
         float invY = 1;//invertY ? -1:1;
 
+
+        baseLeft = new Vector2(player.GetAxis("leftX"), player.GetAxis("leftY"));
+        baseRight = new Vector2(player.GetAxis("rightX"), player.GetAxis("rightY"));
+
         left = new Vector2(player.GetAxis("leftX") * invX, player.GetAxis("leftY") * invY);
         right = new Vector2(player.GetAxis("rightX") * invX, player.GetAxis("rightY") * invY);
+
+
+        Remap();
+        //left = Remap(left, leftXRemap, leftYRemap);
+        //right = Remap(right, rightXRemap, rightYRemap);
 
         alwaysLeft = left;
         alwaysRight = right;
@@ -161,26 +173,57 @@ public class ControllerTest : MonoBehaviour
     }
 
 
-    public float leftY
+    public void Remap()
     {
-        get { return leftYRemap.Evaluate(Mathf.Abs(left.y)) * Mathf.Sign(left.y); }
-    }
+        // left = Remap(left, leftXRemap, leftYRemap);
 
-    public float leftX
-    {
-        get { return leftXRemap.Evaluate(Mathf.Abs(left.x)) * Mathf.Sign(left.x); }
-    }
+        Vector2 tmp = new Vector2(left.x, left.y);
+        left.x = tmp.x * (1 - tmp.y);
+        left.y = tmp.y * (1 - tmp.x);
 
 
-    public float rightY
-    {
-        get { return rightYRemap.Evaluate(Mathf.Abs(right.y)) * Mathf.Sign(right.y); }
+        //right = Remap(right, rightXRemap, rightYRemap);
+
+        tmp.Set(right.x, right.y);
+        right.x = tmp.x * (1 - tmp.y);
+        right.y = tmp.y * (1 - tmp.x);
+
+
     }
 
-    public float rightX
+    public Vector2 Remap(Vector2 input, AnimationCurve curveX, AnimationCurve curveY)
     {
-        get { return rightXRemap.Evaluate(Mathf.Abs(right.x)) * Mathf.Sign(right.x); }
+        Vector2 output = new Vector2(curveX.Evaluate(Mathf.Abs(input.x)) * Mathf.Sign(input.x), curveY.Evaluate(Mathf.Abs(input.y)) * Mathf.Sign(input.y));
+        return output;
     }
+
+
+
+
+
+
+
+
+    /* public float leftY
+     {
+         get { return leftYRemap.Evaluate(Mathf.Abs(left.y)) * Mathf.Sign(left.y); }
+     }
+
+     public float leftX
+     {
+         get { return leftXRemap.Evaluate(Mathf.Abs(left.x)) * Mathf.Sign(left.x); }
+     }
+
+
+     public float rightY
+     {
+         get { return rightYRemap.Evaluate(Mathf.Abs(right.y)) * Mathf.Sign(right.y); }
+     }
+
+     public float rightX
+     {
+         get { return rightXRemap.Evaluate(Mathf.Abs(right.x)) * Mathf.Sign(right.x); }
+     }*/
 
 
 

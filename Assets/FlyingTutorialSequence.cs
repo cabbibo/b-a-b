@@ -402,13 +402,13 @@ public class FlyingTutorialSequence : MonoBehaviour
         switch (hint)
         {
             case ControllerHint.Left:
-                return God.input.leftX < -.5f && God.input.rightX < -.5f;
+                return God.input.left.x < -.5f && God.input.right.x < -.5f;
             case ControllerHint.Right:
-                return God.input.leftX > .5f && God.input.rightX > .5f;
+                return God.input.left.x > .5f && God.input.right.x > .5f;
             case ControllerHint.Up:
-                return God.input.leftY > .5f && God.input.rightY > .5f;
+                return God.input.left.y > .5f && God.input.right.y > .5f;
             case ControllerHint.Down:
-                return God.input.leftY < -.5f && God.input.rightY < -.5f;
+                return God.input.left.y < -.5f && God.input.right.y < -.5f;
             case ControllerHint.Dive:
                 return God.input.l2 > .5f && God.input.r2 > .5f;
             case ControllerHint.Hold:
@@ -478,10 +478,10 @@ public class FlyingTutorialSequence : MonoBehaviour
     bool HandleSticksProgress(ref float t, float speed = 2f, bool gravity = true)
     {
         if (
-            Mathf.Abs(God.input.leftX) > .1f ||
-            Mathf.Abs(God.input.leftY) > .1f ||
-            Mathf.Abs(God.input.rightX) > .1f ||
-            Mathf.Abs(God.input.rightY) > .1f ||
+            Mathf.Abs(God.input.left.x) > .1f ||
+            Mathf.Abs(God.input.left.y) > .1f ||
+            Mathf.Abs(God.input.right.x) > .1f ||
+            Mathf.Abs(God.input.right.y) > .1f ||
 
             God.input.l2 > 0.1f ||
             God.input.r2 > 0.1f

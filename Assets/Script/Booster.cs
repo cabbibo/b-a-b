@@ -56,8 +56,8 @@ public class Booster : MonoBehaviour
         lastHitLocation = new Vector2(localPos.x, localPos.y);
 
         lifeBoostVal = .01f * fVel * boostVal * 1 / dist;
-        w.physics.rb.AddForce(-w.physics.vel);
-        w.physics.rb.AddForce(fVel * boostVal * 1 / dist);
+        w.physics.AddForce(-w.physics.vel);
+        w.physics.AddForce(fVel * boostVal * 1 / dist);
 
 
         currentScore = length(fVel * boostVal * 1 / dist);
