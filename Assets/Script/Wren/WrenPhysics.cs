@@ -5,6 +5,7 @@ using TMPro;
 using Normal.Realtime;
 using UnityEngine.UI;
 using WrenUtils;
+using UnityEngine.Rendering;
 
 
 public class WrenPhysics : MonoBehaviour
@@ -275,6 +276,9 @@ public class WrenPhysics : MonoBehaviour
 
     public int raycastDirections = 5;
 
+    public float maxAngle;
+    public float minAngle;
+
     /*
 
         TODO
@@ -342,6 +346,21 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+    public struct Force
+    {
+        public Vector3 force;
+        public Vector3 position;
+        public Force(Vector3 f, Vector3 p)
+        {
+            force = f;
+            position = p;
+        }
+    }
+    public List<Force> allForces = new List<Force>();
+    public List<Vector3> allTorques = new List<Vector3>();
+
+
+
     public void HitGround()
     {
 
@@ -370,10 +389,10 @@ public class WrenPhysics : MonoBehaviour
 
         rb.isKinematic = false;
         onGround = false;
-        rb.AddForce(-groundDirection * takeOffUpForce);
+        AddForce(-groundDirection * takeOffUpForce);
 
         //Vector3.Cross( Vector3.Cross( -groundNormal , transform.forward ).normalized , -groundNormal ).normalized;
-        rb.AddForce(Vector3.Cross(Vector3.Cross(-groundNormal, transform.forward).normalized, -groundNormal).normalized * takeOffForwardForce);
+        AddForce(Vector3.Cross(Vector3.Cross(-groundNormal, transform.forward).normalized, -groundNormal).normalized * takeOffForwardForce);
     }
 
     public void TransportToPosition(Vector3 pos, Vector3 vel)
@@ -431,6 +450,9 @@ public class WrenPhysics : MonoBehaviour
         }
 
 
+
+
+        ResolveForces();
 
 
     }
@@ -753,8 +775,8 @@ public class WrenPhysics : MonoBehaviour
 
         // This is where the 'yaw' should go
         // but as you can see it pretty much does nothing
-        //rb.AddForceAtPosition( transform.right * controller.leftX * twistForce2 , transform.position + transform.forward );
-        //rb.AddForceAtPosition( transform.right * controller.rightX * twistForce2 , transform.position + transform.forward );
+        //AddForce( transform.right * controller.leftX * twistForce2 , transform.position + transform.forward );
+        //AddForce( transform.right * controller.rightX * twistForce2 , transform.position + transform.forward );
 
 
         // dont add if going straight up
@@ -774,7 +796,7 @@ public class WrenPhysics : MonoBehaviour
         // dont take up into account
         fForce = Vector3.Scale(fForce, Vector3.forward + Vector3.right);
 
-        rb.AddForce(fForce);
+        AddForce(fForce);
     }
 
 
@@ -964,7 +986,7 @@ public class WrenPhysics : MonoBehaviour
         // if you are close enough to the surface!
         groundBoostForce = transform.forward * distToGroundVal * .01f * closeForwardBoostVal;
         groundBoostForcePosition = transform.position;
-        rb.AddForceAtPosition(groundBoostForce, groundBoostForcePosition);
+        AddForce(groundBoostForce, groundBoostForcePosition);
 
     }
 
@@ -1136,25 +1158,36 @@ public class WrenPhysics : MonoBehaviour
     void ApplyForces()
     {
 
-        rb.AddForceAtPosition(leftFlapForce, leftFlapForcePosition);
-        rb.AddForceAtPosition(rightFlapForce, rightFlapForcePosition);
-        rb.AddForceAtPosition(leftWingGravityForce, leftWingGravityForcePosition);
-        rb.AddForceAtPosition(rightWingGravityForce, rightWingGravityForcePosition);
-        rb.AddForceAtPosition(leftWingLiftForce, leftWingLiftForcePosition);
-        rb.AddForceAtPosition(rightWingLiftForce, rightWingLiftForcePosition);
-        rb.AddForceAtPosition(thrustForce, thrustForcePosition);
-        rb.AddForceAtPosition(leftWingUpdraftForce, leftWingUpdraftForcePosition);
-        rb.AddForceAtPosition(rightWingUpdraftForce, rightWingUpdraftForcePosition);
-        rb.AddForceAtPosition(groundBoostForce, groundBoostForcePosition);
-        rb.AddForceAtPosition(upwardsRightingForce, upwardsRightingForcePosition);
-        rb.AddForceAtPosition(horizonRightingForce, horizonRightingForcePosition);
-        rb.AddForceAtPosition(paintedWindForce, paintedWindForcePosition);
-        rb.AddForceAtPosition(bumperApplicationForceL, leftWing.position);
-        rb.AddForceAtPosition(bumperApplicationForceR, rightWing.position);
+        AddForce(leftFlapForce, leftFlapForcePosition);
+        AddForce(rightFlapForce, rightFlapForcePosition);
+        AddForce(leftWingGravityForce, leftWingGravityForcePosition);
+        AddForce(rightWingGravityForce, rightWingGravityForcePosition);
+        AddForce(leftWingLiftForce, leftWingLiftForcePosition);
+        AddForce(rightWingLiftForce, rightWingLiftForcePosition);
+        AddForce(thrustForce, thrustForcePosition);
+        AddForce(leftWingUpdraftForce, leftWingUpdraftForcePosition);
+        AddForce(rightWingUpdraftForce, rightWingUpdraftForcePosition);
+        AddForce(groundBoostForce, groundBoostForcePosition);
+        AddForce(upwardsRightingForce, upwardsRightingForcePosition);
+        AddForce(horizonRightingForce, horizonRightingForcePosition);
+        AddForce(paintedWindForce, paintedWindForcePosition);
+        AddForce(bumperApplicationForceL, leftWing.position);
+        AddForce(bumperApplicationForceR, rightWing.position);
 
         // Straightens out!
         v1 = Vector3.Cross(rb.velocity, transform.forward);
-        rb.AddTorque(v1 * velMatchMultiplier);
+        AddTorque(v1 * velMatchMultiplier);
+
+
+        float pitch = Mathf.Clamp(transform.localEulerAngles.x, -90, 90);
+        float yaw = transform.localEulerAngles.y;
+        float roll = transform.localEulerAngles.z;
+
+        //        print(pitch + " " + yaw + " " + roll);
+
+
+        // transform.localRotation = Quaternion.Euler(pitch, yaw, roll);
+
         // transform.rotation =  Quaternion.LookRotation(vel, transform.up);//transform.up);//,.1f);
     }
 
@@ -1215,10 +1248,10 @@ public class WrenPhysics : MonoBehaviour
 
             if (wren.state.inInterface == false)
             {
-                rb.AddForceAtPosition(transform.forward * input.rightY * groundPower, transform.position + transform.right * groundOut);
-                rb.AddForceAtPosition(transform.right * input.rightX * groundPower, transform.position + transform.right * groundOut);
-                rb.AddForceAtPosition(transform.forward * input.leftY * groundPower, transform.position - transform.right * groundOut);
-                rb.AddForceAtPosition(transform.right * input.leftX * groundPower, transform.position - transform.right * groundOut);
+                AddForce(transform.forward * input.rightY * groundPower, transform.position + transform.right * groundOut);
+                AddForce(transform.right * input.rightX * groundPower, transform.position + transform.right * groundOut);
+                AddForce(transform.forward * input.leftY * groundPower, transform.position - transform.right * groundOut);
+                AddForce(transform.right * input.leftX * groundPower, transform.position - transform.right * groundOut);
             }
 
 
@@ -1226,7 +1259,7 @@ public class WrenPhysics : MonoBehaviour
 
 
             Vector3 targetPos = wren.GroundIntersection(rb.position) + Vector3.up * groundUpVal;
-            rb.AddForce((targetPos - rb.position) * groundUpForce);
+            AddForce((targetPos - rb.position) * groundUpForce);
 
 
 
@@ -1260,9 +1293,9 @@ public class WrenPhysics : MonoBehaviour
 
                     targetPos = wren.GroundIntersection(targetPos) + Vector3.up * 10;
 
-                    rb.AddForce( (targetPos-rb.position) * 100 );
+                    AddForce( (targetPos-rb.position) * 100 );
 
-                    rb.AddForce(Vector3.up * -90);
+                    AddForce(Vector3.up * -90);
 
                     if( wren.state.inInterface == false ){
                         transform.LookAt( transform.position + transform.forward + transform.right * input.rightX * .02f + transform.up * input.rightY * .02f - transform.up * .01f * Vector3.Dot( transform.forward , Vector3.up ) ,new Vector3(0,1,0));
@@ -1288,13 +1321,14 @@ public class WrenPhysics : MonoBehaviour
         {
             Vector3 torque = new Vector3(0, input.rightX * basicGroundLookControls_lookSpeed, 0f);
 
-            rb.AddTorque(torque);
+
+            AddTorque(torque);
             // rb.AddTorque(transform.right * input.rightY * basicGroundLookControls_lookSpeed);
             //rb.AddTorque(transform.up * input.rightX * basicGroundLookControls_lookSpeed);
-            // rb.AddForceAtPosition(transform.forward * input.rightY * groundPower, transform.position + transform.right * groundOut);
-            //rb.AddForceAtPosition(transform.right * input.rightX * groundPower, transform.position + transform.right * groundOut);
-            //rb.AddForceAtPosition(transform.forward * input.leftY * groundPower, transform.position - transform.right * groundOut);
-            //rb.AddForceAtPosition(transform.right * input.leftX * groundPower, transform.position - transform.right * groundOut);
+            // AddForce(transform.forward * input.rightY * groundPower, transform.position + transform.right * groundOut);
+            //AddForce(transform.right * input.rightX * groundPower, transform.position + transform.right * groundOut);
+            //AddForce(transform.forward * input.leftY * groundPower, transform.position - transform.right * groundOut);
+            //AddForce(transform.right * input.leftX * groundPower, transform.position - transform.right * groundOut);
         }
 
 
@@ -1303,7 +1337,7 @@ public class WrenPhysics : MonoBehaviour
 
     public void Boost(float boostVal)
     {
-        rb.AddForce(rb.velocity * boostVal);
+        AddForce(rb.velocity * boostVal);
     }
 
 
@@ -1368,6 +1402,102 @@ public class WrenPhysics : MonoBehaviour
     {
         get { return Mathf.Clamp(vel.magnitude / maxSpeed, 0, 1); }
     }
+
+
+    public void AddForce(Vector3 force, Vector3 position)
+    {
+        allForces.Add(new Force(force, position));
+        // rb.AddForceAtPosition(force, position);
+    }
+
+    public void AddTorque(Vector3 torque)
+    {
+        allTorques.Add(torque);
+        //rb.AddTorque(torque);
+    }
+
+    public void AddForce(Vector3 force)
+    {
+
+        allForces.Add(new Force(force, rb.transform.position));
+        //  rb.AddForce(force);
+
+    }
+
+
+    public int totalForcesApplied;
+
+    public ComputeBuffer forceBuffer;
+    public float[] forceBufferArray;
+    public int maxForces;
+
+    public Material forceDebugMaterial;
+    MaterialPropertyBlock mpb;
+
+
+    public void ResolveForces()
+    {
+
+
+        totalForcesApplied = allForces.Count;
+
+        if (showDebugForces)
+        {
+
+
+            if (forceBuffer == null)
+            {
+                forceBuffer = new ComputeBuffer(maxForces, 6 * sizeof(float));
+                forceBufferArray = new float[maxForces * 6];
+            }
+
+            for (int i = 0; i < allForces.Count; i++)
+            {
+                forceBufferArray[i * 6 + 0] = allForces[i].force.x;
+                forceBufferArray[i * 6 + 1] = allForces[i].force.y;
+                forceBufferArray[i * 6 + 2] = allForces[i].force.z;
+                forceBufferArray[i * 6 + 3] = allForces[i].position.x;
+                forceBufferArray[i * 6 + 4] = allForces[i].position.y;
+                forceBufferArray[i * 6 + 5] = allForces[i].position.z;
+            }
+
+            forceBuffer.SetData(forceBufferArray);
+
+
+            if (mpb == null)
+            {
+                mpb = new MaterialPropertyBlock();
+            }
+
+            mpb.SetBuffer("_ForceBuffer", forceBuffer);
+            mpb.SetInt("_Count", maxForces);
+
+            Graphics.DrawProcedural(forceDebugMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, maxForces * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+
+        }
+
+
+
+        for (int i = 0; i < allForces.Count; i++)
+        {
+
+            Debug.DrawLine(allForces[i].position, allForces[i].position + allForces[i].force * .04f, Color.red, 1);
+            rb.AddForceAtPosition(allForces[i].force, allForces[i].position);
+        }
+
+        allForces.Clear();
+
+        for (int i = 0; i < allTorques.Count; i++)
+        {
+            rb.AddTorque(allTorques[i]);
+        }
+        allTorques.Clear();
+
+
+    }
+
+
+
 
 
 }

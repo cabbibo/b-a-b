@@ -98,9 +98,9 @@ public class WindTunnel : MonoBehaviour
 
 
 
-            God.wren.physics.rb.AddForce(finalInwardForce);
-            God.wren.physics.rb.AddForce(finalForwardForce);
-            God.wren.physics.rb.AddForce(finalDampenForce);
+            God.wren.physics.AddForce(finalInwardForce);
+            God.wren.physics.AddForce(finalForwardForce);
+            God.wren.physics.AddForce(finalDampenForce);
 
 
             God.wren.physics.rb.velocity = Vector3.Lerp(God.wren.physics.rb.velocity, closestForward * God.wren.physics.rb.velocity.magnitude, finalLerpToForward);
@@ -124,14 +124,14 @@ public class WindTunnel : MonoBehaviour
         if (oInsidePercentage > 0 && insidePercentage <= 0)
         {
             print("ENTER BOOST");
-            God.wren.physics.rb.AddForce(closestForward * onEnterForwardForce);
+            God.wren.physics.AddForce(closestForward * onEnterForwardForce);
         }
 
         if (oInsidePercentage <= 0 && insidePercentage > 0)
         {
 
             print("EXIT BOOST");
-            God.wren.physics.rb.AddForce(closestForward * onExitForwardForce);
+            God.wren.physics.AddForce(closestForward * onExitForwardForce);
         }
 
 

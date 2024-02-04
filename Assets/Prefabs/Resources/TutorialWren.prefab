@@ -26224,6 +26224,7 @@ MonoBehaviour:
   lastFlapTime: 0
   grazeAngleMax: 0
   grazeForceMax: 0
+  autoTakeoffVelocityReducer: 0
 --- !u!54 &9160943688313912040
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -26446,6 +26447,9 @@ MonoBehaviour:
   flapVelR: 0
   distToGroundVal: 0
   raycastDirections: 5
+  maxAngle: 0
+  minAngle: 0
+  allTorques: []
   straightDownIntersectionPosition: {x: 0, y: 0, z: 0}
   straightDownIntersectionNormal: {x: 0, y: 0, z: 0}
   straightDownDistance: 0
@@ -26458,6 +26462,10 @@ MonoBehaviour:
   doBasicGroundControls: 0
   basicGroundLookControls_lookSpeed: 0
   basicGroundLookControls_moveSpeed: 0
+  totalForcesApplied: 0
+  forceBufferArray: []
+  maxForces: 0
+  forceDebugMaterial: {fileID: 0}
 --- !u!114 &6676056819307743982
 MonoBehaviour:
   m_ObjectHideFlags: 0

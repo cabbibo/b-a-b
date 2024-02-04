@@ -34,7 +34,7 @@ public class Updraft : MonoBehaviour
 
             if (!God.wren.state.onGround)
             {
-                God.wren.physics.rb.AddForce(Vector3.up * upForce);
+                God.wren.physics.AddForce(Vector3.up * upForce);
             }
         }
 
