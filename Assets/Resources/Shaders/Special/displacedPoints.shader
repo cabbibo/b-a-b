@@ -120,6 +120,8 @@
 
                 pos += _Center;*/
 
+                float3 debugPos = pos;
+
 
                 pos += curlNoise(pos *_NoiseSize)* _NoiseOffset * _GridSize/float(_Dimensions);
 
@@ -137,6 +139,7 @@
                 pos += dirToWren * .3 * float(whichDir) * _Size ;
 
 
+                pos = debugPos;
 
                 o.dist = max( max( abs( pos.x-_Center.x) ,   abs(pos.y-_Center.y)), abs(pos.z-_Center.z));//  minRemainder;
 
@@ -221,7 +224,7 @@
                 
                 //col.xyz *= normalize( v.dirToWren) * .5 + .5;
 
-                col.xyz *= v.disform * v.disform* .1;
+                col.xyz *= v.disform * v.disform* .3;
 
                 //col = tex2D(_MainTex,v.uv);
                 col *= _Fade;

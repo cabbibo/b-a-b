@@ -67,7 +67,6 @@ namespace WrenUtils
 
 
 
-
         private static God _instance;
         public static God instance
         {

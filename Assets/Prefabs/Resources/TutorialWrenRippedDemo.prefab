@@ -26265,7 +26265,7 @@ MonoBehaviour:
   rt_Tranform: {fileID: 9160943688313912047}
   canMove: 0
   growth: {fileID: 1447400220214749194}
-  autoTakeOff: 1
+  autoTakeOff: 0
   doInterface: 0
   lastFlapTime: 0
   grazeAngleMax: 0.5
