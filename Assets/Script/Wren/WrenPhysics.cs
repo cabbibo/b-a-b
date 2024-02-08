@@ -1441,8 +1441,17 @@ public class WrenPhysics : MonoBehaviour
 
         totalForcesApplied = allForces.Count;
 
+
+        if (allForces.Count == 0)
+        {
+            return;
+        }
+
+
         if (showDebugForces)
         {
+
+
 
 
             if (forceBuffer == null)
@@ -1464,16 +1473,6 @@ public class WrenPhysics : MonoBehaviour
             forceBuffer.SetData(forceBufferArray);
 
 
-            if (mpb == null)
-            {
-                mpb = new MaterialPropertyBlock();
-            }
-
-            mpb.SetBuffer("_ForceBuffer", forceBuffer);
-            mpb.SetInt("_Count", maxForces);
-
-            Graphics.DrawProcedural(forceDebugMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, maxForces * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-
         }
 
 
@@ -1494,6 +1493,25 @@ public class WrenPhysics : MonoBehaviour
         allTorques.Clear();
 
 
+    }
+
+    public void Update()
+    {
+
+        if (forceBuffer != null)
+        {
+            if (mpb == null)
+            {
+                mpb = new MaterialPropertyBlock();
+            }
+
+            mpb.SetBuffer("_ForceBuffer", forceBuffer);
+            mpb.SetInt("_Count", maxForces);
+
+            Graphics.DrawProcedural(forceDebugMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, maxForces * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+
+
+        }
     }
 
 

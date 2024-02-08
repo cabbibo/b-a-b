@@ -10,6 +10,7 @@ namespace IMMATERIA
     {
 
         public bool AllInEditMode;
+        public bool PhysicsInEditMode;
         private static God _instance;
 
         public bool started;
@@ -185,6 +186,8 @@ namespace IMMATERIA
             if (_instance == null) { _instance = this; }
 
 #if UNITY_EDITOR
+
+
         EditorApplication.update += Always;
 
          Reset();
@@ -251,9 +254,18 @@ namespace IMMATERIA
         void Always()
         {
 #if UNITY_EDITOR
-  if( AllInEditMode ){
+  if( AllInEditMode || PhysicsInEditMode){
     if(!godPause) EditorApplication.QueuePlayerLoopUpdate();
   }
+
+  if( PhysicsInEditMode ){
+    if(!godPause) {
+        Physics.autoSimulation = false;
+        Physics.Simulate(Time.fixedDeltaTime);
+        Physics.autoSimulation = true;
+    }
+  }
+
 #endif
         }
 
