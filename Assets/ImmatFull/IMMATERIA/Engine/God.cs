@@ -260,9 +260,12 @@ namespace IMMATERIA
 
   if( PhysicsInEditMode ){
     if(!godPause) {
+              if (!Application.isPlaying)
+            {
         Physics.autoSimulation = false;
         Physics.Simulate(Time.fixedDeltaTime);
         Physics.autoSimulation = true;
+            }
     }
   }
 

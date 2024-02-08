@@ -26841,6 +26841,10 @@ MonoBehaviour:
   maxExcitment: 0
   maxQuenchedness: 0
   maxAge: 0
+  debugStats: 0
+  debugStatsMaterial: {fileID: 0}
+  allStats: 5
+  debugStatsArray: []
 --- !u!1 &9160943688594033059
 GameObject:
   m_ObjectHideFlags: 0
