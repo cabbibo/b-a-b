@@ -9,6 +9,7 @@ public class WrenStats : MonoBehaviour
     public Wren wren;
     public WrenState state;
 
+
     public float health; // this goes to 0 and you die
     public float stamina; // this goes to 0 you can't flap? also your health starts going down?
     public float fullness; // this goes to 0 and you fly very slowly ( health also goes down? ) // refill by eating bugs!
@@ -19,6 +20,7 @@ public class WrenStats : MonoBehaviour
     public float excitment; // this is how we reward people for  doing cooler stuff when you are close to the surface etc.
 
     public float age; // this is a general 'progression' where you get faster and can turn better the older you are?
+    public float boost;
 
     public float maxHealth;
     public float maxStamina;
@@ -28,6 +30,8 @@ public class WrenStats : MonoBehaviour
     public float maxHappiness;
     public float maxExcitment;
     public float maxQuenchedness;
+
+    public float maxBoost;
 
 
     public float maxAge;
@@ -167,6 +171,22 @@ public class WrenStats : MonoBehaviour
     }
 
 
+    public void BoostAdd(float boostAddAmount)
+    {
+
+        bool alreadyMax = boost == maxBoost;
+        boost += boostAddAmount;
+        if (boost > maxBoost && !alreadyMax)
+        {
+            boost = maxBoost;
+        }
+
+
+        boost = Mathf.Clamp(boost, 0, maxBoost);
+
+
+    }
+
 
     public void ResetStats()
     {
@@ -217,18 +237,18 @@ public class WrenStats : MonoBehaviour
 
 
 
-            debugStatsArray[0] = health;
-            debugStatsArray[1] = maxHealth;
-            debugStatsArray[2] = stamina;
-            debugStatsArray[3] = maxStamina;
-            debugStatsArray[4] = awakeness;
-            debugStatsArray[5] = maxAwakeness;
-            debugStatsArray[6] = fullness;
-            debugStatsArray[7] = maxFullness;
-            debugStatsArray[8] = quenchedness;
-            debugStatsArray[9] = maxQuenchedness;
-            debugStatsArray[10] = dryness;
-            debugStatsArray[11] = maxDryness;
+            debugStatsArray[0] = stamina;
+            debugStatsArray[1] = maxStamina;
+            debugStatsArray[2] = health;
+            debugStatsArray[3] = maxHealth;
+            debugStatsArray[4] = fullness;
+            debugStatsArray[5] = maxFullness;
+            debugStatsArray[6] = quenchedness;
+            debugStatsArray[7] = maxQuenchedness;
+            debugStatsArray[8] = wren.physics.furthestHeight - wren.physics.rawDistToGround;
+            debugStatsArray[9] = wren.physics.furthestHeight;
+            debugStatsArray[10] = wren.physics.speed;
+            debugStatsArray[11] = wren.physics.maxSpeed;
 
 
             _debugStatsBuffer.SetData(debugStatsArray);

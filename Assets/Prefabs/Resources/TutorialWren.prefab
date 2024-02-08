@@ -26779,6 +26779,9 @@ MonoBehaviour:
   healthRefillSpeed: 0.001
   healthRefillSpeedMin: 0
   healthRefillSpeedMax: 0.01
+  boostCooldownTime: 0
+  boostSubtractor: 0
+  boostRefillSpeed: 0
   hungerGrowSpeed: 0.00003
   hungerGrowSpeedMin: 0
   hungerGrowSpeedMax: 0.01
@@ -26809,6 +26812,9 @@ MonoBehaviour:
   sadnessHealthSubtractor: 0
   boredomHealthSubtractor: 0
   satisfiedHealthAdder: 0.0003
+  satisfiedCutOff: 0
+  ultraSatisfiedHealthAdder: 0
+  ultraSatisfiedCutOff: 0
 --- !u!114 &6744424082612651983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26832,6 +26838,7 @@ MonoBehaviour:
   happiness: 0
   excitment: 0
   age: 0
+  boost: 0
   maxHealth: 0
   maxStamina: 0
   maxFullness: 0
@@ -26840,6 +26847,7 @@ MonoBehaviour:
   maxHappiness: 0
   maxExcitment: 0
   maxQuenchedness: 0
+  maxBoost: 0
   maxAge: 0
   debugStats: 0
   debugStatsMaterial: {fileID: 0}
