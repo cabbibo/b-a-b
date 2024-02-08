@@ -26197,7 +26197,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &9160943688313912038
 Transform:
   m_ObjectHideFlags: 0
@@ -26812,7 +26812,7 @@ MonoBehaviour:
   networkInfo: {fileID: 0}
   state: {fileID: 9156686790671013125}
   stats: {fileID: 6744424082612651983}
-  hurtCollisionMultiplier: 0
+  hurtCollisionMultiplier: 0.01
   hurtCollisionCutoff: 0
   flapStaminaSubtractor: 0.05
   flapStaminaSubtractorMin: 0
@@ -26826,7 +26826,10 @@ MonoBehaviour:
   healthRefillSpeed: 0.001
   healthRefillSpeedMin: 0
   healthRefillSpeedMax: 0.01
-  hungerGrowSpeed: 0.00003
+  boostCooldownTime: 0
+  boostSubtractor: 0
+  boostRefillSpeed: 0
+  hungerGrowSpeed: 0.00006
   hungerGrowSpeedMin: 0
   hungerGrowSpeedMax: 0.01
   wetnessGrowSpeed: 0
@@ -26850,12 +26853,15 @@ MonoBehaviour:
   boredomGrowSpeed: 0
   boredomGrowSpeedMin: 0
   boredomGrowSpeedMax: 0
-  hungryHealthSubtractor: 0
+  hungryHealthSubtractor: 0.0001
   thirstyHealthSubtractor: 0
   tiredHealthSubtractor: 0
   sadnessHealthSubtractor: 0
   boredomHealthSubtractor: 0
   satisfiedHealthAdder: 0.0003
+  satisfiedCutOff: 0.5
+  ultraSatisfiedHealthAdder: 0.001
+  ultraSatisfiedCutOff: 0.9
 --- !u!114 &6744424082612651983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26879,6 +26885,7 @@ MonoBehaviour:
   happiness: 0
   excitment: 0
   age: 0
+  boost: 0
   maxHealth: 0
   maxStamina: 0
   maxFullness: 0
@@ -26887,6 +26894,7 @@ MonoBehaviour:
   maxHappiness: 0
   maxExcitment: 0
   maxQuenchedness: 0
+  maxBoost: 0
   maxAge: 0
   debugStats: 1
   debugStatsMaterial: {fileID: 2100000, guid: d92d98770794aba44a94dad72aca9e1c, type: 2}

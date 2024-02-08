@@ -19,6 +19,8 @@ public class WrenGrowthManager : MonoBehaviour
     public float flapStaminaSubtractorMax;
 
 
+
+
     public float staminaCooldownTime = 1;
     public float staminaCooldownTimeMin = 0;
     public float staminaCooldownTimeMax = 1000;
@@ -30,6 +32,11 @@ public class WrenGrowthManager : MonoBehaviour
     public float healthRefillSpeed;
     public float healthRefillSpeedMin = 0;
     public float healthRefillSpeedMax = 0;
+
+
+    public float boostCooldownTime;
+    public float boostSubtractor;
+    public float boostRefillSpeed;
 
     public float hungerGrowSpeed;
     public float hungerGrowSpeedMin;
@@ -81,6 +88,13 @@ public class WrenGrowthManager : MonoBehaviour
 
     public float satisfiedHealthAdder;
 
+    public float satisfiedCutOff;
+
+
+
+    public float ultraSatisfiedHealthAdder;
+
+    public float ultraSatisfiedCutOff;
 
 
 
@@ -125,7 +139,8 @@ public class WrenGrowthManager : MonoBehaviour
     {
 
 
-        float d = Mathf.Abs(wren.input.o_left2 - wren.input.left2);
+        float d = -Mathf.Clamp(wren.input.o_left2 - wren.input.left2, -1, 0);
+
         stats.StaminaAdd(-d * flapStaminaSubtractor);
 
         if (d > 0)
@@ -133,7 +148,7 @@ public class WrenGrowthManager : MonoBehaviour
             lastFlapTime = Time.time;
         }
 
-        d = Mathf.Abs(wren.input.o_right2 - wren.input.right2);
+        d = -Mathf.Clamp(wren.input.o_right2 - wren.input.right2, -1, 0);
         stats.StaminaAdd(-d * flapStaminaSubtractor);
 
         if (d > 0)
@@ -184,12 +199,22 @@ public class WrenGrowthManager : MonoBehaviour
         }
 
 
-        if (stats.fullness > .5 && stats.quenchedness > .5 && stats.awakeness > .8)
+        if (stats.fullness > satisfiedCutOff && stats.quenchedness > satisfiedCutOff && stats.awakeness > satisfiedCutOff)
         {
 
             stats.HealthAdd(satisfiedHealthAdder);
 
         }
+
+
+
+        if (stats.fullness > ultraSatisfiedCutOff && stats.quenchedness > ultraSatisfiedCutOff && stats.awakeness > ultraSatisfiedCutOff)
+        {
+
+            stats.HealthAdd(ultraSatisfiedHealthAdder);
+
+        }
+
 
 
 

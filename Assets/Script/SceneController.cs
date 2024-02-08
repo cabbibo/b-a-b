@@ -174,7 +174,7 @@ public class SceneController : MonoBehaviour
     public void Death()
     {
         God.state.SetCurrentBiome(-1);
-        HardLoad(0);
+        HardLoad(God.state.currentSceneID);
     }
 
 

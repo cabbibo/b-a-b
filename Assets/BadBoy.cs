@@ -463,6 +463,8 @@ public class BadBoy : MonoBehaviour
 
             mpb.SetBuffer("_ForceBuffer", forceBuffer);
             mpb.SetInt("_Count", maxForces);
+            mpb.SetMatrix("_Transform", transform.localToWorldMatrix);
+            mpb.SetMatrix("_BirdTransform", fTransform.localToWorldMatrix);
 
             Graphics.DrawProcedural(forceDebugMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, maxForces * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
 
@@ -470,12 +472,21 @@ public class BadBoy : MonoBehaviour
         }
     }
 
+    public float eatAmount = 1;
+
     public void OnCollisionEnter(Collision collision)
     {
 
         if (collision.gameObject.tag == "Wren")
         {
-            OnEnable();
+            //OnEnable();
+
+            if (God.IsOurWren(collision.collider))
+            {
+
+                print(-collision.relativeVelocity.magnitude * .1f * eatAmount);
+                God.wren.stats.HealthAdd(-collision.relativeVelocity.magnitude * .1f * eatAmount);
+            }
         }
 
 

@@ -80,6 +80,7 @@ varyings vert (uint id : SV_VertexID){
     float2 v = _StatsBuffer[whichStat];
 
     float filledAmount = v.x/v.y;
+    filledAmount = clamp(filledAmount,0,1);
 
     float3 basePos = mul(_Transform, float4(0,0,0,1)).xyz;
     float3 baseRight =  normalize(mul(_Transform, float4(1,0,0,0)).xyz);
