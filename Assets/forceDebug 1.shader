@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
-Shader "Debug/ForceDebug" {
+Shader "Debug/StatsDebug" {
     Properties {
 
     _Color ("Color", Color) = (1,1,1,1)
@@ -24,11 +24,6 @@ Shader "Debug/ForceDebug" {
       #include "Assets/Resources/Shaders/Chunks/hsv.cginc"
 
           
-    struct Force{
-      float3 force;
-      float3 pos;
-    };
-
 
 
 
@@ -40,7 +35,7 @@ Shader "Debug/ForceDebug" {
       uniform float3 _Color;
 
       
-      StructuredBuffer<Force> _ForceBuffer;
+      StructuredBuffer<float2> _StatsBuffer;
 
 
       //uniform float4x4 worldMat;
@@ -75,7 +70,7 @@ varyings vert (uint id : SV_VertexID){
     
     float2 uv = float2(0,0);
 
-    Force v = _ForceBuffer[base];
+    float2 v = _StatBuffer[base];
     
 
       float3 d = v.force;//normalize(v.force);

@@ -26197,7 +26197,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &9160943688313912038
 Transform:
   m_ObjectHideFlags: 0
@@ -26814,13 +26814,13 @@ MonoBehaviour:
   stats: {fileID: 6744424082612651983}
   hurtCollisionMultiplier: 0
   hurtCollisionCutoff: 0
-  flapStaminaSubtractor: 0
+  flapStaminaSubtractor: 0.05
   flapStaminaSubtractorMin: 0
   flapStaminaSubtractorMax: 0
-  staminaCooldownTime: 3
-  staminaCooldownTimeMin: 0
+  staminaCooldownTime: 1
+  staminaCooldownTimeMin: 1
   staminaCooldownTimeMax: 1000
-  staminaRefillSpeed: 0.0003
+  staminaRefillSpeed: 0.01
   staminaRefillSpeedMin: 0
   staminaRefillSpeedMax: 0.01
   healthRefillSpeed: 0.001
@@ -26888,6 +26888,10 @@ MonoBehaviour:
   maxExcitment: 0
   maxQuenchedness: 0
   maxAge: 0
+  debugStats: 1
+  debugStatsMaterial: {fileID: 2100000, guid: d92d98770794aba44a94dad72aca9e1c, type: 2}
+  allStats: 6
+  debugStatsArray: []
 --- !u!114 &2761764884134458057
 MonoBehaviour:
   m_ObjectHideFlags: 0

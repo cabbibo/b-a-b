@@ -50,7 +50,7 @@ public class WrenGrowthManager : MonoBehaviour
     public float sleepGrowSpeed;
     public float sleepGrowSpeedMin;
     public float sleepGrowSpeedMax;
-    
+
     public float sleepRefillSpeed;
     public float sleepRefillSpeedMin;
     public float sleepRefillSpeedMax;
@@ -61,7 +61,7 @@ public class WrenGrowthManager : MonoBehaviour
     public float thirstGrowSpeedMin;
     public float thirstGrowSpeedMax;
 
-    
+
 
     public float sadnessGrowSpeed;
     public float sadnessGrowSpeedMin;
@@ -72,7 +72,7 @@ public class WrenGrowthManager : MonoBehaviour
     public float boredomGrowSpeedMax;
 
 
-    
+
     public float hungryHealthSubtractor;
     public float thirstyHealthSubtractor;
     public float tiredHealthSubtractor;
@@ -104,83 +104,96 @@ public class WrenGrowthManager : MonoBehaviour
 
 
     //TODO: do we need to pass state on this one?
-    public void HurtCollision(Collision c){
+    public void HurtCollision(Collision c)
+    {
 
 
-        if( state.isLocal){
+        if (state.isLocal)
+        {
 
-            stats.HealthAdd( -c.relativeVelocity.magnitude * hurtCollisionMultiplier );
-            God.audio.Play( God.sounds.hurtClip );
-            if( God.glitchHit != null ){ God.glitchHit.StartGlitch(); }
-        
+            stats.HealthAdd(-c.relativeVelocity.magnitude * hurtCollisionMultiplier);
+            God.audio.Play(God.sounds.hurtClip);
+            if (God.glitchHit != null) { God.glitchHit.StartGlitch(); }
+
         }
     }
 
 
 
     float lastFlapTime;
-    public void updateGrowth(){
+    public void updateGrowth()
+    {
 
 
-            float d = Mathf.Abs( wren.input.o_left2 - wren.input.left2);
-            stats.StaminaAdd( -d * flapStaminaSubtractor );
+        float d = Mathf.Abs(wren.input.o_left2 - wren.input.left2);
+        stats.StaminaAdd(-d * flapStaminaSubtractor);
 
-            if( d > 0 ){
-                lastFlapTime = Time.time;
-            }
+        if (d > 0)
+        {
+            lastFlapTime = Time.time;
+        }
 
-            d = Mathf.Abs( wren.input.o_right2 - wren.input.right2);
-            stats.StaminaAdd( -d * flapStaminaSubtractor );
+        d = Mathf.Abs(wren.input.o_right2 - wren.input.right2);
+        stats.StaminaAdd(-d * flapStaminaSubtractor);
 
-            if( d > 0 ){
-                lastFlapTime = Time.time;
-            }
-
-            if( state.onGround ){
-                staminaCooldownTime = 0;
-            }
-            
-            
-            if( Time.time - lastFlapTime  > staminaCooldownTime ){
-                stats.StaminaAdd( staminaRefillSpeed);
-            }
+        if (d > 0)
+        {
+            lastFlapTime = Time.time;
+        }
 
 
-            healthRefillSpeed = Mathf.Clamp( healthRefillSpeed, healthRefillSpeedMin , healthRefillSpeedMax );
-            hungerGrowSpeed = Mathf.Clamp( hungerGrowSpeed, hungerGrowSpeedMin , hungerGrowSpeedMax );
-            sleepGrowSpeed = Mathf.Clamp( sleepGrowSpeed, sleepGrowSpeedMin , sleepGrowSpeedMax );
-            thirstGrowSpeed = Mathf.Clamp( thirstGrowSpeed, thirstGrowSpeedMin , thirstGrowSpeedMax );
+        // dont auto refill on ground
+        if (state.onGround)
+        {
+            //  staminaCooldownTime = 0;
+        }
 
 
-            // update our thirst, sleep and hunger stats
-            stats.FullnessAdd( -hungerGrowSpeed );
-            stats.QuenchednessAdd( -thirstGrowSpeed );
-            stats.AwakenessAdd( -sleepGrowSpeed );
+        if (Time.time - lastFlapTime > staminaCooldownTime)
+        {
+            stats.StaminaAdd(staminaRefillSpeed);
+        }
 
 
-            // start killing if are too cold
-            if( stats.fullness == 0 ){
-                stats.HealthAdd(-hungryHealthSubtractor);
-            }
-
-            if( stats.quenchedness == 0 ){
-                stats.QuenchednessAdd(-thirstyHealthSubtractor);
-            }
-
-            if( stats.awakeness == 0 ){
-                stats.AwakenessAdd(-tiredHealthSubtractor);
-            }
+        healthRefillSpeed = Mathf.Clamp(healthRefillSpeed, healthRefillSpeedMin, healthRefillSpeedMax);
+        hungerGrowSpeed = Mathf.Clamp(hungerGrowSpeed, hungerGrowSpeedMin, hungerGrowSpeedMax);
+        sleepGrowSpeed = Mathf.Clamp(sleepGrowSpeed, sleepGrowSpeedMin, sleepGrowSpeedMax);
+        thirstGrowSpeed = Mathf.Clamp(thirstGrowSpeed, thirstGrowSpeedMin, thirstGrowSpeedMax);
 
 
-            if( stats.fullness > .5 && stats.quenchedness > .5 && stats.awakeness > .8 ){
-
-                stats.HealthAdd( satisfiedHealthAdder );
-
-            }
-    
+        // update our thirst, sleep and hunger stats
+        stats.FullnessAdd(-hungerGrowSpeed);
+        stats.QuenchednessAdd(-thirstGrowSpeed);
+        stats.AwakenessAdd(-sleepGrowSpeed);
 
 
-        
+        // start killing if are too cold
+        if (stats.fullness == 0)
+        {
+            stats.HealthAdd(-hungryHealthSubtractor);
+        }
+
+        if (stats.quenchedness == 0)
+        {
+            stats.QuenchednessAdd(-thirstyHealthSubtractor);
+        }
+
+        if (stats.awakeness == 0)
+        {
+            stats.AwakenessAdd(-tiredHealthSubtractor);
+        }
+
+
+        if (stats.fullness > .5 && stats.quenchedness > .5 && stats.awakeness > .8)
+        {
+
+            stats.HealthAdd(satisfiedHealthAdder);
+
+        }
+
+
+
+
 
 
     }

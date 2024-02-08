@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using WrenUtils;
 
 [ExecuteAlways]
@@ -38,11 +39,20 @@ public class BadBoy : MonoBehaviour
 
     public List<Vector3> forces = new List<Vector3>();
 
+    public int tailLength;
+    public Transform[] tailTransforms;
+
+    public Transform tailHolder;
+    public GameObject tailPrefab;
+    public float tailFollowLerp;
+    public float trailMaxScale;
+
 
     // params
     public float distanceForLooseInterest = 10;
     public float distanceForGainIntereset = 7;
     public float distanceForHunt = 6;
+
 
 
 
@@ -143,10 +153,24 @@ public class BadBoy : MonoBehaviour
         rb.position = new Vector3(Random.Range(-10, 10), Random.Range(-10, 10), Random.Range(-10, 10)) + cage.position;
         transform.position = rb.transform.position;
         rb.velocity = transform.forward * minSpeed;
+
+        while (tailHolder.childCount > 0)
+        {
+            DestroyImmediate(tailHolder.GetChild(0).gameObject);
+        }
+
+        tailTransforms = new Transform[tailLength];
+        for (int i = 0; i < tailLength; i++)
+        {
+            GameObject g = Instantiate(tailPrefab, tailHolder);
+            tailTransforms[i] = g.transform;
+        }
+
+
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         oDistToWren = distToWren;
         oDirectionToWren = directionToWren;
@@ -328,17 +352,6 @@ public class BadBoy : MonoBehaviour
             // Vector3 crossTorque = Vector3.Cross(rb.velocity, transform.forward);
             //rb.AddTorque(crossTorque * turnTowardsVelocityForce);
 
-
-
-
-
-
-
-
-
-
-
-
             /*
 
                 
@@ -355,23 +368,17 @@ public class BadBoy : MonoBehaviour
             */
 
 
-            // draw line to wren
 
-            if (isFocusingOnWren || isHuntingWren)
-            {
-                focusLR.enabled = true;
-                focusLR.SetPosition(0, transform.position);
-                focusLR.SetPosition(1, fTransform.position);
-            }
-            else
-            {
-                focusLR.enabled = false;
-                focusLR.SetPosition(0, transform.position);
-                focusLR.SetPosition(1, transform.position);
 
+            if (isHuntingWren && oIsHuntingWren == false)
+            {
+                // God.wren.cameraWork.objectTargeted = transform;
             }
 
-
+            if (isHuntingWren == false && oIsHuntingWren == true)
+            {
+                //   God.wren.cameraWork.objectTargeted = null;
+            }
 
 
 
@@ -390,6 +397,77 @@ public class BadBoy : MonoBehaviour
 
 
 
+
+
+        // update tail
+
+        tailTransforms[0].position = Vector3.Lerp(tailTransforms[0].position, transform.position, tailFollowLerp);
+        tailTransforms[0].LookAt(transform.position);
+
+        for (int i = tailLength - 1; i > 0; i--)
+        {
+            tailTransforms[i].position = Vector3.Lerp(tailTransforms[i].position, tailTransforms[i - 1].position, tailFollowLerp);
+            tailTransforms[i].LookAt(tailTransforms[i - 1].position);
+
+
+            float n = (i / (float)tailLength);
+            float fScale = Mathf.Min(n * 10, (1 - n));
+            tailTransforms[i].localScale = Vector3.one * fScale * trailMaxScale;
+        }
+
+
+
+
+    }
+
+    void Update()
+    {
+
+
+        Transform fTransform = debugTransform;
+
+        if (God.wren != null)
+        {
+            fTransform = God.wren.transform;
+        }
+
+        /*
+
+           GPU VIZ
+
+           */
+
+
+        // draw line to wren
+
+        if (isFocusingOnWren || isHuntingWren)
+        {
+            focusLR.enabled = true;
+            focusLR.SetPosition(0, transform.position);
+            focusLR.SetPosition(1, fTransform.position);
+        }
+        else
+        {
+            focusLR.enabled = false;
+            focusLR.SetPosition(0, transform.position);
+            focusLR.SetPosition(1, transform.position);
+
+        }
+
+        if (forceBuffer != null)
+        {
+            if (mpb == null)
+            {
+                mpb = new MaterialPropertyBlock();
+            }
+
+            mpb.SetBuffer("_ForceBuffer", forceBuffer);
+            mpb.SetInt("_Count", maxForces);
+
+            Graphics.DrawProcedural(forceDebugMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, maxForces * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+
+
+        }
     }
 
     public void OnCollisionEnter(Collision collision)
@@ -402,8 +480,9 @@ public class BadBoy : MonoBehaviour
 
 
         rb.position = rb.position + collision.contacts[0].normal * 2;
-        rb.velocity = collision.impulse.normalized * 10;
-        transform.LookAt(collision.contacts[0].point + collision.impulse.normalized * 10);
+        rb.velocity = collision.impulse.normalized * 1;
+        rb.angularVelocity = Vector3.zero;
+        transform.LookAt(collision.contacts[0].point + collision.impulse.normalized * 1);
     }
 
 
