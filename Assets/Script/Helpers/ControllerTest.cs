@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Rewired;
 
+
+[ExecuteAlways]
 public class ControllerTest : MonoBehaviour
 {
 
@@ -99,9 +101,15 @@ public class ControllerTest : MonoBehaviour
     void Update()
     {
 
-        if (player == null)
+        player = ReInput.players.GetPlayer(0);
+        /*if (player == null)
         {
             player = ReInput.players.GetPlayer(0);
+        }*/
+
+        if (player == null)
+        {
+            return;
         }
 
         float invX = 1;//invertX ? -1:1;

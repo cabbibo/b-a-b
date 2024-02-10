@@ -27,5 +27,13 @@ public class ParticleSystems : MonoBehaviour
     public ParticleSystem deathParticleSystem;
 
 
+    public void Emit(ParticleSystem particleSystem, Vector3 position, int amount)
+    {
+        particleSystem.transform.position = position;
+        particleSystem.Emit(amount);
+    }
+
+
+
 
 }

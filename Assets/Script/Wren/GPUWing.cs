@@ -10,8 +10,15 @@ public class GPUWing : MonoBehaviour
     public FullBird bird;
     public Wing1 wing;
 
+
+
+
     public Material featherDebugMaterial;
     public Material featherMaterial;
+
+
+    public bool debugFeatherPoints;
+    public bool drawFeathers = true;
 
 
     public int numberLesserCovertsRows;
@@ -212,11 +219,25 @@ public class GPUWing : MonoBehaviour
             mpb.SetInt("_TrisPerMesh", trisPerMesh);
             mpb.SetInt("_NumberMeshes", meshes.Length);
 
+            /*    if (debugLinePoints)
+                {
+                    Graphics.DrawProcedural(lineDebugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, totalLinePoints * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+                }
+
+           */
 
 
-            // Graphics.DrawProcedural( featherDebugMaterial ,  new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles,renderedFeathers * 3 * 2 , 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-            Graphics.DrawProcedural(featherMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * trisPerMesh, 1, null, mpb, ShadowCastingMode.TwoSided, true, gameObject.layer);
+            if (debugFeatherPoints)
+            {
+                Graphics.DrawProcedural(featherDebugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * 3 * 2 * 4, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+            }
 
+            if (drawFeathers)
+            {
+                // Graphics.DrawProcedural( featherDebugMaterial ,  new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles,renderedFeathers * 3 * 2 , 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+                Graphics.DrawProcedural(featherMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * trisPerMesh, 1, null, mpb, ShadowCastingMode.TwoSided, true, gameObject.layer);
+
+            }
 
         }
 

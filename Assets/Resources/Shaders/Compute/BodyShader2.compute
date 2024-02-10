@@ -161,12 +161,12 @@ float3 line1(float val ){
 
 float3 positions[7] = {
   head + headF * .9 - headR * .2 - headU * .3,
-    head + headF * .3 - headR * .5,
-    neck - neckR * 1 - neckF * .2,
-    wingLeft - wingLeftR * .5 + wingLeftF + wingLeftU * .2,
-    wingLeft - wingLeftR * .5 - wingLeftF + wingLeftU * .1,
-    tailBase - tailBaseR * .7,
-    tailBase - tailLeftF * 1.2 - tailLeftR * .3
+  head + headF * .3 - headR * .5,
+  neck - neckR * 1 - neckF * .2,
+  wingLeft - wingLeftR * .5 + wingLeftF + wingLeftU * .2,
+  wingLeft - wingLeftR * .5 - wingLeftF + wingLeftU * .1,
+  tailBase - tailBaseR * .7,
+  tailBase - tailLeftF * 1.2 - tailLeftR * .3
 };
 
 return cubicFromValue7( val , positions);
@@ -446,7 +446,7 @@ void body( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out fl
     float rowVal = float( idInLine ) / float(_NumScapularRows);
     float inRowVal = float( whichLine )/ float( _NumScapularColumns);
 
-    inRowVal += float(idInLine)* .005;//618f;
+    inRowVal += float(idInLine)* .001;//618f;
     inRowVal %= 1;
   
     float3 pos1[8] = {
@@ -483,13 +483,26 @@ void body( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out fl
     float3 backDirection = p-p2;
     float3 leftRight = p1 - p3;
 
+    if( length(backDirection) < .001 ){ backDirection = float3(0,0,.001);}
+    if( length(leftRight) < .001 ){ leftRight = float3(.001,0,0);}
+
     backDirection = normalize(backDirection);
     leftRight = normalize(leftRight);
 
-    float3 up = normalize(cross(leftRight,backDirection));
+  
+    float3 up = cross(leftRight,backDirection);
 
-    float3 newBackDir = normalize(backDirection );
-    float3 newUp = -up;//normalize(cross(leftRight,newBackDir));
+    if( length(up) < 100 ){ up = float3(0,1,0);}
+
+
+    up = float3(0,1,0);
+    up = normalize(up);
+
+
+
+    float3 newBackDir = backDirection;// normalize( backDirection );
+    float3 newUp = up;//normalize(cross(leftRight,newBackDir));
+
 
 
   
@@ -500,6 +513,11 @@ void body( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out fl
     fUp = newUp;
     fScale = scale;
     fPos = p;    
+
+
+    
+
+    
        
     fFwd += cross( fUp , fFwd ) * _BaseDirectionLeftRightNoise * (hash(float(id * 10))-.5);
     fFwd += fUp  * _BaseDirectionUpNoise * ((hash(float(id * 30)))-.5);
@@ -512,6 +530,8 @@ void body( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out fl
     fScale  = (.5-abs(rowVal-.5)) * _MiddleScapularFeatherScaleMultiplier + _BaseScapularFeatherScale;// (1  * (1-lerpVal) + 4 ) ;
     fScale  += _BaseNoiseScale * (hash(float(int(id)* 50)) - .5);// snoise(fPos * _BaseNoiseSize);
 
+
+      
 
 
    
