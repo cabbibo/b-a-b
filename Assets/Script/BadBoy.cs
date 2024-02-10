@@ -16,6 +16,8 @@ public class BadBoy : MonoBehaviour
     public GameObject body;
 
 
+
+
     public Transform[] transformsOfInterest;
 
 
@@ -39,13 +41,17 @@ public class BadBoy : MonoBehaviour
 
     public List<Vector3> forces = new List<Vector3>();
 
-    public int tailLength;
-    public Transform[] tailTransforms;
+    public int trailLength;
+    public Transform[] trailTransforms;
+    public bool[] trailsAte;
 
-    public Transform tailHolder;
-    public GameObject tailPrefab;
-    public float tailFollowLerp;
+
+
+    public Transform trailHolder;
+    public GameObject trailPrefab;
+    public float trailFollowLerp;
     public float trailMaxScale;
+    public float trailMinScale;
 
 
     // params
@@ -154,20 +160,68 @@ public class BadBoy : MonoBehaviour
         transform.position = rb.transform.position;
         rb.velocity = transform.forward * minSpeed;
 
-        while (tailHolder.childCount > 0)
+        while (trailHolder.childCount > 0)
         {
-            DestroyImmediate(tailHolder.GetChild(0).gameObject);
+            DestroyImmediate(trailHolder.GetChild(0).gameObject);
         }
 
-        tailTransforms = new Transform[tailLength];
-        for (int i = 0; i < tailLength; i++)
+        trailTransforms = new Transform[trailLength];
+        trailsAte = new bool[trailLength];
+        for (int i = 0; i < trailLength; i++)
         {
-            GameObject g = Instantiate(tailPrefab, tailHolder);
-            tailTransforms[i] = g.transform;
+            GameObject g = Instantiate(trailPrefab, trailHolder);
+            g.GetComponent<BadBoyTrailSegment>().badBoy = this;
+            g.GetComponent<BadBoyTrailSegment>().trailID = i;
+            trailTransforms[i] = g.transform;
+            trailTransforms[i].GetComponent<MeshRenderer>().sharedMaterial.SetColor("_Color", Color.green);
+
         }
 
 
     }
+
+
+
+    public int numShardsOnEat = 2;
+    public int numShardsOnAllAte = 50;
+    public void OnWrenAte(int id)
+    {
+
+        trailTransforms[id].GetComponent<MeshRenderer>().material.SetColor("_Color", Color.red);
+        trailsAte[id] = true;
+        God.audio.Play(God.sounds.eatClip, Random.Range(.5f, 1));
+        God.particleSystems.Emit(God.particleSystems.eatParticleSystem, trailTransforms[id].position, 100);
+        God.wren.shards.CollectShards(numShardsOnEat);
+
+
+        bool allAte = true;
+        for (int i = 0; i < trailsAte.Length; i++)
+        {
+            if (trailsAte[i] == false)
+            {
+                allAte = false;
+            }
+        }
+
+        if (allAte)
+        {
+            OnAllAte();
+        }
+
+
+
+
+    }
+
+    void OnAllAte()
+    {
+        God.audio.Play(God.sounds.largeSuccessSound, 1);
+        God.particleSystems.Emit(God.particleSystems.largeSuccessParticleSystem, transform.position, 1000);
+
+
+        God.wren.shards.CollectShards(numShardsOnAllAte);
+    }
+
 
     // Update is called once per frame
     void FixedUpdate()
@@ -399,21 +453,32 @@ public class BadBoy : MonoBehaviour
 
 
 
-        // update tail
+        /*
 
-        tailTransforms[0].position = Vector3.Lerp(tailTransforms[0].position, transform.position, tailFollowLerp);
-        tailTransforms[0].LookAt(transform.position);
 
-        for (int i = tailLength - 1; i > 0; i--)
+            Trail stuff
+
+
+        */
+
+        trailTransforms[0].position = Vector3.Lerp(trailTransforms[0].position, transform.position, trailFollowLerp);
+        trailTransforms[0].LookAt(transform.position);
+
+        for (int i = trailLength - 1; i > 0; i--)
         {
-            tailTransforms[i].position = Vector3.Lerp(tailTransforms[i].position, tailTransforms[i - 1].position, tailFollowLerp);
-            tailTransforms[i].LookAt(tailTransforms[i - 1].position);
+            trailTransforms[i].position = Vector3.Lerp(trailTransforms[i].position, trailTransforms[i - 1].position, trailFollowLerp);
+            trailTransforms[i].LookAt(trailTransforms[i - 1].position);
 
 
-            float n = (i / (float)tailLength);
+            float n = (i / (float)trailLength);
             float fScale = Mathf.Min(n * 10, (1 - n));
-            tailTransforms[i].localScale = Vector3.one * fScale * trailMaxScale;
+            bool isAte = trailsAte[i];
+            float extraScale = isAte ? .1f : 1;
+            trailTransforms[i].localScale = Vector3.one * extraScale * Mathf.Lerp(trailMinScale, trailMaxScale, fScale);
         }
+
+
+
 
 
 
@@ -477,23 +542,24 @@ public class BadBoy : MonoBehaviour
     public void OnCollisionEnter(Collision collision)
     {
 
-        if (collision.gameObject.tag == "Wren")
+        //  print("helllo");
+        //OnEnable();
+
+        if (God.IsOurWren(collision.collider))
         {
-            //OnEnable();
+            print(-collision.relativeVelocity.magnitude * .1f * eatAmount);
+            God.wren.stats.HealthAdd(-collision.relativeVelocity.magnitude * .1f * eatAmount);
+        }
+        else
+        {
 
-            if (God.IsOurWren(collision.collider))
-            {
+            rb.position = rb.position + collision.contacts[0].normal * 2;
+            rb.velocity = collision.impulse.normalized * 1;
+            rb.angularVelocity = Vector3.zero;
+            transform.LookAt(collision.contacts[0].point + collision.impulse.normalized * 1);
 
-                print(-collision.relativeVelocity.magnitude * .1f * eatAmount);
-                God.wren.stats.HealthAdd(-collision.relativeVelocity.magnitude * .1f * eatAmount);
-            }
         }
 
-
-        rb.position = rb.position + collision.contacts[0].normal * 2;
-        rb.velocity = collision.impulse.normalized * 1;
-        rb.angularVelocity = Vector3.zero;
-        transform.LookAt(collision.contacts[0].point + collision.impulse.normalized * 1);
     }
 
 

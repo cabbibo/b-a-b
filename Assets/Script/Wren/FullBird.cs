@@ -3,8 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+[ExecuteAlways]
 public class FullBird : MonoBehaviour
 {
+
+
+
+
 
    public float eyeSize;
    public float beakSize;
@@ -15,8 +20,12 @@ public class FullBird : MonoBehaviour
    public Material bodyMaterial;
    public Material wingMaterial;
 
+   public Material wingDebugMaterial;
+   public Material bodyDebugMaterial;
 
    public Transform specialTarget;
+
+   [Range(0, 1)]
    public float percentageRendered;
 
 
@@ -202,7 +211,8 @@ public class FullBird : MonoBehaviour
 
 
       leftWing_gpu.shader = wingShader;
-      leftWing_gpu.featherDebugMaterial = wingMaterial;
+      leftWing_gpu.featherDebugMaterial = wingDebugMaterial;
+      leftWing_gpu.featherMaterial = wingMaterial;
 
       leftWing_gpu.primaryFeather = primaryFeather;
       leftWing_gpu.secondaryFeather = secondaryFeather;
@@ -221,7 +231,8 @@ public class FullBird : MonoBehaviour
 
 
       rightWing_gpu.shader = wingShader;
-      rightWing_gpu.featherDebugMaterial = wingMaterial;
+      rightWing_gpu.featherDebugMaterial = wingDebugMaterial;
+      rightWing_gpu.featherMaterial = wingMaterial;
 
       rightWing_gpu.primaryFeather = primaryFeather;
       rightWing_gpu.secondaryFeather = secondaryFeather;
@@ -238,7 +249,8 @@ public class FullBird : MonoBehaviour
       rightWing_gpu.bird = this;
 
       body_gpu.shader = bodyShader;
-      body_gpu.featherDebugMaterial = bodyMaterial;
+      body_gpu.featherMaterial = bodyMaterial;
+      body_gpu.featherDebugMaterial = bodyDebugMaterial;
 
       body_gpu.scapularFeather = scapularFeather;
       body_gpu.tailFeather = tailFeather;
@@ -365,6 +377,9 @@ public class FullBird : MonoBehaviour
          beak.localScale = Vector3.Lerp(beak.localScale, wren._ScaleMultiplier * Vector3.one * beakSize, .05f);
       }
 
+
+      SetUpDebug();
+      SetUpDraw();
 
    }
 
@@ -661,6 +676,50 @@ public class FullBird : MonoBehaviour
       rightWingTrailFromFeathers_gpu.mpb.SetFloat("_Hue4", wren.state.hue4);
 
 
+
+   }
+
+
+   public bool debugHierarchyConnections;
+   public bool debugHierarchyBasis;
+   public DebugHierarchy debugHierarchy;
+
+   public void SetUpDebug()
+   {
+
+      debugHierarchy.debugConnections = debugHierarchyConnections;
+      debugHierarchy.debugBasis = debugHierarchyBasis;
+
+   }
+
+
+
+   public bool drawBodyFeather;
+   public bool drawLeftWingFeathers;
+   public bool drawRightWingFeathers;
+
+
+
+   // debug values
+   public bool drawLeftWingFeatherPoints;
+   public bool drawRightWingFeatherPoints;
+
+   public bool drawBodyPoints;
+   public bool drawBodyFeatherPoints;
+
+
+
+   public void SetUpDraw()
+   {
+      leftWing_gpu.drawFeathers = drawLeftWingFeathers;
+      rightWing_gpu.drawFeathers = drawRightWingFeathers;
+      body_gpu.drawFeathers = drawBodyFeather;
+
+      leftWing_gpu.debugFeatherPoints = drawLeftWingFeatherPoints;
+      rightWing_gpu.debugFeatherPoints = drawRightWingFeatherPoints;
+      body_gpu.debugFeatherPoints = drawBodyFeatherPoints;
+
+      body_gpu.debugLinePoints = drawBodyPoints;
 
    }
 

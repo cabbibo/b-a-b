@@ -696,6 +696,8 @@ MonoBehaviour:
   featherDebugMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201,
     type: 2}
   featherMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
+  debugFeatherPoints: 0
+  drawFeathers: 1
   numberLesserCovertsRows: 30
   numberLesserCovertsCols: 30
   numberPrimaryFeathers: 30
@@ -1039,6 +1041,8 @@ MonoBehaviour:
   wingShader: {fileID: 7200000, guid: a0db877c85463b9489bf7e6b4a374b1b, type: 3}
   bodyMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a, type: 2}
   wingMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
+  wingDebugMaterial: {fileID: 0}
+  bodyDebugMaterial: {fileID: 0}
   specialTarget: {fileID: 0}
   percentageRendered: 1
   _MiddleSecondaryFeatherScaleMultiplier: 2
@@ -1135,6 +1139,16 @@ MonoBehaviour:
   rightEye: {fileID: 398320342855464717}
   beak: {fileID: 7643670994601658526}
   _ResetLocation: {x: 0, y: 0, z: 0}
+  debugHierarchyConnections: 0
+  debugHierarchyBasis: 0
+  debugHierarchy: {fileID: 0}
+  drawBodyFeather: 0
+  drawLeftWingFeathers: 0
+  drawRightWingFeathers: 0
+  drawLeftWingFeatherPoints: 0
+  drawRightWingFeatherPoints: 0
+  drawBodyPoints: 0
+  drawBodyFeatherPoints: 0
 --- !u!114 &3416387734954001582
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1967,6 +1981,8 @@ MonoBehaviour:
   featherDebugMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201,
     type: 2}
   featherMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
+  debugFeatherPoints: 0
+  drawFeathers: 1
   numberLesserCovertsRows: 30
   numberLesserCovertsCols: 30
   numberPrimaryFeathers: 30
@@ -2108,6 +2124,7 @@ MonoBehaviour:
   output: {fileID: 687666779572013910}
   setFromController: 0
   setFromWren: 1
+  overrideInput: 0
   controller: {fileID: 0}
   lerpSpeed: 0.2
   leftWingTuck: 0
@@ -2135,6 +2152,9 @@ MonoBehaviour:
   p_rightWingTwistUp: {fileID: 687666778284187050}
   p_rightWingTwistDown: {fileID: 687666779608037176}
   p_rightWingStop: {fileID: 2096485536014676255}
+  towardsTargetForce: 0
+  dampening: 0
+  totalBones: 16
 --- !u!1 &687666779608037178
 GameObject:
   m_ObjectHideFlags: 0
@@ -3763,6 +3783,7 @@ MonoBehaviour:
   wren: {fileID: 9160943688313912041}
   trailRenderer: {fileID: 5709695029943021687}
   normDist: 0
+  lerpSpeed: 0
 --- !u!96 &5709695029943021687
 TrailRenderer:
   serializedVersion: 3
@@ -15918,6 +15939,7 @@ MonoBehaviour:
   wren: {fileID: 9160943688313912041}
   trailRenderer: {fileID: 8597892187239963033}
   normDist: 0
+  lerpSpeed: 0
 --- !u!96 &8597892187239963033
 TrailRenderer:
   serializedVersion: 3
@@ -26219,6 +26241,7 @@ MonoBehaviour:
   rt_Tranform: {fileID: 9160943688313912047}
   canMove: 0
   growth: {fileID: 1447400220214749194}
+  shards: {fileID: 0}
   autoTakeOff: 0
   doInterface: 0
   lastFlapTime: 0

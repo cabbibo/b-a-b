@@ -30,6 +30,7 @@ public class Sounds : MonoBehaviour
 
     public AudioClip raceFinishLoop;
 
+    public AudioClip eatClip;
 
     public AudioClip hurtClip;
     public AudioClip hitGroundClip;

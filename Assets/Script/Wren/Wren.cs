@@ -69,6 +69,8 @@ public class Wren : MonoBehaviour
 
     public WrenGrowthManager growth;
 
+    public WrenShardManager shards;
+
     public bool autoTakeOff;
 
     public bool doInterface;
@@ -661,7 +663,9 @@ public class Wren : MonoBehaviour
         God.audio.Play(God.sounds.skimGroundClip, c.impulse.magnitude / 10f);
         God.feedbackSystems.skimParticles.transform.position = c.contacts[0].point;
         God.feedbackSystems.skimParticles.Emit(100);
-        physics.AddForce(c.impulse.normalized * c.impulse.magnitude * 10);
+        physics.AddForce(c.impulse.normalized * c.impulse.magnitude * 1);
+        physics.AddForce((physics.rb.velocity.normalized + c.contacts[0].normal) * 100);
+
     }
 
     public void Crash(Collision c)

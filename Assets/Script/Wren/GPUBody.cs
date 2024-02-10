@@ -99,6 +99,10 @@ public class GPUBody : MonoBehaviour
             Vector3[] positions = meshes[i].vertices;
             Vector3[] normals = meshes[i].normals;
             Vector2[] uvs = meshes[i].uv;
+            //Colors[] colors = meshes[i].colors;
+
+
+            print(positions.Length);
 
             for (int j = 0; j < meshes[i].vertices.Length; j++)
             {
@@ -111,8 +115,18 @@ public class GPUBody : MonoBehaviour
                 values[baseID + j * 8 + 4] = normals[j].y;
                 values[baseID + j * 8 + 5] = normals[j].z;
 
-                values[baseID + j * 8 + 6] = uvs[j].x;
-                values[baseID + j * 8 + 7] = uvs[j].y;
+                if (j < uvs.Length)
+                {
+
+                    values[baseID + j * 8 + 6] = uvs[j].x;
+                    values[baseID + j * 8 + 7] = uvs[j].y;
+                }
+                else
+                {
+
+                    values[baseID + j * 8 + 6] = 0;
+                    values[baseID + j * 8 + 7] = 0;
+                }
 
             }
 
@@ -227,7 +241,7 @@ public class GPUBody : MonoBehaviour
 
             if (debugFeatherPoints)
             {
-                Graphics.DrawProcedural(featherDebugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+                Graphics.DrawProcedural(featherDebugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * 3 * 2 * 4, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
             }
 
             if (drawFeathers)

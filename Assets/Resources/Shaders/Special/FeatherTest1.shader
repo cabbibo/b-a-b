@@ -132,6 +132,8 @@ Vert v = _VertBuffer[_TriBuffer[alternate + whichMesh * _TrisPerMesh]];
       if( whichMesh == 1 ){ o.hue = _Hue2;}
       if( whichMesh == 2 ){ o.hue = _Hue3;}
       if( whichMesh == 3 ){ o.hue = _Hue4;}
+
+
       //o.data1 = feather.newData1;
       o.nor = normalize(mul( baseMatrix , float4(v.nor,0)).xyz);
       o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
@@ -200,13 +202,15 @@ shadowCol += .3;
     float b = length(col);
 
 
-    tCol = tex2D(_FullColorMap , float2( v.hue , v.baseHue )).xyz;
+    tCol = tex2D(_FullColorMap , float2( -m * .3 + v.feather * .3 , v.baseHue )).xyz;
 
     col.xyz *= (tCol * 1 + 1.4);//normalize( col*col) * b * b * 4;
     //col = saturate(col/.8)*.8;
 
 
     col = pow(length(col),2) * col * m * m;
+
+    col = tCol;
 
 
     //col = v.nor * .5 +.5;
