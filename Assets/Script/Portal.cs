@@ -26,6 +26,9 @@ public class Portal : MonoBehaviour
     public Transform collisionPointFront;
     public Transform collisionPointBack;
 
+    public MeshRenderer gateRenderer;
+    public MeshRenderer portalRenderer;
+
 
 
 
@@ -58,7 +61,8 @@ public class Portal : MonoBehaviour
         }
 
         collision = c;
-        System.Action doEnd = () => {
+        System.Action doEnd = () =>
+        {
             if (demo)
             {
                 God.sceneController.EndDemo(this);
@@ -74,21 +78,42 @@ public class Portal : MonoBehaviour
         {
             God.wren.physics.rb.velocity = Vector3.zero;
             God.wren.physics.rb.angularVelocity = Vector3.zero;
-            FlyingTutorialSequence.Instance.TryEndDemo(endConfirmed => {
+            FlyingTutorialSequence.Instance.TryEndDemo(endConfirmed =>
+            {
                 if (endConfirmed)
                 {
                     doEnd();
-                } else {
+                }
+                else
+                {
                     God.wren.physics.rb.velocity = Vector3.zero;
                     God.wren.physics.rb.angularVelocity = Vector3.zero;
-                    God.wren.PhaseShift(new Vector3(-5150,507,-659));
+                    God.wren.PhaseShift(new Vector3(-5150, 507, -659));
                 }
             });
-        } else {
+        }
+        else
+        {
             doEnd();
         }
 
 
     }
+
+
+    public void OpenPortal()
+    {
+        collider.enabled = true;
+        portalRenderer.enabled = true;
+    }
+
+    public void SetPortalOff()
+    {
+        collider.enabled = false;
+        portalRenderer.enabled = false;
+
+    }
+
+
 
 }
