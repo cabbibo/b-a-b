@@ -146,6 +146,15 @@ public class FullBird : MonoBehaviour
    public Transform spine;
    public Transform hip;
 
+   public Transform leftHip;
+   public Transform leftKnee;
+   public Transform leftFoot;
+
+
+   public Transform rightHip;
+   public Transform rightKnee;
+   public Transform rightFoot;
+
    public float shoulderWidth;
 
    public float hipToTail;
@@ -158,6 +167,12 @@ public class FullBird : MonoBehaviour
    public float shoulderToElbow;
    public float elbowToHand;
    public float handToFinger;
+
+
+
+   public float hipSpread;
+   public float hipToKnee;
+   public float kneeToFoot;
 
 
 
@@ -340,6 +355,8 @@ public class FullBird : MonoBehaviour
 
       leftWing.transform.localPosition = -Vector3.right * wren._ScaleMultiplier * shoulderWidth;
       rightWing.transform.localPosition = Vector3.right * wren._ScaleMultiplier * shoulderWidth;
+
+
 
 
 
