@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Cloud
-  m_Shader: {fileID: 4800000, guid: d44777945928f1a4e95dc7ed13489131, type: 3}
+  m_Name: CloudGPU
+  m_Shader: {fileID: 4800000, guid: 06c1664e566a36647a69ab340a7667cb, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -67,9 +67,9 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
-    - _Glossiness: 0
+    - _Glossiness: 0.318
     - _GlossyReflections: 1
-    - _Metallic: 0
+    - _Metallic: 0.214
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
@@ -79,6 +79,8 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.7122642, g: 0.7122642, b: 0.7122642, a: 0.43529412}
-    - _EmissionColor: {r: 0.2971698, g: 0.2971698, b: 0.2971698, a: 1}
+    - _Color: {r: 0.7987421, g: 0.7987421, b: 0.7987421, a: 0.43529412}
+    - _EmissionColor: {r: 0.11320752, g: 0.11320752, b: 0.11320752, a: 1}
+    - _Light1: {r: 143.81459, g: 85.331696, b: 12.129974, a: 502.9}
+    - _LightCol: {r: 0.8616352, g: 0.70177203, b: 0.70177203, a: 1}
   m_BuildTextureStacks: []
