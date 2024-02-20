@@ -29,7 +29,8 @@ public class PushableCloudCPUEditor : Editor
 public class PushableCloudCPU : MonoBehaviour
 {
     public bool debug = false;
-    
+    public bool renderTinyParticles = false;
+
     [SerializeField] int particleCount = 1000;
     [SerializeField] Mesh particleMesh;
     [SerializeField] Material particleMaterial;
@@ -134,15 +135,17 @@ public class PushableCloudCPU : MonoBehaviour
             
             particleMatrices[i].SetTRS(bigParticles[i].position, Quaternion.identity, Vector3.one * s * 50);
 
-            
-            for (int j = 0; j < PARTICLES_PER_CLOUD; j++)
+            if (renderTinyParticles)
             {
-                Random.InitState(i + j * 1000);
-                var pos = bigParticles[i].position + Random.onUnitSphere * s *.5f;
-                var t = (Random.value + Time.time * ( 1 / lifetime)) % 1;
-                pos += Random.onUnitSphere * t * 2.5f;
-                var ns = sizeCurve.Evaluate(t) * tinyParticleSize;
-                tinyParticlesMatrices[i * PARTICLES_PER_CLOUD + j].SetTRS(pos, Quaternion.identity, Vector3.one * ns * 50);
+                for (int j = 0; j < PARTICLES_PER_CLOUD; j++)
+                {
+                    Random.InitState(i + j * 1000);
+                    var pos = bigParticles[i].position + Random.onUnitSphere * s *.5f;
+                    var t = (Random.value + Time.time * ( 1 / lifetime)) % 1;
+                    pos += Random.onUnitSphere * t * 2.5f;
+                    var ns = sizeCurve.Evaluate(t) * tinyParticleSize;
+                    tinyParticlesMatrices[i * PARTICLES_PER_CLOUD + j].SetTRS(pos, Quaternion.identity, Vector3.one * ns * 50);
+                }
             }
 
 
@@ -159,7 +162,8 @@ public class PushableCloudCPU : MonoBehaviour
     private void RenderParticles()
     {
         Graphics.DrawMeshInstanced(particleMesh, 0, particleMaterial, particleMatrices);
-        Graphics.DrawMeshInstanced(particleMesh, 0, particleMaterial, tinyParticlesMatrices);
+        if (renderTinyParticles)
+            Graphics.DrawMeshInstanced(particleMesh, 0, particleMaterial, tinyParticlesMatrices);
     }
 
     void OnDrawGizmos()
