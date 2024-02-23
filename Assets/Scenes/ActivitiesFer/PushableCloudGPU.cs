@@ -26,6 +26,21 @@ public class PushableCloudGPUEditor : Editor
         {
             myScript.ResetParticles();
         }
+        using (new GUILayout.HorizontalScope())
+        {
+            if (GUILayout.Button("Load"))
+            {
+                myScript.TryLoadParticles();
+            }
+            if (GUILayout.Button("Save"))
+            {
+                myScript.SaveParticles();
+            }
+            if (GUILayout.Button("Clear"))
+            {
+                myScript.ClearSavedParticle();
+            }
+        }
         var s = SceneView.lastActiveSceneView.sceneViewState;
         s.alwaysRefresh = true;
         SceneView.lastActiveSceneView.sceneViewState = s;
@@ -67,6 +82,7 @@ public class PushableCloudGPU : MonoBehaviour
     [Header("Transforms")]
     [SerializeField] Transform player;
     [SerializeField] float dampen = 2;
+    [SerializeField] bool returnToOriginalShape = true;
 
     [System.Serializable]
     public class BrushData
@@ -99,6 +115,7 @@ public class PushableCloudGPU : MonoBehaviour
     public Vector3 PlayerPosition { get { return player.position; }}
     public Vector3 PlayerForward { get { return player.forward; }}
 
+    [System.Serializable]
     struct BigParticle {
         public Vector3 startPosition;
         public Vector3 position;
@@ -113,6 +130,8 @@ public class PushableCloudGPU : MonoBehaviour
         public float size;
         public float life;
     }
+
+    [SerializeField] BigParticle[] _savedParticles;
 
     BigParticle[] bigParticles;
     TinyParticle[] tinyParticles;
@@ -169,15 +188,18 @@ public class PushableCloudGPU : MonoBehaviour
         particleMatrices = new Matrix4x4[particleCount];
         tinyParticlesMatrices = new Matrix4x4[particleCount * PARTICLES_PER_CLOUD];
 
-        for (int i = 0; i < particleCount; i++)
+        if (!TryLoadParticles())
         {
-            bigParticles[i].position = bigParticles[i].startPosition = transform.position + new Vector3(Random.Range(-areaSize.x, areaSize.x), Random.Range(-areaSize.y, areaSize.y), Random.Range(-areaSize.z, areaSize.z)) * .5f;
-            bigParticles[i].velocity = Random.onUnitSphere * .1f;
-            bigParticles[i].life = Random.value;
-            foreach(var b in GetComponentsInChildren<PushableCloudGPUBrush>())
+            for (int i = 0; i < particleCount; i++)
             {
-                if (b.brushData.hole)
-                    HoleParticle(i, b);
+                bigParticles[i].position = bigParticles[i].startPosition = transform.position + new Vector3(Random.Range(-areaSize.x, areaSize.x), Random.Range(-areaSize.y, areaSize.y), Random.Range(-areaSize.z, areaSize.z)) * .5f;
+                bigParticles[i].velocity = Random.onUnitSphere * .1f;
+                bigParticles[i].life = Random.value;
+                foreach(var b in GetComponentsInChildren<PushableCloudGPUBrush>())
+                {
+                    if (b.brushData.hole)
+                        HoleParticle(i, b);
+                }
             }
         }
     }
@@ -244,12 +266,12 @@ public class PushableCloudGPU : MonoBehaviour
 
 
             // GEt back go start position
-            // if (bigParticles[i].life < 0)
-            // {
-            //     bigParticles[i].position = Vector3.Lerp(bigParticles[i].position, bigParticles[i].startPosition, -bigParticles[i].life);
-            //     if (bigParticles[i].life < -1)
-            //         bigParticles[i].life = 1;
-            // }
+            if (returnToOriginalShape && bigParticles[i].life < 0)
+            {
+                bigParticles[i].position = Vector3.Lerp(bigParticles[i].position, bigParticles[i].startPosition, -bigParticles[i].life);
+                if (bigParticles[i].life < -1)
+                    bigParticles[i].life = 1;
+            }
         }
     }
 
@@ -286,4 +308,32 @@ public class PushableCloudGPU : MonoBehaviour
         // Gizmos.DrawWireSphere(PlayerPosition + PlayerForward * playerForwardAmount, playerPushRadius);
     }
     
+    // Editor
+
+    internal void SaveParticles()
+    {
+        _savedParticles = new BigParticle[bigParticles.Length];
+        for (int i = 0; i < bigParticles.Length; i++)
+        {
+            _savedParticles[i] = bigParticles[i];
+            _savedParticles[i].startPosition = bigParticles[i].startPosition;
+        }
+    }
+    internal void ClearSavedParticle()
+    {
+        _savedParticles = null;
+    }
+    internal bool TryLoadParticles()
+    {
+        // copy the array
+        if (_savedParticles == null || _savedParticles.Length == 0) return false;
+        particleCount = _savedParticles.Length;
+        bigParticles = new BigParticle[_savedParticles.Length];
+        for (int i = 0; i < bigParticles.Length; i++)
+        {
+            bigParticles[i] = _savedParticles[i];
+            bigParticles[i].startPosition = _savedParticles[i].position;
+        }
+        return true;
+    }
 }

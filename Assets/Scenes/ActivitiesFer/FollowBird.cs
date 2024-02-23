@@ -46,6 +46,7 @@ public class FollowBirdEditor : Editor
 }
 #endif
 
+[ExecuteAlways()]
 public class FollowBird : MonoBehaviour
 {
     public Transform player;
@@ -79,14 +80,13 @@ public class FollowBird : MonoBehaviour
         if (playerTouching)
         {
             _lastTouchTime = Time.time;
-            moveSpeed *= 5;
+            moveSpeed *= 3;
         }
         
         if (_moving)
         {
             _curveTime += Time.deltaTime * moveSpeed;
             _lastCurvePosition = curve.GetPositionAlongPath(_curveTime);
-            transform.position = _lastCurvePosition;
 
             if (Time.time - _lastTouchTime > 11)
                 _moving = false;
@@ -96,6 +96,12 @@ public class FollowBird : MonoBehaviour
             if (dtp < startMovingRadius)
                 _moving = true;
         }
+        var wiggle = new Vector3(
+            Mathf.Sin(Time.time * 20) * 0.2f,
+            Mathf.Sin(Time.time * 30) * 0.2f,
+            Mathf.Sin(Time.time * 24) * 0.2f
+        );
+        transform.position = _lastCurvePosition + wiggle;
     }
 
     void OnDrawGizmos()

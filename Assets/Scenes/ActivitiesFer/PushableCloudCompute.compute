@@ -1,14 +1,97 @@
-// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+#pragma kernel InitializeParticle
+#pragma kernel UpdateParticle
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-RWTexture2D<float4> Result;
+struct BigParticle {
+    float3 startPosition;
+    float3 position;
+    float3 velocity;
+    float size;
+    float life;
+};
 
-[numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+struct BrushData
 {
-    // TODO: insert actual code here!
+    float3 position;
+    float3 forward;
+    float forwardAmount;
+    float pushForce;
+    float vortexForce;
+    float holeFalloff;
+    float sizeDelta;
+    float radius;
+    int hole;
+    int holeConstant;
+};
 
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+struct Brush
+{
+    BrushData brushData;
+    float3 position;
+    float radius;
+};
+
+struct PushableCloudGPUBrush
+{
+    Brush brush;
+};
+
+RWStructuredBuffer<BigParticle> bigParticles;
+RWStructuredBuffer<PushableCloudGPUBrush> brushes;
+RWStructuredBuffer<float4x4> particleMatrices;
+
+float dampen;
+float bigParticleSize;
+float startSize;
+float meshSize;
+uint particleCount;
+int brushCount;
+float _Time;
+
+void HoleParticle(int i, int b)
+{
+    
+}
+
+void PushParticle(int i, int b)
+{
+    
+}
+
+[numthreads(256,1,1)]
+void InitializeParticle (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= particleCount) return;
+    int i = id.x;
+    
+    bigParticles[i].position = float3(0, 0, 0);
+}
+
+[numthreads(256,1,1)]
+void UpdateParticle (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= particleCount) return;
+    int i = id.x;
+
+    bigParticles[i].position = float3(3, 0, 0);
+
+    float s = 2;
+    
+    // Calculate scale based on particle size
+    float4x4 scaleMatrix = float4x4(
+        s, 0, 0, 0,
+        0, s, 0, 0,
+        0, 0, s, 0,
+        0, 0, 0, 1
+    );
+
+    // Calculate translation based on particle position
+    float4x4 translationMatrix = float4x4(
+        1, 0, 0, bigParticles[id.x].position.x,
+        0, 1, 0, bigParticles[id.x].position.y,
+        0, 0, 1, bigParticles[id.x].position.z,
+        0, 0, 0, 1
+    );
+
+    // Combine scale and translation to get the final transformation matrix
+    particleMatrices[id.x] = mul(translationMatrix, scaleMatrix);
 }
