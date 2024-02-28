@@ -4,6 +4,10 @@ using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using WrenUtils;
+using Unity.Jobs;
+using Unity.Collections;
+using UnityEngine.Jobs;
+
 
 // make an editor script
 #if UNITY_EDITOR
@@ -70,6 +74,8 @@ public class PushableCloudGPU : MonoBehaviour
     public bool debug = false;
     public bool renderTinyParticles = false;
 
+    public bool updateNearBird = true;
+
     [SerializeField] int particleCount = 1000;
     [SerializeField] Mesh particleMesh;
     [SerializeField] float meshSize = 1;
@@ -85,33 +91,53 @@ public class PushableCloudGPU : MonoBehaviour
     [SerializeField] bool returnToOriginalShape = true;
 
     [System.Serializable]
-    public class BrushData
+    public struct BrushData
     {
         public enum Type { Player, Light, Hole }
         public Type type;
 
         [Header("Physics")]
-        public float pushForce = .4f;
-        [Range(0,1)] public float vortexForce = 1;
-        public float forwardAmount = 0f;
+        public float pushForce;
+        [Range(0,1)] public float vortexForce;
+        public float forwardAmount;
 
         [Header("Hole")]
         public bool hole;
-        public bool holeConstant = false;
-        [Range(0,1)] public float holeFalloff = 1;
-        [Range(-1,1)] public float sizeDelta = 0;
+        public bool holeConstant;
+        [Range(0,1)] public float holeFalloff;
+        [Range(-1,1)] public float sizeDelta;
 
         [Header("Light")]
         public bool light;
-        public float lightRadius = 20;
+        public float lightRadius;
+
+        // Dynamic
+        internal Vector3 position;
+        internal float radius;
+        internal Vector3 forward;
+
+        // generate a constructor
+        public BrushData(Type type)
+        {
+            this.type = type;
+            pushForce = .4f;
+            vortexForce = 1;
+            forwardAmount = 0f;
+            hole = false;
+            holeConstant = false;
+            holeFalloff = 1;
+            sizeDelta = 0;
+            light = false;
+            lightRadius = 20;
+
+            position = Vector3.zero;
+            radius = 1;
+            forward = Vector3.forward;
+        }
     }
 
     public float playerForwardAmount = 1;
     
-
-    // public Vector3 PlayerPosition { get { return debug || !God.wren ? transform.position + Vector3.forward * Mathf.Sin(Time.time * .5f) * 20 : God.wren.physics.transform.position; }}
-    // public Vector3 PlayerForward { get { return debug || !God.wren ? Vector3.forward : God.wren.physics.transform.forward; }}
-
     public Vector3 PlayerPosition { get { return player.position; }}
     public Vector3 PlayerForward { get { return player.forward; }}
 
@@ -124,25 +150,16 @@ public class PushableCloudGPU : MonoBehaviour
         public float life;
     }
     
-    struct TinyParticle {
-        public Vector3 position;
-        public Vector3 velocity;
-        public float size;
-        public float life;
-    }
-
     [SerializeField] BigParticle[] _savedParticles;
 
     BigParticle[] bigParticles;
-    TinyParticle[] tinyParticles;
     Matrix4x4[] particleMatrices;
-    Matrix4x4[] tinyParticlesMatrices;
 
     ComputeBuffer particleBuffer;
 
     [Range(-1,1)] public float startSize;
 
-
+    PushableCloudGPUBrush[] brushes;
 
     const int PARTICLES_PER_CLOUD = 10;
 
@@ -184,9 +201,10 @@ public class PushableCloudGPU : MonoBehaviour
 
     public void InitializeParticles()
     {
+        brushes = GetComponentsInChildren<PushableCloudGPUBrush>();
+
         bigParticles = new BigParticle[particleCount];
         particleMatrices = new Matrix4x4[particleCount];
-        tinyParticlesMatrices = new Matrix4x4[particleCount * PARTICLES_PER_CLOUD];
 
         if (!TryLoadParticles())
         {
@@ -195,7 +213,7 @@ public class PushableCloudGPU : MonoBehaviour
                 bigParticles[i].position = bigParticles[i].startPosition = transform.position + new Vector3(Random.Range(-areaSize.x, areaSize.x), Random.Range(-areaSize.y, areaSize.y), Random.Range(-areaSize.z, areaSize.z)) * .5f;
                 bigParticles[i].velocity = Random.onUnitSphere * .1f;
                 bigParticles[i].life = Random.value;
-                foreach(var b in GetComponentsInChildren<PushableCloudGPUBrush>())
+                foreach(var b in brushes)
                 {
                     if (b.brushData.hole)
                         HoleParticle(i, b);
@@ -211,77 +229,65 @@ public class PushableCloudGPU : MonoBehaviour
         if (!inside) return;
         bigParticles[i].size = Mathf.Lerp(brush.brushData.sizeDelta, 0, ((d / brush.Radius) - brush.brushData.holeFalloff) / (1 - brush.brushData.holeFalloff));
     }
-    void PushParticle(int i, PushableCloudGPUBrush brush)
-    {
-        var data = brush.brushData;
-        var pos = brush.transform.position + brush.transform.forward * data.forwardAmount;
-        var dtp = Vector3.Distance(bigParticles[i].position, pos);
-        if (dtp < brush.Radius)
-        {
-            bigParticles[i].velocity += (bigParticles[i].position - pos).normalized * data.pushForce;
-            bigParticles[i].life = 1;
-        }
-
-        // apply torque force
-        var d = bigParticles[i].position - pos;
-        var f = Vector3.Cross(d, brush.transform.forward) * data.vortexForce;
-        f *= Mathf.Lerp(0, 1, 1 - dtp / brush.Radius / 1.5f);
-        bigParticles[i].position += f * Time.deltaTime;
-    }
 
     private void UpdateParticles()
     {
-        for (int i = 0; i < particleCount; i++)
+
+        NativeArray<Matrix4x4> particleMatricesNative = new NativeArray<Matrix4x4>(bigParticles.Length, Allocator.TempJob);
+        NativeArray<BigParticle> bigParticlesNative = new NativeArray<BigParticle>(bigParticles, Allocator.TempJob);
+        NativeArray<BrushData> brushesNative = new NativeArray<BrushData>(brushes.Length, Allocator.TempJob);
+        for (int i = 0; i < brushes.Length; i++)
         {
-            bigParticles[i].life -= Time.deltaTime / 20f;
-
-            foreach(var b in GetComponentsInChildren<PushableCloudGPUBrush>())
-            {
-                if (b.brushData.hole && b.brushData.holeConstant)
-                    HoleParticle(i, b);
-
-                if (b.brushData.pushForce < 0 || b.brushData.pushForce > 0)
-                    PushParticle(i, b);
-            }
-
-            bigParticles[i].velocity *= 1 - dampen * Time.deltaTime;
-            bigParticles[i].position += bigParticles[i].velocity * Time.deltaTime;
-
-            var s = bigParticleSize * Mathf.Clamp(startSize + bigParticles[i].size, 0, float.MaxValue);
-            
-            particleMatrices[i].SetTRS(bigParticles[i].position, Quaternion.identity, Vector3.one * s * meshSize);
-
-            if (renderTinyParticles)
-            {
-                for (int j = 0; j < PARTICLES_PER_CLOUD; j++)
-                {
-                    Random.InitState(i + j * 1000);
-                    var pos = bigParticles[i].position + Random.onUnitSphere * s *.5f;
-                    var t = (Random.value + Time.time * ( 1 / lifetime)) % 1;
-                    pos += Random.onUnitSphere * t * 2.5f;
-                    var ns = sizeCurve.Evaluate(t) * tinyParticleSize;
-                    tinyParticlesMatrices[i * PARTICLES_PER_CLOUD + j].SetTRS(pos, Quaternion.identity, Vector3.one * ns * 50);
-                }
-            }
-
-
-            // GEt back go start position
-            if (returnToOriginalShape && bigParticles[i].life < 0)
-            {
-                bigParticles[i].position = Vector3.Lerp(bigParticles[i].position, bigParticles[i].startPosition, -bigParticles[i].life);
-                if (bigParticles[i].life < -1)
-                    bigParticles[i].life = 1;
-            }
+            brushesNative[i] = brushes[i].brushData;
         }
+        for(int i = 0; i < brushes.Length; i++)
+        {
+            BrushJob j = new BrushJob
+            {
+                bigParticles = bigParticlesNative,
+                brush = brushesNative[i],
+                deltaTime = Time.deltaTime,
+                numBrushes = brushes.Length
+            };
+            JobHandle h = j.Schedule(bigParticles.Length, 64);
+            h.Complete();
+            bigParticlesNative.CopyTo(bigParticles);
+        }
+
+        UpdateParticlesJob job = new UpdateParticlesJob
+        {
+            particleMatrices = particleMatricesNative,
+            bigParticles = bigParticlesNative,
+            brushes = brushesNative,
+            meshSize = meshSize,
+            startSize = startSize,
+            bigParticleSize = bigParticleSize,
+            dampen = dampen,
+            returnToOriginalShape = returnToOriginalShape,
+
+            deltaTime = Time.deltaTime,
+            numBrushes = brushes.Length
+        };
+        JobHandle handle = job.Schedule(bigParticles.Length, 64);
+        
+        handle.Complete();
+        bigParticlesNative.CopyTo(bigParticles);
+        particleMatricesNative.CopyTo(particleMatrices);
+
+        particleMatricesNative.Dispose();
+        bigParticlesNative.Dispose();
+        brushesNative.Dispose();
     }
 
     void UpdateBuffers()
     {
+        
+
         particleBuffer.SetData(bigParticles);
         particleMaterial.SetBuffer("particleBuffer", particleBuffer);
 
         int li = 1;
-        foreach(var b in GetComponentsInChildren<PushableCloudGPUBrush>())
+        foreach(var b in brushes)
         {
             if (b.brushData.light)
             {
@@ -295,8 +301,10 @@ public class PushableCloudGPU : MonoBehaviour
     private void RenderParticles()
     {
         Graphics.DrawMeshInstanced(particleMesh, 0, particleMaterial, particleMatrices);
-        if (renderTinyParticles)
-            Graphics.DrawMeshInstanced(particleMesh, 0, particleMaterial, tinyParticlesMatrices);
+        // RenderParams rp = new RenderParams(particleMaterial);
+        // rp.worldBounds = new Bounds(transform.position, areaSize);
+        // rp.matProps = new MaterialPropertyBlock();
+        // Graphics.RenderMeshPrimitives(rp, particleMesh, 0, particleCount);
     }
 
     void OnDrawGizmos()
@@ -336,4 +344,98 @@ public class PushableCloudGPU : MonoBehaviour
         }
         return true;
     }
+
+    // Job
+
+    struct BrushJob : IJobParallelFor
+    {
+        public NativeArray<BigParticle> bigParticles;
+        [ReadOnly]
+        public BrushData brush;
+        [ReadOnly]
+        public float deltaTime;
+        [ReadOnly]
+        public float numBrushes;
+
+        public void Execute(int i)
+        {
+            BigParticle particle = bigParticles[i];
+
+            // Hole
+            if (brush.hole && brush.holeConstant)
+            {
+                var d = Vector3.Distance(particle.position, brush.position);
+                var inside = d < brush.radius;
+                if (inside)
+                    particle.size = Mathf.Lerp(brush.sizeDelta, 0, ((d / brush.radius) - brush.holeFalloff) / (1 - brush.holeFalloff));
+            }
+
+            // Push
+            if (brush.pushForce < 0 || brush.pushForce > 0)
+            {
+                var data = brush;
+                var pos = brush.position + brush.forward * data.forwardAmount;
+                var dtp = Vector3.Distance(particle.position, pos);
+                if (dtp < brush.radius)
+                {
+                    particle.velocity += (particle.position - pos).normalized * data.pushForce;
+                    particle.life = 1;
+                }
+
+                // apply torque force
+                var d = particle.position - pos;
+                var f = Vector3.Cross(d, brush.forward) * data.vortexForce;
+                f *= Mathf.Lerp(0, 1, 1 - dtp / brush.radius / 1.5f);
+                particle.position += f * deltaTime;
+            }
+
+            bigParticles[i] = particle;
+        }
+    }
+    struct UpdateParticlesJob : IJobParallelFor
+    {
+        public NativeArray<Matrix4x4> particleMatrices;
+        public NativeArray<BigParticle> bigParticles;
+        public NativeArray<BrushData> brushes;
+        [ReadOnly]
+        public float meshSize;
+        [ReadOnly]
+        public float startSize;
+        [ReadOnly]
+        public float bigParticleSize;
+        [ReadOnly]
+        public float dampen;
+        [ReadOnly]
+        public bool returnToOriginalShape;
+
+        [ReadOnly]
+        public float deltaTime;
+        [ReadOnly]
+        public float numBrushes;
+
+        public void Execute(int i)
+        {
+            BigParticle particle = bigParticles[i];
+
+            particle.life -= deltaTime / 20f;
+
+            particle.velocity *= 1 - dampen * deltaTime;
+            particle.position += particle.velocity * deltaTime;
+
+            // GEt back go start position
+            if (returnToOriginalShape && particle.life < 0)
+            {
+                particle.position = Vector3.Lerp(particle.position, particle.startPosition, -particle.life);
+                if (particle.life < -1)
+                    particle.life = 1;
+            }
+
+            var s = bigParticleSize * Mathf.Clamp(startSize + particle.size, 0, float.MaxValue);
+
+            particleMatrices[i] = Matrix4x4.TRS(particle.position, Quaternion.identity, Vector3.one * s * meshSize);
+
+            bigParticles[i] = particle;
+        }
+    }
+
 }
