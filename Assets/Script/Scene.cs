@@ -39,7 +39,7 @@ namespace WrenUtils
 
 
 
-            print("hello");
+            //            print("hello");
             RenderSettings.skybox = skyboxMaterial;
             God.skyboxUpdater.material = skyboxMaterial;
             God.skyboxUpdater.UpdateSkybox();

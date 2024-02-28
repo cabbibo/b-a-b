@@ -284,7 +284,7 @@ public class WrenParams : MonoBehaviour
             {
                 if (paramFiles[i] == name)
                 {
-                    print("FOUND");
+                    //                    print("FOUND");
                     paramID = i;
                     found = true;
                 }
@@ -318,12 +318,12 @@ public class WrenParams : MonoBehaviour
 
     public string[] allNames()
     {
-        print("LOADING111");
+        //        print("LOADING111");
         DirectoryInfo dir = new DirectoryInfo(baseName());
         FileInfo[] info = dir.GetFiles("*.*");
         List<string> paramNames = new List<string>();///sting paramNames = new string[ info.Length ];
 
-        print("LOADING");
+        //      print("LOADING");
 
 
         foreach (FileInfo f in info)
