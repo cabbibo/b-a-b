@@ -24,12 +24,19 @@ public class PushableCloudGPUBrushEditor : Editor
 }
 #endif
 
+[ExecuteAlways()]
 public class PushableCloudGPUBrush : MonoBehaviour
 {
     public PushableCloudGPU.BrushData brushData;
 
     public float Radius { get { return transform.localScale.x / 2.0f; } }
 
+    void Update()
+    {
+        brushData.position = transform.position;
+        brushData.forward = transform.forward;
+        brushData.radius = Radius;
+    }
     void OnDrawGizmos()
     {
         Gizmos.color = Color.white;

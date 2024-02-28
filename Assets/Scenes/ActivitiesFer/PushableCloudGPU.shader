@@ -1,4 +1,4 @@
-Shader "Custom/PushableCloud"
+Shader "Custom/PushableCloud GPU"
 {
     Properties
     {
@@ -78,6 +78,8 @@ Shader "Custom/PushableCloud"
         BigParticle data = particleBuffer[unity_InstanceID];
 
             o.worldPos = data.position;
+            v.vertex.xyz += data.position;
+            o.worldPos = mul(UNITY_MATRIX_M, float4(data.position, 1)).xyz;
         #endif
             
         }
