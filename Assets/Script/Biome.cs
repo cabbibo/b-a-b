@@ -16,6 +16,11 @@ public class Biome : MonoBehaviour
     public float amountComplete;
 
 
+    public PlayCutScene discoveredAnimation;
+    public PlayCutScene startedAnimation;
+    public PlayCutScene completedAnimation;
+
+
     public void AddToCompletion(float amount)
     {
         amountComplete += amount;
@@ -34,6 +39,7 @@ public class Biome : MonoBehaviour
 
         discovered = true;
         God.state.OnBiomeDiscovered(id);
+        discoveredAnimation.Play();
 
     }
     public void CompleteBiome()
@@ -42,6 +48,7 @@ public class Biome : MonoBehaviour
         completed = true;
         God.state.OnBiomeCompleted(id);
         portal.OpenPortal();
+        completedAnimation.Play();
 
     }
 
@@ -50,6 +57,7 @@ public class Biome : MonoBehaviour
 
         started = true;
         God.state.OnBiomeStarted(id);
+        startedAnimation.Play();
     }
 
 
@@ -65,6 +73,23 @@ public class Biome : MonoBehaviour
         {
             portal.SetPortalOff();
         }
+
+    }
+
+    public void OnEnterBiome()
+    {
+        print("Biome entered");
+        if (!discovered)
+        {
+            DiscoverBiome();
+        }
+
+
+    }
+
+    public void OnExitBiome()
+    {
+        print("Biome exited");
 
     }
 

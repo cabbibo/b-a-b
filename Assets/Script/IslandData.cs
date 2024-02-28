@@ -17,6 +17,9 @@ public class IslandData : MonoBehaviour
     public TerrainPainter biomePainter2;
 
 
+    public Biome[] biomes;
+
+
 
     public Texture2D BiomeMap;
     public RenderTexture heightMap;
@@ -223,6 +226,7 @@ public class IslandData : MonoBehaviour
         print(" new Biome : " + newBiome);
 
 
+
         BiomeChangeEvent.Invoke(oldBiome, newBiome);
 
 
@@ -231,25 +235,30 @@ public class IslandData : MonoBehaviour
 
     public void OnExitBiome(int oldBiome)
     {
-        if (oldBiome == -1)
+
+        print("old Biome : " + oldBiome);
+        if (oldBiome == -1 || oldBiome == 7)
         {
             LeaveNeutralZone();
         }
         else
         {
 
+            biomes[oldBiome].OnExitBiome();
         }
     }
 
     public void OnEnterBiome(int newBiome)
     {
-        if (newBiome == -1)
+        print(" new Biome : " + newBiome);
+        if (newBiome == -1 || newBiome == 7)
         {
             EnterNeutralZone();
         }
         else
         {
 
+            biomes[newBiome].OnEnterBiome();
         }
     }
 
