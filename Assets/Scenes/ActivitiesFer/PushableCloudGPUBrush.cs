@@ -35,6 +35,7 @@ public class PushableCloudGPUBrush : MonoBehaviour
     {
         brushData.position = transform.position;
         brushData.forward = transform.forward;
+        brushData.right = transform.right;
         brushData.radius = Radius;
     }
     void OnDrawGizmos()
@@ -54,7 +55,6 @@ public class PushableCloudGPUBrush : MonoBehaviour
             Gizmos.DrawWireSphere(transform.position, brushData.lightRadius);
 
         }
-        Gizmos.DrawWireSphere(transform.position, Radius );
         Gizmos.DrawWireSphere(transform.position + brushData.forwardAmount * transform.forward, Radius );
     }
 }

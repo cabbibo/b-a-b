@@ -7,6 +7,8 @@ using WrenUtils;
 using Unity.Jobs;
 using Unity.Collections;
 using UnityEngine.Jobs;
+using UnityEngine.Rendering;
+
 
 
 // make an editor script
@@ -63,7 +65,6 @@ public class PushableCloudGPUEditor : Editor
     {
         PushableCloudGPU myScript = (PushableCloudGPU)target;
         Handles.color = Color.red;
-        // Handles.DrawWireDisc(myScript.PlayerPosition, Vector3.up, myScript.playerPushRadius);
     }
 }
 #endif
@@ -71,24 +72,19 @@ public class PushableCloudGPUEditor : Editor
 [ExecuteAlways()]
 public class PushableCloudGPU : MonoBehaviour
 {
-    public bool debug = false;
-    public bool renderTinyParticles = false;
-
-    public bool updateNearBird = true;
-
     [SerializeField] int particleCount = 1000;
+    [SerializeField] float bigParticleSize = 1;
     [SerializeField] Mesh particleMesh;
     [SerializeField] float meshSize = 1;
     [SerializeField] Material particleMaterial;
     [SerializeField] Vector3 areaSize = new Vector3(1, 1, 1);
-    [SerializeField] float lifetime = 5;
-    [SerializeField] float bigParticleSize = 1;
-    [SerializeField] float tinyParticleSize = .4f;
+    [SerializeField] float lifetime = 20;
     [SerializeField] AnimationCurve sizeCurve = AnimationCurve.Linear(0, 1, 1, 0);
     [Header("Transforms")]
     [SerializeField] Transform player;
     [SerializeField] float dampen = 2;
     [SerializeField] bool returnToOriginalShape = true;
+    [SerializeField] bool hollow = false;
 
     [System.Serializable]
     public struct BrushData
@@ -96,10 +92,15 @@ public class PushableCloudGPU : MonoBehaviour
         public enum Type { Player, Light, Hole }
         public Type type;
 
-        [Header("Physics")]
+        [Header("Push Outwards")]
         public float pushForce;
         [Range(0,1)] public float vortexForce;
         public float forwardAmount;
+
+        [Header("Push Forward")]
+        public bool pushForward;
+        public float pushForwardForce;
+        [Range(0,1)] public float pushForwardVortexForce;
 
         [Header("Hole")]
         public bool hole;
@@ -115,6 +116,7 @@ public class PushableCloudGPU : MonoBehaviour
         internal Vector3 position;
         internal float radius;
         internal Vector3 forward;
+        internal Vector3 right;
 
         // generate a constructor
         public BrushData(Type type)
@@ -123,6 +125,9 @@ public class PushableCloudGPU : MonoBehaviour
             pushForce = .4f;
             vortexForce = 1;
             forwardAmount = 0f;
+            pushForward = false;
+            pushForwardForce = 0;
+            pushForwardVortexForce = 0;
             hole = false;
             holeConstant = false;
             holeFalloff = 1;
@@ -133,13 +138,9 @@ public class PushableCloudGPU : MonoBehaviour
             position = Vector3.zero;
             radius = 1;
             forward = Vector3.forward;
+            right = Vector3.right;
         }
     }
-
-    public float playerForwardAmount = 1;
-    
-    public Vector3 PlayerPosition { get { return player.position; }}
-    public Vector3 PlayerForward { get { return player.forward; }}
 
     [System.Serializable]
     struct BigParticle {
@@ -211,6 +212,17 @@ public class PushableCloudGPU : MonoBehaviour
             for (int i = 0; i < particleCount; i++)
             {
                 bigParticles[i].position = bigParticles[i].startPosition = transform.position + new Vector3(Random.Range(-areaSize.x, areaSize.x), Random.Range(-areaSize.y, areaSize.y), Random.Range(-areaSize.z, areaSize.z)) * .5f;
+
+                if (hollow)
+                {
+                    var p = Random.insideUnitCircle;
+                    bigParticles[i].position = transform.position +  new Vector3(
+                        Mathf.Lerp(.9f,1f,p.x) * areaSize.x, 
+                        Random.Range(-areaSize.y, areaSize.y), 
+                        Mathf.Lerp(.9f,1f,p.y) * areaSize.z
+                    ) * .5f;
+                }
+
                 bigParticles[i].velocity = Random.onUnitSphere * .1f;
                 bigParticles[i].life = Random.value;
                 foreach(var b in brushes)
@@ -264,6 +276,7 @@ public class PushableCloudGPU : MonoBehaviour
             bigParticleSize = bigParticleSize,
             dampen = dampen,
             returnToOriginalShape = returnToOriginalShape,
+            lifetime = lifetime,
 
             deltaTime = Time.deltaTime,
             numBrushes = brushes.Length
@@ -310,10 +323,6 @@ public class PushableCloudGPU : MonoBehaviour
     void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(transform.position, areaSize);
-        
-        Gizmos.DrawWireSphere(PlayerPosition, 1);
-        Gizmos.DrawWireSphere(PlayerPosition + PlayerForward * playerForwardAmount, 1);
-        // Gizmos.DrawWireSphere(PlayerPosition + PlayerForward * playerForwardAmount, playerPushRadius);
     }
     
     // Editor
@@ -361,13 +370,13 @@ public class PushableCloudGPU : MonoBehaviour
         {
             BigParticle particle = bigParticles[i];
 
+            var dtp = Vector3.Distance(particle.position, brush.position);
             // Hole
             if (brush.hole && brush.holeConstant)
             {
-                var d = Vector3.Distance(particle.position, brush.position);
-                var inside = d < brush.radius;
+                var inside = dtp < brush.radius;
                 if (inside)
-                    particle.size = Mathf.Lerp(brush.sizeDelta, 0, ((d / brush.radius) - brush.holeFalloff) / (1 - brush.holeFalloff));
+                    particle.size = Mathf.Lerp(brush.sizeDelta, 0, ((dtp / brush.radius) - brush.holeFalloff) / (1 - brush.holeFalloff));
             }
 
             // Push
@@ -375,8 +384,8 @@ public class PushableCloudGPU : MonoBehaviour
             {
                 var data = brush;
                 var pos = brush.position + brush.forward * data.forwardAmount;
-                var dtp = Vector3.Distance(particle.position, pos);
-                if (dtp < brush.radius)
+                var dtpwf = Vector3.Distance(particle.position, pos);
+                if (dtpwf < brush.radius)
                 {
                     particle.velocity += (particle.position - pos).normalized * data.pushForce;
                     particle.life = 1;
@@ -385,8 +394,20 @@ public class PushableCloudGPU : MonoBehaviour
                 // apply torque force
                 var d = particle.position - pos;
                 var f = Vector3.Cross(d, brush.forward) * data.vortexForce;
-                f *= Mathf.Lerp(0, 1, 1 - dtp / brush.radius / 1.5f);
+                f *= Mathf.Lerp(0, 1, 1 - dtpwf / brush.radius / 1.5f);
                 particle.position += f * deltaTime;
+            }
+
+            // Push Forward
+            if (brush.pushForward)
+            {
+                if (dtp < brush.radius)
+                {
+                    var f = brush.forward * brush.pushForwardForce;
+                    f = Vector3.Cross(particle.position - brush.position, brush.forward) * brush.pushForwardVortexForce;
+                    particle.velocity += f;
+                    particle.life = 1;
+                }
             }
 
             bigParticles[i] = particle;
@@ -407,6 +428,8 @@ public class PushableCloudGPU : MonoBehaviour
         public float dampen;
         [ReadOnly]
         public bool returnToOriginalShape;
+        [ReadOnly]
+        public float lifetime;
 
         [ReadOnly]
         public float deltaTime;
@@ -417,7 +440,7 @@ public class PushableCloudGPU : MonoBehaviour
         {
             BigParticle particle = bigParticles[i];
 
-            particle.life -= deltaTime / 20f;
+            particle.life -= deltaTime / lifetime;
 
             particle.velocity *= 1 - dampen * deltaTime;
             particle.position += particle.velocity * deltaTime;
