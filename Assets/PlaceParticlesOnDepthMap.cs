@@ -18,6 +18,7 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
     public Material material;
     public Material material2;
+    public Material material3;
     public MaterialPropertyBlock mpb;
 
     public int structSize = 16;
@@ -97,6 +98,7 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
         Graphics.DrawProcedural(material, new Bounds(transform.position, Vector3.one * 500000), MeshTopology.Triangles, count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
         Graphics.DrawProcedural(material2, new Bounds(transform.position, Vector3.one * 500000), MeshTopology.Triangles, count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+        Graphics.DrawProcedural(material3, new Bounds(transform.position, Vector3.one * 500000), MeshTopology.Triangles, count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
 
     }
 

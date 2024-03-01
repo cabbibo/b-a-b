@@ -80,6 +80,8 @@ float3 TraceTerrain(float3 ro, float3 rd , out float3 nor){
         pos = ro + rd * d;
 
         float h = terrainHeight( pos);
+
+        if( h < 0 )
         
 
         // TODO linearly interpolate
@@ -97,6 +99,74 @@ float3 TraceTerrain(float3 ro, float3 rd , out float3 nor){
 
 }
 
+/*float2 Hash2D(float p)
+{
+    float2 p2 = frac(p * float2(5.3983, 5.4427));
+    p2 += dot(p2.yx, p2.xy + 19.19);
+    return frac(p2.xx * p2.yy);
+}*/
+
+float hash11(float p)
+{
+    p = frac(p * .1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return frac(p);
+}
+
+float2 hash21(float p)
+{
+	float3 p3 = frac(p * float3(.1031, .1030, .0973));
+	p3 += dot(p3, p3.yzx + 33.33);
+    return frac((p3.xx+p3.yz)*p3.zy);
+
+}
+
+
+
+float2 Hash2D(float p)
+{
+    float2 p2 = frac(sin(float2(p, p + 1.0)) * 43758.5453);
+    return p2;
+}
+
+float3 TraceTerrainBinary(float3 ro, float3 rd , out float3 nor){
+    float3 pos;
+    float3 fPos;
+    float3 fNor;
+    float hit = 0;
+    float d = 0;
+
+    float3 intersectionPoint = ro;
+    float stepSize = 2;
+
+    float hasHit = 0;
+    for( float i = 0; i < 150; i++ ){
+      
+        float h = terrainHeight( intersectionPoint );
+
+        if( h < 0 ){
+          hasHit= 1;
+          stepSize *= .5;
+          intersectionPoint -= rd * stepSize;
+        }else{
+          intersectionPoint += rd * stepSize;
+        }
+        
+
+    
+    }
+
+    GetTerrainData( intersectionPoint , fPos , nor);
+    if( hasHit == 0 ){
+      nor = float3(0,1,0);
+    }
+
+    return intersectionPoint;
+
+}
+
+ 
 float _Time;
 
 #define NR_THREADS 128
@@ -121,7 +191,7 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
 
  if( v.life < 0 || currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || currentScreenSpacePosition.y < 0 || currentScreenSpacePosition.y > 1){
 
-    float2 coordinates = float2(hash( float(pID) +_Time ),hash( float(pID+10) +_Time *2 ));
+    float2 coordinates = hash21( float(pID * 121) + _Time );
       // uses project matrix to project forward
     float4 viewSpacePosition = mul(_CameraProjectionMatrixInverse , float4(coordinates * 2.0 - 1.0, 1.0, 1.0));
     viewSpacePosition /= viewSpacePosition.w;
@@ -133,7 +203,7 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
     float3 ro = worldPosition.xyz;
     float3 rd = worldPosition.xyz - _CameraPosition; 
   float3 nor;
-    float3 fPos = TraceTerrain( ro , rd , nor );
+    float3 fPos = TraceTerrainBinary( ro , rd , nor );
     v.pos = fPos;
     v.nor = nor;
     //v.debug.y = _Time;
@@ -144,12 +214,14 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
     
     //float3 terrainPos( float3 pos ){
 
+    v.debug = max( abs(coordinates.x-.5), abs(coordinates.y-.5) );
+
     v.life = 1;
  
 
  }
 
- v.life  -= .003 * (hash( float(pID * 121)  )+ .4);
+ v.life  -= .01 * (hash11( float(pID * 121)  )+ .3);
       
 
         
