@@ -1,0 +1,164 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel PlaceOnDepth
+
+struct Vert{
+  float3 pos;
+  float3 oPos;
+  float3 nor;
+  float3 tangent;
+  float2 uv;
+  float life;
+  float debug;
+};
+
+RWStructuredBuffer<Vert> _VertBuffer;
+int _VertBuffer_COUNT;
+
+
+int safeID( int id , int max ){
+    return clamp( id , 0 , max );
+}
+
+float hash( float n ){
+        return frac(sin(n)*43758.5453);
+      }
+
+      
+
+float4x4 _CameraViewMatrix;
+float4x4 _CameraViewMatrixInverse;
+float4x4 _CameraProjectionMatrix;
+float4x4 _CameraProjectionMatrixInverse;
+
+float3 _CameraPosition;
+
+
+
+Texture2D<float4> _HeightMap;
+SamplerState sampler_HeightMap;
+float3 _MapSize;
+
+float3 terrainPos( float3 pos ){
+  return float3( pos.x , _HeightMap.SampleLevel(sampler_HeightMap, (((pos.xz+_MapSize.xz/2)) / _MapSize.xz) , 1).x * _MapSize.y * 2, pos.z);
+}
+
+
+float terrainHeight( float3 pos ){
+   float h =  _HeightMap.SampleLevel(sampler_HeightMap, (((pos.xz+_MapSize.xz/2)) / _MapSize.xz) , 1).x * _MapSize.y * 2;
+   return pos.y - h;
+}
+
+float3 normalizedTerrainPos( float3 pos ){
+  
+return float3(((pos.x+_MapSize.x/2) / _MapSize.x) , pos.y / _MapSize.y ,  (pos.z+_MapSize.z/2) / _MapSize.z);
+
+}
+
+void GetTerrainData( float3 pos , out float3  fPos, out float3 fNor){
+
+    float3 eps = float3(1.1,0,0);
+    fPos = terrainPos( pos );
+
+    float3 l = terrainPos( pos + eps.xyy);
+    float3 r = terrainPos( pos - eps.xyy);
+    float3 u = terrainPos( pos + eps.yyx);
+    float3 d = terrainPos( pos - eps.yyx);
+
+    fNor = -normalize(cross(l-r,u-d));
+
+}
+
+float3 TraceTerrain(float3 ro, float3 rd , out float3 nor){
+    float3 pos;
+    float3 fPos;
+    float3 fNor;
+    float hit = 0;
+    float d = 0;
+
+    for( float i = 0; i < 200; i++ ){
+        d = (i / 200) * 300;
+        pos = ro + rd * d;
+
+        float h = terrainHeight( pos);
+        
+
+        // TODO linearly interpolate
+        if( h < 0 ){ 
+            hit = 1;
+            GetTerrainData( pos , fPos , fNor);
+            nor = fNor;
+            break;  
+        }
+
+    
+    }
+
+    return fPos;
+
+}
+
+float _Time;
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+  int pID = threadID + u3GroupID.x * NR_THREADS;
+
+
+    if(pID < _VertBuffer_COUNT){ 
+
+    int sID = safeID( pID, _VertBuffer_COUNT );
+        Vert v = _VertBuffer[sID];
+              // gets our current screen space position
+    float4 currentViewPosition =mul( _CameraViewMatrix , float4(v.pos, 1.0));
+    float4 currentScreenSpacePosition =mul( _CameraProjectionMatrix , currentViewPosition);
+    currentScreenSpacePosition /= currentScreenSpacePosition.w;
+
+    currentScreenSpacePosition /= 2.;
+    currentScreenSpacePosition += .5;
+
+
+ if( v.life < 0 || currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || currentScreenSpacePosition.y < 0 || currentScreenSpacePosition.y > 1){
+
+    float2 coordinates = float2(hash( float(pID) +_Time ),hash( float(pID+10) +_Time *2 ));
+      // uses project matrix to project forward
+    float4 viewSpacePosition = mul(_CameraProjectionMatrixInverse , float4(coordinates * 2.0 - 1.0, 1.0, 1.0));
+    viewSpacePosition /= viewSpacePosition.w;
+
+    viewSpacePosition.xyz *= (-3 / viewSpacePosition.z);
+
+    float3 worldPosition = mul(_CameraViewMatrixInverse ,viewSpacePosition).xyz;
+
+    float3 ro = worldPosition.xyz;
+    float3 rd = worldPosition.xyz - _CameraPosition; 
+  float3 nor;
+    float3 fPos = TraceTerrain( ro , rd , nor );
+    v.pos = fPos;
+    v.nor = nor;
+    //v.debug.y = _Time;
+
+   // v.pos = coordinates.x *_MapSize.x * float3(1,0,0) + coordinates.y * _MapSize.z * float3(0,0,1);
+
+    //v.pos = terrainPos(v.pos);
+    
+    //float3 terrainPos( float3 pos ){
+
+    v.life = 1;
+ 
+
+ }
+
+ v.life  -= .003 * (hash( float(pID * 121)  )+ .4);
+      
+
+        
+       //v.pos.x = sin(sID);
+       //v.pos.y = cos(sID);
+       // v.pos.z = sin(sID);
+
+
+        _VertBuffer[sID] = v;
+    }
+
+}
