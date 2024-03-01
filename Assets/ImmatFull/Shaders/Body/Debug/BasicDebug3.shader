@@ -1,4 +1,4 @@
-Shader "Unlit/BasicDebug2"
+Shader "Unlit/BasicDebug3"
 {
     Properties
     {
@@ -19,6 +19,7 @@ Shader "Unlit/BasicDebug2"
       #pragma vertex vert
       #pragma fragment frag
         #include "UnityCG.cginc"
+        #include "UnityLightingCommon.cginc"
 
             struct Vert{
         float3 pos;
@@ -106,16 +107,19 @@ Shader "Unlit/BasicDebug2"
                 float3 eyeDir = normalize(eye);
                 float m = dot( eyeDir, vert.nor);
             
+                
+                float lightMatch = dot( vert.nor, _WorldSpaceLightPos0.xyz );
+            
 
                 float dT = min( (1-vert.life) * 10 , vert.life );
 
-                float3 fPos = basePos + extra * _Size * dT * pow( (m),4)  * (length(eye) + 30 ) * .003+ vert.nor;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
+                float3 fPos = basePos + extra * _Size * dT * pow( lightMatch,3)  * (length(eye) + 30 ) * .003+ vert.nor*1.3;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
 
                 
                 o.nor = vert.nor;
                 o.uv = uv;
-                o.debug = vert.debug;
                 
+                o.debug = vert.debug;
                 o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
 
 
@@ -136,7 +140,8 @@ Shader "Unlit/BasicDebug2"
         }
 
         col = 1-  saturate((v.debug-.3) * 5);
-          return float4(col.xyz * (v.nor * .5 +.5) * _ColorMultiplier,1 );
+
+          return float4(col.xyz * (v.nor * .5 +.5) * _ColorMultiplier  * _LightColor0.xyz,1 );
       }
 
 

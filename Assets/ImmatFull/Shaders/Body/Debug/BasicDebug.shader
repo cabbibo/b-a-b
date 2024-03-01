@@ -43,6 +43,7 @@ Shader "Unlit/BasicDebug"
           float4 pos      : SV_POSITION;
           float3 nor : NORMAL;
             float2 uv : TEXCOORD0;
+            float debug : TEXCOORD1;
       };
 
         varyings vert (uint id : SV_VertexID){
@@ -108,14 +109,15 @@ Shader "Unlit/BasicDebug"
                 float lightMatch = dot( vert.nor, _WorldSpaceLightPos0.xyz );
             
 
-                float dT = min( (1-vert.life) * 3 , vert.life );
+                float dT = min( (1-vert.life) * 10 , vert.life );
 
-                float3 fPos = basePos + extra * _Size * dT * (1-m)+ vert.nor;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
+                float3 fPos = basePos + extra * _Size * dT * pow( (1-m),2)  * (length(eye) + 30 ) * .003+ vert.nor * 1.1;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
 
                 
                 o.nor = vert.nor;
                 o.uv = uv;
                 
+                o.debug = vert.debug;
                 o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
 
 
@@ -131,7 +133,7 @@ Shader "Unlit/BasicDebug"
       float4 frag (varyings v) : COLOR {      
         float4 col = tex2D(_MainTex, v.uv);
         
-        if( col.a < .5 ){
+        if( col.x < .5 ){
             discard;
         }
 
@@ -140,7 +142,8 @@ Shader "Unlit/BasicDebug"
 
        // col.xyz = lightMatch;
 
-          return float4(col.xyz * (v.nor.xyz * .5 + .5),1 );
+        col = 1-  saturate((v.debug-.3) * 5);
+          return float4(col.xyz * (v.nor.xyz * .5 + .5) * _ColorMultiplier,1 );
       }
 
 
