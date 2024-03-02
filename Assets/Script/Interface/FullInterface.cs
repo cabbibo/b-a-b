@@ -38,8 +38,8 @@ public class FullInterface : MonoBehaviour
     {
 
 
-        print("now we toglling");
-        print(onOff);
+        //        print("now we toglling");
+        //      print(onOff);
 
         gameObject.SetActive(onOff);
 

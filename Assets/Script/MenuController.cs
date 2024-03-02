@@ -43,7 +43,7 @@ public class MenuController : MonoBehaviour
     void OnEnable()
     {
         God.audio.Play(menuOpenSound);
-        print("goes here");
+        //        print("goes here");
 
         // we skip the menu and auto load into the game
         if (autoLoad)
@@ -153,7 +153,7 @@ public class MenuController : MonoBehaviour
     {
 
 
-        print("menu turning off");
+        //        print("menu turning off");
         God.audio.Play(menuCloseSound);
         God.fade.FadeIn(l);
         // DeactivateMenu();
@@ -308,7 +308,7 @@ public class MenuController : MonoBehaviour
 
     public void OnSceneLoaded()
     {
-        print("Scene Loaded");
+        //        print("Scene Loaded");
         God.sceneController.OnSceneLoadEvent.RemoveListener(OnSceneLoaded);
         DeactivateMenu();
         TurnMenuOff(.5f);

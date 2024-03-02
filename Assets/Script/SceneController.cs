@@ -183,23 +183,23 @@ public class SceneController : MonoBehaviour
     {
 
 
-        print("switching scene");
-        print(newScene);
-        print(oldScene);
+        //        print("switching scene");
+        //        print(newScene);
+        //        print(oldScene);
         SceneManager.LoadScene(scenes[newScene], LoadSceneMode.Additive);
 
 
-        print(scenes[oldScene]);
+        //        print(scenes[oldScene]);
 
         if (scenes[oldScene] != null)
         {
 
-            print("unloading " + scenes[oldScene]);
+            //            print("unloading " + scenes[oldScene]);
 
             // unloading old scne
             var progress2 = SceneManager.UnloadSceneAsync(scenes[oldScene]);
 
-            print(progress2);
+            //            print(progress2);
 
             if (progress2 != null)
             {

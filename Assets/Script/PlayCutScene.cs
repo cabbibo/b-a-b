@@ -69,8 +69,8 @@ public class PlayCutScene : MonoBehaviour
 
         // print(lerpTo);
 
-        print("AWAKE");
-        print(lerpTo.target);
+        //        print("AWAKE");
+        //        print(lerpTo.target);
         tmpLerpTarget = lerpTo.target;
 
     }
@@ -133,10 +133,10 @@ public class PlayCutScene : MonoBehaviour
         if (transitioning)
         {
 
-            if (God.wren != null )
+            if (God.wren != null)
             {
                 God.wren.canMove = false;
-                
+
                 if (wrenCrashPosition != null)
                 {
                     God.wren.transform.position = wrenCrashPosition.position;

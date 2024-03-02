@@ -102,7 +102,7 @@ public class GPUBody : MonoBehaviour
             //Colors[] colors = meshes[i].colors;
 
 
-            print(positions.Length);
+            //            print(positions.Length);
 
             for (int j = 0; j < meshes[i].vertices.Length; j++)
             {
