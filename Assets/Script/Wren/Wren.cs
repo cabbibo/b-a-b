@@ -162,7 +162,7 @@ public class Wren : MonoBehaviour
     public void Crash(Vector3 p)
     {
 
-        print("crash1");
+        //        print("crash1");
         physics.TransportToPosition(GroundIntersection(p) + Vector3.up * physics.groundUpVal, Vector3.zero);
         state.HitGround();
         if (autoTakeOff)

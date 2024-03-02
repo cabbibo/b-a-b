@@ -1125,6 +1125,12 @@ MonoBehaviour:
   shoulder: {fileID: 687666778917687275}
   spine: {fileID: 687666779345276794}
   hip: {fileID: 687666778752507962}
+  leftHip: {fileID: 0}
+  leftKnee: {fileID: 0}
+  leftFoot: {fileID: 0}
+  rightHip: {fileID: 0}
+  rightKnee: {fileID: 0}
+  rightFoot: {fileID: 0}
   shoulderWidth: 1
   hipToTail: 1.17
   hipToSpine: 1.29
@@ -1135,6 +1141,9 @@ MonoBehaviour:
   shoulderToElbow: 2.17
   elbowToHand: 2.19
   handToFinger: 1.41
+  hipSpread: 0
+  hipToKnee: 0
+  kneeToFoot: 0
   leftEye: {fileID: 4656057780584845657}
   rightEye: {fileID: 398320342855464717}
   beak: {fileID: 7643670994601658526}

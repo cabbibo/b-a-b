@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteAlways]
 public class FullState : MonoBehaviour
+
 {
 
 
@@ -22,6 +24,11 @@ public class FullState : MonoBehaviour
 
 
     public int numBiomes = 7;
+
+    public void OnEnable()
+    {
+        LoadState();
+    }
 
     public void UpdateState()
     {

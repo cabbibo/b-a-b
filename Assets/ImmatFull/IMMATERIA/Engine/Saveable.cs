@@ -113,7 +113,7 @@ namespace IMMATERIA
       }
       else
       {
-        Debug.Log(form.gameObject);
+        //        Debug.Log(form.gameObject);
         BinaryFormatter bf = new BinaryFormatter();
         FileStream stream = new FileStream(GetFullName(form.saveName), FileMode.Create);
 

@@ -239,9 +239,9 @@ namespace WrenUtils
 
                 if (instance._terrain == null)
                 {
-                    print("FINDING TERRAIN");
+                    //                    print("FINDING TERRAIN");
                     instance._terrain = (Terrain)FindObjectOfType(typeof(Terrain));
-                    print(instance._terrain);
+                    //print(instance._terrain);
                 }
                 return instance._terrain;
             }
@@ -319,8 +319,8 @@ namespace WrenUtils
         {
             get
             {
-                print(instance);
-                print(instance._skyboxUpdater);
+                //                print(instance);
+                //              print(instance._skyboxUpdater);
                 return instance._skyboxUpdater;
             }
         }
