@@ -9,7 +9,7 @@ public class GPUBody : MonoBehaviour
 
     public FullBird bird;
 
-    public Material lineDebugMaterial;
+    public Material featherDebugLineMaterial;
     public Material featherDebugMaterial;
     public Material featherMaterial;
 
@@ -236,7 +236,7 @@ public class GPUBody : MonoBehaviour
 
             if (debugLinePoints)
             {
-                Graphics.DrawProcedural(lineDebugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, totalLinePoints * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+                Graphics.DrawProcedural(featherDebugLineMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, totalLinePoints * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
             }
 
             if (debugFeatherPoints)

@@ -14,10 +14,13 @@ public class GPUWing : MonoBehaviour
 
 
     public Material featherDebugMaterial;
+    public Material featherDebugLineMaterial;
     public Material featherMaterial;
 
 
     public bool debugFeatherPoints;
+
+    public bool debugLinePoints;
     public bool drawFeathers = true;
 
 
@@ -196,7 +199,7 @@ public class GPUWing : MonoBehaviour
 
             God.instance.SetTerrainCompute(0, shader);
 
-            shader.SetBool("_LeftOrRight", wing.leftOrRight);
+            shader.SetFloat("_LeftOrRight", wing.leftOrRight ? -1 : 1);
             shader.SetMatrix("_Shoulder", wing.bones[0].localToWorldMatrix);
             shader.SetMatrix("_Elbow", wing.bones[1].localToWorldMatrix);
             shader.SetMatrix("_Hand", wing.bones[2].localToWorldMatrix);
@@ -219,12 +222,27 @@ public class GPUWing : MonoBehaviour
             mpb.SetInt("_TrisPerMesh", trisPerMesh);
             mpb.SetInt("_NumberMeshes", meshes.Length);
 
-            /*    if (debugLinePoints)
-                {
-                    Graphics.DrawProcedural(lineDebugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, totalLinePoints * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-                }
+            mpb.SetFloat("_LeftOrRight", wing.leftOrRight ? -1 : 1);
+            mpb.SetMatrix("_Shoulder", wing.bones[0].localToWorldMatrix);
+            mpb.SetMatrix("_Elbow", wing.bones[1].localToWorldMatrix);
+            mpb.SetMatrix("_Hand", wing.bones[2].localToWorldMatrix);
+            mpb.SetMatrix("_Finger", wing.bones[3].localToWorldMatrix);
 
-           */
+            mpb.SetMatrix("_Chest", bird.shoulder.localToWorldMatrix);
+
+
+            bird.SetBirdParameters(mpb);
+
+
+            if (debugLinePoints)
+            {
+
+                int totalToDraw = 10000;
+
+                Graphics.DrawProcedural(featherDebugLineMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, totalToDraw * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+            }
+
+
 
 
             if (debugFeatherPoints)

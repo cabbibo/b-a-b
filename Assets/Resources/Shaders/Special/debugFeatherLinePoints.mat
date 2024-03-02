@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: DebugFeatherPoints
-  m_Shader: {fileID: 4800000, guid: ca32f7492db455347ad5ca17ebb5058c, type: 3}
+  m_Name: debugFeatherLinePoints
+  m_Shader: {fileID: 4800000, guid: e723b1932b274cf47939e6eca01aeb6a, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -76,7 +76,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Size: 0.003
+    - _Size: 0.001
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SpriteSize: 5

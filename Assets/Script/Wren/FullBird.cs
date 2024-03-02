@@ -23,6 +23,10 @@ public class FullBird : MonoBehaviour
    public Material wingDebugMaterial;
    public Material bodyDebugMaterial;
 
+
+   public Material wingDebugLineMaterial;
+   public Material bodyDebugLineMaterial;
+
    public Transform specialTarget;
 
    [Range(0, 1)]
@@ -212,6 +216,7 @@ public class FullBird : MonoBehaviour
 
       leftWing_gpu.shader = wingShader;
       leftWing_gpu.featherDebugMaterial = wingDebugMaterial;
+      leftWing_gpu.featherDebugLineMaterial = wingDebugLineMaterial;
       leftWing_gpu.featherMaterial = wingMaterial;
 
       leftWing_gpu.primaryFeather = primaryFeather;
@@ -232,6 +237,7 @@ public class FullBird : MonoBehaviour
 
       rightWing_gpu.shader = wingShader;
       rightWing_gpu.featherDebugMaterial = wingDebugMaterial;
+      rightWing_gpu.featherDebugLineMaterial = wingDebugLineMaterial;
       rightWing_gpu.featherMaterial = wingMaterial;
 
       rightWing_gpu.primaryFeather = primaryFeather;
@@ -251,6 +257,7 @@ public class FullBird : MonoBehaviour
       body_gpu.shader = bodyShader;
       body_gpu.featherMaterial = bodyMaterial;
       body_gpu.featherDebugMaterial = bodyDebugMaterial;
+      body_gpu.featherDebugLineMaterial = bodyDebugLineMaterial;
 
       body_gpu.scapularFeather = scapularFeather;
       body_gpu.tailFeather = tailFeather;
@@ -633,6 +640,112 @@ public class FullBird : MonoBehaviour
 
 
 
+   public void SetBirdParameters(MaterialPropertyBlock shader)
+   {
+
+
+
+      /*
+         Setting some targets that *ARENT* the bird!
+      */
+      if (specialTarget != null)
+      {
+         shader.SetMatrix("_SpecialTarget", specialTarget.localToWorldMatrix);
+      }
+
+
+
+
+      //---
+      shader.SetFloat("_ResetValue", _ResetValue);
+      shader.SetVector("_ResetLocation", _ResetLocation);
+
+      shader.SetFloat("_NoiseSizeForFlutter", _NoiseSizeForFlutter);
+      shader.SetFloat("_MaxFlutter", _MaxFlutter);
+      shader.SetFloat("_MinFlutter", _MinFlutter);
+      shader.SetFloat("_MaxFlutterSpeed", _MaxFlutterSpeed);
+      shader.SetFloat("_MinFlutterSpeed", _MinFlutterSpeed);
+
+      shader.SetFloat("_ReturnToLockTime", _ReturnToLockTime);
+      shader.SetFloat("_ReturnToLockForce", _ReturnToLockForce);
+      shader.SetFloat("_ReturnToLockTimeMultiplier", _ReturnToLockTimeMultiplier);
+
+      shader.SetFloat("_LockDistance", _LockDistance);
+      shader.SetFloat("_LockLerp", _LockLerp);
+
+      shader.SetFloat("_ExplosionOutForce", _ExplosionOutForce);
+      shader.SetFloat("_ExplosionUpForce", _ExplosionUpForce);
+      shader.SetFloat("_ExplosionVelForce", _ExplosionVelForce);
+      shader.SetFloat("_BackAmountOverlapping", _BackAmountOverlapping);
+      shader.SetFloat("_BaseDirectionLeftRightNoise", _BaseDirectionLeftRightNoise);
+
+      shader.SetFloat("_BaseDirectionUpNoise", _BaseDirectionUpNoise);
+      shader.SetFloat("_BaseNoiseScale", _BaseNoiseScale);
+
+      shader.SetFloat("_ScaleMultiplier", wren._ScaleMultiplier);
+
+
+      shader.SetFloat("_VortexInForce", _VortexInForce);
+      shader.SetFloat("_VortexCurlForce", _VortexCurlForce);
+      shader.SetFloat("_VortexNoiseForce", _VortexNoiseForce);
+      shader.SetFloat("_VortexNoiseSize", _VortexNoiseSize);
+
+      shader.SetFloat("_GroundVortexHeight", _GroundVortexHeight);
+      shader.SetFloat("_GroundVortexForce", _GroundVortexForce);
+
+      shader.SetFloat("_GroundLockHeight", _GroundLockHeight);
+      shader.SetFloat("_GroundLockForce", _GroundLockForce);
+
+      shader.SetFloat("_MiddleSecondaryFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleSecondaryFeatherScaleMultiplier);
+      shader.SetFloat("_BaseSecondaryFeatherScale", wren._ScaleMultiplier * _BaseSecondaryFeatherScale);
+
+
+      shader.SetFloat("_MiddlePrimaryFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddlePrimaryFeatherScaleMultiplier);
+      shader.SetFloat("_BasePrimaryFeatherScale", wren._ScaleMultiplier * _BasePrimaryFeatherScale);
+
+      shader.SetFloat("_MiddleCovertsFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleCovertsFeatherScaleMultiplier);
+      shader.SetFloat("_BaseCovertsFeatherScale", wren._ScaleMultiplier * _BaseCovertsFeatherScale);
+
+
+      shader.SetFloat("_MiddleScapularFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleScapularFeatherScaleMultiplier);
+      shader.SetFloat("_BaseScapularFeatherScale", wren._ScaleMultiplier * _BaseScapularFeatherScale);
+
+
+      shader.SetFloat("_MiddleTailFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleTailFeatherScaleMultiplier);
+      shader.SetFloat("_BaseTailFeatherScale", wren._ScaleMultiplier * _BaseTailFeatherScale);
+
+
+      shader.SetFloat("_LockStartTime", _LockStartTime);
+      shader.SetFloat("_Locked", _LockedValue);
+      shader.SetFloat("_Explosion", _ExplosionValue);
+      shader.SetVector("_ExplosionVector", _ExplosionVector);
+      shader.SetVector("_Velocity", _Velocity);
+
+
+      shader.SetInt("_NumScapularColumns", _NumScapularColumns);
+      shader.SetInt("_NumScapularRows", _NumScapularRows);
+      shader.SetInt("_NumTailFeathers", _NumTailFeathers);
+
+
+      shader.SetFloat("_Locked", _LockedValue);
+
+
+
+      shader.SetInt("_NumPrimaryFeathers", _NumPrimaryFeathers);
+      shader.SetInt("_NumPrimaryCoverts", _NumPrimaryCoverts);
+      shader.SetInt("_NumLesserCovertRows", _NumLesserCovertsRows);
+      shader.SetInt("_NumLesserCovertCols", _NumLesserCovertsCols);
+
+
+      shader.SetFloat("_Time", Time.time);
+      shader.SetFloat("_DT", Time.deltaTime);
+
+
+   }
+
+
+
+
    public void SetMaterialProperties()
    {
 
@@ -699,6 +812,8 @@ public class FullBird : MonoBehaviour
    public bool drawRightWingFeathers;
 
 
+   public bool drawLeftFeatherLines;
+   public bool drawRightFeatherLines;
 
    // debug values
    public bool drawLeftWingFeatherPoints;
@@ -706,6 +821,8 @@ public class FullBird : MonoBehaviour
 
    public bool drawBodyPoints;
    public bool drawBodyFeatherPoints;
+
+
 
 
 
@@ -719,7 +836,12 @@ public class FullBird : MonoBehaviour
       rightWing_gpu.debugFeatherPoints = drawRightWingFeatherPoints;
       body_gpu.debugFeatherPoints = drawBodyFeatherPoints;
 
+      leftWing_gpu.debugLinePoints = drawLeftFeatherLines;
+      rightWing_gpu.debugLinePoints = drawRightFeatherLines;
       body_gpu.debugLinePoints = drawBodyPoints;
+
+
+
 
    }
 

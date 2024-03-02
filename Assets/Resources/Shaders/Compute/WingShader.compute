@@ -20,7 +20,7 @@ float4x4 _Finger;
 float4x4 _Chest;
 
 float _Locked;
-bool _LeftOrRight;
+float _LeftOrRight;
 
 float _ScaleMultiplier;
 
@@ -38,7 +38,7 @@ float3 chest; float3 chestU; float3 chestR; float3 chestF;
 
 void setFromMatrix( float4x4 mat , out float3 p , out float3 r, out float3 u  , out float3 f){
     p = mul( mat , float4( 0, 0, 0, 1)).xyz;
-    r = _ScaleMultiplier * normalize(mul( mat , float4( 1, 0, 0, 0)).xyz) * (_LeftOrRight ? -1 : 1);
+    r = _ScaleMultiplier * normalize(mul( mat , float4( 1, 0, 0, 0)).xyz) * (_LeftOrRight);
     u = _ScaleMultiplier * normalize(mul( mat , float4( 0, 1, 0, 0)).xyz);
     f = _ScaleMultiplier * normalize(mul( mat , float4( 0, 0, 1, 0)).xyz);
 } 
