@@ -27860,6 +27860,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea98959e68e82034a9c14c836903b20b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onGround: 0
+  walking: 0
   input: {fileID: 6676056819307743982}
   wren: {fileID: 9160943688313912041}
   leftWing: {fileID: 9160943687160614091}
@@ -27924,7 +27926,6 @@ MonoBehaviour:
   paintedWindForceMultiplier: 0
   showDebugForces: 0
   reset: 0
-  onGround: 0
   distToGround: 0
   rawDistToGround: 0
   rawGroundPoint: {x: 0, y: 0, z: 0}
