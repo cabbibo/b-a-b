@@ -5,6 +5,7 @@ Shader "Unlit/BasicDebug3"
       _Size("Size", Range(0.1, 1000)) = 1
       _MainTex("Texture", 2D) = "white" {}
       _ColorMultiplier("Color Multiplier", Range(0, 3)) = 1
+      _NormalOffset("Normal Offset", Range(0, 10)) = 0
     }
     SubShader
     {
@@ -36,6 +37,7 @@ Shader "Unlit/BasicDebug3"
         int _Count;
       float _Size;
       float _ColorMultiplier;
+      float _NormalOffset;
 
       StructuredBuffer<Vert> _VertBuffer;
 
@@ -113,7 +115,7 @@ Shader "Unlit/BasicDebug3"
 
                 float dT = min( (1-vert.life) * 10 , vert.life );
 
-                float3 fPos = basePos + extra * _Size * dT * pow( lightMatch,3)  * (length(eye) + 30 ) * .003+ vert.nor*1.3;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
+                float3 fPos = basePos + extra * _Size * dT * pow( lightMatch,3)  * (length(eye) + 30 ) * .003+ vert.nor*_NormalOffset;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
 
                 
                 o.nor = vert.nor;
