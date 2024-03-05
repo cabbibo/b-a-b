@@ -99,6 +99,35 @@ float3 TraceTerrain(float3 ro, float3 rd , out float3 nor){
 
 }
 
+
+#include "UnityCG.cginc"
+ 
+
+
+Texture2D<float4> _DepthTexture;
+SamplerState sampler_DepthTexture;
+
+float _CameraNear;
+float _CameraFar;
+
+
+
+float getDepth( float2 screenCoords ){
+  
+    float depth = _DepthTexture.SampleLevel(sampler_DepthTexture, screenCoords, 0).r;
+
+    depth = LinearEyeDepth(depth);//depth * (_CameraFar - _CameraNear) + _CameraNear;
+    return depth;
+}
+
+float getLinearDepth( float2 screenCoords ){
+  
+    float depth = _DepthTexture.SampleLevel(sampler_DepthTexture, screenCoords, 0).r;
+
+    depth = Linear01Depth(depth);//depth * (_CameraFar - _CameraNear) + _CameraNear;
+    return depth;
+}
+
 /*float2 Hash2D(float p)
 {
     float2 p2 = frac(p * float2(5.3983, 5.4427));
@@ -166,8 +195,70 @@ float3 TraceTerrainBinary(float3 ro, float3 rd , out float3 nor){
 
 }
 
+
+float4 ComputeClipSpacePosition(float2 positionNDC, float deviceDepth)
+{
+    float4 positionCS = float4(positionNDC * 2.0 - 1.0, deviceDepth, 1.0);
+
+//#if UNITY_UV_STARTS_AT_TOP
+    // Our world space, view space, screen space and NDC space are Y-up.
+    // Our clip space is flipped upside-down due to poor legacy Unity design.
+    // The flip is baked into the projection matrix, so we only have to flip
+    // manually when going from CS to NDC and back.
+    positionCS.y = -positionCS.y;
+//#endif
+
+    return positionCS;
+}
+
+float3 ComputeViewSpacePosition(float2 positionNDC, float deviceDepth, float4x4 invProjMatrix)
+{
+    float4 positionCS = ComputeClipSpacePosition(positionNDC, deviceDepth);
+    float4 positionVS = mul(invProjMatrix, positionCS);
+    // The view space uses a right-handed coordinate system.
+    positionVS.z = -positionVS.z;
+    return positionVS.xyz / positionVS.w;
+}
+
+
+float4x4 _CameraViewProjectionMatrixInverse;
+float3 ComputeWorldSpacePosition(float2 positionNDC, float deviceDepth, float4x4 invViewProjMatrix)
+{
+    float4 positionCS  = ComputeClipSpacePosition(positionNDC, deviceDepth);
+    float4 hpositionWS = mul(invViewProjMatrix, positionCS);
+    return hpositionWS.xyz / hpositionWS.w;
+}
+
+
  
-float _Time;
+// depth to linear 0-1
+void Linear01Depth_float(float InDepth, float NearClip, float FarClip, out float OutDepth){
+ 
+    float x, y, z, w;
+        x = (float)((FarClip-NearClip)/NearClip);
+        y = 1.0f;
+        z = (float)(FarClip-NearClip)/(NearClip*FarClip);
+        w = (float)(1.0f / FarClip);
+  OutDepth = 1 / (1.0 / (x * InDepth + y)); //
+}
+
+
+float3 getWorldPos( float2 coordinates ){
+
+    float depthSample = _DepthTexture.SampleLevel(sampler_DepthTexture,coordinates, 0).r;
+    float4 clipSpace2 = float4(coordinates * 2.0 - 1.0, (1-depthSample) * 2 -1 , 1.0);
+    float4 viewSpace = mul(_CameraProjectionMatrixInverse,clipSpace2);
+    viewSpace /= viewSpace.w;
+
+
+
+    float4 worldPos = mul(_CameraViewMatrixInverse, viewSpace);
+
+    return worldPos.xyz;
+
+
+}
+ 
 
 #define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
@@ -189,14 +280,20 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
     currentScreenSpacePosition += .5;
 
 
+
+
  if( v.life < 0 || currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || currentScreenSpacePosition.y < 0 || currentScreenSpacePosition.y > 1){
 
-    float2 coordinates = hash21( float(pID * 121) + _Time );
+    float2 coordinates = hash21( float(pID * 121) + _Time + float(pID * 22) );
+    coordinates += hash21( float(pID * 41) + _Time + float(pID * 4) );
+
+    coordinates /= 2;
+  
       // uses project matrix to project forward
     float4 viewSpacePosition = mul(_CameraProjectionMatrixInverse , float4(coordinates * 2.0 - 1.0, 1.0, 1.0));
     viewSpacePosition /= viewSpacePosition.w;
 
-    viewSpacePosition.xyz *= (-3 / viewSpacePosition.z);
+    viewSpacePosition.xyz *= (-1 / viewSpacePosition.z);
 
     float3 worldPosition = mul(_CameraViewMatrixInverse ,viewSpacePosition).xyz;
 
@@ -206,8 +303,76 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
     float3 fPos = TraceTerrainBinary( ro , rd , nor );
     v.pos = fPos;
     v.nor = nor;
+
+    float depthLinear = getLinearDepth( coordinates );
+    float4 ndc = float4(coordinates, depthLinear, 1.0);
+
+
+    float linearDepth = 0;
+    float depthSample = _DepthTexture.SampleLevel(sampler_DepthTexture,coordinates, 0).r;
+    Linear01Depth_float( depthSample , _CameraNear, _CameraFar,linearDepth);
+    // Convert NDC to clip space
+    //float4 clipSpace = ndc * 2.0 - 1.0;
+    float4 clipSpace2 = float4(coordinates * 2.0 - 1.0, (1-depthSample) * 2 -1 , 1.0);
+    float4 viewSpace = mul(_CameraProjectionMatrixInverse,clipSpace2);
+    viewSpace /= viewSpace.w;
+
+
+
+    float4 worldPos = mul(_CameraViewMatrixInverse, viewSpace);
+
+    v.pos = getWorldPos( coordinates );//worldPos.xyz;
+
+    float3 dX = getWorldPos( coordinates + float2(.001,0) ) -  getWorldPos( coordinates - float2(.001,0) );
+    float3 dY = getWorldPos( coordinates + float2(0,.001) ) - getWorldPos( coordinates - float2(0,.001) );
+
+    v.nor = -normalize(cross(dX*100 ,dY*100));//normalize(cross(dX*100,dY*100));
+
+    v.pos += v.nor * .1;
+    //v.nor = float3(1,0,0);
+
+   // v.pos = _CameraPosition + normalize(rd) * depthLinear* 1;
+/*
+    float depthLinear = getLinearDepth( coordinates );
+ float4 ndc = float4(coordinates, depthLinear, 1.0);
+   // Convert NDC to clip space
+    float4 clipSpace = ndc * 2.0 - 1.0;
+   float4 viewSpace = mul(_CameraProjectionMatrixInverse, clipSpace);
+    viewSpace /= viewSpace.w;
+    
+    // Convert view space to world space
+    float4 worldPos = mul(_CameraViewMatrixInverse, viewSpace);
+
+    // Adjust depth
+    worldPos.xyz *= lerp(_CameraNear, _CameraFar, depthLinear);
+
+    float depth = getDepth(coordinates);
+    fPos = _CameraPosition + normalize(rd) * depth;
+    v.pos = fPos;
     //v.debug.y = _Time;
 
+ float depth2 = _DepthTexture.SampleLevel(sampler_DepthTexture, coordinates, 0).r;
+
+    float3 worldSpace = ComputeWorldSpacePosition( coordinates , depth2 , _CameraProjectionMatrixInverse* _CameraViewMatrixInverse);
+  v.pos = _CameraPosition + Linear01Depth(depth2) * normalize(rd) * 10;
+
+  
+
+
+
+
+
+
+
+  //float3 viewSpace = ComputeViewSpacePosition( coordinates , depth2 , _CameraProjectionMatrixInverse);
+
+  //v.pos = mul(_CameraViewMatrixInverse , float4(viewSpace, 1.0)).xyz;
+
+  v.pos = worldPos.xyz;
+
+  */
+
+    //v.pos = _CameraPosition + normalize(rd) * (1-depth2) * (_CameraFar-_CameraNear) - _CameraFar * normalize(rd);// worldSpace;
    // v.pos = coordinates.x *_MapSize.x * float3(1,0,0) + coordinates.y * _MapSize.z * float3(0,0,1);
 
     //v.pos = terrainPos(v.pos);

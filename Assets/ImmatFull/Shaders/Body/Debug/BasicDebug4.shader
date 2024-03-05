@@ -1,11 +1,10 @@
-Shader "Unlit/BasicDebug2"
+Shader "Unlit/BasicDebug4"
 {
     Properties
     {
-      _Size("Size", Range(0.1, 1000)) = 1
+      _Size("Size", Range(0.01, 10)) = 1
       _MainTex("Texture", 2D) = "white" {}
       _ColorMultiplier("Color Multiplier", Range(0, 3)) = 1
-      _NormalOffset("Normal Offset", Range(0, 10)) = 0
     }
     SubShader
     {
@@ -20,6 +19,7 @@ Shader "Unlit/BasicDebug2"
       #pragma vertex vert
       #pragma fragment frag
         #include "UnityCG.cginc"
+        #include "UnityLightingCommon.cginc"
 
             struct Vert{
         float3 pos;
@@ -36,7 +36,6 @@ Shader "Unlit/BasicDebug2"
         int _Count;
       float _Size;
       float _ColorMultiplier;
-      float _NormalOffset;
 
       StructuredBuffer<Vert> _VertBuffer;
 
@@ -108,16 +107,19 @@ Shader "Unlit/BasicDebug2"
                 float3 eyeDir = normalize(eye);
                 float m = dot( eyeDir, vert.nor);
             
+                
+                float lightMatch = dot( vert.nor, _WorldSpaceLightPos0.xyz );
+            
 
                 float dT = min( (1-vert.life) * 10 , vert.life );
 
-                float3 fPos = basePos + extra * _Size * dT * pow( (m),4)  * (length(eye) + 30 ) * .003+ vert.nor * _NormalOffset;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
+                float3 fPos = basePos + extra * _Size ;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
 
                 
                 o.nor = vert.nor;
                 o.uv = uv;
-                o.debug = vert.debug;
                 
+                o.debug = vert.debug;
                 o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
 
 
@@ -134,11 +136,12 @@ Shader "Unlit/BasicDebug2"
         float4 col = tex2D(_MainTex, v.uv);
         
         if( col.x < .9 ){
-            discard;
+           // discard;
         }
 
-        col = 1-  saturate((v.debug-.3) * 5);
-          return float4(col.xyz * (v.nor * .5 +.5) * _ColorMultiplier,1 );
+        col = 1;//-  saturate((v.debug-.3) * 5);
+
+          return col;//float4(col.xyz * (v.nor * .5 +.5) * _ColorMultiplier  * _LightColor0.xyz,1 );
       }
 
 
