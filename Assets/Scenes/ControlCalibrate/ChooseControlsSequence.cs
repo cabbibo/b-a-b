@@ -208,12 +208,16 @@ public class ChooseControlsSequence : MonoBehaviour
                 moveTextHeader.text = "Move vertically";
                 controllerVertical.SetActive(true);
                 birdsContainer.SetActive(true);
+
+                buttonContinue.SetActive(true);
                 break;
             case StepType.MoveHorizontal:
                 stepMoveParent.SetActive(true);
                 moveTextHeader.text = "Move horizontally";
                 controllerHorizontal.SetActive(true);
                 birdsContainer.SetActive(true);
+
+                buttonContinue.SetActive(true);
                 break;
             case StepType.Finished:
                 stepDoneParent.SetActive(true);
