@@ -4,6 +4,7 @@ using UnityEngine;
 using WrenUtils;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.UIElements;
 
 public class ChooseControlsSequence : MonoBehaviour
 {
@@ -22,6 +23,17 @@ public class ChooseControlsSequence : MonoBehaviour
 
     public GameObject controllerVertical;
     public GameObject controllerHorizontal;
+    public TextMeshProUGUI moveTextHeader;
+    public CanvasGroup selectionRight;
+    public CanvasGroup selectionLeft;
+
+    public Transform progressBar;
+
+    public ParticleSystem birdLeftPS;
+    public ParticleSystem birdRightPS;
+
+    bool userChoiceSwapX;
+    bool userChoiceSwapY;
 
 
     int _stepI = 0;
@@ -29,6 +41,9 @@ public class ChooseControlsSequence : MonoBehaviour
         StepType.Start, StepType.MoveVertical, StepType.ChooseVertical,
         StepType.MoveHorizontal, StepType.ChooseHorizontal, StepType.Finished
     };
+
+    float _chooseTLeft;
+    float _chooseTRight;
 
     void OnEnable()
     {
@@ -44,32 +59,93 @@ public class ChooseControlsSequence : MonoBehaviour
 
     private void Update()
     {
+        int result;
         switch(steps[_stepI])
         {
             case StepType.Start:
-                
+
+                if (God.input.xPressed)
+                    NextStep();
+
                 break;
             case StepType.ChooseHorizontal:
-                
+                HandleLeftRightBirdMovement(1, 0);
+                if (HandleChoice(out result))
+                {
+                    Debug.Log("Chose " + result);
+                    userChoiceSwapX = result == 1;
+                    NextStep();
+                }
                 break;
             case StepType.ChooseVertical:
-                
+                HandleLeftRightBirdMovement(0, 1);
+                if (HandleChoice(out result))
+                {
+                    Debug.Log("Chose " + result);
+                    userChoiceSwapY = result == 1;
+
+                    NextStep();
+                }
+
+                break;
+            case StepType.MoveHorizontal:
+
+                HandleLeftRightBirdMovement(1, 0);
+
+                if (God.input.xPressed)
+                    NextStep();
 
                 break;
             case StepType.MoveVertical:
-                
-                break;
-            case StepType.MoveHorizontal:
-                
+
+                HandleLeftRightBirdMovement(0, 1);
+
+                if (God.input.xPressed)
+                    NextStep();
 
                 break;
+
             case StepType.Finished:
-                
-                break;
+
+                HandleFinalBirdMovement();
+
+                if (God.input.xPressed)
+                    NextStep();
+
+                if (God.input.squarePressed)
+                {
+                    _stepI = 0;
+                    SetStep(steps[_stepI]);
+                }
+                    break;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space))
-            NextStep();
+        
+    }
+
+    float ControlX {  get { return God.input.left.x + God.input.right.x; } }
+    float ControlY {  get { return God.input.left.y + God.input.right.y; } }
+
+    void HandleLeftRightBirdMovement(int horizontalMovement, int verticalMovement)
+    {
+        var speed = 20.0f;
+
+        var vl = birdLeftPS.velocityOverLifetime;
+        var vr = birdRightPS.velocityOverLifetime;
+        vl.x = speed * (float)horizontalMovement * ControlX;
+        vr.x = speed * (float)horizontalMovement * -ControlX;
+        vl.y = speed * (float)verticalMovement * ControlY;
+        vr.y = speed * (float)verticalMovement * -ControlY;
+
+    }
+    void HandleFinalBirdMovement()
+    {
+        var speed = 20.0f;
+
+        var vl = birdLeftPS.velocityOverLifetime;
+        vl.x = speed * ControlX * (userChoiceSwapX ? 1 : -1);
+        vl.y = speed * ControlY * (userChoiceSwapY ? 1 : -1);
+
     }
 
     IEnumerator SetupBird()
@@ -107,6 +183,9 @@ public class ChooseControlsSequence : MonoBehaviour
         controllerHorizontal.SetActive(false);
         controllerVertical.SetActive(false);
 
+        _chooseTLeft = _chooseTRight = 0;
+        UpdateHoldGraphic();
+
         switch (stepType)
         {
             case StepType.Start:
@@ -116,32 +195,29 @@ public class ChooseControlsSequence : MonoBehaviour
                 break;
             case StepType.ChooseHorizontal:
                 stepChooseParent.SetActive(true);
-                stepChooseParent.GetComponentInChildren<TextMeshProUGUI>().text = "Which bird are you?";
 
                 birdsContainer.SetActive(true);
                 break;
             case StepType.ChooseVertical:
                 stepChooseParent.SetActive(true);
-                stepChooseParent.GetComponentInChildren<TextMeshProUGUI>().text = "Which bird are you?";
 
                 birdsContainer.SetActive(true);
                 break;
             case StepType.MoveVertical:
                 stepMoveParent.SetActive(true);
-                stepMoveParent.GetComponentInChildren<TextMeshProUGUI>().text = "Move vertically";
+                moveTextHeader.text = "Move vertically";
                 controllerVertical.SetActive(true);
                 birdsContainer.SetActive(true);
                 break;
             case StepType.MoveHorizontal:
                 stepMoveParent.SetActive(true);
-                stepMoveParent.GetComponentInChildren<TextMeshProUGUI>().text = "Move horizontally";
+                moveTextHeader.text = "Move horizontally";
                 controllerHorizontal.SetActive(true);
                 birdsContainer.SetActive(true);
                 break;
             case StepType.Finished:
                 stepDoneParent.SetActive(true);
 
-                buttonContinue.SetActive(true);
                 break;
             default:
                 
@@ -159,6 +235,39 @@ public class ChooseControlsSequence : MonoBehaviour
         SetStep(steps[_stepI]);
     }
 
+    bool HandleChoice(out int result, float speed = 10f, bool gravity = true)
+    {
+        bool left = God.input.l2 > .01f || God.input.l1 > .01f;
+        bool right = God.input.r2 > .01f || God.input.r1 > .01f;
+        if (_chooseTRight > 0 && left) _chooseTRight = 0;
+        if (_chooseTLeft > 0 && right) _chooseTLeft = 0;
+        if (right)
+            _chooseTRight += Time.unscaledDeltaTime * .1f * speed;
+        else if (left)
+            _chooseTLeft += Time.unscaledDeltaTime * .1f * speed;
+        else if (gravity)
+        {
+            _chooseTLeft = Mathf.Clamp01(_chooseTLeft - Time.unscaledDeltaTime * 2.5f);
+            _chooseTRight = Mathf.Clamp01(_chooseTRight - Time.unscaledDeltaTime * 2.5f);
+        }
+
+        UpdateHoldGraphic();
+
+        result = _chooseTLeft > 0 ? -1 : (_chooseTRight > 0 ? 1 : 0);
+
+        var t = Mathf.Max(_chooseTLeft, _chooseTRight);
+        return t >= 1;
+    }
+    void UpdateHoldGraphic()
+    {
+        var t = Mathf.Max(_chooseTLeft, _chooseTRight);
+        progressBar.transform.parent.gameObject.SetActive(t > 0);
+        progressBar.localScale = new Vector3(Mathf.Clamp01(t * t), 1, 1);
+
+        selectionLeft.alpha = _chooseTLeft;
+        selectionRight.alpha = _chooseTRight;
+    }
+
 
 
 
@@ -167,7 +276,7 @@ public class ChooseControlsSequence : MonoBehaviour
     //     bool wait = true;
     //     var t = 0f;
     //     groupContainer.alpha = 1;
-    //     ShowProgress(t);
+    //     UpdateHoldGraphic(t);
 
     //     ShowContinue(true);
 
