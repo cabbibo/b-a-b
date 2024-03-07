@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 using UnityEngine.UI;
+using UnityEngine.Timeline;
+using UnityEngine.Playables;
 using TMPro;
 using UnityEngine.UIElements;
+using static Rewired.ComponentControls.Effects.RotateAroundAxis;
 
 public class ChooseControlsSequence : MonoBehaviour
 {
@@ -21,25 +24,75 @@ public class ChooseControlsSequence : MonoBehaviour
 
     public GameObject buttonContinue;
 
-    public GameObject controllerVertical;
-    public GameObject controllerHorizontal;
+    public TimelineAsset controllerAnimVertical;
+    public TimelineAsset controllerAnimTurn;
+    public PlayableDirector controllerDirector;
     public TextMeshProUGUI moveTextHeader;
+    public TextMeshProUGUI confirmTextHeader;
     public CanvasGroup selectionRight;
     public CanvasGroup selectionLeft;
 
     public Transform progressBar;
 
-    public ParticleSystem birdLeftPS;
-    public ParticleSystem birdRightPS;
+    public GameObject birdLeftParent;
+    public GameObject birdRightParent;
+    BirdPreview birdLeft;
+    BirdPreview birdRight;
+    class BirdPreview
+    {
+        public ParticleSystem particleSystem;
+        public Transform birdParent;
+
+        public BirdPreview(GameObject parent)
+        {
+            particleSystem = parent.GetComponentInChildren<ParticleSystem>();
+            birdParent = parent.transform.Find("Model");
+        }
+
+        float GetTurnAngle(float y1, float y2)
+        {
+            if (Mathf.Approximately(y1, 0f) && Mathf.Approximately(y2, 0f))
+                return 0f;
+            y1 = Mathf.Clamp(y1, -1, 1);
+            y2 = Mathf.Clamp(y2, -1, 1);
+            return (Mathf.Atan2(y2, 1) - Mathf.Atan2(y1, 1)) / (Mathf.PI / 2f);
+        }
+
+        public void SetMovement(int axisX, int axisY)
+        {
+            var x = GetTurnAngle(God.input.left.y, God.input.right.y);
+            var y = Mathf.Clamp(God.input.left.y + God.input.right.y, -1, 1);
+
+            var vl = particleSystem.velocityOverLifetime;
+            //vl.x = x * 2 * speed * axisX;
+            vl.y = y * 30.0f * axisY;
+
+            particleSystem.transform.Rotate(Vector3.up * x * 80.0f * axisX * Time.deltaTime, Space.Self);
+
+            birdParent.localEulerAngles = new Vector3(
+                20 + Mathf.LerpAngle(0, 20, Mathf.Abs(y)) * Mathf.Sign(y) * axisY,
+                0,
+                Mathf.LerpAngle(0, 20, Mathf.Abs(x)) * Mathf.Sign(x) * axisX
+            );
+            birdParent.Rotate(Vector3.up * x * -10 * axisX, Space.World);
+        }
+    }
 
     bool userChoiceSwapX;
     bool userChoiceSwapY;
 
 
+    enum StepType { None, Start, MoveVertical, MoveHorizontal, ChooseVertical, ChooseHorizontal, ConfirmHorizontal, ConfirmVertical, Finished }
     int _stepI = 0;
     StepType[] steps = new StepType[] {
-        StepType.Start, StepType.MoveVertical, StepType.ChooseVertical,
-        StepType.MoveHorizontal, StepType.ChooseHorizontal, StepType.Finished
+        StepType.Start,
+        //StepType.MoveVertical,
+        StepType.ChooseVertical,
+        StepType.ConfirmVertical,
+        //StepType.MoveHorizontal,
+        StepType.ChooseHorizontal,
+        StepType.ConfirmHorizontal,
+        StepType.Finished
     };
 
     float _chooseTLeft;
@@ -48,6 +101,9 @@ public class ChooseControlsSequence : MonoBehaviour
     void OnEnable()
     {
         canvas.worldCamera = Camera.main;
+
+        birdLeft = new BirdPreview(birdLeftParent);
+        birdRight = new BirdPreview(birdRightParent);
     }
 
     void Start()
@@ -69,7 +125,7 @@ public class ChooseControlsSequence : MonoBehaviour
 
                 break;
             case StepType.ChooseHorizontal:
-                HandleLeftRightBirdMovement(1, 0);
+                HandleLeftRightBirdMovement(true, false);
                 if (HandleChoice(out result))
                 {
                     Debug.Log("Chose " + result);
@@ -78,7 +134,7 @@ public class ChooseControlsSequence : MonoBehaviour
                 }
                 break;
             case StepType.ChooseVertical:
-                HandleLeftRightBirdMovement(0, 1);
+                HandleLeftRightBirdMovement(false, true);
                 if (HandleChoice(out result))
                 {
                     Debug.Log("Chose " + result);
@@ -90,7 +146,7 @@ public class ChooseControlsSequence : MonoBehaviour
                 break;
             case StepType.MoveHorizontal:
 
-                HandleLeftRightBirdMovement(1, 0);
+                HandleLeftRightBirdMovement(true, false);
 
                 if (God.input.xPressed)
                     NextStep();
@@ -98,23 +154,50 @@ public class ChooseControlsSequence : MonoBehaviour
                 break;
             case StepType.MoveVertical:
 
-                HandleLeftRightBirdMovement(0, 1);
+                HandleLeftRightBirdMovement(false, true);
 
                 if (God.input.xPressed)
                     NextStep();
 
                 break;
 
-            case StepType.Finished:
-
-                HandleFinalBirdMovement();
+            case StepType.ConfirmHorizontal:
+                birdLeft.SetMovement(userChoiceSwapX ? 1 : -1, 0);
+                birdRight.SetMovement(userChoiceSwapX ? 1 : -1, 0);
 
                 if (God.input.xPressed)
                     NextStep();
 
                 if (God.input.squarePressed)
                 {
-                    _stepI = 0;
+                    _stepI--;
+                    SetStep(steps[_stepI]);
+                }
+                break;
+            case StepType.ConfirmVertical:
+                birdLeft.SetMovement(0, userChoiceSwapY ? 1 : -1);
+                birdRight.SetMovement(0, userChoiceSwapY ? 1 : -1);
+
+                if (God.input.xPressed)
+                    NextStep();
+
+                if (God.input.squarePressed)
+                {
+                    _stepI--;
+                    SetStep(steps[_stepI]);
+                }
+                break;
+
+            case StepType.Finished:
+                birdLeft.SetMovement(userChoiceSwapX ? 1 : -1, userChoiceSwapY ? 1 : -1);
+                birdRight.SetMovement(userChoiceSwapX ? 1 : -1, userChoiceSwapY ? 1 : -1);
+
+                if (God.input.xPressed)
+                    NextStep();
+
+                if (God.input.squarePressed)
+                {
+                    _stepI--;
                     SetStep(steps[_stepI]);
                 }
                     break;
@@ -123,28 +206,10 @@ public class ChooseControlsSequence : MonoBehaviour
         
     }
 
-    float ControlX {  get { return God.input.left.x + God.input.right.x; } }
-    float ControlY {  get { return God.input.left.y + God.input.right.y; } }
-
-    void HandleLeftRightBirdMovement(int horizontalMovement, int verticalMovement)
+    void HandleLeftRightBirdMovement(bool horizontal, bool vertical)
     {
-        var speed = 20.0f;
-
-        var vl = birdLeftPS.velocityOverLifetime;
-        var vr = birdRightPS.velocityOverLifetime;
-        vl.x = speed * (float)horizontalMovement * ControlX;
-        vr.x = speed * (float)horizontalMovement * -ControlX;
-        vl.y = speed * (float)verticalMovement * ControlY;
-        vr.y = speed * (float)verticalMovement * -ControlY;
-
-    }
-    void HandleFinalBirdMovement()
-    {
-        var speed = 20.0f;
-
-        var vl = birdLeftPS.velocityOverLifetime;
-        vl.x = speed * ControlX * (userChoiceSwapX ? 1 : -1);
-        vl.y = speed * ControlY * (userChoiceSwapY ? 1 : -1);
+        birdLeft.SetMovement(horizontal ? -1 : 0, vertical ? 1 : 0);
+        birdRight.SetMovement(horizontal ? 1 : 0, vertical ? -1 : 0);
 
     }
 
@@ -169,7 +234,6 @@ public class ChooseControlsSequence : MonoBehaviour
 
     }
 
-    enum StepType { None, Start, MoveVertical, MoveHorizontal, ChooseVertical, ChooseHorizontal, Finished }
     void SetStep(StepType stepType)
     {
         stepStartParent.SetActive(false);
@@ -180,51 +244,71 @@ public class ChooseControlsSequence : MonoBehaviour
 
         buttonContinue.SetActive(false);
 
-        controllerHorizontal.SetActive(false);
-        controllerVertical.SetActive(false);
+        controllerDirector.gameObject.SetActive(false);
 
         _chooseTLeft = _chooseTRight = 0;
         UpdateHoldGraphic();
 
+        // Controller Animation
+        switch (stepType)
+        {
+
+            case StepType.ChooseVertical:
+            case StepType.MoveVertical:
+            case StepType.ConfirmVertical:
+                controllerDirector.gameObject.SetActive(true);
+                controllerDirector.playableAsset = controllerAnimVertical;
+                controllerDirector.Play();
+                break;
+            case StepType.ChooseHorizontal:
+            case StepType.MoveHorizontal:
+            case StepType.ConfirmHorizontal:
+                controllerDirector.gameObject.SetActive(true);
+                controllerDirector.playableAsset = controllerAnimTurn;
+                controllerDirector.Play();
+                break;
+        }
+
+        // Step Parent
         switch (stepType)
         {
             case StepType.Start:
                 stepStartParent.SetActive(true);
-
-                buttonContinue.SetActive(true);
+                //buttonContinue.SetActive(true);
                 break;
             case StepType.ChooseHorizontal:
-                stepChooseParent.SetActive(true);
-
-                birdsContainer.SetActive(true);
-                break;
             case StepType.ChooseVertical:
                 stepChooseParent.SetActive(true);
-
                 birdsContainer.SetActive(true);
                 break;
             case StepType.MoveVertical:
-                stepMoveParent.SetActive(true);
-                moveTextHeader.text = "Move vertically";
-                controllerVertical.SetActive(true);
-                birdsContainer.SetActive(true);
-
-                buttonContinue.SetActive(true);
-                break;
             case StepType.MoveHorizontal:
                 stepMoveParent.SetActive(true);
-                moveTextHeader.text = "Move horizontally";
-                controllerHorizontal.SetActive(true);
                 birdsContainer.SetActive(true);
-
                 buttonContinue.SetActive(true);
                 break;
             case StepType.Finished:
+            case StepType.ConfirmHorizontal:
+            case StepType.ConfirmVertical:
                 stepDoneParent.SetActive(true);
-
                 break;
-            default:
-                
+        }
+
+        // Text
+        switch (stepType)
+        {
+            case StepType.MoveVertical:
+                moveTextHeader.text = "Move vertically";
+                break;
+            case StepType.MoveHorizontal:
+                moveTextHeader.text = "Move horizontally";
+                break;
+            case StepType.ConfirmHorizontal:
+            case StepType.ConfirmVertical:
+                confirmTextHeader.text = "Does this feel good?";
+                break;
+            case StepType.Finished:
+                confirmTextHeader.text = "You're done!";
                 break;
         }
     }
