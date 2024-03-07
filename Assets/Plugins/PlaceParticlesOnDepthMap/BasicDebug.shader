@@ -63,8 +63,19 @@ Shader "Unlit/BasicDebug"
 
                 Vert vert = _VertBuffer[base];
 
+                // up and right based on normal!
+                // a normal that is *straight* up will not get rendered!
 
-                float3 l = normalize(cross( vert.nor, float3(0,1,0)));
+
+                float3 l = cross( vert.nor, float3(0,1,0));
+
+                // if its facing straight up, use a different up vector
+                if( length(l) < .00001 ){
+                    l = cross( vert.nor, float3(1,0,0));
+                }
+
+                l = normalize(l);
+
                 float3 u = normalize(cross( l, vert.nor));
 
                 // Right and up of camera ( view not project ) matrix
@@ -87,7 +98,6 @@ Shader "Unlit/BasicDebug"
                     uv = float2(0,0);
                 }else if( alternate == 1 ){
                     extra = p2;
-                    
                     uv = float2(1,0);
                 }else if( alternate == 2 ){
                     extra = p4;
@@ -110,10 +120,19 @@ Shader "Unlit/BasicDebug"
                 
                 float lightMatch = dot( vert.nor, _WorldSpaceLightPos0.xyz );
             
-
+                // scaling particles in and out based on life
                 float dT = min( (1-vert.life) * 10 , vert.life );
 
-                float3 fPos = basePos + extra * _Size * dT * pow( (1-m),2)  * (length(eye) + 30 ) * .003+ vert.nor * _NormalOffset;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
+                // changing the size based on eye match
+                float eyeMatchMultiplier = pow( (1-m),1);
+
+                // scaling size based on distance from camera ( try to keep them similar size? could be totally based on view if we want!)
+                float distanceScale =(length(eye) + 30 )* .003;
+
+                float finalSizeMultiplier = _Size * dT * eyeMatchMultiplier  * distanceScale;
+
+
+                float3 fPos = basePos + extra * _Size * finalSizeMultiplier + vert.nor * _NormalOffset;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
 
                 
                 o.nor = vert.nor;
