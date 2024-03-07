@@ -1,0 +1,123 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel PlaceOnDepth
+
+struct Vert{
+  float3 pos;
+  float3 oPos;
+  float3 nor;
+  float3 tangent;
+  float2 uv;
+  float life;
+  float debug;
+};
+
+RWStructuredBuffer<Vert> _VertBuffer;
+int _VertBuffer_COUNT;
+
+
+int safeID( int id , int max ){
+    return clamp( id , 0 , max );
+}
+
+      
+
+float4x4 _CameraViewMatrix;
+float4x4 _CameraViewMatrixInverse;
+float4x4 _CameraProjectionMatrix;
+float4x4 _CameraProjectionMatrixInverse;
+
+float3 _CameraPosition;
+ 
+Texture2D<float4> _DepthTexture;
+SamplerState sampler_DepthTexture;
+SamplerState trilinear_clamp_sampler;
+
+float _CameraNear;
+float _CameraFar;
+
+
+float hash11(float p)
+{
+    p = frac(p * .1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return frac(p);
+}
+
+float2 hash21(float p)
+{
+	float3 p3 = frac(p * float3(.1031, .1030, .0973));
+	p3 += dot(p3, p3.yzx + 33.33);
+    return frac((p3.xx+p3.yz)*p3.zy);
+
+}
+
+float _Time;
+
+float3 getWorldPos( float2 coordinates ){
+
+    float depthSample = _DepthTexture.SampleLevel(sampler_DepthTexture,coordinates, 0).r;
+    float4 clipSpace2 = float4(coordinates * 2.0 - 1.0, (1-depthSample) * 2 -1 , 1.0);
+    float4 viewSpace = mul(_CameraProjectionMatrixInverse,clipSpace2);
+    viewSpace /= viewSpace.w;
+
+    float4 worldPos = mul(_CameraViewMatrixInverse, viewSpace);
+
+    return worldPos.xyz;
+
+
+}
+ 
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+  int pID = threadID + u3GroupID.x * NR_THREADS;
+
+
+    if(pID < _VertBuffer_COUNT){ 
+
+    int sID = safeID( pID, _VertBuffer_COUNT );
+    Vert v = _VertBuffer[sID];
+
+    float4 currentViewPosition =mul( _CameraViewMatrix , float4(v.pos, 1.0));
+    float4 currentScreenSpacePosition =mul( _CameraProjectionMatrix , currentViewPosition);
+    currentScreenSpacePosition /= currentScreenSpacePosition.w;
+
+    currentScreenSpacePosition /= 2.;
+    currentScreenSpacePosition += .5;
+
+
+
+
+ if( v.life < 0 || currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || currentScreenSpacePosition.y < 0 || currentScreenSpacePosition.y > 1){
+
+    float2 coordinates = hash21( float(pID * 121) + _Time + float(pID * 22) );
+    coordinates += hash21( float(pID * 41) + _Time + float(pID * 4) );
+
+    coordinates /= 2;
+
+    v.pos = getWorldPos( coordinates );//worldPos.xyz;
+
+        float3 dX = getWorldPos( coordinates + float2(.001,0) ) -  getWorldPos( coordinates - float2(.001,0) );
+        float3 dY = getWorldPos( coordinates + float2(0,.001) ) - getWorldPos( coordinates - float2(0,.001) );
+
+        v.nor = -normalize(cross(dX*100 ,dY*100));
+
+        v.pos += v.nor * .1;
+
+        v.debug = max( abs(coordinates.x-.5), abs(coordinates.y-.5) );
+
+        v.life = 1;
+    
+
+    }
+
+    v.life  -= .01 * (hash11( float(pID * 121)  )+ .3);
+        
+
+        _VertBuffer[sID] = v;
+    }
+
+}
