@@ -64,6 +64,7 @@ public class Biome : MonoBehaviour
     public void OnEnable()
     {
 
+        print("On Enabled");
         discovered = God.state.biomesDiscovered[id];
         started = God.state.biomesStarted[id];
         completed = God.state.biomesCompleted[id];

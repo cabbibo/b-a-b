@@ -95,7 +95,7 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
 
         // Set out depth camera properties to be the same as the main camera

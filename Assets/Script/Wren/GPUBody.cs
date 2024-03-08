@@ -246,7 +246,7 @@ public class GPUBody : MonoBehaviour
 
             if (drawFeathers)
             {
-                Graphics.DrawProcedural(featherMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * trisPerMesh, 1, null, mpb, ShadowCastingMode.On, true, LayerMask.NameToLayer("Debug"));
+                Graphics.DrawProcedural(featherMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * trisPerMesh, 1, null, mpb, ShadowCastingMode.On, true, gameObject.layer);
             }
 
         }

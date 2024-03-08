@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using WrenUtils;
 
 
 [ExecuteAlways]
@@ -11,18 +12,41 @@ public class LerpTo : MonoBehaviour
     public float lerpSpeed;
     public float slerpSpeed;
 
+    public float resetLerpSpeed;
+    public float resetSlerpSpeed;
+
     public Transform lookTarget;
 
+    public Transform resetTarget;
 
     // Start is called before the first frame update
-    void Start()
+    void OnEnable()
     {
+
+        lerpSpeed = resetLerpSpeed;
+        slerpSpeed = resetSlerpSpeed;
+
+    }
+
+    public void ResetTargets()
+    {
+        target = resetTarget;
+        lerpSpeed = resetLerpSpeed;
+        slerpSpeed = resetSlerpSpeed;
 
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+
+
+        if (God.wren != null)
+        {
+            resetTarget = God.wren.cameraWork.camTarget;
+        }
+
+
 
         if (wantsToRelease && Time.time - startLookTime > releaseTime)
         {

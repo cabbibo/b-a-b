@@ -3,7 +3,7 @@
 
 struct Vert{
   float3 pos;
-  float3 oPos;
+  float3 vel;
   float3 nor;
   float3 color;
   float2 uv;
@@ -39,6 +39,9 @@ SamplerState sampler_ColorTexture;
 float _CameraNear;
 float _CameraFar;
 
+
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
 
 float hash11(float p)
 {
@@ -103,7 +106,14 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
 
     coordinates /= 3;
 
-    v.pos = getWorldPos( coordinates );//worldPos.xyz;
+    float depth = _DepthTexture.SampleLevel(sampler_DepthTexture,coordinates, 0).r;
+
+    if( depth  < 0.0000001){
+        v.uv.y = -1;
+        
+    }else{
+
+        v.pos = getWorldPos( coordinates );//worldPos.xyz;
 
         float3 dX = getWorldPos( coordinates + float2(.001,0) ) -  getWorldPos( coordinates - float2(.001,0) );
         float3 dY = getWorldPos( coordinates + float2(0,.001) ) - getWorldPos( coordinates - float2(0,.001) );
@@ -115,11 +125,16 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
         v.color =  _ColorTexture.SampleLevel(sampler_ColorTexture,coordinates, 0).rgb;
 
         v.debug = max( abs(coordinates.x-.5), abs(coordinates.y-.5) );
-
+        v.uv.y = 1;
         v.life = 1;
+    }
     
 
     }
+
+    v.vel += curlNoise(v.pos * .04 + float3(0,_Time * .04,0)) * .003;//float3(0,-.0001,0);
+    v.pos += v.vel;
+    v.vel *= .9;
 
     v.life  -= .01 * (hash11( float(pID * 31)  )+ .3);
     v.life  -= .01 * (hash11( float(pID * 51)  )+ .3);

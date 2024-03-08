@@ -285,9 +285,7 @@ public class PlayCutScene : MonoBehaviour
         print(Camera.main);
         print(tmpLerpTarget);
 
-        lerpTo.lerpSpeed = tmpLerpSpeed;
-        lerpTo.slerpSpeed = tmpSlerpSpeed;
-        lerpTo.target = tmpLerpTarget;
+        lerpTo.ResetTargets();
         Camera.main.transform.position = lerpTo.target.position;
         Camera.main.transform.LookAt(lerpTo.lookTarget);
         CutSceneFinished.Invoke();
@@ -313,6 +311,7 @@ public class PlayCutScene : MonoBehaviour
         {
 
             print("PLAYING FOR REAL");
+            print(gameObject.name);
 
 
             God.instance.inCutScene = true;
@@ -321,10 +320,6 @@ public class PlayCutScene : MonoBehaviour
 
 
 
-
-            tmpSlerpSpeed = lerpTo.slerpSpeed;
-            tmpLerpSpeed = lerpTo.lerpSpeed;
-            tmpLerpTarget = lerpTo.target;
 
             lerpTo.lerpSpeed = lerpSpeed;
             lerpTo.slerpSpeed = slerpSpeed;

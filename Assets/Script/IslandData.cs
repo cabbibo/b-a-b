@@ -57,8 +57,15 @@ public class IslandData : MonoBehaviour
         Shader.SetGlobalTexture("_BiomeMap1", biomeMap1);
         Shader.SetGlobalTexture("_BiomeMap2", biomeMap2);
         Shader.SetGlobalTexture("_FoodMap", foodMap);
+
         // Shader.SetGlobalTexture("_BiomeMap");
 
+    }
+
+    void Start()
+    {
+
+        OnBiomeChange(God.state.currentBiomeID, God.state.currentBiomeID);
     }
 
 
