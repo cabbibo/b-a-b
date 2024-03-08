@@ -5,7 +5,7 @@ struct Vert{
   float3 pos;
   float3 oPos;
   float3 nor;
-  float3 tangent;
+  float3 color;
   float2 uv;
   float life;
   float debug;
@@ -31,6 +31,10 @@ float3 _CameraPosition;
 Texture2D<float4> _DepthTexture;
 SamplerState sampler_DepthTexture;
 SamplerState trilinear_clamp_sampler;
+
+
+Texture2D<float4> _ColorTexture;
+SamplerState sampler_ColorTexture;
 
 float _CameraNear;
 float _CameraFar;
@@ -94,9 +98,10 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
  if( v.life < 0 || currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || currentScreenSpacePosition.y < 0 || currentScreenSpacePosition.y > 1){
 
     float2 coordinates = hash21( float(pID * 121) + _Time + float(pID * 22) );
-    coordinates += hash21( float(pID * 41) + _Time + float(pID * 4) );
+    coordinates += hash21( float(pID * 13) + _Time*3 + float(pID * 102.3) );
+    coordinates += hash21( float(pID * 44.52) + _Time*2 + float(pID * 49.4) );
 
-    coordinates /= 2;
+    coordinates /= 3;
 
     v.pos = getWorldPos( coordinates );//worldPos.xyz;
 
@@ -105,7 +110,9 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
 
         v.nor = -normalize(cross(dX*100 ,dY*100));
 
-        v.pos += v.nor * .1;
+       // v.pos += v.nor * .1;
+
+        v.color =  _ColorTexture.SampleLevel(sampler_ColorTexture,coordinates, 0).rgb;
 
         v.debug = max( abs(coordinates.x-.5), abs(coordinates.y-.5) );
 
@@ -114,7 +121,9 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
 
     }
 
-    v.life  -= .01 * (hash11( float(pID * 121)  )+ .3);
+    v.life  -= .01 * (hash11( float(pID * 31)  )+ .3);
+    v.life  -= .01 * (hash11( float(pID * 51)  )+ .3);
+    v.life  -= .01 * (hash11( float(pID * 91)  )+ .3);
         
 
         _VertBuffer[sID] = v;

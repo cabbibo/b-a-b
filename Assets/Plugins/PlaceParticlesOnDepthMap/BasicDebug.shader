@@ -25,7 +25,7 @@ Shader "Unlit/BasicDebug"
         float3 pos;
         float3 oPos;
         float3 nor;
-        float3 tangent;
+        float3 color;
         float2 uv;
         float life;
         float debug;
@@ -46,6 +46,8 @@ Shader "Unlit/BasicDebug"
           float3 nor : NORMAL;
             float2 uv : TEXCOORD0;
             float debug : TEXCOORD1;
+            float3 color : TEXCOORD2;
+            float life : TEXCOORD3;
       };
 
         varyings vert (uint id : SV_VertexID){
@@ -124,21 +126,26 @@ Shader "Unlit/BasicDebug"
                 float dT = min( (1-vert.life) * 10 , vert.life );
 
                 // changing the size based on eye match
-                float eyeMatchMultiplier = pow( (1-m),1);
+                float eyeMatchMultiplier =1;//pow( (1-m),1) * .5 + .5;
 
                 // scaling size based on distance from camera ( try to keep them similar size? could be totally based on view if we want!)
                 float distanceScale =(length(eye) + 30 )* .003;
 
                 float finalSizeMultiplier = _Size * dT * eyeMatchMultiplier  * distanceScale;
 
-
-                float3 fPos = basePos + extra * _Size * finalSizeMultiplier + vert.nor * _NormalOffset;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
+                float scale = length(eye) * .003;// 1.0 + (1.0 / length(eye));
+                
+                //float scale = 1;
+                float3 fPos = basePos + extra * _Size * scale;//  + vert.nor * _NormalOffset;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
 
                 
                 o.nor = vert.nor;
                 o.uv = uv;
-                
+                o.color = vert.color;
                 o.debug = vert.debug;
+                o.life = vert.life;
+
+              //  o.camPos = 
                 o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
 
 
@@ -149,10 +156,16 @@ Shader "Unlit/BasicDebug"
         }
 
         sampler2D _MainTex;
-        
+       float3 hsv(float h, float s, float v)
+{
+  return lerp( float3( 1.0 , 1, 1 ) , clamp( ( abs( frac(
+    h + float3( 3.0, 2.0, 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ), 0.0, 1.0 ), s ) * v;
+} 
       //Pixel function returns a solid color for each point.
       float4 frag (varyings v) : COLOR {      
         float4 col = tex2D(_MainTex, v.uv);
+
+        float val = col.x;
         
         if( col.x < .5 ){
             discard;
@@ -164,7 +177,13 @@ Shader "Unlit/BasicDebug"
        // col.xyz = lightMatch;
 
         col = 1-  saturate((v.debug-.3) * 5);
-          return float4(col.xyz * (v.nor.xyz * .5 + .5) * _ColorMultiplier,1 );
+        col.xyz = col.xyz * (v.nor.xyz * .5 + .5) * _ColorMultiplier;
+        col.xyz *= .5;
+        col.xyz += .5;
+        //col.xyz = hsv(v.life+ val * .4 + v.debug,.5, 1);
+        //col.xyz *= hsv(val,.4,1); 
+        col.xyz *= v.color;
+          return float4(col.xyz,1 );
       }
 
 

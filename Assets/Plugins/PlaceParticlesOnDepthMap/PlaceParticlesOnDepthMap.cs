@@ -32,7 +32,8 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
     RenderTextureDescriptor textureDescriptor;
 
-    RenderTexture texture;
+    RenderTexture depthTexture;
+    RenderTexture colorTexture;
     public Vector2 renderSize = new Vector2(1920, 1080);
 
     public MeshRenderer debugDepthRenderer;
@@ -40,10 +41,22 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
     {
 
 
-        textureDescriptor = new RenderTextureDescriptor((int)renderSize.x, (int)renderSize.y, RenderTextureFormat.Depth, 24);
+        /*textureDescriptor = new RenderTextureDescriptor((int)renderSize.x, (int)renderSize.y, RenderTextureFormat.Depth, 24);
         texture = RenderTexture.GetTemporary(textureDescriptor);
-
         texture.filterMode = FilterMode.Trilinear;
+
+        textureDescriptor = new RenderTextureDescriptor((int)renderSize.x, (int)renderSize.y, RenderTextureFormat.ARGBFloat, 0);
+        colorTexture = RenderTexture.GetTemporary(textureDescriptor);*/
+
+
+        // Create a color texture
+        colorTexture = new RenderTexture((int)renderSize.x, (int)renderSize.y, 0, RenderTextureFormat.ARGB32);
+        colorTexture.Create();
+
+        // Create a depth texture
+        depthTexture = new RenderTexture((int)renderSize.x, (int)renderSize.y, 24, RenderTextureFormat.Depth);
+        depthTexture.Create();
+
 
 
         _VertBuffer = new ComputeBuffer(count, sizeof(float) * structSize);
@@ -53,11 +66,14 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
 
 
+
     }
 
     void OnDisable()
     {
 
+        depthTexture.Release();
+        colorTexture.Release();
 
         if (_VertBuffer != null) { _VertBuffer.Release(); }
     }
@@ -71,8 +87,8 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
     public void GetNumGroups()
     {
-        numGroups = ((int)count + ((int)numThreads - 1)) / (int)numThreads;
-        //numGroups = ((int)count) / (int)numThreads;
+        //numGroups = ((int)count + ((int)numThreads - 1)) / (int)numThreads;
+        numGroups = ((int)count) / (int)numThreads;
     }
 
 
@@ -92,11 +108,14 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
         camera.transform.position = Camera.main.transform.position;
         camera.transform.rotation = Camera.main.transform.rotation;
 
-        camera.depthTextureMode = DepthTextureMode.DepthNormals;
-        camera.SetTargetBuffers(texture.colorBuffer, texture.depthBuffer);
+        camera.SetTargetBuffers(depthTexture.colorBuffer, depthTexture.depthBuffer);
+        //camera.depthTextureMode = DepthTextureMode.DepthNormals;
         camera.Render();
 
-        debugDepthRenderer.sharedMaterial.SetTexture("_MainTex", texture);
+        camera.targetTexture = colorTexture;
+        camera.Render();
+
+        debugDepthRenderer.sharedMaterial.SetTexture("_MainTex", depthTexture);
 
         shader.SetMatrix("_CameraViewMatrix", Camera.main.worldToCameraMatrix);
         shader.SetMatrix("_CameraViewMatrixInverse", Camera.main.worldToCameraMatrix.inverse);
@@ -114,7 +133,8 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
         float w = y / Camera.main.farClipPlane;
 
         shader.SetVector("_ZBufferParams", new Vector4(x, y, z, w));
-        shader.SetTexture(kernel, "_DepthTexture", texture);
+        shader.SetTexture(kernel, "_DepthTexture", depthTexture);
+        shader.SetTexture(kernel, "_ColorTexture", colorTexture);
 
         shader.SetFloat("_Time", Time.time);
 
