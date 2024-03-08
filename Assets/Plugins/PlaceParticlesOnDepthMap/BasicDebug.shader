@@ -123,7 +123,7 @@ Shader "Unlit/BasicDebug"
                 float lightMatch = dot( vert.nor, _WorldSpaceLightPos0.xyz );
             
                 // scaling particles in and out based on life
-                float dT = min( (1-vert.life) * 10 , vert.life );
+                float dT = saturate(min( (1-vert.life) * 10 , vert.life ));
 
                 // changing the size based on eye match
                 float eyeMatchMultiplier =1;//pow( (1-m),1) * .5 + .5;
@@ -136,7 +136,7 @@ Shader "Unlit/BasicDebug"
                 float scale = length(eye) * .003;// 1.0 + (1.0 / length(eye));
                 
                 //float scale = 1;
-                float3 fPos = basePos + extra * _Size * scale;//  + vert.nor * _NormalOffset;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
+                float3 fPos = basePos + extra * _Size * scale * dT;//  + vert.nor * _NormalOffset;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
 
                 
                 o.nor = vert.nor;
@@ -144,6 +144,10 @@ Shader "Unlit/BasicDebug"
                 o.color = vert.color;
                 o.debug = vert.debug;
                 o.life = vert.life;
+
+                if( length(vert.uv.y) < 1 ){
+                  fPos = 0;
+                }
 
               //  o.camPos = 
                 o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
@@ -180,6 +184,8 @@ Shader "Unlit/BasicDebug"
         col.xyz = col.xyz * (v.nor.xyz * .5 + .5) * _ColorMultiplier;
         col.xyz *= .5;
         col.xyz += .5;
+
+        col *=10*saturate((v.debug-.3) * 5)+1;;
         //col.xyz = hsv(v.life+ val * .4 + v.debug,.5, 1);
         //col.xyz *= hsv(val,.4,1); 
         col.xyz *= v.color;

@@ -40,9 +40,7 @@ namespace WrenUtils
 
 
             //            print("hello");
-            RenderSettings.skybox = skyboxMaterial;
-            God.skyboxUpdater.material = skyboxMaterial;
-            God.skyboxUpdater.UpdateSkybox();
+            God.skyboxUpdater.UpdateSkybox(skyboxMaterial);
 
             God.currentScene = this;
 

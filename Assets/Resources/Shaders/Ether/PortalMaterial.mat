@@ -76,26 +76,26 @@ Material:
     - _Active: 1
     - _BaseHue: 0.3
     - _BumpScale: 1
-    - _CenterOrbFalloff: 0
-    - _CenterOrbFalloffSharpness: 1
-    - _CenterOrbImportance: 0.3
-    - _ColorMultiplier: 1
+    - _CenterOrbFalloff: 102
+    - _CenterOrbFalloffSharpness: 5.55
+    - _CenterOrbImportance: 0.37
+    - _ColorMultiplier: 3.74
     - _Cutoff: 0.5
-    - _DeltaStepSize: 0.05
+    - _DeltaStepSize: 0.1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _IndexOfRefraction: 1
+    - _IndexOfRefraction: 0.4
     - _Metallic: 0
     - _Mode: 0
-    - _NoiseImportance: 2.92
+    - _NoiseImportance: 6.1
     - _NoisePower: 1
-    - _NoiseSharpness: 1
-    - _NoiseSize: 12.42
-    - _NoiseSubtractor: 0
-    - _NumSteps: 6
+    - _NoiseSharpness: 19.75
+    - _NoiseSize: 8.41
+    - _NoiseSubtractor: -2.24
+    - _NumSteps: 5.8
     - _OcclusionStrength: 1
     - _Opaqueness: 1
     - _OrbHeight: 0
@@ -103,13 +103,13 @@ Material:
     - _Parallax: 0.02
     - _ReflectionMultiplier: 0
     - _ReflectionSharpness: 0
-    - _RefractionBackgroundSampleExtraStep: 0
+    - _RefractionBackgroundSampleExtraStep: 0.1
     - _Scale: 40
     - _Size: 0.01
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _StepRefractionMultiplier: 0.01
+    - _StepRefractionMultiplier: 0
     - _TriplanarSharpness: 1
     - _UVSec: 0
     - _ZWrite: 1
@@ -120,7 +120,7 @@ Material:
     - _CenterOrbOffset: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _NoiseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _NoiseColor: {r: 1, g: 0, b: 0, a: 1}
     - _NoiseOffset: {r: 0, g: 0, b: 0, a: 1}
     - _ReflectionColor: {r: 1, g: 1, b: 1, a: 1}
     - _TriplanarMultiplier: {r: 1, g: 1, b: 1, a: 1}

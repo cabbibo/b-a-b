@@ -52,10 +52,22 @@ public class BiomeMusic : MonoBehaviour
     public void OnBiomeChange(int oldBiome, int newBiome)
     {
 
+        AudioClip clip;
+        if (newBiome < 0)
+        {
+            clip = neutralClip;
+        }
+        else
+        {
+            clip = clips[newBiome];
+
+        }
+
+
 
         currentActiveSource++;
         currentActiveSource %= sources.Length;
-        sources[currentActiveSource].clip = clips[newBiome];
+        sources[currentActiveSource].clip = clip;
         sources[currentActiveSource].Play();
 
 

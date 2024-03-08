@@ -43,8 +43,11 @@ public class PlacePrefabsOnTerrain : MonoBehaviour
     public float minScale = 10;
     public float maxScale = 30;
 
-    [Range(0,1)]public float minSteepness;
-    [Range(0,1)]public float maxSteepness;
+    [Range(0, 1)] public float minSteepness;
+    [Range(0, 1)] public float maxSteepness;
+
+    public float minAltitude;
+    public float maxAltitude;
 
     public float matchTerrainNormal;
 
@@ -98,47 +101,53 @@ public class PlacePrefabsOnTerrain : MonoBehaviour
                 //if it is, place it
                 if (biomeVal[biome] > .01f)
                 {
+                    float height = God.terrain.SampleHeight(pos);
 
-
-                    Vector3 n = God.terrain.terrainData.GetInterpolatedNormal(nPos.x, nPos.y);
-
-                    //print(n);
-
-
-                    if (n.y > minSteepness && n.y < maxSteepness)
+                    if (height > minAltitude && height < maxAltitude)
                     {
-                        /* RaycastHit hit;
-
-                         LayerMask mask = LayerMask.GetMask("Terrain");
 
 
+                        Vector3 n = God.terrain.terrainData.GetInterpolatedNormal(nPos.x, nPos.y);
 
-                        if (Physics.Raycast(pos + Vector3.up * 1000, Vector3.down, out hit, 10000, mask))
-                         {
-                            pos = hit.point;
-                            pos += Vector3.up * verticalOffset;
-
-                         }*/
-
-                        // print(God.terrain.SampleHeight(transform.position));
-
-                        pos.y = God.terrain.SampleHeight(pos) + verticalOffset;
+                        //print(n);
 
 
-                        GameObject go = Instantiate(prefab, pos, Quaternion.identity, transform);
-                        go.transform.localScale = Vector3.one * Random.Range(minScale, maxScale);
-                        // go.transform.LookAt(go.transform.position + n);
-                        //go.transform.RotateAround(go.transform.position, go.transform.right, 90);
+                        if (n.y > minSteepness && n.y < maxSteepness)
+                        {
+                            /* RaycastHit hit;
 
-                        //Quaternion targetRotation = Quaternion.FromToRotation(go.transform.up, n) * go.transform.rotation;
-                        /// transform.rotation = targetRotation;
-                        //    go.transform.rotation = targetRotation;
+                             LayerMask mask = LayerMask.GetMask("Terrain");
 
-                        // go.transform.rotation = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(rotationRandomness * Random.value), Random.value);
-                        transforms[i] = go.transform;
 
-                        allGameObjects.Add(go);
-                        break;
+
+                            if (Physics.Raycast(pos + Vector3.up * 1000, Vector3.down, out hit, 10000, mask))
+                             {
+                                pos = hit.point;
+                                pos += Vector3.up * verticalOffset;
+
+                             }*/
+
+                            // print(God.terrain.SampleHeight(transform.position));
+
+                            pos.y = height + verticalOffset;
+
+
+                            GameObject go = Instantiate(prefab, pos, Quaternion.identity, transform);
+                            go.transform.localScale = Vector3.one * Random.Range(minScale, maxScale);
+                            // go.transform.LookAt(go.transform.position + n);
+                            //go.transform.RotateAround(go.transform.position, go.transform.right, 90);
+
+                            //Quaternion targetRotation = Quaternion.FromToRotation(go.transform.up, n) * go.transform.rotation;
+                            /// transform.rotation = targetRotation;
+                            //    go.transform.rotation = targetRotation;
+
+                            // go.transform.rotation = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(rotationRandomness * Random.value), Random.value);
+                            transforms[i] = go.transform;
+
+                            allGameObjects.Add(go);
+                            break;
+                        }
+
                     }
 
 

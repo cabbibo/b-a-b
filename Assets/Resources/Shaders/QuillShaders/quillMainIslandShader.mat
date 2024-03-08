@@ -87,7 +87,7 @@ Material:
     - _SrcBlend: 1
     - _TriplanarSharpness: 1
     - _UVSec: 0
-    - _WindAmount: 0.03
+    - _WindAmount: 0
     - _WindChangeSize: 0.2
     - _WindChangeSpeed: 4
     - _ZWrite: 1

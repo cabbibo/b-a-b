@@ -17,6 +17,7 @@ public class SkyboxUpdater : MonoBehaviour
 
     private void OnEnable()
     {
+        print("hello");
         // Initialize cubemap/render texture
         RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
         var resolution = RenderSettings.defaultReflectionResolution;
@@ -53,6 +54,13 @@ public class SkyboxUpdater : MonoBehaviour
             commandBuffer.GenerateMips(renderTexture);
             commandBuffer.CopyTexture(renderTexture, 0, cubemap, (int)face);
         }
+
+
+        Graphics.ExecuteCommandBuffer(commandBuffer);
+
+        RenderSettings.skybox = material;
+
+
     }
 
 
@@ -67,12 +75,12 @@ public class SkyboxUpdater : MonoBehaviour
 
     }
 
-    public void UpdateSkybox()
+    public void UpdateSkybox(Material m)
     {
+        material = m;
 
         // if (commandBuffer == null) { OnEnable(); }
         OnEnable();
 
-        Graphics.ExecuteCommandBuffer(commandBuffer);
     }
 }
