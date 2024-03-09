@@ -31,7 +31,7 @@ public class PlayCutScene : MonoBehaviour
 
     LerpTo lerpTo;
     GlitchHit glitch;
-    PlayableDirector director;
+    public PlayableDirector director;
 
     float tmpLerpSpeed;
     float tmpSlerpSpeed;
@@ -48,16 +48,18 @@ public class PlayCutScene : MonoBehaviour
 
 
     // Start is called before the first frame update
-    void Awake()
+    void OnEnable()
     {
 
 
-        // if( Camera.main == null ){ Camera.main = Camera.Camera.main; }
-        director = GetComponent<PlayableDirector>();
+        if (director == null)
+        {
+            // if( Camera.main == null ){ Camera.main = Camera.Camera.main; }
+            director = GetComponent<PlayableDirector>();
+
+        }
         director.played += Director_Played;
         director.stopped += Director_Stopped;
-
-
 
         if (timeline != null)
         {
@@ -73,6 +75,12 @@ public class PlayCutScene : MonoBehaviour
         //        print(lerpTo.target);
         tmpLerpTarget = lerpTo.target;
 
+    }
+
+    void OnDisable()
+    {
+        director.played -= Director_Played;
+        director.stopped -= Director_Stopped;
     }
 
     float transitionStartTime;
@@ -280,17 +288,23 @@ public class PlayCutScene : MonoBehaviour
         God.instance.inCutScene = false;
         lerpTo.enabled = true;
 
+        print("FINISHED!");
         print(lerpTo);
         print(lerpTo.target);
         print(Camera.main);
         print(tmpLerpTarget);
+        print(lerpTo.resetTarget);
 
         lerpTo.ResetTargets();
+
+        print("hi");
         Camera.main.transform.position = lerpTo.target.position;
         Camera.main.transform.LookAt(lerpTo.lookTarget);
         CutSceneFinished.Invoke();
-        God.wren.canMove = true;
-
+        if (God.wren != null)
+        {
+            God.wren.canMove = true;
+        }
 
         AudioListener.volume = 1;
 
@@ -384,6 +398,9 @@ public class PlayCutScene : MonoBehaviour
 
     public void SetStartValues()
     {
+
+
+        print(Camera.main);
 
 
         startPos = Camera.main.transform.position;

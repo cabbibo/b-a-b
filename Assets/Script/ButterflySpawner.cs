@@ -67,7 +67,7 @@ public class ButterflySpawner : MonoBehaviour
     {
 
         for (int i = this.transform.childCount; i > 0; --i)
-            DestroyImmediate(this.transform.GetChild(0).gameObject);
+            Destroy(this.transform.GetChild(0).gameObject);
 
         butterflys = new GameObject[numButterflys];
 
@@ -142,7 +142,7 @@ public class ButterflySpawner : MonoBehaviour
 
         for (int i = this.transform.childCount; i > 0; --i)
         {
-            DestroyImmediate(this.transform.GetChild(0).gameObject);
+            Destroy(this.transform.GetChild(0).gameObject);
             butterflys = new GameObject[0];
 
             positions = new float3[0];
@@ -157,7 +157,7 @@ public class ButterflySpawner : MonoBehaviour
     {
         for (int i = this.transform.childCount; i > 0; --i)
         {
-            DestroyImmediate(this.transform.GetChild(0).gameObject);
+            Destroy(this.transform.GetChild(0).gameObject);
 
             butterflys = new GameObject[0];
 
@@ -416,7 +416,7 @@ public class ButterflySpawner : MonoBehaviour
         }
 
 
-        // OnEat.Invoke(bugFullnessAdd);
+        OnEat.Invoke(bugFullnessAdd);
         WrenUtils.God.wren.stats.FullnessAdd(bugFullnessAdd);
         WrenUtils.God.wren.stats.StaminaAdd(bugStaminaAdd);
 
