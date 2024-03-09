@@ -8758,7 +8758,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bird: {fileID: 3880365654864790025}
-  lineDebugMaterial: {fileID: 2100000, guid: 2fc2b2eed00f4d8499f8ceab0d5a9732, type: 2}
+  featherDebugLineMaterial: {fileID: 0}
   featherDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67,
     type: 2}
   featherMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a, type: 2}
@@ -10032,6 +10032,8 @@ MonoBehaviour:
   wingMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
   wingDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67, type: 2}
   bodyDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67, type: 2}
+  wingDebugLineMaterial: {fileID: 0}
+  bodyDebugLineMaterial: {fileID: 0}
   specialTarget: {fileID: 0}
   percentageRendered: 1
   _MiddleSecondaryFeatherScaleMultiplier: 2
@@ -10143,6 +10145,8 @@ MonoBehaviour:
   drawBodyFeather: 1
   drawLeftWingFeathers: 1
   drawRightWingFeathers: 1
+  drawLeftFeatherLines: 0
+  drawRightFeatherLines: 0
   drawLeftWingFeatherPoints: 0
   drawRightWingFeatherPoints: 0
   drawBodyPoints: 0
@@ -11589,8 +11593,10 @@ MonoBehaviour:
   wing: {fileID: 8595490670066662574}
   featherDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67,
     type: 2}
+  featherDebugLineMaterial: {fileID: 0}
   featherMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
   debugFeatherPoints: 0
+  debugLinePoints: 0
   drawFeathers: 1
   numberLesserCovertsRows: 30
   numberLesserCovertsCols: 30
@@ -18148,8 +18154,10 @@ MonoBehaviour:
   wing: {fileID: 2880514451504289711}
   featherDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67,
     type: 2}
+  featherDebugLineMaterial: {fileID: 0}
   featherMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
   debugFeatherPoints: 0
+  debugLinePoints: 0
   drawFeathers: 1
   numberLesserCovertsRows: 30
   numberLesserCovertsCols: 30
@@ -24158,7 +24166,7 @@ MonoBehaviour:
   takeOffForwardForce: 40
   takeOffUpForce: 40
   paintedWindForceMultiplier: 0
-  showDebugForces: 0
+  showDebugForces: 1
   reset: 0
   distToGround: 0
   rawDistToGround: 0
@@ -24440,7 +24448,7 @@ MonoBehaviour:
   - Superflight1
   - Tutorial1
   - TutorialWrenRippedDemo(Clone)
-  paramID: 2
+  paramID: 4
   paramSetName: NoGravity2
 --- !u!114 &742813609323488648
 MonoBehaviour:
@@ -24585,7 +24593,7 @@ MonoBehaviour:
   boredomGrowSpeed: 0
   boredomGrowSpeedMin: 0
   boredomGrowSpeedMax: 0
-  hungryHealthSubtractor: 0.0001
+  hungryHealthSubtractor: 0
   thirstyHealthSubtractor: 0
   tiredHealthSubtractor: 0
   sadnessHealthSubtractor: 0
@@ -24628,7 +24636,7 @@ MonoBehaviour:
   maxQuenchedness: 0
   maxBoost: 0
   maxAge: 0
-  debugStats: 0
+  debugStats: 1
   debugStatsMaterial: {fileID: 2100000, guid: d92d98770794aba44a94dad72aca9e1c, type: 2}
   allStats: 6
   debugStatsArray: []

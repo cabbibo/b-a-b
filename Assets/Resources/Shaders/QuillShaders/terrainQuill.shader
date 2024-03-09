@@ -1109,6 +1109,7 @@ ff *= ff;
 
   col *= noiseVal2 * _NoiseTextureStrength * (1/(1+ .1*fogZ)) + _NoiseTextureBase;
 
+  
 
   //col = shadow;
   if( capDistance < 0 ){
