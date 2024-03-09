@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 using UnityEngine.Experimental.Rendering;
+//using WrenUtils;
+using WrenUtils;
 
 
 [ExecuteAlways]
@@ -126,6 +128,7 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
         shader.SetFloat("_CameraNear", Camera.main.nearClipPlane);
         shader.SetFloat("_CameraFar", Camera.main.farClipPlane);
 
+        God.instance.SetWrenCompute(kernel, shader);
 
         float x = 1 - (Camera.main.farClipPlane / Camera.main.nearClipPlane);
         float y = Camera.main.farClipPlane / Camera.main.nearClipPlane;

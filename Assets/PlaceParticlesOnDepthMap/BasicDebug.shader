@@ -48,6 +48,8 @@ Shader "Unlit/BasicDebug"
             float debug : TEXCOORD1;
             float3 color : TEXCOORD2;
             float life : TEXCOORD3;
+            float id :TEXCOORD4;
+            float lifeSize : TEXCOORD5;
       };
 
         varyings vert (uint id : SV_VertexID){
@@ -71,7 +73,7 @@ Shader "Unlit/BasicDebug"
 
                 float3 l = cross( vert.nor, float3(0,1,0));
 
-                // if its facing straight up, use a different up vector
+                // if its facing straight up, use a different up floattor
                 if( length(l) < .00001 ){
                     l = cross( vert.nor, float3(1,0,0));
                 }
@@ -123,7 +125,7 @@ Shader "Unlit/BasicDebug"
                 float lightMatch = dot( vert.nor, _WorldSpaceLightPos0.xyz );
             
                 // scaling particles in and out based on life
-                float dT = saturate(min( (1-vert.life) * 10 , vert.life ));
+                float dT = saturate(min( (1-vert.life) * 30 , vert.life ));
 
                 // changing the size based on eye match
                 float eyeMatchMultiplier =1;//pow( (1-m),1) * .5 + .5;
@@ -136,17 +138,18 @@ Shader "Unlit/BasicDebug"
                 float scale = length(eye) * .003;// 1.0 + (1.0 / length(eye));
                 
                 //float scale = 1;
-                float3 fPos = basePos + extra * _Size * scale * dT;//  + vert.nor * _NormalOffset;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
+                float3 fPos = basePos + extra * _Size * scale * dT  + vert.nor * _NormalOffset;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
 
-                
+                o.lifeSize = dT;
                 o.nor = vert.nor;
                 o.uv = uv;
                 o.color = vert.color;
                 o.debug = vert.debug;
                 o.life = vert.life;
+                o.id = float(base);
 
                 if( length(vert.uv.y) < 1 ){
-                  fPos = 0;
+                //  fPos = 0;
                 }
 
               //  o.camPos = 
@@ -165,10 +168,38 @@ Shader "Unlit/BasicDebug"
   return lerp( float3( 1.0 , 1, 1 ) , clamp( ( abs( frac(
     h + float3( 3.0, 2.0, 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ), 0.0, 1.0 ), s ) * v;
 } 
+
+float3 rgb2hsv(float3 c)
+{
+    float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    float4 p = lerp(float4(c.bg, K.wz), float4(c.gb, K.xy), step(c.b, c.g));
+    float4 q = lerp(float4(p.xyw, c.r), float4(c.r, p.yzx), step(p.x, c.r));
+
+    float d = q.x - min(q.w, q.y);
+    float e = 1.0e-10;
+    return float3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+
+
+// All components are in the range [0…1], including hue.
+float3 hsv2rgb(float3 c)
+{
+    float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    float3 p = abs(frac(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * lerp(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+float3 ApplyHue(float3 col, float hueAdjust)
+{
+    const float3 k = float3(0.57735, 0.57735, 0.57735);
+    half cosAngle = cos(hueAdjust);
+    return col * cosAngle + cross(k, col) * sin(hueAdjust) + k * dot(k, col) * (1.0 - cosAngle);
+}
       //Pixel function returns a solid color for each point.
       float4 frag (varyings v) : COLOR {      
         float4 col = tex2D(_MainTex, v.uv);
 
+        
         float val = col.x;
         
         if( col.x < .5 ){
@@ -180,15 +211,23 @@ Shader "Unlit/BasicDebug"
 
        // col.xyz = lightMatch;
 
-        col = 1-  saturate((v.debug-.3) * 5);
+        //col = 1-  saturate((v.debug-.3) * 5);
         col.xyz = col.xyz * (v.nor.xyz * .5 + .5) * _ColorMultiplier;
         col.xyz *= .5;
         col.xyz += .5;
 
-        col *=10*saturate((v.debug-.3) * 5)+1;;
+        col =1-saturate((v.debug-.45) * 20);//+1;;
         //col.xyz = hsv(v.life+ val * .4 + v.debug,.5, 1);
         //col.xyz *= hsv(val,.4,1); 
-        col.xyz *= v.color;
+        //col.xyz *= v.color;
+
+        float hue = rgb2hsv(v.color).x;
+        col.xyz = ApplyHue(v.color , sin(v.id) *.5);//hsv(hue,.5,1);
+        col.xyz *= (sin(v.id * 10)+1) * .5 + .5;
+        col.xyz *= v.lifeSize;
+        col *= 2;
+        col.xyz = ApplyHue( col.xyz , val * .4 );// hsv( val,1,1);
+       // col.xyz *= hsv( hue + .3*sin(v.id) ,.4,(sin(v.id * 10)+1) /4 + .5) ;
           return float4(col.xyz,1 );
       }
 

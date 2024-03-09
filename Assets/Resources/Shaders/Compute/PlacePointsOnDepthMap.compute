@@ -61,6 +61,22 @@ float2 hash21(float p)
 
 float _Time;
 
+
+struct Wren{
+  float3 pos;
+  float3 vel;
+  float l1;
+  float r1;
+  float hue1;
+  float hue2;
+  float hue3;
+  float hue4;
+};
+
+RWStructuredBuffer<Wren> _WrenBuffer;
+
+int _NumWrens;
+
 float3 getWorldPos( float2 coordinates ){
 
     float depthSample = _DepthTexture.SampleLevel(sampler_DepthTexture,coordinates, 0).r;
@@ -74,7 +90,28 @@ float3 getWorldPos( float2 coordinates ){
 
 
 }
- 
+ float3 VecToRay( float3 ro , float3 rd, float3 pos ){
+  
+  float3 p2 = ro - rd * 200;
+  float3 pa = pos - ro;
+  float3 ba = ro - p2;
+  float h =  dot(pa,ba)/dot(ba,ba);
+  float3 pOnLine = h * rd* 200 +ro;
+
+  float3 inLine = pos - pOnLine;
+
+  return  inLine;//normalize(inLine) * force *  (1 - clamp( length(inLine) / radius , 0 , 1));
+}
+
+
+float2 hashwithoutsine21(float p)
+{
+	float3 p3 = frac(float3(p,p,p) * float3(.1031, .1030, .0973));
+	p3 += dot(p3, p3.yzx + 33.33);
+    return frac((p3.xx+p3.yz)*p3.zy);
+}
+
+
 
 #define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
@@ -100,20 +137,29 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
 
  if( v.life < 0 || currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || currentScreenSpacePosition.y < 0 || currentScreenSpacePosition.y > 1){
 
-    float2 coordinates = hash21( float(pID * 121) + _Time + float(pID * 22) );
+    float2 coordinates = hashwithoutsine21(float(pID) + _Time);
+    /* hash21( float(pID * 121) + _Time + float(pID * 22) );
     coordinates += hash21( float(pID * 13) + _Time*3 + float(pID * 102.3) );
-    coordinates += hash21( float(pID * 44.52) + _Time*2 + float(pID * 49.4) );
+    coordinates += hash21( float(pID * 44.52) + _Time*222 + float(pID * 4559.4) );
+    coordinates += hash21( float(pID * 44.52) + _Time*5+ float(pID * 491.4) );
+    coordinates += hash21( float(pID *114.52) + _Time*3 + float(pID * 4459.4) );
 
-    coordinates /= 3;
+    coordinates /= 5;
+*/
+
 
     float depth = _DepthTexture.SampleLevel(sampler_DepthTexture,coordinates, 0).r;
 
-    if( depth  < 0.0000001){
+    if( depth  < -1){
         v.uv.y = -1;
         
     }else{
 
         v.pos = getWorldPos( coordinates );//worldPos.xyz;
+
+        if( length(v.pos-_CameraPosition) > _CameraFar * .95 ){
+         v.pos = _CameraPosition + normalize(v.pos-_CameraPosition) * _CameraFar * .95;
+        }
 
         float3 dX = getWorldPos( coordinates + float2(.001,0) ) -  getWorldPos( coordinates - float2(.001,0) );
         float3 dY = getWorldPos( coordinates + float2(0,.001) ) - getWorldPos( coordinates - float2(0,.001) );
@@ -132,7 +178,28 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
 
     }
 
-    v.vel += curlNoise(v.pos * .04 + float3(0,_Time * .04,0)) * .003;//float3(0,-.0001,0);
+    v.vel += curlNoise(v.pos * .04 + float3(0,_Time * .04,0)) * .001;//float3(0,-.0001,0);
+
+
+    
+for( int i = 0; i < _NumWrens; i++ ){
+
+    Wren w = _WrenBuffer[i];
+
+    float3 delta = w.pos - v.pos;
+    float3 outVec = VecToRay( w.pos , w.vel , v.pos);// w.pos - projPoint;
+    //feather.vel += normalize(outVec) * 300 / length(delta);//saturate((1-feather.debug)* 10) *1000 * normalize(delta) / length(delta);
+ //feather.vel +=1000;///000* length(w.vel)* normalize(cross(w.vel , outVec))  / length(delta);
+    
+ //v.vel += outVec/length(delta);
+    
+    if( v.life < .95 ){
+        v.vel += pow((1-v.life),6)*.01* normalize(cross(w.vel , outVec))/ length(delta);//saturate((1-feather.debug)* 10) *1000 * normalize(delta) / length(delta);
+    }
+}   
+
+//v.vel += v.nor *.01;
+v.vel *= 0;
     v.pos += v.vel;
     v.vel *= .9;
 

@@ -211,6 +211,9 @@ shadowCol += .3;
     col = pow(length(col),2) * col * m * m;
 
     col = tCol;
+    col = 1 * m;
+
+    col = saturate(col);
 
 
     //col = v.nor * .5 +.5;
