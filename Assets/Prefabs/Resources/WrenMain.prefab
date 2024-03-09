@@ -23935,7 +23935,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8120365990806255992
 Transform:
   m_ObjectHideFlags: 0
@@ -24166,7 +24166,7 @@ MonoBehaviour:
   takeOffForwardForce: 40
   takeOffUpForce: 40
   paintedWindForceMultiplier: 0
-  showDebugForces: 1
+  showDebugForces: 0
   reset: 0
   distToGround: 0
   rawDistToGround: 0
@@ -24636,7 +24636,7 @@ MonoBehaviour:
   maxQuenchedness: 0
   maxBoost: 0
   maxAge: 0
-  debugStats: 1
+  debugStats: 0
   debugStatsMaterial: {fileID: 2100000, guid: d92d98770794aba44a94dad72aca9e1c, type: 2}
   allStats: 6
   debugStatsArray: []

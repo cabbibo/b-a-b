@@ -47,7 +47,6 @@ public class Biome : MonoBehaviour
 
         completed = true;
         God.state.OnBiomeCompleted(id);
-        portal.OpenPortal();
         completedAnimation.Play();
 
     }
@@ -68,6 +67,24 @@ public class Biome : MonoBehaviour
         discovered = God.state.biomesDiscovered[id];
         started = God.state.biomesStarted[id];
         completed = God.state.biomesCompleted[id];
+
+
+        completedAnimation.SetStartValues();
+        startedAnimation.SetStartValues();
+        discoveredAnimation.SetStartValues();
+
+        if (discovered)
+        {
+            discoveredAnimation.SetEndValues();
+        }
+        if (started)
+        {
+            startedAnimation.SetEndValues();
+        }
+        if (completed)
+        {
+            completedAnimation.SetEndValues();
+        }
 
 
         if (!completed)

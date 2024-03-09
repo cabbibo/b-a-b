@@ -34,4 +34,18 @@ public class TreeBiomeBugCatcher : MonoBehaviour
             }
         }
     }
+
+
+    public void OnBugAte(float v)
+    {
+        print("BUG ATE");
+        print(v);
+        biome.AddToCompletion(v);
+
+
+    }
+
+
+
+
 }

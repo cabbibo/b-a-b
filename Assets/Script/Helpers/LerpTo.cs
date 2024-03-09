@@ -25,6 +25,11 @@ public class LerpTo : MonoBehaviour
 
         lerpSpeed = resetLerpSpeed;
         slerpSpeed = resetSlerpSpeed;
+        resetTarget = God.instance.transform;
+        if (God.wren != null)
+        {
+            resetTarget = God.wren.cameraWork.camTarget;
+        }
 
     }
 
@@ -36,6 +41,13 @@ public class LerpTo : MonoBehaviour
 
     }
 
+    void Update()
+    {
+        if (God.wren != null)
+        {
+            resetTarget = God.wren.cameraWork.camTarget;
+        }
+    }
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -44,6 +56,10 @@ public class LerpTo : MonoBehaviour
         if (God.wren != null)
         {
             resetTarget = God.wren.cameraWork.camTarget;
+        }
+        else
+        {
+            resetTarget = God.instance.transform;
         }
 
 
