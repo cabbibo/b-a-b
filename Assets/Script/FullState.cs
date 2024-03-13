@@ -11,6 +11,7 @@ public class FullState : MonoBehaviour
     public bool gameStarted;
     public bool tutorialStarted;
     public bool tutorialFinished;
+    public bool islandDiscovered;
 
     public bool[] biomesDiscovered;
     public bool[] biomesStarted;
@@ -40,6 +41,7 @@ public class FullState : MonoBehaviour
 
         PlayerPrefsX.SetBool("_GameStarted", gameStarted);
         PlayerPrefsX.SetBool("_GameFinished", gameFinished);
+        PlayerPrefsX.SetBool("_IslandDiscovered", islandDiscovered);
 
         PlayerPrefsX.SetBoolArray("_BiomesStarted", biomesStarted);
         PlayerPrefsX.SetBoolArray("_BiomesCompleted", biomesCompleted);
@@ -61,6 +63,7 @@ public class FullState : MonoBehaviour
 
         gameStarted = PlayerPrefsX.GetBool("_GameStarted", false);
         gameFinished = PlayerPrefsX.GetBool("_GameFinished", false);
+        islandDiscovered = PlayerPrefsX.GetBool("_IslandDiscovered", false);
 
         currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
         currentBiomeID = PlayerPrefs.GetInt("_CurrentBiome", -1);
@@ -107,6 +110,7 @@ public class FullState : MonoBehaviour
         tutorialStarted = false;
         tutorialFinished = false;
         gameFinished = false;
+        islandDiscovered = false;
 
         biomesDiscovered = new bool[numBiomes];
         biomesStarted = new bool[numBiomes];
@@ -146,6 +150,22 @@ public class FullState : MonoBehaviour
     public void OnBiomeCompleted(int i)
     {
         biomesCompleted[i] = true;
+
+
+        bool allCompleted = true;
+        for (int j = 0; j < biomesCompleted.Length; j++)
+        {
+            if (!biomesCompleted[j])
+            {
+                allCompleted = false;
+            }
+        }
+
+        if (allCompleted)
+        {
+            OnGameFinish();
+        }
+
         UpdateState();
     }
 
@@ -170,6 +190,13 @@ public class FullState : MonoBehaviour
     public void OnGameFinish()
     {
         gameFinished = true;
+        UpdateState();
+    }
+
+
+    public void OnIslandDiscovered()
+    {
+        islandDiscovered = true;
         UpdateState();
     }
 

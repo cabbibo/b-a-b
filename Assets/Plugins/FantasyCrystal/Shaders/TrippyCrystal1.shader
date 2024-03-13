@@ -83,6 +83,8 @@ CGPROGRAM
     float _ReflectionMultiplier;
     float4 _ReflectionColor;
 
+    float _OpenAmountp;
+
 
       //A simple input struct for our pixel shader step containing a position.
       struct varyings {
@@ -218,6 +220,7 @@ float3 nT3D( float3 pos ){
 
 float4 _Color;
 
+float _OpenAmount;
 
 //Pixel function returns a solid color for each point.
 float4 frag (varyings v) : COLOR {
@@ -293,6 +296,10 @@ float4 backgroundCol = tex2Dproj(_BackgroundTexture, refractedPos);
     // col += (v.nor * .5 + .5 ) * .4;
 
     col = col * pow( length(col),4) * .2;
+
+    if( length(col.xyz) > _OpenAmount){
+      //discard;
+    }
 
  // col =float3(1,0,0);// saturate(col);
     return float4( col.xyz , 1);//saturate(float4(col,3*length(col) ));

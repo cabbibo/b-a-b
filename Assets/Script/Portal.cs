@@ -5,6 +5,8 @@ using UnityEngine.SceneManagement;
 
 using WrenUtils;
 
+[ExecuteAlways]
+
 public class Portal : MonoBehaviour
 {
 
@@ -29,6 +31,8 @@ public class Portal : MonoBehaviour
     public MeshRenderer gateRenderer;
     public MeshRenderer portalRenderer;
 
+    public float portalShownAmount;
+
 
 
 
@@ -43,6 +47,23 @@ public class Portal : MonoBehaviour
         portalCollision.portal = this;
     }
 
+
+    MaterialPropertyBlock portalMPB;
+    public void Update()
+    {
+
+        if (portalMPB == null)
+        {
+            portalMPB = new MaterialPropertyBlock();
+        }
+
+        portalRenderer.GetPropertyBlock(portalMPB);
+        portalMPB.SetFloat("_OpenAmount", portalShownAmount);
+        portalRenderer.SetPropertyBlock(portalMPB);
+
+
+
+    }
 
 
     public void OnCollision(Collision c)
@@ -105,12 +126,22 @@ public class Portal : MonoBehaviour
     {
         collider.enabled = true;
         portalRenderer.enabled = true;
+        portalShownAmount = 0;
     }
+
+    public void SetPortalFull()
+    {
+        collider.enabled = true;
+        portalRenderer.enabled = true;
+        portalShownAmount = 1;
+    }
+
 
     public void SetPortalOff()
     {
         collider.enabled = false;
         portalRenderer.enabled = false;
+        portalShownAmount = 0;
 
     }
 

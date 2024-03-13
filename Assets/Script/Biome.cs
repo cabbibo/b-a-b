@@ -27,6 +27,8 @@ public class Biome : MonoBehaviour
 
         if (amountComplete >= 1)
         {
+
+            print("Biome complete");
             amountComplete = 1;
             CompleteBiome();
         }
@@ -45,7 +47,10 @@ public class Biome : MonoBehaviour
     public void CompleteBiome()
     {
 
+        print("HELLOOO");
+
         completed = true;
+        portal.OpenPortal();
         God.state.OnBiomeCompleted(id);
         completedAnimation.Play();
 
@@ -90,6 +95,10 @@ public class Biome : MonoBehaviour
         if (!completed)
         {
             portal.SetPortalOff();
+        }
+        else
+        {
+            portal.SetPortalFull();
         }
 
     }

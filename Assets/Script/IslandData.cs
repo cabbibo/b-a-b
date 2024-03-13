@@ -125,6 +125,10 @@ public class IslandData : MonoBehaviour
     public int oSecondMaxBiomeID;
 
 
+    public Vector2 wrenUVPosition;
+    public Vector2 oWrenUVPosition;
+
+
     void Update()
     {
 
@@ -140,6 +144,9 @@ public class IslandData : MonoBehaviour
         {
             positionToCheck = God.wren.transform.position;
         }
+
+        oWrenUVPosition = wrenUVPosition;
+        wrenUVPosition = God.NormalizedPositionInMap(positionToCheck);
 
 
         currentWindDirection = GetWind(positionToCheck);
@@ -222,6 +229,22 @@ public class IslandData : MonoBehaviour
 
     }
 
+    public bool onIsland = false;
+
+    public void OnIslandEnter()
+    {
+        onIsland = true;
+        if (God.state.islandDiscovered == false)
+        {
+            God.state.OnIslandDiscovered();
+            // TODO PLAY DISCOVERED ANIMATION
+        }
+    }
+
+    public void OnIslandLeave()
+    {
+        onIsland = false;
+    }
 
     public Helpers.DoubleIntEvent BiomeChangeEvent;
     public void OnBiomeChange(int oldBiome, int newBiome)
