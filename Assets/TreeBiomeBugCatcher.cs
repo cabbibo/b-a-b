@@ -28,9 +28,7 @@ public class TreeBiomeBugCatcher : MonoBehaviour
         {
             if (!biome.started)
             {
-
                 biome.StartBiome();
-
             }
         }
     }
@@ -41,7 +39,6 @@ public class TreeBiomeBugCatcher : MonoBehaviour
         print("BUG ATE");
         print(v);
         biome.AddToCompletion(v);
-
 
     }
 
