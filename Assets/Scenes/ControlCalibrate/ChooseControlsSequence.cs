@@ -15,6 +15,13 @@ public class ChooseControlsSequence : MonoBehaviour
 
     public CanvasGroup canvasTopHalf;
 
+    public GameObject windowContainer;
+    public GameObject testingContainer;
+    public GameObject playingContainer;
+
+    public GameObject backButton;
+    public GameObject testButton;
+
     public GameObject birdsContainer;
 
     public GameObject stepStartParent;
@@ -98,6 +105,20 @@ public class ChooseControlsSequence : MonoBehaviour
     float _chooseTLeft;
     float _chooseTRight;
 
+    bool ShowingWindow { get { return windowContainer.activeSelf; } set { windowContainer.SetActive(value); }}
+    bool ShowingTesting { get { return testingContainer.activeSelf; } set { 
+        if (value)
+        {
+            God.wren.PhaseShift(new Vector3(-41, 50, 42));
+            God.wren.state.TakeOff();
+            God.wren.physics.transform.forward = Vector3.forward;
+            God.wren.physics.vel = God.wren.physics.transform.forward * 20;
+            
+            UpdateBirdParams();
+        }
+        testingContainer.SetActive(value); ShowingWindow = !value; 
+    }}
+
     void OnEnable()
     {
         canvas.worldCamera = Camera.main;
@@ -109,12 +130,50 @@ public class ChooseControlsSequence : MonoBehaviour
     void Start()
     {
         StartCoroutine(SetupBird());
-        
-        SetStep(steps[_stepI]);
+
+        ShowScreen(false);        
+    }
+
+    void UpdateBirdParams()
+    {
+        God.wren.physics.swapLR = userChoiceSwapX;
+        God.wren.physics.invert = !userChoiceSwapY;
+    }
+
+    void ShowScreen(bool bShow)
+    {
+        // canvas.enabled = bShow;
+        ShowingWindow = bShow;
+        if (bShow)
+        {
+            _stepI = 0;
+            SetStep(steps[_stepI]);
+        }
+        playingContainer.SetActive(!bShow);
     }
 
     private void Update()
     {
+        if (!ShowingWindow && God.input.circlePressed)
+        {
+            ShowScreen(true);
+        }
+
+        if (ShowingTesting && God.input.trianglePressed)
+        {
+            ShowingTesting = false;
+            return;
+        }
+
+        if (!ShowingWindow)
+            return;
+        
+        if (_stepI > 0 && God.input.squarePressed)
+        {
+            _stepI--;
+            SetStep(steps[_stepI]);
+        }
+
         int result;
         switch(steps[_stepI])
         {
@@ -125,41 +184,45 @@ public class ChooseControlsSequence : MonoBehaviour
 
                 break;
             case StepType.ChooseHorizontal:
-                HandleLeftRightBirdMovement(true, false);
+
+                birdLeft.SetMovement(-1, 0);
+                birdRight.SetMovement(1,0);
+
                 if (HandleChoice(out result))
                 {
-                    Debug.Log("Chose " + result);
                     userChoiceSwapX = result == 1;
                     NextStep();
                 }
                 break;
             case StepType.ChooseVertical:
-                HandleLeftRightBirdMovement(false, true);
+
+                birdLeft.SetMovement(0, -1);
+                birdRight.SetMovement(0, 1);
+
                 if (HandleChoice(out result))
                 {
-                    Debug.Log("Chose " + result);
                     userChoiceSwapY = result == 1;
 
                     NextStep();
                 }
 
                 break;
-            case StepType.MoveHorizontal:
+            // case StepType.MoveHorizontal:
 
-                HandleLeftRightBirdMovement(true, false);
+            //     HandleLeftRightBirdMovement(true, false);
 
-                if (God.input.xPressed)
-                    NextStep();
+            //     if (God.input.xPressed)
+            //         NextStep();
 
-                break;
-            case StepType.MoveVertical:
+            //     break;
+            // case StepType.MoveVertical:
 
-                HandleLeftRightBirdMovement(false, true);
+            //     HandleLeftRightBirdMovement(false, true);
 
-                if (God.input.xPressed)
-                    NextStep();
+            //     if (God.input.xPressed)
+            //         NextStep();
 
-                break;
+            //     break;
 
             case StepType.ConfirmHorizontal:
                 birdLeft.SetMovement(userChoiceSwapX ? 1 : -1, 0);
@@ -168,11 +231,9 @@ public class ChooseControlsSequence : MonoBehaviour
                 if (God.input.xPressed)
                     NextStep();
 
-                if (God.input.squarePressed)
-                {
-                    _stepI--;
-                    SetStep(steps[_stepI]);
-                }
+                if (God.input.trianglePressed)
+                    ShowingTesting = true;
+
                 break;
             case StepType.ConfirmVertical:
                 birdLeft.SetMovement(0, userChoiceSwapY ? 1 : -1);
@@ -180,12 +241,10 @@ public class ChooseControlsSequence : MonoBehaviour
 
                 if (God.input.xPressed)
                     NextStep();
+                
+                if (God.input.trianglePressed)
+                    ShowingTesting = true;
 
-                if (God.input.squarePressed)
-                {
-                    _stepI--;
-                    SetStep(steps[_stepI]);
-                }
                 break;
 
             case StepType.Finished:
@@ -194,12 +253,10 @@ public class ChooseControlsSequence : MonoBehaviour
 
                 if (God.input.xPressed)
                     NextStep();
+                
+                if (God.input.trianglePressed)
+                    ShowingTesting = true;
 
-                if (God.input.squarePressed)
-                {
-                    _stepI--;
-                    SetStep(steps[_stepI]);
-                }
                     break;
         }
 
@@ -230,12 +287,13 @@ public class ChooseControlsSequence : MonoBehaviour
 
         wren.state.TakeOff();
 
-
+        UpdateBirdParams();
 
     }
 
     void SetStep(StepType stepType)
     {
+        
         stepStartParent.SetActive(false);
         stepMoveParent.SetActive(false);
         stepDoneParent.SetActive(false);
@@ -243,6 +301,8 @@ public class ChooseControlsSequence : MonoBehaviour
         birdsContainer.SetActive(false);
 
         buttonContinue.SetActive(false);
+        backButton.SetActive(stepType != StepType.Start && stepType != StepType.Finished);
+        testButton.SetActive(false);
 
         controllerDirector.gameObject.SetActive(false);
 
@@ -291,6 +351,7 @@ public class ChooseControlsSequence : MonoBehaviour
             case StepType.ConfirmHorizontal:
             case StepType.ConfirmVertical:
                 stepDoneParent.SetActive(true);
+                testButton.SetActive(stepType != StepType.Finished);
                 break;
         }
 
@@ -317,6 +378,7 @@ public class ChooseControlsSequence : MonoBehaviour
     {
         if (_stepI == steps.Length - 1)
         {
+            ShowScreen(false);
             return;
         }
         _stepI++;
