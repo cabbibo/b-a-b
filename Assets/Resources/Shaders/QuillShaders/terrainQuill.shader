@@ -1097,7 +1097,7 @@ ff *= ff;
   heightFog = clamp(heightFog, 0, 1);
   col.rgb = lerp( col.rgb, _HeightFogColor.rgb, heightFog * _HeightFogAmount);
 
-  col.rgb = lerp(col, _WrenShadowColor.rgb, sh * sha);
+ // col.rgb = lerp(col, _WrenShadowColor.rgb, sh * sha);
 
 
    // Discards around bird!
@@ -1109,14 +1109,18 @@ ff *= ff;
 
   col *= noiseVal2 * _NoiseTextureStrength * (1/(1+ .1*fogZ)) + _NoiseTextureBase;
 
+
+
   
 
   //col = shadow;
-  if( capDistance < 0 ){
+  if( capDistance < 0 &&  dot( v.nor , v.eye ) < 0 ){
     discard;
   }else{
 
+    if(dot( v.nor , v.eye ) < 0  ){
     col *= saturate(capDistance * 10);
+    }
   }
  
     return float4(col,1);

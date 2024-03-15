@@ -133,27 +133,19 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
     currentScreenSpacePosition += .5;
 
 
-if(  currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || currentScreenSpacePosition.y < 0 || currentScreenSpacePosition.y > 1){
-    v.life -= .1;
-}
 
- if( v.life < 0 ){
+
+ if( v.life < 0 || currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || currentScreenSpacePosition.y < 0 || currentScreenSpacePosition.y > 1){
 
     float2 coordinates = hashwithoutsine21(float(pID) + _Time);
+    /* hash21( float(pID * 121) + _Time + float(pID * 22) );
+    coordinates += hash21( float(pID * 13) + _Time*3 + float(pID * 102.3) );
+    coordinates += hash21( float(pID * 44.52) + _Time*222 + float(pID * 4559.4) );
+    coordinates += hash21( float(pID * 44.52) + _Time*5+ float(pID * 491.4) );
+    coordinates += hash21( float(pID *114.52) + _Time*3 + float(pID * 4459.4) );
 
-    /*if( currentScreenSpacePosition.x < 0 ){
-        coordinates.x = currentScreenSpacePosition.x + 1;
-    }else if( currentScreenSpacePosition.x > 1 ){
-        coordinates.x = currentScreenSpacePosition.x - 1;
-    }
-
-    if( currentScreenSpacePosition.y < 0 ){
-        coordinates.y = currentScreenSpacePosition.y + 1;
-    }else if( currentScreenSpacePosition.y > 1 ){
-        coordinates.y = currentScreenSpacePosition.y - 1;
-    }*/
-
-
+    coordinates /= 5;
+*/
 
 
     float depth = _DepthTexture.SampleLevel(sampler_DepthTexture,coordinates, 0).r;
@@ -174,27 +166,46 @@ if(  currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || cur
 
         v.nor = -normalize(cross(dX*100 ,dY*100));
 
-        if ( dot( v.nor , float3(0,1,0) ) < .8 ){
-            v.life = -1;
-            v.pos = 100000;
-        }else{
+       // v.pos += v.nor * .1;
 
-            v.color =  _ColorTexture.SampleLevel(sampler_ColorTexture,coordinates, 0).rgb;
+        v.color =  _ColorTexture.SampleLevel(sampler_ColorTexture,coordinates, 0).rgb;
 
-            v.debug = max( abs(coordinates.x-.5), abs(coordinates.y-.5) );
-            v.uv.y = 1;
-            v.life = 1;
-
-        }
-
+        v.debug = max( abs(coordinates.x-.5), abs(coordinates.y-.5) );
+        v.uv.y = 1;
+        v.life = 1;
     }
     
 
     }
 
-    v.life  -= .001 * (hash11( float(pID * 31)  )+ .3);
-    v.life  -= .001 * (hash11( float(pID * 51)  )+ .3);
-    v.life  -= .001 * (hash11( float(pID * 91)  )+ .3);
+    v.vel += curlNoise(v.pos * .04 + float3(0,_Time * .04,0)) * .001;//float3(0,-.0001,0);
+
+
+    
+for( int i = 0; i < _NumWrens; i++ ){
+
+    Wren w = _WrenBuffer[i];
+
+    float3 delta = w.pos - v.pos;
+    float3 outVec = VecToRay( w.pos , w.vel , v.pos);// w.pos - projPoint;
+    //feather.vel += normalize(outVec) * 300 / length(delta);//saturate((1-feather.debug)* 10) *1000 * normalize(delta) / length(delta);
+ //feather.vel +=1000;///000* length(w.vel)* normalize(cross(w.vel , outVec))  / length(delta);
+    
+ //v.vel += outVec/length(delta);
+    
+    if( v.life < .95 ){
+        v.vel += pow((1-v.life),6)*.01* normalize(cross(w.vel , outVec))/ length(delta);//saturate((1-feather.debug)* 10) *1000 * normalize(delta) / length(delta);
+    }
+}   
+
+//v.vel += v.nor *.01;
+v.vel *= 0;
+    v.pos += v.vel;
+    v.vel *= .9;
+
+    v.life  -= .01 * (hash11( float(pID * 31)  )+ .3);
+    v.life  -= .01 * (hash11( float(pID * 51)  )+ .3);
+    v.life  -= .01 * (hash11( float(pID * 91)  )+ .3);
         
 
         _VertBuffer[sID] = v;
