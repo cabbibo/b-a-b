@@ -460,6 +460,14 @@ namespace WrenUtils
             return new Vector3(p.x / terrainData.size.x, p.y / terrainData.size.y, p.z / terrainData.size.z);
 
         }
+
+        public static Vector2 UVInMap(Vector3 p)
+        {
+
+            p += new Vector3(terrainData.size.x / 2, 0, terrainData.size.z / 2);
+            return new Vector2(p.x / terrainData.size.x, p.z / terrainData.size.z);
+
+        }
         // Updates in Edit Mode!
         void OnDrawGizmos()
         {

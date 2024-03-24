@@ -21,6 +21,8 @@ public class SceneController : MonoBehaviour
 
     int loadedScene = -1;
 
+    public bool autoLoad = true;
+
 
     // mountain
     // temple

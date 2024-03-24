@@ -17,7 +17,6 @@ public class SkyboxUpdater : MonoBehaviour
 
     private void OnEnable()
     {
-        print("hello");
         // Initialize cubemap/render texture
         RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
         var resolution = RenderSettings.defaultReflectionResolution;

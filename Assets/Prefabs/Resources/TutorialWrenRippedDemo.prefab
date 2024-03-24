@@ -739,8 +739,10 @@ MonoBehaviour:
   wing: {fileID: 687666778210607444}
   featherDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67,
     type: 2}
+  featherDebugLineMaterial: {fileID: 0}
   featherMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
   debugFeatherPoints: 0
+  debugLinePoints: 0
   drawFeathers: 1
   numberLesserCovertsRows: 30
   numberLesserCovertsCols: 30
@@ -1088,6 +1090,8 @@ MonoBehaviour:
   wingMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
   wingDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67, type: 2}
   bodyDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67, type: 2}
+  wingDebugLineMaterial: {fileID: 0}
+  bodyDebugLineMaterial: {fileID: 0}
   specialTarget: {fileID: 0}
   percentageRendered: 1
   _MiddleSecondaryFeatherScaleMultiplier: 2
@@ -1193,12 +1197,15 @@ MonoBehaviour:
   rightEye: {fileID: 398320342855464717}
   beak: {fileID: 7643670994601658526}
   _ResetLocation: {x: 0, y: 0, z: 0}
+  totalShards: 0
   debugHierarchyConnections: 0
   debugHierarchyBasis: 0
   debugHierarchy: {fileID: 5978150348886614211}
   drawBodyFeather: 1
   drawLeftWingFeathers: 1
   drawRightWingFeathers: 1
+  drawLeftFeatherLines: 0
+  drawRightFeatherLines: 0
   drawLeftWingFeatherPoints: 0
   drawRightWingFeatherPoints: 0
   drawBodyPoints: 0
@@ -2940,8 +2947,10 @@ MonoBehaviour:
   wing: {fileID: 687666779443224190}
   featherDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67,
     type: 2}
+  featherDebugLineMaterial: {fileID: 0}
   featherMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
   debugFeatherPoints: 0
+  debugLinePoints: 0
   drawFeathers: 1
   numberLesserCovertsRows: 30
   numberLesserCovertsCols: 30
@@ -26941,7 +26950,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bird: {fileID: 687666778338606146}
-  lineDebugMaterial: {fileID: 2100000, guid: 2fc2b2eed00f4d8499f8ceab0d5a9732, type: 2}
+  featherDebugLineMaterial: {fileID: 0}
   featherDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67,
     type: 2}
   featherMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a, type: 2}
@@ -27860,6 +27869,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea98959e68e82034a9c14c836903b20b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onGround: 0
+  walking: 0
   input: {fileID: 6676056819307743982}
   wren: {fileID: 9160943688313912041}
   leftWing: {fileID: 9160943687160614091}
@@ -27924,7 +27935,6 @@ MonoBehaviour:
   paintedWindForceMultiplier: 0
   showDebugForces: 0
   reset: 0
-  onGround: 0
   distToGround: 0
   rawDistToGround: 0
   rawGroundPoint: {x: 0, y: 0, z: 0}
@@ -28423,6 +28433,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   numShards: 0
   maxShards: 100000
+  wren: {fileID: 0}
+  fullBird: {fileID: 0}
+  numShardsInBody: 0
+  bodyPercentage: 0
+  shardPercentage: 0
+  shardTrailPercentage: 0
 --- !u!1 &9160943688594033059
 GameObject:
   m_ObjectHideFlags: 0

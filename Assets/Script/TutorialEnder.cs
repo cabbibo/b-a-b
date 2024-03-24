@@ -11,6 +11,7 @@ public class TutorialEnder : MonoBehaviour
     public GameObject island;
     public GameObject island2;
     public GameObject tutorialOcean;
+    public GameObject mainOcean;
     public GameObject portal;
 
     public float timeBetweenSpawns = 10;
@@ -38,6 +39,7 @@ public class TutorialEnder : MonoBehaviour
     {
         print(God.wren);
         print(God.instance);
+        print("LFGGGG");
         Vector3 shift = transform.position - God.wren.transform.position;
         foreach (Transform t in tutorialObjects)
         {
@@ -49,6 +51,7 @@ public class TutorialEnder : MonoBehaviour
         island.SetActive(true);
         tutorialOcean.SetActive(false);
         //  island2.SetActive(true);
+        mainOcean.SetActive(true);
         portal.SetActive(true);
     }
 
@@ -62,8 +65,9 @@ public class TutorialEnder : MonoBehaviour
 
         island.SetActive(false);
         tutorialOcean.SetActive(true);
-        //island2.SetActive(false);
+        island2.SetActive(false);
         portal.SetActive(false);
+        mainOcean.SetActive(false);
     }
 
 

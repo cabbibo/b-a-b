@@ -675,7 +675,7 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
       vel += curlNoise( forcePos * _VortexNoiseSize ) * _VortexNoiseForce;//
 
       // Towards center force
-      vel += ( sp-forcePos ) *  _VortexInForce;
+      vel += ( sp-forcePos ) *  _VortexInForce * 100;
 
       //vel += float3(0,1,0);
 
@@ -689,23 +689,38 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
     
 
  // EXPLOSITION
-    float3 c = curlNoise( forcePos * 10 );
+    float3 c = curlNoise( forcePos * 1 );
 
     if( _Explosion == 1 ){
-      vel = 0;
+      //vel = 0;
+      // shoot forward more
+      vel *= float3(1,0,1);
       // Goes BOOM
-      vel += (_ExplosionVector * _ExplosionUpForce + c * _ExplosionOutForce);
+      vel += (_ExplosionVector * _ExplosionUpForce * .4  + c * _ExplosionOutForce * .2);
     }
 
 
     // The longer after jumping off, the more force towards original location
-    vel -= dif * _ReturnToLockForce * clamp(_Locked,0,1) * pow( clamp((_Time - _LockStartTime ) * _ReturnToLockTimeMultiplier,0,1000000) , 2 );
+    vel -= dif * _ReturnToLockForce * clamp(_Locked,0,1) * pow( clamp((_Time - _LockStartTime ) * _ReturnToLockTimeMultiplier,0,6000000) , 2 );
+    vel -= c * 10;
+    vel *=  (hash(float(pID)) * .6 + .4);
+    if( length( vel ) > 1000 ){
+      vel = normalize(vel) * 1000;
+    }
+
+
+
 
     // adding to our force position
-    forcePos += vel * _DT * .1;//.001;
+    forcePos += vel * _DT * .1 ;//.001;
+
+    if( length(forcePos - lockPos) > 50){
+      forcePos = lockPos + normalize(forcePos - lockPos) * 50;
+    }
     
     // dampening if locked vs not locked
     vel *= .96 - .19 * clamp(_Locked,0,1);
+
 
 
 

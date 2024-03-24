@@ -224,7 +224,7 @@ public class GPUBody : MonoBehaviour
 
             shader.Dispatch(1, numGroups, 1, 1);
 
-            mpb.SetBuffer("_LineBuffer", lineBuffer);
+            /*mpb.SetBuffer("_LineBuffer", lineBuffer);
             mpb.SetBuffer("_FeatherBuffer", featherBuffer);
             mpb.SetBuffer("_VertBuffer", vertBuffer);
             mpb.SetBuffer("_TriBuffer", triBuffer);
@@ -247,11 +247,43 @@ public class GPUBody : MonoBehaviour
             if (drawFeathers)
             {
                 Graphics.DrawProcedural(featherMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * trisPerMesh, 1, null, mpb, ShadowCastingMode.On, true, gameObject.layer);
-            }
+            }*/
 
         }
 
 
 
+    }
+
+    public void DrawFeathers()
+    {
+
+
+        int renderedFeathers = (int)Mathf.Floor(bird.percentageRendered * (float)totalFeatherPoints);
+
+        mpb.SetBuffer("_LineBuffer", lineBuffer);
+        mpb.SetBuffer("_FeatherBuffer", featherBuffer);
+        mpb.SetBuffer("_VertBuffer", vertBuffer);
+        mpb.SetBuffer("_TriBuffer", triBuffer);
+        mpb.SetInt("_TrisPerMesh", trisPerMesh);
+        mpb.SetInt("_NumberMeshes", meshes.Length);
+        mpb.SetInt("_Count", totalLinePoints);
+
+        mpb.SetFloat("_Locked", lockedValue);
+
+        if (debugLinePoints)
+        {
+            Graphics.DrawProcedural(featherDebugLineMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, totalLinePoints * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+        }
+
+        if (debugFeatherPoints)
+        {
+            Graphics.DrawProcedural(featherDebugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * 3 * 2 * 4, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+        }
+
+        if (drawFeathers)
+        {
+            Graphics.DrawProcedural(featherMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * trisPerMesh, 1, null, mpb, ShadowCastingMode.On, true, gameObject.layer);
+        }
     }
 }

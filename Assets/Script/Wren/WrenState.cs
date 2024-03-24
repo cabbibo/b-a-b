@@ -69,7 +69,7 @@ public class WrenState : MonoBehaviour
     public void HitGround(Collision c)
     {
 
-        wren.bird.HitGround();
+        wren.bird.HitGround(c);
 
 
         if (isLocal)

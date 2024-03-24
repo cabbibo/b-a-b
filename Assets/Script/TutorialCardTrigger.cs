@@ -16,15 +16,25 @@ public class TutorialCardTrigger : MonoBehaviour
     public bool lookAt = true;
     public bool pause = false;
 
-    void OnTriggered()
+    public virtual void _OnTriggered()
     {
+        OnTriggered();
         FlyingTutorialSequence.Instance.OnTutorialCardTriggered(cardType, target: lookAt ? transform : null, pause: pause);
         enabled = false;
     }
 
-    float Radius { get {
-        return radius;
-    }}
+    public virtual void OnTriggered()
+    {
+
+    }
+
+    float Radius
+    {
+        get
+        {
+            return radius;
+        }
+    }
 
     void Update()
     {
@@ -35,7 +45,7 @@ public class TutorialCardTrigger : MonoBehaviour
         {
             if (Vector3.Distance(God.wren.transform.position, transform.position) < Radius)
             {
-                OnTriggered();
+                _OnTriggered();
             }
         }
     }
