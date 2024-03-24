@@ -73,8 +73,49 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
     }
 
-    void Start()
+
+    public void SetStart()
     {
+        print("SET START");
+        gameObject.SetActive(true);
+        OnStart();
+        TutorialStartState();
+
+    }
+
+    public void SetEnd()
+    {
+
+        gameObject.SetActive(true);
+
+        OnStart();
+        print("Set End");
+
+        groupCard.gameObject.SetActive(false);
+        groupEnd.alpha = 0;
+
+        activeAfterTutorial.SetActive(false);
+        activeInTutorial.SetActive(false);
+
+        cardFlyOnGround.SetActive(false);
+
+        StopCoroutine(tutSequence);
+
+
+        print("Tutoiral Ended");
+
+        ender.EndTutorial();
+
+        OnTutorialFinished();
+
+        //  gameObject.SetActive(false);
+    }
+
+
+    void OnStart()
+    {
+        print("starting");
+
         if (!Application.isEditor)
             debug = false;
 
@@ -96,7 +137,17 @@ public class FlyingTutorialSequence : MonoBehaviour
 
             God.wren.state.TakeOff();
         }
+
+
         tutSequence = StartCoroutine(TutorialSequence());
+
+    }
+
+
+    void Start()
+    {
+
+
     }
 
 
@@ -534,16 +585,31 @@ public class FlyingTutorialSequence : MonoBehaviour
 
     void OnTutorialFinished()
     {
+
+
+        TutorialFinishState();
+
+        OnTutorialDiveFinished?.Invoke();
+        God.state.OnTutorialFinish();
+
+        // TryShowCard(CardType.RevealIsland, true, 1);
+    }
+
+
+    void TutorialStartState()
+    {
+        activeInTutorial.SetActive(true);
+        activeAfterTutorial.SetActive(false);
+    }
+    void TutorialFinishState()
+    {
         cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
         ShowProgress(0);
         SetBGFade(0);
         groupContainer.alpha = 0;
+
         activeInTutorial.SetActive(false);
         activeAfterTutorial.SetActive(true);
-
-        OnTutorialDiveFinished?.Invoke();
-
-        // TryShowCard(CardType.RevealIsland, true, 1);
     }
 
 
