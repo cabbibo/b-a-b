@@ -40,17 +40,22 @@ public class TutorialEnder : MonoBehaviour
         print(God.wren);
         print(God.instance);
         print("LFGGGG");
-        Vector3 shift = transform.position - God.wren.transform.position;
-        foreach (Transform t in tutorialObjects)
+
+
+        if (God.wren)
         {
-            t.position += shift;
+
+            Vector3 shift = transform.position - God.wren.transform.position;
+            foreach (Transform t in tutorialObjects)
+            {
+                t.position += shift;
+            }
+
+            God.wren.PhaseShift(transform.position);
         }
-        God.wren.PhaseShift(transform.position);
-        //island.SetActive(true);
 
         island.SetActive(true);
         tutorialOcean.SetActive(false);
-        //  island2.SetActive(true);
         mainOcean.SetActive(true);
         portal.SetActive(true);
     }

@@ -62,6 +62,7 @@ public class WrenShardManager : MonoBehaviour
             UpdateShards();
         }
 
+        //        print(GetBodyShardPercentage());
         fullBird.percentageRendered = GetBodyShardPercentage();
     }
 
@@ -74,6 +75,7 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShards(int amount)
     {
+        print("collected");
         numShards += amount;
         UpdateShards();
     }

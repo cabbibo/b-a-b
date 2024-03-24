@@ -92,11 +92,16 @@ public class PlacePrefabsOnTerrain : MonoBehaviour
 
                 Vector3 nPos = new Vector3(Random.value, 0, Random.value);
                 // get random position on terrain
-                Vector3 pos = Vector3.Scale(new Vector3(nPos.x - .5f, 0, nPos.z - .5f), God.islandData.size);
+                Vector3 pos = Vector3.Scale(nPos - new Vector3(.5f, 0, .5f), God.islandData.size);
 
                 // see if it is in the right biome
-                float[] biomeVal = God.islandData.GetBiomeValues(pos);
+                float[] biomeVal = God.islandData.GetBiomeValues(nPos);
 
+
+                if (i < 10 && j < 10)
+                {
+                    print(biomeVal[biome]);
+                }
 
                 //if it is, place it
                 if (biomeVal[biome] > .01f)
@@ -109,7 +114,7 @@ public class PlacePrefabsOnTerrain : MonoBehaviour
 
                         Vector3 n = God.terrain.terrainData.GetInterpolatedNormal(nPos.x, nPos.y);
 
-                        //print(n);
+                        print(n);
 
 
                         if (n.y > minSteepness && n.y < maxSteepness)

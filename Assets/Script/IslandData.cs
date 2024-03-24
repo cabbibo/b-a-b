@@ -45,6 +45,7 @@ public class IslandData : MonoBehaviour
 
 
     public FlyingTutorialSequence tutorialSequence;
+    public TutorialIslandEnder tutorialIslandEnder;
 
     void OnEnable()
     {
@@ -69,10 +70,33 @@ public class IslandData : MonoBehaviour
     {
 
         OnBiomeChange(God.state.currentBiomeID, God.state.currentBiomeID);
-        if (God.state.tutorialStarted == false)
+
+
+        if (God.state.tutorialFinished == false)
         {
-            tutorialSequence.gameObject.SetActive(true);
+            tutorialSequence.SetStart();
         }
+        else
+        {
+
+            if (God.state.tutorialIslandFinished == false)
+            {
+
+                tutorialSequence.SetEnd();
+                tutorialIslandEnder.SetStart();
+            }
+            else
+            {
+                tutorialSequence.gameObject.SetActive(false);
+                tutorialIslandEnder.SetEnd();
+            }
+
+
+        }
+
+
+
+
     }
 
 

@@ -24,10 +24,13 @@ public class TutorialTakeoffCard : TutorialCardTrigger
           }*/
 
 
-        if (God.wren.state.onGround)
+        if (God.wren)
         {
-            print("TRIGGERING TAKEOFF");
-            _OnTriggered();
+            if (God.wren.state.onGround)
+            {
+                print("TRIGGERING TAKEOFF");
+                _OnTriggered();
+            }
         }
 
     }
@@ -59,10 +62,15 @@ public class TutorialTakeoffCard : TutorialCardTrigger
 
     }
 
+    public TutorialIslandEnder islandEnder;
+    public GameObject portal;
+
     public void OnCutSceneFinished()
     {
 
         print("CutScene Finished");
+        islandEnder.hasCrashed = true;
+        portal.SetActive(false);
         FlyingTutorialSequence.Instance.OnTutorialCardTriggered(cardType, target: lookAt ? transform : null, pause: pause);
     }
 

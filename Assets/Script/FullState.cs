@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using WrenUtils;
 
 [ExecuteAlways]
 public class FullState : MonoBehaviour
@@ -9,8 +10,8 @@ public class FullState : MonoBehaviour
 
 
     public bool gameStarted;
-    public bool tutorialStarted;
     public bool tutorialFinished;
+    public bool tutorialIslandFinished;
     public bool islandDiscovered;
 
     public bool[] biomesDiscovered;
@@ -26,6 +27,8 @@ public class FullState : MonoBehaviour
 
     public int numBiomes = 7;
 
+    public Vector3 lastPosition;
+
     public void OnEnable()
     {
         LoadState();
@@ -36,19 +39,30 @@ public class FullState : MonoBehaviour
 
         // TODO save all this to player prefs
 
-        PlayerPrefsX.SetBool("_TutorialStarted", tutorialStarted);
-        PlayerPrefsX.SetBool("_TutorialFinished", tutorialFinished);
-
         PlayerPrefsX.SetBool("_GameStarted", gameStarted);
-        PlayerPrefsX.SetBool("_GameFinished", gameFinished);
+        PlayerPrefsX.SetBool("_TutorialFinished", tutorialFinished);
+        PlayerPrefsX.SetBool("_TutorialIslandFinished", tutorialIslandFinished);
         PlayerPrefsX.SetBool("_IslandDiscovered", islandDiscovered);
+
+        PlayerPrefsX.SetBool("_GameFinished", gameFinished);
 
         PlayerPrefsX.SetBoolArray("_BiomesStarted", biomesStarted);
         PlayerPrefsX.SetBoolArray("_BiomesCompleted", biomesCompleted);
         PlayerPrefsX.SetBoolArray("_BiomesDiscovered", biomesDiscovered);
 
+
+        if (God.wren != null)
+        {
+            lastPosition = God.wren.transform.position;
+        }
+
+        // saving the position of the bird!
+        PlayerPrefsX.SetVector3("_LastPosition", lastPosition);
+
         PlayerPrefs.SetInt("_CurrentScene", currentSceneID);
         PlayerPrefs.SetInt("_CurrentBiome", currentBiomeID);
+
+
 
     }
 
@@ -58,8 +72,8 @@ public class FullState : MonoBehaviour
 
         // TODO load all this from player prefs
 
-        tutorialStarted = PlayerPrefsX.GetBool("_TutorialStarted", false);
         tutorialFinished = PlayerPrefsX.GetBool("_TutorialFinished", false);
+        tutorialIslandFinished = PlayerPrefsX.GetBool("_TutorialIslandFinished", false);
 
         gameStarted = PlayerPrefsX.GetBool("_GameStarted", false);
         gameFinished = PlayerPrefsX.GetBool("_GameFinished", false);
@@ -67,6 +81,8 @@ public class FullState : MonoBehaviour
 
         currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
         currentBiomeID = PlayerPrefs.GetInt("_CurrentBiome", -1);
+
+        lastPosition = PlayerPrefsX.GetVector3("_LastPosition", Vector3.zero);
 
 
 
@@ -107,10 +123,11 @@ public class FullState : MonoBehaviour
         currentBiomeID = -1;
 
         gameStarted = false;
-        tutorialStarted = false;
         tutorialFinished = false;
+        tutorialIslandFinished = false;
         gameFinished = false;
         islandDiscovered = false;
+        lastPosition = Vector3.zero;
 
         biomesDiscovered = new bool[numBiomes];
         biomesStarted = new bool[numBiomes];
@@ -175,11 +192,6 @@ public class FullState : MonoBehaviour
         UpdateState();
     }
 
-    public void OnTutorialStart()
-    {
-        tutorialStarted = true;
-        UpdateState();
-    }
 
     public void OnTutorialFinish()
     {
@@ -187,6 +199,12 @@ public class FullState : MonoBehaviour
         UpdateState();
     }
 
+
+    public void OnTutorialIslandFinish()
+    {
+        tutorialIslandFinished = true;
+        UpdateState();
+    }
     public void OnGameFinish()
     {
         gameFinished = true;
