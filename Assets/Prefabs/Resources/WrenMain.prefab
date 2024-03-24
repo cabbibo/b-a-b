@@ -24670,6 +24670,7 @@ MonoBehaviour:
   wren: {fileID: 0}
   fullBird: {fileID: 3880365654864790025}
   numShardsInBody: 0
+  oShards: 0
   bodyPercentage: 0
   shardPercentage: 0
   shardTrailPercentage: 0
