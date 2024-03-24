@@ -46,7 +46,7 @@ public class FlyingTutorialSequence : MonoBehaviour
     public GameObject groupDown;
     public GameObject groupHold;
 
-    enum ControllerHint { None, Dive, Left, Right, Up, Down, Hold }
+    enum ControllerHint { None, Dive, Left, Right, Up, Down, Hold, Takeoff }
 
     [Header("Tooltip Cards")]
     public CanvasGroup groupCard;
@@ -89,6 +89,13 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         cardFlyOnGround.SetActive(false);
 
+        // auto takeoff
+        if (God.wren)
+        {
+            print("hi");
+
+            God.wren.state.TakeOff();
+        }
         tutSequence = StartCoroutine(TutorialSequence());
     }
 
@@ -97,6 +104,8 @@ public class FlyingTutorialSequence : MonoBehaviour
     {
         if (Application.isEditor)
         {
+
+            // tab to autocomplete
             if (tutSequence != null && Input.GetKeyDown(KeyCode.Tab))
             {
                 StopCoroutine(tutSequence);
@@ -185,6 +194,9 @@ public class FlyingTutorialSequence : MonoBehaviour
             case ControllerHint.Hold:
                 controllerText.text = "PRESS sticks to HOLD";
                 break;
+                /*            case ControllerHint.TakeOff:
+                                controllerText.text = "PRESS X to TAKE OFF";
+                                break;*/
         }
     }
 
@@ -553,6 +565,9 @@ public class FlyingTutorialSequence : MonoBehaviour
         // activities
         ActivityRings, ActivityWindTunnel, ActivitySpeedGate, ActivityButterflies, ActivityBigBird,
 
+        // takeoff
+        TakeOff,
+
         // custom
         CycleThroughTriggers = 100,
         TutorialEnd = 101
@@ -603,6 +618,10 @@ public class FlyingTutorialSequence : MonoBehaviour
             case CardType.TutorialEnd:
                 title = "Gate";
                 text = "Enter the mountain gate to finish the demo.";
+                break;
+            case CardType.TakeOff:
+                title = "Take Off";
+                text = "Press X to Take Off.";
                 break;
         }
     }

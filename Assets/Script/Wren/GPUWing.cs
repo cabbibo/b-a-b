@@ -215,51 +215,102 @@ public class GPUWing : MonoBehaviour
             numGroups = (renderedFeathers + ((int)numThreads - 1)) / (int)numThreads;
             if (numGroups <= 0) { numGroups = 1; }
             shader.Dispatch(0, numGroups, 1, 1);
+            /*
+                        mpb.SetBuffer("_FeatherBuffer", featherBuffer);
+                        mpb.SetBuffer("_VertBuffer", vertBuffer);
+                        mpb.SetBuffer("_TriBuffer", triBuffer);
+                        mpb.SetInt("_TrisPerMesh", trisPerMesh);
+                        mpb.SetInt("_NumberMeshes", meshes.Length);
 
-            mpb.SetBuffer("_FeatherBuffer", featherBuffer);
-            mpb.SetBuffer("_VertBuffer", vertBuffer);
-            mpb.SetBuffer("_TriBuffer", triBuffer);
-            mpb.SetInt("_TrisPerMesh", trisPerMesh);
-            mpb.SetInt("_NumberMeshes", meshes.Length);
+                        mpb.SetFloat("_LeftOrRight", wing.leftOrRight ? -1 : 1);
+                        mpb.SetMatrix("_Shoulder", wing.bones[0].localToWorldMatrix);
+                        mpb.SetMatrix("_Elbow", wing.bones[1].localToWorldMatrix);
+                        mpb.SetMatrix("_Hand", wing.bones[2].localToWorldMatrix);
+                        mpb.SetMatrix("_Finger", wing.bones[3].localToWorldMatrix);
 
-            mpb.SetFloat("_LeftOrRight", wing.leftOrRight ? -1 : 1);
-            mpb.SetMatrix("_Shoulder", wing.bones[0].localToWorldMatrix);
-            mpb.SetMatrix("_Elbow", wing.bones[1].localToWorldMatrix);
-            mpb.SetMatrix("_Hand", wing.bones[2].localToWorldMatrix);
-            mpb.SetMatrix("_Finger", wing.bones[3].localToWorldMatrix);
-
-            mpb.SetMatrix("_Chest", bird.shoulder.localToWorldMatrix);
-
-
-            bird.SetBirdParameters(mpb);
+                        mpb.SetMatrix("_Chest", bird.shoulder.localToWorldMatrix);
 
 
-            if (debugLinePoints)
-            {
-
-                int totalToDraw = 10000;
-
-                Graphics.DrawProcedural(featherDebugLineMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, totalToDraw * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-            }
+                        bird.SetBirdParameters(mpb);
 
 
+                        if (debugLinePoints)
+                        {
+
+                            int totalToDraw = 10000;
+
+                            Graphics.DrawProcedural(featherDebugLineMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, totalToDraw * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+                        }
 
 
-            if (debugFeatherPoints)
-            {
-                Graphics.DrawProcedural(featherDebugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * 3 * 2 * 4, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-            }
 
-            if (drawFeathers)
-            {
-                // Graphics.DrawProcedural( featherDebugMaterial ,  new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles,renderedFeathers * 3 * 2 , 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-                Graphics.DrawProcedural(featherMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * trisPerMesh, 1, null, mpb, ShadowCastingMode.TwoSided, true, gameObject.layer);
 
-            }
+                        if (debugFeatherPoints)
+                        {
+                            Graphics.DrawProcedural(featherDebugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * 3 * 2 * 4, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+                        }
+
+                        if (drawFeathers)
+                        {
+                            // Graphics.DrawProcedural( featherDebugMaterial ,  new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles,renderedFeathers * 3 * 2 , 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+                            Graphics.DrawProcedural(featherMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * trisPerMesh, 1, null, mpb, ShadowCastingMode.TwoSided, true, gameObject.layer);
+
+                        }*/
 
         }
 
 
 
     }
+
+
+    public void DrawFeathers()
+    {
+
+
+        int renderedFeathers = (int)Mathf.Floor(bird.percentageRendered * (float)totalFeathers);
+        mpb.SetBuffer("_FeatherBuffer", featherBuffer);
+        mpb.SetBuffer("_VertBuffer", vertBuffer);
+        mpb.SetBuffer("_TriBuffer", triBuffer);
+        mpb.SetInt("_TrisPerMesh", trisPerMesh);
+        mpb.SetInt("_NumberMeshes", meshes.Length);
+
+        mpb.SetFloat("_LeftOrRight", wing.leftOrRight ? -1 : 1);
+        mpb.SetMatrix("_Shoulder", wing.bones[0].localToWorldMatrix);
+        mpb.SetMatrix("_Elbow", wing.bones[1].localToWorldMatrix);
+        mpb.SetMatrix("_Hand", wing.bones[2].localToWorldMatrix);
+        mpb.SetMatrix("_Finger", wing.bones[3].localToWorldMatrix);
+
+        mpb.SetMatrix("_Chest", bird.shoulder.localToWorldMatrix);
+
+
+        bird.SetBirdParameters(mpb);
+
+
+        if (debugLinePoints)
+        {
+
+            int totalToDraw = 10000;
+
+            Graphics.DrawProcedural(featherDebugLineMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, totalToDraw * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+        }
+
+
+
+
+        if (debugFeatherPoints)
+        {
+            Graphics.DrawProcedural(featherDebugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * 3 * 2 * 4, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+        }
+
+        if (drawFeathers)
+        {
+            // Graphics.DrawProcedural( featherDebugMaterial ,  new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles,renderedFeathers * 3 * 2 , 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+            Graphics.DrawProcedural(featherMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, renderedFeathers * trisPerMesh, 1, null, mpb, ShadowCastingMode.TwoSided, true, gameObject.layer);
+
+        }
+
+    }
+
+
 }

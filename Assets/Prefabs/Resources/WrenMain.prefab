@@ -10139,7 +10139,8 @@ MonoBehaviour:
   rightEye: {fileID: 3849682201828486753}
   beak: {fileID: 8244993336317416939}
   _ResetLocation: {x: 0, y: 0, z: 0}
-  debugHierarchyConnections: 0
+  totalShards: 0
+  debugHierarchyConnections: 1
   debugHierarchyBasis: 0
   debugHierarchy: {fileID: 3751723881530980275}
   drawBodyFeather: 1
@@ -24157,9 +24158,9 @@ MonoBehaviour:
   tuckDampeningReduction: 0.8
   velMatchMultiplier: -2
   bumperForce: 0
-  groundPower: 6
+  groundPower: 3
   groundOut: 0.3
-  groundDampening: 0.9
+  groundDampening: 0.98
   rotateTowardsTargetOnGround: 1
   groundUpForce: 4
   groundUpVal: 3
@@ -24664,8 +24665,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d297911d9b576d49a3249a558de3cca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numShards: 0
+  numShards: 4471
   maxShards: 100000
+  wren: {fileID: 0}
+  fullBird: {fileID: 3880365654864790025}
+  numShardsInBody: 0
+  bodyPercentage: 0
+  shardPercentage: 0
+  shardTrailPercentage: 0
 --- !u!1 &6829873558942316692
 GameObject:
   m_ObjectHideFlags: 0

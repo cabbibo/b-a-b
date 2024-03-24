@@ -43,6 +43,9 @@ public class IslandData : MonoBehaviour
 
     public bool debugWind;
 
+
+    public FlyingTutorialSequence tutorialSequence;
+
     void OnEnable()
     {
 
@@ -66,12 +69,15 @@ public class IslandData : MonoBehaviour
     {
 
         OnBiomeChange(God.state.currentBiomeID, God.state.currentBiomeID);
+        if (God.state.tutorialStarted == false)
+        {
+            tutorialSequence.gameObject.SetActive(true);
+        }
     }
 
 
     public Vector3 GetWindPower(Vector3 p)
     {
-
 
 
         Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
@@ -146,12 +152,30 @@ public class IslandData : MonoBehaviour
         }
 
         oWrenUVPosition = wrenUVPosition;
-        wrenUVPosition = God.NormalizedPositionInMap(positionToCheck);
+        wrenUVPosition = God.UVInMap(positionToCheck);
 
 
-        currentWindDirection = GetWind(positionToCheck);
-        currentBiomeValues = GetBiomeValues(positionToCheck);
-        currentFoodValues = GetFood(positionToCheck);
+
+        if (wrenUVPosition.x > 1 || wrenUVPosition.y > 1 || wrenUVPosition.x < 0 || wrenUVPosition.y < 0)
+        {
+            if (oWrenUVPosition.x <= 1 && oWrenUVPosition.y <= 1 && oWrenUVPosition.x >= 0 && oWrenUVPosition.y >= 0)
+            {
+                OnIslandLeave();
+            }
+        }
+        else
+        {
+            if (oWrenUVPosition.x > 1 || oWrenUVPosition.y > 1 || oWrenUVPosition.x < 0 || oWrenUVPosition.y < 0)
+            {
+                OnIslandEnter();
+            }
+        }
+
+
+
+        currentWindDirection = GetWind(wrenUVPosition);
+        currentBiomeValues = GetBiomeValues(wrenUVPosition);
+        currentFoodValues = GetFood(wrenUVPosition);
 
 
         oSecondMaxBiomeValue = secondMaxBiomeValue;
@@ -200,36 +224,62 @@ public class IslandData : MonoBehaviour
     public float[] currentBiomeValues;
 
 
-    public Vector3 GetWind(Vector3 p)
+    public Vector3 GetWind(Vector2 uv)
     {
 
-        Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
-        Color c = windMap.GetPixelBilinear(uv.x, uv.z);
-        return new Vector3(c.r, c.g, c.b);
+        Color c = windMap.GetPixelBilinear(uv.x, uv.y);
+
+        if (uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1)
+        {
+            return new Vector3(c.r, c.g, c.b);
+        }
+        else
+        {
+            return Vector3.zero;
+        }
 
     }
 
-    public Vector3 GetFood(Vector3 p)
+    public Vector3 GetFood(Vector2 uv)
     {
 
-        Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
-        Color c = foodMap.GetPixelBilinear(uv.x, uv.z);
-        return new Vector4(c.r, c.g, c.b, c.r);
+        Color c = foodMap.GetPixelBilinear(uv.x, uv.y);
+
+
+        if (uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1)
+        {
+            return new Vector3(c.r, c.g, c.b);
+        }
+        else
+        {
+            return Vector3.zero;
+        }
 
     }
 
 
-    public float[] GetBiomeValues(Vector3 p)
+    public float[] GetBiomeValues(Vector2 uv)
     {
-        Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
-        Color c1 = biomeMap1.GetPixelBilinear(uv.x, uv.z);
-        Color c2 = biomeMap2.GetPixelBilinear(uv.x, uv.z);
 
-        return new float[] { c1.r, c1.g, c1.b, c1.a, c2.r, c2.g, c2.b, c2.a };
+        Color c1 = biomeMap1.GetPixelBilinear(uv.x, uv.y);
+        Color c2 = biomeMap2.GetPixelBilinear(uv.x, uv.y);
+
+        if (uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1)
+        {
+            return new float[] { c1.r, c1.g, c1.b, c1.a, c2.r, c2.g, c2.b, c2.a };
+        }
+        else
+        {
+            return new float[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+        }
+
 
     }
 
     public bool onIsland = false;
+
+    public PlayCutScene islandDiscoveredCutScene;
+    public PlayCutScene islandCompleteCutScene;
 
     public void OnIslandEnter()
     {
@@ -238,8 +288,10 @@ public class IslandData : MonoBehaviour
         {
             God.state.OnIslandDiscovered();
             // TODO PLAY DISCOVERED ANIMATION
+            islandDiscoveredCutScene.Play();
         }
     }
+
 
     public void OnIslandLeave()
     {
@@ -252,8 +304,8 @@ public class IslandData : MonoBehaviour
         OnExitBiome(oldBiome);
         OnEnterBiome(newBiome);
 
-        print("old Biome : " + oldBiome);
-        print(" new Biome : " + newBiome);
+        // print("old Biome : " + oldBiome);
+        // print(" new Biome : " + newBiome);
 
 
 

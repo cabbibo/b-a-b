@@ -24,7 +24,7 @@ public class MenuController : MonoBehaviour
 
     public bool menuOn;
 
-    public bool autoLoad = true;
+    // public bool autoLoad = true;
 
     public string currentMenu = "";
 
@@ -43,13 +43,13 @@ public class MenuController : MonoBehaviour
     void OnEnable()
     {
         God.audio.Play(menuOpenSound);
-        //        print("goes here");
+        print("goes here");
 
-        // we skip the menu and auto load into the game
-        if (autoLoad)
+        if (God.sceneController.autoLoad == true)
         {
             OnContinue();
         }
+
     }
 
     // Update is called once per frame

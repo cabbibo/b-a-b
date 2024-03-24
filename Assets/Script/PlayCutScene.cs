@@ -124,6 +124,7 @@ public class PlayCutScene : MonoBehaviour
             }
 
             fSpeed *= speedMultiplier;
+
             director.playableGraph.GetRootPlayable(0).SetSpeed(fSpeed);
 
             if (God.wren != null && wrenTarget != null)
@@ -400,7 +401,6 @@ public class PlayCutScene : MonoBehaviour
     {
 
 
-        print(Camera.main);
 
 
         startPos = Camera.main.transform.position;

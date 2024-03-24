@@ -206,6 +206,8 @@ public class FullBird : MonoBehaviour
 
    public Vector3 _ResetLocation;
 
+   public int totalShards;
+
    void OnEnable()
    {
 
@@ -295,6 +297,9 @@ public class FullBird : MonoBehaviour
       body_gpu.Create();
 
 
+
+      totalShards = body_gpu.totalFeatherPoints + leftWing_gpu.totalFeathers + rightWing_gpu.totalFeathers;
+
       ResetFeatherValues();
       SetMaterialProperties();
 
@@ -319,7 +324,7 @@ public class FullBird : MonoBehaviour
    }
 
    // Update is called once per frame
-   void Update()
+   void FixedUpdate()
    {
 
       leftWing.limbLengths[0] = wren._ScaleMultiplier * chestToShoulder;
@@ -407,6 +412,29 @@ public class FullBird : MonoBehaviour
 
    }
 
+   public void LateUpdate()
+   {
+
+
+      leftWing.UpdatePositions();
+      rightWing.UpdatePositions();
+      tail.UpdatePositions();
+
+
+      body_gpu.UpdateFeathers();
+      body_gpu.DrawFeathers();
+
+
+      leftWing_gpu.UpdateFeathers();
+      leftWing_gpu.DrawFeathers();
+
+      rightWing_gpu.UpdateFeathers();
+      rightWing_gpu.DrawFeathers();
+
+
+      //SetUpDebug();
+      //SetUpDraw();
+   }
 
 
    public void TakeOff()
@@ -511,7 +539,38 @@ public class FullBird : MonoBehaviour
 
       _LockedValue = 0;
       _ExplosionValue = 1;
-      // _ExplosionVector = c.impulse;
+      _ExplosionVector = Vector3.zero;
+
+      leftWing_gpu.UpdateFeathers();
+      rightWing_gpu.UpdateFeathers();
+      body_gpu.UpdateFeathers();
+
+      // leftEye.parent = transform;
+      // rightEye.parent = transform;
+      // beak.parent = transform;
+
+
+
+      _LockedValue = 0;
+      _ExplosionValue = 0;
+      _ExplosionVector = Vector3.zero;
+
+   }
+
+
+
+   public void HitGround(Collision c)
+   {
+
+      _OnGround = true;
+
+      _LockedValue = 0;
+      _ExplosionValue = 1;
+      _ExplosionVector = c.impulse;
+
+
+      print(c.impulse);
+      print(wren.physics.vel);
 
       leftWing_gpu.UpdateFeathers();
       rightWing_gpu.UpdateFeathers();
@@ -534,6 +593,7 @@ public class FullBird : MonoBehaviour
 
       _LockedValue = 0;
       _ExplosionValue = 1;
+      _ExplosionVector = wren.physics.vel;
 
 
       leftWing_gpu.UpdateFeathers();

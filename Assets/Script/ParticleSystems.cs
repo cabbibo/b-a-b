@@ -26,6 +26,8 @@ public class ParticleSystems : MonoBehaviour
     public ParticleSystem carryingParticleSystem;
     public ParticleSystem deathParticleSystem;
 
+    public ParticleSystem shardCollect;
+
 
     public void Emit(ParticleSystem particleSystem, Vector3 position, int amount)
     {

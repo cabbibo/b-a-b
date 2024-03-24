@@ -61,7 +61,7 @@ float2 hash21(float p)
 
 float _Time;
 
-
+/*
 struct Wren{
   float3 pos;
   float3 vel;
@@ -75,7 +75,7 @@ struct Wren{
 
 RWStructuredBuffer<Wren> _WrenBuffer;
 
-int _NumWrens;
+int _NumWrens;*/
 
 float3 getWorldPos( float2 coordinates ){
 
@@ -180,7 +180,7 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
 
     v.vel += curlNoise(v.pos * .04 + float3(0,_Time * .04,0)) * .001;//float3(0,-.0001,0);
 
-
+/*
     
 for( int i = 0; i < _NumWrens; i++ ){
 
@@ -196,16 +196,16 @@ for( int i = 0; i < _NumWrens; i++ ){
     if( v.life < .95 ){
         v.vel += pow((1-v.life),6)*.01* normalize(cross(w.vel , outVec))/ length(delta);//saturate((1-feather.debug)* 10) *1000 * normalize(delta) / length(delta);
     }
-}   
+}   */
 
-//v.vel += v.nor *.01;
+v.vel += v.nor *.01;
 v.vel *= 0;
     v.pos += v.vel;
     v.vel *= .9;
 
-    v.life  -= .01 * (hash11( float(pID * 31)  )+ .3);
-    v.life  -= .01 * (hash11( float(pID * 51)  )+ .3);
-    v.life  -= .01 * (hash11( float(pID * 91)  )+ .3);
+    v.life  -= .005 * (hash11( float(pID * 31)  )+ .3);
+    v.life  -= .005 * (hash11( float(pID * 51)  )+ .3);
+    v.life  -= .005 * (hash11( float(pID * 91)  )+ .3);
         
 
         _VertBuffer[sID] = v;
