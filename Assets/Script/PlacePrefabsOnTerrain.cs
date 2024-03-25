@@ -100,7 +100,10 @@ public class PlacePrefabsOnTerrain : MonoBehaviour
 
                 if (i < 10 && j < 10)
                 {
-                    print(biomeVal[biome]);
+
+                    print(biomeVal);
+                    print(nPos);
+                    //print(biomeVal[biome]);
                 }
 
                 //if it is, place it
@@ -108,52 +111,52 @@ public class PlacePrefabsOnTerrain : MonoBehaviour
                 {
                     float height = God.terrain.SampleHeight(pos);
 
-                    if (height > minAltitude && height < maxAltitude)
-                    {
+                    // if (height > minAltitude && height < maxAltitude)
+                    //{
 
 
-                        Vector3 n = God.terrain.terrainData.GetInterpolatedNormal(nPos.x, nPos.y);
+                    Vector3 n = God.terrain.terrainData.GetInterpolatedNormal(nPos.x, nPos.y);
 
-                        print(n);
-
-
-                        if (n.y > minSteepness && n.y < maxSteepness)
-                        {
-                            /* RaycastHit hit;
-
-                             LayerMask mask = LayerMask.GetMask("Terrain");
+                    //   print(n);
 
 
+                    // if (n.y > minSteepness && n.y < maxSteepness)
+                    // {
+                    /* RaycastHit hit;
 
-                            if (Physics.Raycast(pos + Vector3.up * 1000, Vector3.down, out hit, 10000, mask))
-                             {
-                                pos = hit.point;
-                                pos += Vector3.up * verticalOffset;
-
-                             }*/
-
-                            // print(God.terrain.SampleHeight(transform.position));
-
-                            pos.y = height + verticalOffset;
+                     LayerMask mask = LayerMask.GetMask("Terrain");
 
 
-                            GameObject go = Instantiate(prefab, pos, Quaternion.identity, transform);
-                            go.transform.localScale = Vector3.one * Random.Range(minScale, maxScale);
-                            // go.transform.LookAt(go.transform.position + n);
-                            //go.transform.RotateAround(go.transform.position, go.transform.right, 90);
 
-                            //Quaternion targetRotation = Quaternion.FromToRotation(go.transform.up, n) * go.transform.rotation;
-                            /// transform.rotation = targetRotation;
-                            //    go.transform.rotation = targetRotation;
+                    if (Physics.Raycast(pos + Vector3.up * 1000, Vector3.down, out hit, 10000, mask))
+                     {
+                        pos = hit.point;
+                        pos += Vector3.up * verticalOffset;
 
-                            // go.transform.rotation = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(rotationRandomness * Random.value), Random.value);
-                            transforms[i] = go.transform;
+                     }*/
 
-                            allGameObjects.Add(go);
-                            break;
-                        }
+                    // print(God.terrain.SampleHeight(transform.position));
 
-                    }
+                    pos.y = height + verticalOffset;
+
+
+                    GameObject go = Instantiate(prefab, pos, Quaternion.identity, transform);
+                    go.transform.localScale = Vector3.one * Random.Range(minScale, maxScale);
+                    // go.transform.LookAt(go.transform.position + n);
+                    //go.transform.RotateAround(go.transform.position, go.transform.right, 90);
+
+                    //Quaternion targetRotation = Quaternion.FromToRotation(go.transform.up, n) * go.transform.rotation;
+                    /// transform.rotation = targetRotation;
+                    //    go.transform.rotation = targetRotation;
+
+                    // go.transform.rotation = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(rotationRandomness * Random.value), Random.value);
+                    transforms[i] = go.transform;
+
+                    allGameObjects.Add(go);
+                    break;
+                    // }
+
+                    //}
 
 
                 }
