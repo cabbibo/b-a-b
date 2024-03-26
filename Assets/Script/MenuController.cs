@@ -43,7 +43,6 @@ public class MenuController : MonoBehaviour
     void OnEnable()
     {
         God.audio.Play(menuOpenSound);
-        print("goes here");
 
         if (God.sceneController.autoLoad == true)
         {
@@ -252,7 +251,6 @@ public class MenuController : MonoBehaviour
     public void ActivateStartMenu()
     {
 
-        print("Activating");
         canvas.enabled = true;
         mainMenu.gameObject.SetActive(false);
         optionsMenu.gameObject.SetActive(false);
@@ -295,7 +293,6 @@ public class MenuController : MonoBehaviour
     public void OnNewGameSelected()
     {
 
-        print("new game selected");
         God.sceneController.ResetSave();
         God.sceneController.OnSceneLoadEvent.AddListener(OnSceneLoaded);//m_MyEvent.AddListener(MyAction);
         God.sceneController.HardStart();

@@ -133,8 +133,6 @@ public class FlyingTutorialSequence : MonoBehaviour
         // auto takeoff
         if (God.wren)
         {
-            print("hi");
-
             God.wren.state.TakeOff();
         }
 
@@ -202,6 +200,7 @@ public class FlyingTutorialSequence : MonoBehaviour
             //     bgMpr.SetVector("_WrenDirection", God.wren.physics.rb.transform.forward);
             //     fade.SetPropertyBlock(bgMpr);
 
+            // Reseting cloud position as we jump up and down
             if (activeInTutorial.activeSelf)
             {
                 var p = God.wren.physics.rb.transform.position;

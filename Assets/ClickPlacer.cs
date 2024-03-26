@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class ClickPlacer : MonoBehaviour
 {
@@ -35,8 +36,11 @@ public class ClickPlacer : MonoBehaviour
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, layer_mask))
         {
 
-            GameObject go = Instantiate(prefab, hit.point, Quaternion.identity);
+            GameObject go = (GameObject)PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+
             go.transform.parent = transform;
+            go.transform.position = hit.point;
+
 
             // Randomly rotate around the up axis to give us some range
             go.transform.Rotate(Vector3.up, Random.Range(0, 360));
