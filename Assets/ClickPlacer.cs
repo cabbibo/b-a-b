@@ -16,6 +16,16 @@ public class ClickPlacer : MonoBehaviour
 
     public string[] layers;
 
+    public Vector3 offset;
+    public Vector3 rotationalOffset;
+
+    public Vector3 rotationRandomness;
+    public Vector3 offsetRandomness;
+
+    public Vector2 normalMatchRange;
+
+
+
 
     public void MouseDown(Ray ray)
     {
@@ -27,8 +37,29 @@ public class ClickPlacer : MonoBehaviour
 
             GameObject go = Instantiate(prefab, hit.point, Quaternion.identity);
             go.transform.parent = transform;
+
+            // Randomly rotate around the up axis to give us some range
             go.transform.Rotate(Vector3.up, Random.Range(0, 360));
+
+
+            Vector3 upVector = Vector3.Lerp(Vector3.up, hit.normal, Random.Range(normalMatchRange.x, normalMatchRange.y));
+            Vector3 lookVector = Vector3.Scale(Random.onUnitSphere, new Vector3(1, 0, 1));
+
+            go.transform.rotation = Quaternion.LookRotation(lookVector, upVector);
+            // hit.normal
+
+            go.transform.Rotate(rotationalOffset + new Vector3(
+                Random.Range(-rotationRandomness.x, rotationRandomness.x),
+                Random.Range(-rotationRandomness.y, rotationRandomness.y),
+                Random.Range(-rotationRandomness.z, rotationRandomness.z))
+            );
+
+
             go.transform.localScale = Vector3.one * Random.Range(scaleRange.x, scaleRange.y);
+            go.transform.position += go.transform.up * go.transform.localScale.y * (offset.y + Random.Range(-offsetRandomness.y, offsetRandomness.y));
+            go.transform.position += go.transform.right * go.transform.localScale.x * (offset.x + Random.Range(-offsetRandomness.x, offsetRandomness.x));
+            go.transform.position += go.transform.forward * go.transform.localScale.z * (offset.z + Random.Range(-offsetRandomness.z, offsetRandomness.z));
+
             placedGameObjects.Add(go);
             count++;
         }

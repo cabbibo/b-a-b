@@ -1039,7 +1039,7 @@ if( d < .4 ){
   //col = float3(1,0,0);
 }
 
-float4 bMap = tex2D(_BiomeMap, (v.worldPos.xz+2048) / 4096);
+float4 bMap = tex2D(_BiomeMap, (v.worldPos.xz+4096) / 8192);
 //col *= lerp( 1, bMap.xyz * _BiomeMapWeight + (1-_BiomeMapWeight) , bMap.a);
 
 float cityDot = dot( normalize(bMap.xyz) , normalize(float3(1,0,.5)));
