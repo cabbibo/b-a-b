@@ -69,7 +69,7 @@ public class IslandData : MonoBehaviour
     void Start()
     {
 
-        OnBiomeChange(God.state.currentBiomeID, God.state.currentBiomeID);
+        //OnBiomeChange(God.state.currentBiomeID, God.state.currentBiomeID);
 
 
         if (God.state.tutorialFinished == false)
@@ -166,7 +166,7 @@ public class IslandData : MonoBehaviour
 
         // In editor ( no wren ) have a debug transform we can check values with!
 
-
+        print("getting hit with the update tho");
         Vector3 positionToCheck = Vector3.zero;
 
         if (debugValueTransform != null) { positionToCheck = debugValueTransform.position; }
