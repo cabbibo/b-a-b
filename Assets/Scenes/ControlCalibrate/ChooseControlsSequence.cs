@@ -85,9 +85,12 @@ public class ChooseControlsSequence : MonoBehaviour
         }
     }
 
+    public GameObject containerInstructions;
+    public TextMeshProUGUI containerInstructionsText;
+
     bool userChoiceSwapX;
     bool userChoiceSwapY;
-
+    bool everCalibrated = false;
 
     enum StepType { None, Start, MoveVertical, MoveHorizontal, ChooseVertical, ChooseHorizontal, ConfirmHorizontal, ConfirmVertical, Finished }
     int _stepI = 0;
@@ -131,7 +134,8 @@ public class ChooseControlsSequence : MonoBehaviour
     {
         StartCoroutine(SetupBird());
 
-        ShowScreen(false);        
+        ShowScreen(false);    
+        ShowInstructions(true);    
     }
 
     void UpdateBirdParams()
@@ -140,6 +144,15 @@ public class ChooseControlsSequence : MonoBehaviour
         God.wren.physics.invert = !userChoiceSwapY;
     }
 
+    void ShowInstructions(bool bShow)
+    {
+        containerInstructions.SetActive(bShow);
+        containerInstructionsText.text = "Hey there, this build is for helping us figure out which settings players prefer.";
+        containerInstructionsText.text += "\nOpen the Calibrate menu, play around and when you're done open this menu again and send us a screenshot or picture with this info:";
+        // show choices in text:
+        containerInstructionsText.text += "\n\nSwap LR: " + (everCalibrated ? (userChoiceSwapX ? "Yes" : "No") : "Not yet chosen");
+        containerInstructionsText.text += "\nInvert Y: " + (everCalibrated ? (userChoiceSwapY ? "No" : "Yes") : "Not yet chosen");
+    }
     void ShowScreen(bool bShow)
     {
         // canvas.enabled = bShow;
@@ -154,6 +167,24 @@ public class ChooseControlsSequence : MonoBehaviour
 
     private void Update()
     {
+        if (God.input.dDownPressed)
+        {
+            ShowInstructions(!containerInstructions.activeSelf);
+        }
+
+        if (containerInstructions.activeSelf)
+        {
+            if (God.input.xPressed)
+            {
+                ShowInstructions(false);
+            }
+            if (!ShowingWindow && God.input.circlePressed)
+        {
+            ShowScreen(true);
+        }
+            return;
+        }
+
         if (!ShowingWindow && God.input.circlePressed)
         {
             ShowScreen(true);
@@ -250,6 +281,7 @@ public class ChooseControlsSequence : MonoBehaviour
             case StepType.Finished:
                 birdLeft.SetMovement(userChoiceSwapX ? 1 : -1, userChoiceSwapY ? 1 : -1);
                 birdRight.SetMovement(userChoiceSwapX ? 1 : -1, userChoiceSwapY ? 1 : -1);
+                everCalibrated = true;
 
                 if (God.input.xPressed)
                     NextStep();
