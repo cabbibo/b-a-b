@@ -1,6 +1,8 @@
 using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
+
+#if UNITY_EDITOR
+using UnityEditor;
 
 public class TweakWindow : EditorWindow
 {
@@ -54,3 +56,4 @@ public class TweakWindow : EditorWindow
         }
     }
 }
+#endif
