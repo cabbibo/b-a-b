@@ -87,3 +87,4 @@ crashlytics-build.properties
 /[Aa]ssets/StreamingAssets/dna/
 Assets/StreamingAssets/DNA/
 
+.DS_Store
