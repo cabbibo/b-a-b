@@ -432,12 +432,14 @@ namespace WrenUtils
         public static void GetWrenSavedPosition()
         {
 
+            print("GETTING WREN SAVED POSITION");
 
-            float x = PlayerPrefs.GetFloat("_CurrentWrenX", 0);
-            float y = PlayerPrefs.GetFloat("_CurrentWrenY", 100);
-            float z = PlayerPrefs.GetFloat("_CurrentWrenZ", 0);
+            // float x = PlayerPrefs.GetFloat("_CurrentWrenX", 0);
+            // float y = PlayerPrefs.GetFloat("_CurrentWrenY", 100);
+            // float z = PlayerPrefs.GetFloat("_CurrentWrenZ", 0);
 
-            God.wren.startingPosition.position = new Vector3(x, y, z);
+            God.state.LoadState();
+            God.wren.startingPosition.position = God.state.lastPosition;
             God.wren.FullReset();
 
         }

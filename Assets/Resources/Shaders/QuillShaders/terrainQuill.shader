@@ -464,7 +464,7 @@ float3 refl = normalize(reflect( -eye, nor  ));
 
 
   float3 spec = dot(refl, _WorldSpaceLightPos0.xyz); 
-  col +=  _SandSpecularColor1  * floor( pow(spec,10) * 3) * _SandSpecularPower1;
+  col +=  shadow* _SandSpecularColor1  * floor( pow(spec,10) * 3) * _SandSpecularPower1;
 
 
   float m = saturate( dot( normalize(eye), baseNor));
@@ -484,7 +484,7 @@ float3 refl = normalize(reflect( -eye, nor  ));
  // col += col * floor( pow(spec,100) * 3) *3;
 
 
-col += _SandSpecularColor2  *  floor( pow(spec,100) * 3) * _SandSpecularPower2;
+col += shadow * _SandSpecularColor2  *  floor( pow(spec,100) * 3) * _SandSpecularPower2;
 
 
 

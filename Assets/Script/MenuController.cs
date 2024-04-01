@@ -42,6 +42,9 @@ public class MenuController : MonoBehaviour
 
     void OnEnable()
     {
+
+        print("menu enabling");
+
         God.audio.Play(menuOpenSound);
 
         if (God.sceneController.autoLoad == true)

@@ -44,8 +44,6 @@ public class IslandData : MonoBehaviour
     public bool debugWind;
 
 
-    public FlyingTutorialSequence tutorialSequence;
-    public TutorialIslandEnder tutorialIslandEnder;
 
     void OnEnable()
     {
@@ -66,38 +64,6 @@ public class IslandData : MonoBehaviour
 
     }
 
-    void Start()
-    {
-
-        //OnBiomeChange(God.state.currentBiomeID, God.state.currentBiomeID);
-
-
-        if (God.state.tutorialFinished == false)
-        {
-            tutorialSequence.SetStart();
-        }
-        else
-        {
-
-            if (God.state.tutorialIslandFinished == false)
-            {
-
-                tutorialSequence.SetEnd();
-                tutorialIslandEnder.SetStart();
-            }
-            else
-            {
-                tutorialSequence.gameObject.SetActive(false);
-                tutorialIslandEnder.SetEnd();
-            }
-
-
-        }
-
-
-
-
-    }
 
 
     public Vector3 GetWindPower(Vector3 p)
@@ -166,7 +132,6 @@ public class IslandData : MonoBehaviour
 
         // In editor ( no wren ) have a debug transform we can check values with!
 
-        print("getting hit with the update tho");
         Vector3 positionToCheck = Vector3.zero;
 
         if (debugValueTransform != null) { positionToCheck = debugValueTransform.position; }
@@ -305,20 +270,37 @@ public class IslandData : MonoBehaviour
     public PlayCutScene islandDiscoveredCutScene;
     public PlayCutScene islandCompleteCutScene;
 
+
+
+    public TutorialStateManager tutorialStateManager;
+
     public void OnIslandEnter()
     {
+        print("ON ISLAND ENTER");
         onIsland = true;
         if (God.state.islandDiscovered == false)
         {
+
+            print("here we are");
+            print(tutorialStateManager.islandReached);
+            if (tutorialStateManager.islandReached == false)
+            {
+                print("reached here");
+                tutorialStateManager.OnIslandReached();
+            }
+
             God.state.OnIslandDiscovered();
             // TODO PLAY DISCOVERED ANIMATION
             islandDiscoveredCutScene.Play();
         }
+
     }
 
 
     public void OnIslandLeave()
     {
+
+        print("ON ISLAND LEAVE");
         onIsland = false;
     }
 

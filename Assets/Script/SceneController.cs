@@ -38,11 +38,60 @@ public class SceneController : MonoBehaviour
 
 
 
+    public void OnEnable()
+    {
+
+        print("scene Controller enabled");
+
+        int c = SceneManager.sceneCount;
+
+
+        print(c);
+        print(SceneManager.sceneCount);
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
+
+        // TODO:
+        // this isn't loading the correct scenes
+        for (int i = 0; i < scenes.Length; i++)
+        {
+
+            print(scenes[i]);
+
+            UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneByName(scenes[i]);
+
+            if (scene != null)
+            {
+
+                print(scene.name);
+
+                if (scene.name != "BaseScene" && scene.name != null)
+                {
+                    SceneManager.UnloadScene(scene);
+                }
+            }
+        }
+        //  OnStart();
+
+    }
+
+    public void OnDisable()
+    {
+        //OnStart();
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+    }
+
+
+
+
     public UnityEngine.SceneManagement.Scene currentMainScene;
 
     public void LoadScene(int id)
     {
 
+        print("load scene");
         HardLoad(id);
 
     }
@@ -50,6 +99,7 @@ public class SceneController : MonoBehaviour
     public void LoadSceneFromPortal(Portal portal)
     {
 
+        print("load scene from portal");
 
         // make it so we dont hurt ourselves
         God.wren.inEther = true;
@@ -68,6 +118,8 @@ public class SceneController : MonoBehaviour
     public void EndDemo(Portal portal)
     {
 
+
+        print("end demo");
         // make it so we dont hurt ourselves
         God.wren.inEther = true;
         God.wren.Crash(portal.collisionPoint.position);
@@ -85,6 +137,7 @@ public class SceneController : MonoBehaviour
     public float portalAnimationOutLength = 3;
     IEnumerator PortalAnimationOut(Portal portal)
     {
+        print("portal Animation out");
 
         float StartTime = Time.time;
         float EndTime = Time.time + portalAnimationOutLength;
@@ -118,6 +171,8 @@ public class SceneController : MonoBehaviour
     IEnumerator DemoAnimationOut(Portal portal)
     {
 
+        print("demo animation out");
+
         float StartTime = Time.time;
         float EndTime = Time.time + portalAnimationOutLength;
 
@@ -149,13 +204,14 @@ public class SceneController : MonoBehaviour
     public GameObject demoEnder;
     public void OnDemoEnd()
     {
+        print("demo end");
         demoEnder.SetActive(true);
     }
 
 
     public void HardLoad(int id)
     {
-
+        print("hard load");
 
         sceneLoaded = true;
 
@@ -175,6 +231,7 @@ public class SceneController : MonoBehaviour
 
     public void Death()
     {
+        print("death");
         God.state.SetCurrentBiome(-1);
         HardLoad(God.state.currentSceneID);
     }
@@ -184,6 +241,7 @@ public class SceneController : MonoBehaviour
     IEnumerator SceneSwitch(int newScene, int oldScene)
     {
 
+        print("SwitchScene");
 
         //        print("switching scene");
         //        print(newScene);
@@ -246,6 +304,8 @@ public class SceneController : MonoBehaviour
     public void SetNewScene(int newSceneID, int oldSceneID)
     {
 
+        print("SetNewScene");
+
         Camera.main.gameObject.GetComponent<LerpTo>().enabled = true;
         God.wren.state.inInterface = false;
         God.wren.airInterface.Toggle(false);
@@ -281,6 +341,9 @@ public class SceneController : MonoBehaviour
 
     public void OnSceneFinishedLoading(WrenUtils.Scene wrenScene)
     {
+
+        print("On Scene finished loading");
+        print(wrenScene);
 
 
         //print( biome );
@@ -352,6 +415,7 @@ public class SceneController : MonoBehaviour
 
     public void NewGame()
     {
+        print("new game");
         //PlayerPrefs.DeleteAll();
         God.state.ResetAll();
         OnStart();
@@ -360,27 +424,16 @@ public class SceneController : MonoBehaviour
     public void ResetSave()
     {
 
+        print("reset all");
         God.state.ResetAll();
-
-        /*
-        PlayerPrefs.DeleteAll();
-
-        God.state.currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
-        biome = PlayerPrefs.GetInt("_CurrentBiome", -1);
-
-        int gameStarted = PlayerPrefs.GetInt("_GameStarted", 0);
-        if (gameStarted == 0)
-        {
-            gameStarted = 1;
-        }*/
-
-
 
     }
 
 
     public void HardStart()
     {
+
+        print("hard start");
 
         // TODO DO I NEED?
         /*
@@ -409,6 +462,9 @@ public class SceneController : MonoBehaviour
     public void OnStart()
     {
 
+
+        print("on start called");
+
         God.state.OnGameStart();
 
         /* God.state.currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
@@ -425,40 +481,6 @@ public class SceneController : MonoBehaviour
 
     }
 
-
-    public void OnEnable()
-    {
-
-        int c = SceneManager.loadedSceneCount;
-
-        //        print(c);
-        //       print(SceneManager.sceneCount);
-
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        SceneManager.sceneUnloaded += OnSceneUnloaded;
-
-        // TODO:
-        // this isn't loading the correct scenes
-        for (int i = 0; i < c; i++)
-        {
-            UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt(i);
-
-            //            print(scene.name);
-            if (scene.name != "BaseScene")
-            {
-                SceneManager.UnloadScene(scene);
-            }
-        }
-        //  OnStart();
-
-    }
-
-    public void OnDisable()
-    {
-        //OnStart();
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-        SceneManager.sceneUnloaded -= OnSceneUnloaded;
-    }
 
 
 

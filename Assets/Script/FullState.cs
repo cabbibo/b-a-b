@@ -31,9 +31,18 @@ public class FullState : MonoBehaviour
 
     public void OnEnable()
     {
+        print("full state enabled");
         LoadState();
     }
 
+    public int framesBetweenSaves = 2000;
+    public void Update()
+    {
+        if (Time.frameCount % framesBetweenSaves == 0)
+        {
+            UpdateState();
+        }
+    }
     public void UpdateState()
     {
 

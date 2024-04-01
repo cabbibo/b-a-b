@@ -10,6 +10,9 @@ using WrenUtils;
 public class TutorialTakeoffCard : TutorialCardTrigger
 {
 
+
+    public TutorialStateManager stateManager;
+
     void Update()
     {
         /*  if (followTransform)
@@ -51,11 +54,16 @@ public class TutorialTakeoffCard : TutorialCardTrigger
 
     public override void _OnTriggered()
     {
+
         OnTriggered();
+
+        stateManager.OnFirstCrashStart();
         God.wren.shards.SpendAllShards();
-        cutScene.Play();
+        enabled = false; // dont try and trigger again
+
+
+        // cutScene.Play();
         //  cutScene.OnFinished += OnCutSceneFinished;
-        enabled = false;
 
         // on cut scene finished, play our card
 
@@ -68,10 +76,11 @@ public class TutorialTakeoffCard : TutorialCardTrigger
     public void OnCutSceneFinished()
     {
 
-        print("CutScene Finished");
-        islandEnder.hasCrashed = true;
-        portal.SetActive(false);
         FlyingTutorialSequence.Instance.OnTutorialCardTriggered(cardType, target: lookAt ? transform : null, pause: pause);
+
+        //print("CutScene Finished");
+        //islandEnder.hasCrashed = true;
+        //  portal.SetActive(false);
     }
 
     public override void OnTriggered()
