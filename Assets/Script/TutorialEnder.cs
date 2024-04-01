@@ -37,10 +37,6 @@ public class TutorialEnder : MonoBehaviour
 
     public void EndTutorial()
     {
-        print(God.wren);
-        print(God.instance);
-        print("LFGGGG");
-
 
         if (God.wren)
         {
@@ -58,6 +54,8 @@ public class TutorialEnder : MonoBehaviour
         tutorialOcean.SetActive(false);
         mainOcean.SetActive(true);
         portal.SetActive(true);
+
+
     }
 
 

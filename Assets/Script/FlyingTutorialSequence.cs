@@ -11,8 +11,12 @@ using WrenUtils;
 
 public class FlyingTutorialSequence : MonoBehaviour
 {
+
+    public TutorialStateManager stateManager;
+
     public static UnityAction OnTutorialStart;
     public static UnityAction OnTutorialDiveFinished;
+    public static UnityAction OnFreeFlightStarted;
 
 
     public CinematicCameraHandler cinematicCamera;
@@ -74,15 +78,21 @@ public class FlyingTutorialSequence : MonoBehaviour
     }
 
 
-    public void SetStart()
-    {
-        print("SET START");
-        gameObject.SetActive(true);
-        OnStart();
-        TutorialStartState();
 
+    public void StartTutorial()
+    {
+        tutSequence = StartCoroutine(TutorialSequence());
     }
 
+    /*
+
+    public void SetCardsFalse()
+    {
+
+        groupCard.gameObject.SetActive(false);
+        groupEnd.alpha = 0;
+        cardFlyOnGround.SetActive(false);
+    }
     public void SetEnd()
     {
 
@@ -90,14 +100,10 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         OnStart();
         print("Set End");
-
-        groupCard.gameObject.SetActive(false);
-        groupEnd.alpha = 0;
-
         activeAfterTutorial.SetActive(false);
         activeInTutorial.SetActive(false);
 
-        cardFlyOnGround.SetActive(false);
+        SetCardsFalse();
 
         StopCoroutine(tutSequence);
 
@@ -105,114 +111,229 @@ public class FlyingTutorialSequence : MonoBehaviour
         print("Tutoiral Ended");
 
         ender.EndTutorial();
-
         OnTutorialFinished();
 
-        //  gameObject.SetActive(false);
+
     }
 
 
-    void OnStart()
+    void TutorialStartState()
     {
-        print("starting");
+    }
+
+
+    void TutorialFinishState()
+    {
+        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
+        ShowProgress(0);
+        SetBGFade(0);
+        groupContainer.alpha = 0;
+    }
+
+
+    public void RunTutorialCoroutine()
+    {
+        tutSequence = StartCoroutine(TutorialSequence());
+    }
+
+    public void StopTutorialCoroutine()
+    {
+        StopCoroutine(tutSequence);
+    }
+
+
+
+
+
+    public void SetInState()
+    {
 
         if (!Application.isEditor)
             debug = false;
 
-        if (!ender)
-            ender = FindObjectOfType<TutorialEnder>();
-
         groupCard.gameObject.SetActive(false);
         groupEnd.alpha = 0;
 
-        activeAfterTutorial.SetActive(false);
-        activeInTutorial.SetActive(false);
+        preTutorialGameObject.SetActive(false);
+        inTutorialGameObject.SetActive(false);
+        postTutorialGameObject.SetActive(true);
+
 
         cardFlyOnGround.SetActive(false);
 
-        // auto takeoff
-        if (God.wren)
-        {
-            God.wren.state.TakeOff();
-        }
-
-
-        tutSequence = StartCoroutine(TutorialSequence());
-
     }
 
+*/
 
-    void Start()
-    {
-
-
-    }
 
 
     void Update()
     {
-        if (Application.isEditor)
-        {
-
-            // tab to autocomplete
-            if (tutSequence != null && Input.GetKeyDown(KeyCode.Tab))
-            {
-                StopCoroutine(tutSequence);
-
-                OnTutorialFinished();
-
-                God.wren.PhaseShift(ender.transform.position + Vector3.down * 180);
-            }
-
-            if (Input.GetKey(KeyCode.LeftAlt))
-            {
-                // wind tunnel 1
-                if (Input.GetKeyDown(KeyCode.Alpha1))
-                {
-                    God.wren.PhaseShift(new Vector3(-5012, 183, -544));
-                }
-                // wind tunnel 2
-                if (Input.GetKeyDown(KeyCode.Alpha2))
-                {
-                    God.wren.PhaseShift(new Vector3(-3859, 287, -1337));
-                }
-                // portal
-                if (Input.GetKeyDown(KeyCode.Alpha3))
-                {
-                    God.wren.PhaseShift(new Vector3(-5150, 507, -659));
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.O))
-            {
-                TryShowCard(CardType.ActivityRings);
-            }
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                _cardShown = new Dictionary<CardType, bool>();
-            }
-        }
 
         fade.transform.position = God.camera.transform.position;
+        CheckCheats();
 
-        if (God.wren)
-        {
-            //     fade.GetPropertyBlock(bgMpr);
-            //     bgMpr.SetVector("_WrenDirection", God.wren.physics.rb.transform.forward);
-            //     fade.SetPropertyBlock(bgMpr);
-
-            // Reseting cloud position as we jump up and down
-            if (activeInTutorial.activeSelf)
-            {
-                var p = God.wren.physics.rb.transform.position;
-                cloudParticles.transform.position = new Vector3(p.x, p.y - 300, p.z);
-
-                if (p.y < 100)
-                {
-                    God.wren.PhaseShift(new Vector3(p.x, p.y + 450, p.z));
-                }
-            }
-        }
     }
+
+    /*
+
+        void OnTutorialFinished()
+        {
+
+
+            // TutorialFinishState();
+
+            OnTutorialDiveFinished?.Invoke();
+            God.state.OnTutorialFinish();
+
+            // TryShowCard(CardType.RevealIsland, true, 1);
+        }
+    */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // STATE MACHINE FOR TUTORIAL
+    IEnumerator TutorialSequence()
+    {
+        yield return null;
+
+        stateManager.SetCinematicFlightTutorialState();
+
+        God.fade.FadeIn(3);
+
+        groupContainer.alpha = 0;
+        ShowContinue(false);
+        ShowText();
+
+        SetControllerHint(ControllerHint.None);
+        ShowProgress(0);
+        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
+
+        float bgT = 1f;
+        SetBGFade(bgT);
+
+        while (God.wren == null)
+            yield return null;
+
+        // yield return WaitWithCheat(2);
+
+        while (God.wren.physics.onGround)
+            yield return null;
+
+
+
+        cinematicCamera.mode = CinematicCameraHandler.Mode.Cinematic;
+
+        while (debug)
+        {
+            cinematicCamera.tutorialCameraIdx = debugCamIdx;
+            yield return null;
+        }
+
+        cinematicCamera.tutorialCameraIdx = (float)Camera.Closeup;
+
+        yield return WaitWithCheat(5);
+        // Sticks
+        {
+            groupSticks.SetActive(true);
+            controllerText.text = "";
+
+            yield return FadeGroup(groupContainer, 0, 1);
+        }
+
+        yield return WaitWithCheat(5f);
+        yield return WaitForXToContinue();
+
+        groupSticks.SetActive(false);
+        cinematicCamera.tutorialCameraIdx = (float)Camera.TopClose;
+
+        yield return WaitWithCheat(5f);
+        yield return WaitForXToContinue();
+
+        yield return LerpCamera((float)Camera.TopClose, (float)Camera.TopFar);
+
+        yield return WaitWithCheat(5f);
+        yield return WaitForXToContinue();
+
+        cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
+        yield return WaitWithCheat(.3f);
+        yield return LerpCamera((float)Camera.Front, (float)Camera.Play);
+
+        yield return WaitWithCheat(1f);
+
+        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
+
+        yield return WaitWithCheat(0.5f);
+
+        // Fades Out Background
+
+        while (bgT > 0)
+        {
+            SetBGFade(bgT);
+            bgT -= Time.unscaledDeltaTime * .1f;
+            if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
+                break;
+            yield return null;
+        }
+
+
+        stateManager.StartFreeFlight();
+
+        // Start free flight
+
+        SetBGFade(0);
+
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
+        // Left
+        yield return ControllerHintSequence(ControllerHint.Left);
+        yield return WaitWithCheat(0.5f);
+
+        // Right
+        yield return ControllerHintSequence(ControllerHint.Right);
+        yield return WaitWithCheat(0.5f);
+
+        // Hold
+        yield return ControllerHintSequence(ControllerHint.Hold);
+
+        God.wren.physics.rb.AddRelativeForce(Vector3.forward * 1000, ForceMode.Force);
+
+        yield return WaitWithCheat(0.5f);
+
+
+        // Space to fly
+        yield return WaitWithCheat(11);
+
+        // Dive
+        yield return ControllerHintSequence(ControllerHint.Dive);
+
+        ShowProgress(0);
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
+
+        stateManager.StartTransition();
+
+    }
+
+
+
+
+
 
     void SetControllerHint(ControllerHint hint)
     {
@@ -286,156 +407,8 @@ public class FlyingTutorialSequence : MonoBehaviour
         Play = 5
     }
 
-    IEnumerator TutorialSequence()
-    {
-        yield return null;
-
-        OnTutorialStart?.Invoke();
-
-        God.fade.FadeIn(3);
-
-        activeInTutorial.SetActive(true);
-        activeAfterTutorial.SetActive(false);
-
-        groupContainer.alpha = 0;
-        ShowContinue(false);
-        ShowText();
-
-        SetControllerHint(ControllerHint.None);
-        ShowProgress(0);
-        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
-
-        float bgT = 1f;
-        SetBGFade(bgT);
-
-        while (God.wren == null)
-            yield return null;
-
-        // yield return WaitWithCheat(2);
-
-        while (God.wren.physics.onGround)
-            yield return null;
 
 
-
-        cinematicCamera.mode = CinematicCameraHandler.Mode.Cinematic;
-
-        while (debug)
-        {
-            cinematicCamera.tutorialCameraIdx = debugCamIdx;
-            yield return null;
-        }
-
-        cinematicCamera.tutorialCameraIdx = (float)Camera.Closeup;
-
-        yield return WaitWithCheat(5);
-
-        // Sticks
-        {
-            groupSticks.SetActive(true);
-            controllerText.text = "";
-
-            yield return FadeGroup(groupContainer, 0, 1);
-        }
-
-        yield return WaitWithCheat(5f);
-        yield return WaitForXToContinue();
-
-        groupSticks.SetActive(false);
-        cinematicCamera.tutorialCameraIdx = (float)Camera.TopClose;
-
-        yield return WaitWithCheat(5f);
-        yield return WaitForXToContinue();
-
-        yield return LerpCamera((float)Camera.TopClose, (float)Camera.TopFar);
-
-        yield return WaitWithCheat(5f);
-        yield return WaitForXToContinue();
-
-        cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
-        yield return WaitWithCheat(.3f);
-        yield return LerpCamera((float)Camera.Front, (float)Camera.Play);
-
-        yield return WaitWithCheat(1f);
-
-        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
-
-        yield return WaitWithCheat(0.5f);
-
-        while (bgT > 0)
-        {
-            SetBGFade(bgT);
-            bgT -= Time.unscaledDeltaTime * .1f;
-            if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
-                break;
-            yield return null;
-        }
-        SetBGFade(0);
-
-        StartCoroutine(FadeGroup(groupContainer, 1, 0));
-
-        // Left
-        yield return ControllerHintSequence(ControllerHint.Left);
-        yield return WaitWithCheat(0.5f);
-
-        // Right
-        yield return ControllerHintSequence(ControllerHint.Right);
-        yield return WaitWithCheat(0.5f);
-
-        // Hold
-        yield return ControllerHintSequence(ControllerHint.Hold);
-
-        God.wren.physics.rb.AddRelativeForce(Vector3.forward * 1000, ForceMode.Force);
-
-        yield return WaitWithCheat(0.5f);
-
-        // God.wren.PhaseShift(new Vector3(0,-1600,0));
-
-        // yield return WaitWithCheat(0.5f);
-        // groupContainer.alpha = 1;
-        // groupXToContinue.alpha = 0;
-        // int i = 0; float ct = 0;
-        // while(true)
-        // {
-        //     ct += Time.unscaledDeltaTime;
-        //     if (Mathf.Floor(ct % 1) == 0)
-        //         SetControllerHint(ControllerHint.Up);
-        //     else if (i == 1)
-        //         SetControllerHint(ControllerHint.Down);
-
-        //     if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
-        //         ct = 2;
-
-        //     groupXToContinue.alpha = ct > 2 ? 1 : 0;
-        //     if (groupXToContinue.alpha > 0 && God.input.xPressed)
-        //     {
-        //         break;
-        //     }
-        //     Debug.Log(ct);
-        //     yield return null;
-        // }
-
-        // SetControllerHint(ControllerHint.Down);
-
-        // // Up
-        // yield return ControllerHintSequence(ControllerHint.Up);
-        // yield return WaitWithCheat(0.5f);
-
-        // // Down
-        // yield return ControllerHintSequence(ControllerHint.Down);   
-        // yield return WaitWithCheat(0.5f);
-
-        // Space to fly
-        yield return WaitWithCheat(11);
-
-        // Dive
-        yield return ControllerHintSequence(ControllerHint.Dive);
-
-        ShowProgress(0);
-        StartCoroutine(FadeGroup(groupContainer, 1, 0));
-
-        OnTutorialFinished();
-    }
 
     IEnumerator ControllerHintSequence(ControllerHint hint)
     {
@@ -459,6 +432,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         ShowProgress(0);
         SetControllerHint(ControllerHint.None);
     }
+
     bool TestControllerHint(ControllerHint hint)
     {
         switch (hint)
@@ -480,7 +454,7 @@ public class FlyingTutorialSequence : MonoBehaviour
     }
 
     MaterialPropertyBlock bgMpr;
-    void SetBGFade(float t)
+    public void SetBGFade(float t)
     {
         if (bgMpr == null)
             bgMpr = new MaterialPropertyBlock();
@@ -582,34 +556,29 @@ public class FlyingTutorialSequence : MonoBehaviour
         group.alpha = to;
     }
 
-    void OnTutorialFinished()
-    {
 
 
-        TutorialFinishState();
-
-        OnTutorialDiveFinished?.Invoke();
-        God.state.OnTutorialFinish();
-
-        // TryShowCard(CardType.RevealIsland, true, 1);
-    }
 
 
-    void TutorialStartState()
-    {
-        activeInTutorial.SetActive(true);
-        activeAfterTutorial.SetActive(false);
-    }
-    void TutorialFinishState()
-    {
-        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
-        ShowProgress(0);
-        SetBGFade(0);
-        groupContainer.alpha = 0;
 
-        activeInTutorial.SetActive(false);
-        activeAfterTutorial.SetActive(true);
-    }
+
+
+
+
+
+
+
+
+
+    /*
+
+
+    
+    CARDS FUNCTIONS
+
+    
+
+    */
 
 
     // Cards
@@ -900,4 +869,60 @@ public class FlyingTutorialSequence : MonoBehaviour
         groupEnd.alpha = 0;
         cb?.Invoke(false);
     }
+
+
+    /*
+
+
+    CHEATS
+
+
+    */
+
+
+
+    public void CheckCheats()
+    {
+        if (Application.isEditor)
+        {
+
+            // tab to autocomplete
+            if (tutSequence != null && Input.GetKeyDown(KeyCode.Tab))
+            {
+                StopCoroutine(tutSequence);
+
+                stateManager.StartTransition();
+
+                God.wren.PhaseShift(ender.transform.position + Vector3.down * 180);
+            }
+
+            if (Input.GetKey(KeyCode.LeftAlt))
+            {
+                // wind tunnel 1
+                if (Input.GetKeyDown(KeyCode.Alpha1))
+                {
+                    God.wren.PhaseShift(new Vector3(-5012, 183, -544));
+                }
+                // wind tunnel 2
+                if (Input.GetKeyDown(KeyCode.Alpha2))
+                {
+                    God.wren.PhaseShift(new Vector3(-3859, 287, -1337));
+                }
+                // portal
+                if (Input.GetKeyDown(KeyCode.Alpha3))
+                {
+                    God.wren.PhaseShift(new Vector3(-5150, 507, -659));
+                }
+            }
+            if (Input.GetKeyDown(KeyCode.O))
+            {
+                TryShowCard(CardType.ActivityRings);
+            }
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                _cardShown = new Dictionary<CardType, bool>();
+            }
+        }
+    }
+
 }

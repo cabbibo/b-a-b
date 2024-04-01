@@ -13,7 +13,6 @@ public class WrenShardManager : MonoBehaviour
     public FullBird fullBird;
 
 
-
     public int numShardsInBody = 0;
 
     public int oShards = 0;

@@ -29,6 +29,8 @@ namespace WrenUtils
         // Start is called before the first frame update
         void OnEnable()
         {
+
+            print("scene enabled");
             SceneLoaded();
         }
 
