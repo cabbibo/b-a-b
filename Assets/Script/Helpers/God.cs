@@ -17,6 +17,7 @@ namespace WrenUtils
         public Camera _camera;
         public Terrain _terrain;
         public TerrainData _terrainData;
+
         public IslandData _islandData;
         public Wren _localWren;
         public WrenMaker _wrenMaker;
@@ -470,6 +471,19 @@ namespace WrenUtils
             return new Vector2(p.x / terrainData.size.x, p.z / terrainData.size.z);
 
         }
+
+        /*
+                public static Vector2 UVInMap(Vector3 p, IslandData islandData)
+                {
+                    // Transform to local terrain space
+                    p -= islandData.transform.position;
+                    p += new Vector3(islandData.terrainData.size.x / 2, 0, islandData.terrainData.size.z / 2);
+
+                    return new Vector2(p.x / islandData.terrainData.size.x, p.z / islandData.terrainData.size.z);
+
+                }*/
+
+
         // Updates in Edit Mode!
         void OnDrawGizmos()
         {

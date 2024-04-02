@@ -10,20 +10,34 @@
 /////////////////////////////
 // Samplers
 
-UNITY_DECLARE_SCREENSPACE_TEXTURE(_CameraDepthTexture);
+TEXTURE2D_X(_CameraDepthTexture); SAMPLER(sampler_CameraDepthTexture);
 UNITY_DECLARE_SCREENSPACE_TEXTURE(_BackgroundTexture);
 
-// NOTE: _Normals is used outside of _APPLYNORMALMAPPING_ON so we cannot surround it here.
-sampler2D _Normals;
-sampler2D _ReflectionTex;
-#if _OVERRIDEREFLECTIONCUBEMAP_ON
-samplerCUBE _ReflectionCubemapOverride;
+half3 _CrestAmbientLighting;
+
+float4 _CameraDepthTexture_TexelSize;
+
+#if defined(_APPLYNORMALMAPPING_ON) || defined(_CAUSTICS_ON)
+Texture2D _Normals;
+SamplerState sampler_Normals;
 #endif
+
 #if _FOAM_ON
-sampler2D _FoamTexture;
+Texture2D _FoamTexture;
+SamplerState sampler_FoamTexture;
 #endif
+
 #if _CAUSTICS_ON
-sampler2D _CausticsTexture;
+Texture2D _CausticsTexture;
+SamplerState sampler_CausticsTexture;
+#endif
+
+TEXTURE2D_X(_CrestScreenSpaceShadowTexture);
+float4 _CrestScreenSpaceShadowTexture_TexelSize;
+
+TEXTURE2D(_ReflectionTex); SAMPLER(sampler_ReflectionTex);
+#if _OVERRIDEREFLECTIONCUBEMAP_ON
+TEXTURECUBE(_ReflectionCubemapOverride); SAMPLER(sampler_ReflectionCubemapOverride);
 #endif
 
 /////////////////////////////
@@ -54,9 +68,16 @@ half4 _DepthFogDensity;
 // Normals
 // ----------------------------------------------------------------------------
 
+#if defined(_APPLYNORMALMAPPING_ON) || defined(_CAUSTICS_ON)
+float4 _Normals_TexelSize;
+#endif
+
+half _NormalsStrengthOverall;
 #if _APPLYNORMALMAPPING_ON
 half _NormalsStrength;
 half _NormalsScale;
+static const WaveHarmonic::Crest::TiledTexture _NormalsTiledTexture =
+    WaveHarmonic::Crest::TiledTexture::Make(_Normals, sampler_Normals, _Normals_TexelSize, _NormalsScale);
 #endif
 
 // ----------------------------------------------------------------------------
@@ -100,6 +121,7 @@ half _DirectionalLightFallOffFar;
 
 #if _PLANARREFLECTIONS_ON
 half _PlanarReflectionNormalsStrength;
+half _PlanarReflectionDistanceFactor;
 half _PlanarReflectionIntensity;
 #endif
 
@@ -121,7 +143,6 @@ half _WaveFoamFeather;
 half _WaveFoamLightScale;
 half _ShorelineFoamMinDepth;
 #if _FOAM3DLIGHTING_ON
-float4 _FoamTexture_TexelSize;
 half _WaveFoamNormalStrength;
 half _WaveFoamSpecularFallOff;
 half _WaveFoamSpecularBoost;
@@ -130,6 +151,11 @@ half _WaveFoamSpecularBoost;
 half4 _FoamBubbleColor;
 half _FoamBubbleParallax;
 half _WaveFoamBubblesCoverage;
+
+float4 _FoamTexture_TexelSize;
+
+static const WaveHarmonic::Crest::TiledTexture _FoamTiledTexture =
+    WaveHarmonic::Crest::TiledTexture::Make(_FoamTexture, sampler_FoamTexture, _FoamTexture_TexelSize, _FoamScale);
 #endif
 
 // ----------------------------------------------------------------------------
@@ -144,13 +170,14 @@ half _CausticsFocalDepth;
 half _CausticsDepthOfField;
 half _CausticsDistortionScale;
 half _CausticsDistortionStrength;
-#endif
 
-// Hack - due to SV_IsFrontFace occasionally coming through as true for backfaces,
-// add a param here that forces ocean to be in undrwater state. I think the root
-// cause here might be imprecision or numerical issues at ocean tile boundaries, although
-// i'm not sure why cracks are not visible in this case.
-float _ForceUnderwater;
+float4 _CausticsTexture_TexelSize;
+
+static const WaveHarmonic::Crest::TiledTexture _CausticsTiledTexture =
+    WaveHarmonic::Crest::TiledTexture::Make(_CausticsTexture, sampler_CausticsTexture, _CausticsTexture_TexelSize, _CausticsTextureScale);
+static const WaveHarmonic::Crest::TiledTexture _CausticsDistortionTiledTexture =
+    WaveHarmonic::Crest::TiledTexture::Make(_Normals, sampler_Normals, _Normals_TexelSize, _CausticsDistortionScale);
+#endif
 
 // TODO: This can be removed once we use the underwater post-process effect.
 float _HeightOffset;

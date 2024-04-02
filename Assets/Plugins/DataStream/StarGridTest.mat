@@ -72,7 +72,7 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _NoiseOffset: 1.94
-    - _NoiseSize: 0.1
+    - _NoiseSize: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Size: 1

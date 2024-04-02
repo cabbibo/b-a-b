@@ -7,12 +7,26 @@ using UnityEngine;
 
 namespace Crest.Spline
 {
+    public interface ISplinePointCustomData
+    {
+        Vector2 GetData();
+    }
+
     /// <summary>
     /// Spline point, intended to be child of Spline object
     /// </summary>
-    [ExecuteAlways]
-    public class SplinePoint : MonoBehaviour
+    [AddComponentMenu(Internal.Constants.MENU_PREFIX_SPLINE + "Spline Point")]
+    public class SplinePoint : CustomMonoBehaviour
     {
+        /// <summary>
+        /// The version of this asset. Can be used to migrate across versions. This value should
+        /// only be changed when the editor upgrades the version.
+        /// </summary>
+        [SerializeField, HideInInspector]
+#pragma warning disable 414
+        int _version = 0;
+#pragma warning restore 414
+
 #if UNITY_EDITOR
         void OnDrawGizmos()
         {
@@ -29,6 +43,20 @@ namespace Crest.Spline
             Gizmos.DrawIcon(transform.position, iconName, true);
             Gizmos.DrawIcon(transform.position, iconName, true);
         }
+
+        void OnDrawGizmosSelected()
+        {
+            // Reduces spam. May have edge cases where spline will not update but that is fine for now.
+            if (gameObject != Selection.activeGameObject)
+            {
+                return;
+            }
+
+            foreach (var receiver in transform.parent.GetComponents<IReceiveSplinePointOnDrawGizmosSelectedMessages>())
+            {
+                receiver.OnSplinePointDrawGizmosSelected(this);
+            }
+        }
 #endif
     }
 
@@ -39,7 +67,7 @@ namespace Crest.Spline
     }
 
     [CustomEditor(typeof(SplinePoint))]
-    public class SplinePointEditor : Editor
+    public class SplinePointEditor : CustomBaseEditor
     {
         public override void OnInspectorGUI()
         {
@@ -49,10 +77,22 @@ namespace Crest.Spline
             var thisIdx = thisSP.transform.GetSiblingIndex();
 
             var parent = thisSP.transform.parent;
-            if (parent == null || parent.GetComponent<Spline>() == null)
+            if (parent == null || !parent.TryGetComponent<Spline>(out _))
             {
                 EditorGUILayout.HelpBox("Spline component must be present on parent of this GameObject.", MessageType.Error);
                 return;
+            }
+
+            // For any components on spline that want custom data added to spline points, add them
+            var customDatas = parent.GetComponents<ISplinePointCustomDataSetup>();
+            foreach (var customData in customDatas)
+            {
+                // NOTE: This will not be registered with the undo/redo history, but with the way these are attached, it
+                // wouldn't make sense to register them. These data objects are harmless.
+                if (customData.AttachDataToSplinePoint(thisSP.gameObject))
+                {
+                    EditorUtility.SetDirty(thisSP.gameObject);
+                }
             }
 
             GUILayout.Label("Selection", EditorStyles.boldLabel);
@@ -122,22 +162,28 @@ namespace Crest.Spline
                         Selection.activeObject = parent;
                     }
                 }
-                DestroyImmediate(thisSP.gameObject);
+                Undo.DestroyObjectImmediate(thisSP.gameObject);
             }
         }
 
-        static GameObject CreateNewSP()
+        static GameObject CreateNewSP(Transform spline)
         {
             var newPoint = new GameObject();
             newPoint.name = "SplinePoint";
             newPoint.AddComponent<SplinePoint>();
+            newPoint.transform.parent = spline;
+
+            if (spline.TryGetComponent(out ISplinePointCustomDataSetup customData))
+            {
+                customData.AttachDataToSplinePoint(newPoint);
+            }
+
             return newPoint;
         }
 
         public static GameObject AddSplinePointBefore(Transform parent, int beforeIdx = 0)
         {
-            var newPoint = CreateNewSP();
-            newPoint.transform.parent = parent;
+            var newPoint = CreateNewSP(parent);
 
             // Put in front of child at beforeIdx
             newPoint.transform.SetSiblingIndex(beforeIdx);
@@ -165,7 +211,7 @@ namespace Crest.Spline
             {
                 // New point being inserted before first point, and spline has multiple points, extrapolate backwards
                 var newPos = 2f * parent.GetChild(1).position - parent.GetChild(2).position;
-                Debug.Log(newPos);
+                //Debug.Log(newPos);
                 newPoint.transform.position = newPos;
             }
 
@@ -177,8 +223,7 @@ namespace Crest.Spline
             // If no index specified, assume adding after last point
             if (afterIdx == -1) afterIdx = parent.childCount - 1;
 
-            var newPoint = CreateNewSP();
-            newPoint.transform.parent = parent;
+            var newPoint = CreateNewSP(parent);
 
             var newIdx = afterIdx + 1;
             newPoint.transform.SetSiblingIndex(newIdx);

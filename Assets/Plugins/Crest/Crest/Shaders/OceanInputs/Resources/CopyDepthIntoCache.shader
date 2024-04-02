@@ -2,6 +2,10 @@
 
 // This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
 
+// Copies the depth buffer into the cache as object-space height. Object-space is used instead of world-space to allow
+// relative movement of baked depth caches afterwards. It is converted to world-space in another shader before writing
+// into the LOD data.
+
 Shader "Crest/Copy Depth Buffer Into Cache"
 {
 	SubShader
@@ -29,7 +33,9 @@ Shader "Crest/Copy Depth Buffer Into Cache"
 			float4 _CustomZBufferParams;
 			CBUFFER_END
 
-			sampler2D _CamDepthBuffer;
+			Texture2D _CamDepthBuffer;
+			SamplerState sampler_CamDepthBuffer;
+			float _HeightOffset;
 
 			struct Attributes
 			{
@@ -59,7 +65,7 @@ Shader "Crest/Copy Depth Buffer Into Cache"
 
 			float4 frag(Varyings input) : SV_Target
 			{
-				float deviceDepth = SAMPLE_DEPTH_TEXTURE(_CamDepthBuffer, input.uv);
+				float deviceDepth = _CamDepthBuffer.Sample(sampler_CamDepthBuffer, input.uv).x;
 				float linear01Z = CustomLinear01Depth(deviceDepth);
 
 				float altitude;
@@ -69,7 +75,7 @@ Shader "Crest/Copy Depth Buffer Into Cache"
 				altitude = lerp(_HeightNearHeightFar.x, _HeightNearHeightFar.y, linear01Z);
 #endif
 
-				return float4(_OceanCenterPosWorld.y - altitude, 0.0, 0.0, 1.0);
+				return float4(altitude - _HeightOffset, 0.0, 0.0, 1.0);
 			}
 
 			ENDCG

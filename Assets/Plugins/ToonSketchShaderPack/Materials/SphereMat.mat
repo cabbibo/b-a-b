@@ -2,20 +2,26 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SphereMat
   m_Shader: {fileID: 4800000, guid: 0bfcaf9c882627843ada826ed8a6c6c3, type: 3}
-  m_ShaderKeywords: NORMAL_MAP PAINTERLY_LIGHT
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - NORMAL_MAP
+  - PAINTERLY_LIGHT
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -24,7 +30,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ColorMap:
-        m_Texture: {fileID: 2800000, guid: 32d759c4d9314af4d98607c89bf8334e, type: 3}
+        m_Texture: {fileID: 2800000, guid: 18214e9d6af6248559d501391856f1c7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
@@ -52,8 +58,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 1b545f5e15dc8744389cc31f850159fb, type: 3}
-        m_Scale: {x: 10, y: 10}
+        m_Texture: {fileID: 2800000, guid: 135843dc04274e14393b54d16cf9c709, type: 3}
+        m_Scale: {x: 11, y: 11}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
@@ -61,16 +67,17 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _PLightMap:
         m_Texture: {fileID: 2800000, guid: 135843dc04274e14393b54d16cf9c709, type: 3}
-        m_Scale: {x: 2, y: 2}
+        m_Scale: {x: 11, y: 11}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ShinyMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: cd3901d0f2ad2434d9b9a7934b1db45a, type: 3}
+        m_Scale: {x: 111, y: 111}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
     - _BumpScale: 1
     - _ColorSize: 1
@@ -84,19 +91,19 @@ Material:
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
-    - _NoiseExtrudeSubtractor: 0
-    - _NoiseNormalExtrude: 0.1
+    - _NoiseExtrudeSubtractor: 0.00005
+    - _NoiseNormalExtrude: 0.0001
     - _NoisePow: 1
-    - _NoiseSize: 1
+    - _NoiseSize: 111
     - _NoiseSpeed: 1
-    - _NoiseStepRate: 5
+    - _NoiseStepRate: 8
     - _NoiseTextureOffset: 0.04
     - _Normal: 1
     - _OcclusionStrength: 1
-    - _OutlineAmount: 0.01
+    - _OutlineAmount: 0.00001
     - _PainterlyLight: 1
     - _Parallax: 0.02
-    - _ShadowColorMultiplier: 1
+    - _ShadowColorMultiplier: 0
     - _ShininessMultiplier: 2
     - _SkinnedMesh: 0
     - _SmoothnessTextureChannel: 0
@@ -113,3 +120,4 @@ Material:
     - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _TextureShadingWeights: {r: 0, g: 1, b: 2, a: 3}
     - _TriplanarMultiplier: {r: 10, g: 10, b: 10, a: 1}
+  m_BuildTextureStacks: []

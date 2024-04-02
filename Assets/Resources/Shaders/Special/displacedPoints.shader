@@ -139,7 +139,7 @@
                 pos += dirToWren * .3 * float(whichDir) * _Size ;
 
 
-                pos = debugPos;
+//                pos = debugPos;
 
                 o.dist = max( max( abs( pos.x-_Center.x) ,   abs(pos.y-_Center.y)), abs(pos.z-_Center.z));//  minRemainder;
 

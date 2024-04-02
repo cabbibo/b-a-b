@@ -2,11 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
+using UnityEngine.Events;
 
 
 [ExecuteAlways]
 public class IslandData : MonoBehaviour
 {
+
+    public float radius;
+    public bool active;
+
+    public UnityEvent OnIslandEnterEvent;
+    public UnityEvent OnIslandLeaveEvent;
 
 
     public TerrainPainter windPainter;
@@ -45,14 +52,13 @@ public class IslandData : MonoBehaviour
 
 
 
+
     void OnEnable()
     {
 
         //biomeMap = painter.biomeMap;
         heightMap = God.terrainData.heightmapTexture;
         size = God.terrainData.size;
-
-
 
 
         Shader.SetGlobalTexture("_WindMap", windMap);
@@ -125,6 +131,26 @@ public class IslandData : MonoBehaviour
     public Vector2 oWrenUVPosition;
 
 
+    // Check to see if we are in our island or not
+    void WhileHibernate()
+    {
+
+        if (God.wren)
+        {
+            Vector3 wrenPos = God.wren.transform.position;
+            Vector3 islandPos = transform.position;
+            float distance = Vector3.Distance(wrenPos, islandPos);
+            if (distance > radius && active)
+            {
+                OnIslandLeave();
+            }
+            else if (distance < radius && !active)
+            {
+                OnIslandEnter();
+            }
+        }
+
+    }
     void Update()
     {
 
