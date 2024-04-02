@@ -274,11 +274,15 @@ public class FlyingTutorialSequence : MonoBehaviour
         yield return WaitWithCheat(.3f);
         yield return LerpCamera((float)Camera.Front, (float)Camera.Play);
 
+        stateManager.StartFreeFlight();
         yield return WaitWithCheat(1f);
 
         cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
 
         yield return WaitWithCheat(0.5f);
+
+
+
 
         // Fades Out Background
 
@@ -291,8 +295,6 @@ public class FlyingTutorialSequence : MonoBehaviour
             yield return null;
         }
 
-
-        stateManager.StartFreeFlight();
 
         // Start free flight
 

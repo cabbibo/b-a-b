@@ -230,6 +230,7 @@ float _DistanceMax = .5;
 
   col = v.color * _Color;
   col *= shadow * shadow * shadow * shadow;;
+ // col *= noise(v.worldPos * 1) * .8 + .2;
     
 
     return float4(col,1);

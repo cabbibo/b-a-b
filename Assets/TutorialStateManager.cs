@@ -52,12 +52,12 @@ public class TutorialStateManager : MonoBehaviour
     /*
 
         Bugs
-        Clouds dont move with wren in free flight before you start the directions, start moving with you once you do
-        not spawning close enough to the ground
+       // Clouds dont move with wren in free flight before you start the directions, start moving with you once you do
+        //not spawning close enough to the ground
         //Fade doesn fade out when setting on island
             
       //  When starting on crash, wren doesnt start in correct position
-      Disover a biome when turn island on
+      //Disover a biome when turn island on
       //When to Turn off clouds?
 
 
@@ -65,9 +65,6 @@ public class TutorialStateManager : MonoBehaviour
 
 
 "Sub State" systems, that can be encorporated into full state system!
-
-
-
 add phase shift into onenable, not the set state!
 
        
@@ -240,7 +237,7 @@ add phase shift into onenable, not the set state!
 
 
         introFull.SetActive(true);
-        fadeOrb.SetActive(false);
+        fadeOrb.SetActive(true);
         tutorialIsland.SetActive(false);
         postCrashTutorialObjects.SetActive(false);
         mainOcean.SetActive(false);
@@ -380,7 +377,9 @@ add phase shift into onenable, not the set state!
         portal.SetActive(true);
 
         tutorialOcean.SetActive(false);
-        tutorialClouds.SetActive(true);
+
+        /// hmmmmmm
+        tutorialClouds.SetActive(false);
 
         theCrossing.SetActive(false);
 
@@ -410,8 +409,9 @@ add phase shift into onenable, not the set state!
         windCircle.SetActive(true);
         portal.SetActive(false);
         tutorialOcean.SetActive(false);
-        tutorialClouds.SetActive(true);
-        theCrossing.SetActive(true);
+        theCrossing.SetActive(false);
+        /// hmmmmmm
+        tutorialClouds.SetActive(false);
 
 
     }
@@ -474,13 +474,13 @@ add phase shift into onenable, not the set state!
         postCrashTutorialObjects.SetActive(false);
         mainOcean.SetActive(true);
         mainIsland.SetActive(true);
-        windCircle.SetActive(false);
+        windCircle.SetActive(true);
         portal.SetActive(false);
         tutorialOcean.SetActive(false);
-        theCrossing.SetActive(true);
+        theCrossing.SetActive(false);
 
         /// hmmmmmm
-        tutorialClouds.SetActive(true);
+        tutorialClouds.SetActive(false);
 
 
 
@@ -514,7 +514,7 @@ add phase shift into onenable, not the set state!
         theCrossing.SetActive(true);
 
         /// hmmmmmm
-        tutorialClouds.SetActive(true);
+        tutorialClouds.SetActive(false);
 
         God.state.OnTutorialIslandFinish();
 
@@ -642,6 +642,7 @@ add phase shift into onenable, not the set state!
 
         if (inFreeFlight)
         {
+            print("while in free flight");
             WhileInFreeFlight();
         }
 

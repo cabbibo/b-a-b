@@ -6,6 +6,7 @@ using Normal.Realtime;
 using UnityEngine.UI;
 using WrenUtils;
 using UnityEngine.Rendering;
+using Crest;
 
 
 public class WrenPhysics : MonoBehaviour
@@ -131,6 +132,19 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+    /*
+
+    Ocean stuff
+
+    */
+
+
+    // 10 meters under will feel 10 force up;
+    public float oceanForceMultiplier = 10; // add above water force too
+
+
+
+
 
     /*
     Ground stuff
@@ -231,6 +245,9 @@ public class WrenPhysics : MonoBehaviour
 
     public Vector3 paintedWindForce;
     public Vector3 paintedWindForcePosition;
+
+    public Vector3 oceanForce;
+    public Vector3 oceanForcePosition;
 
     public float speed;
 
@@ -435,6 +452,7 @@ public class WrenPhysics : MonoBehaviour
             PaintedWindForce();
             HorizonRightingForces();
             BumperForces();
+            OceanForces();
 
 
             ApplyForces();
@@ -1011,7 +1029,6 @@ public class WrenPhysics : MonoBehaviour
 
 
     }
-
     public virtual void RightingForces()
     {
         /*
@@ -1154,6 +1171,83 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+    /*
+
+        
+   ____       ____    _____     ____        __      _      _________     ____     ______       ____    _____    _____  
+  / __ \     / ___)  / ___/    (    )      /  \    / )    (_   _____)   / __ \   (   __ \     / ___)  / ___/   / ____\ 
+ / /  \ \   / /     ( (__      / /\ \     / /\ \  / /       ) (___     / /  \ \   ) (__) )   / /     ( (__    ( (___   
+( ()  () ) ( (       ) __)    ( (__) )    ) ) ) ) ) )      (   ___)   ( ()  () ) (    __/   ( (       ) __)    \___ \  
+( ()  () ) ( (      ( (        )    (    ( ( ( ( ( (        ) (       ( ()  () )  ) \ \  _  ( (      ( (           ) ) 
+ \ \__/ /   \ \___   \ \___   /  /\  \   / /  \ \/ /       (   )       \ \__/ /  ( ( \ \_))  \ \___   \ \___   ___/ /  
+  \____/     \____)   \____\ /__(  )__\ (_/    \__/         \_/         \____/    )_) \__/    \____)   \____\ /____/   
+                                                                                                                       
+    */
+
+
+
+    void OceanForces()
+    {
+
+        oceanForce = Vector3.zero;
+
+        /*
+                // Assume a primitive like a sphere or box.
+                var r = transform.lossyScale.magnitude;
+                _sampleHeightHelper.Init(transform.position, 2f * r, true);
+
+                // _sampleHeightHelper.Init(transform.position, _boatWidth, true);
+                var height = OceanRenderer.Instance.SeaLevel;
+
+                // print(height);
+
+                //   _sampleHeightHelper.Sample(out Vector3 disp, out var normal, out var waterSurfaceVel);
+
+                if (_sampleHeightHelper.Sample(out Vector3 disp, out var normal, out var waterSurfaceVel))
+                {
+                    height += disp.y;
+
+                    oceanForcePosition = transform.position;
+                    oceanForce = Vector3.Scale(normal * oceanForceMultiplier, new Vector3(1, 0, 1));
+
+                    // closer to the 
+
+                    print("normal: " + normal);
+                    print("displacement :" + disp);
+                    print("waterSurfaceVel: " + waterSurfaceVel);
+
+                }
+        */
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     void ApplyForces()
     {
 
@@ -1172,6 +1266,8 @@ public class WrenPhysics : MonoBehaviour
         AddForce(paintedWindForce, paintedWindForcePosition);
         AddForce(bumperApplicationForceL, leftWing.position);
         AddForce(bumperApplicationForceR, rightWing.position);
+
+        AddForce(oceanForce, oceanForcePosition);
 
         // Straightens out!
         v1 = Vector3.Cross(rb.velocity, transform.forward);
