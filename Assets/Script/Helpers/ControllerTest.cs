@@ -38,7 +38,9 @@ public class ControllerTest : MonoBehaviour
     public float l2;
 
     public bool r3;
+    public bool r3Pressed;
     public bool l3;
+    public bool l3Pressed;
 
     public bool dUp;
     public bool dDown;
@@ -156,7 +158,9 @@ public class ControllerTest : MonoBehaviour
         dRightPressed = player.GetButtonDown("D-Right");
 
         l3 = player.GetButton("L3");
+        l3Pressed = player.GetButtonDown("L3");
         r3 = player.GetButton("R3");
+        r3Pressed = player.GetButtonDown("R3");
 
         triangle = player.GetButton("Triangle");
         trianglePressed = player.GetButtonDown("Triangle");

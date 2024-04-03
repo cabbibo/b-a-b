@@ -39,6 +39,10 @@ public class ChooseControlsSequence : MonoBehaviour
     public CanvasGroup selectionRight;
     public CanvasGroup selectionLeft;
 
+    public UnityEngine.UI.RawImage quickSwapL;
+    public UnityEngine.UI.RawImage quickSwapR;
+    public GameObject quickSwap;
+
     public Transform progressBar;
 
     public GameObject birdLeftParent;
@@ -86,7 +90,7 @@ public class ChooseControlsSequence : MonoBehaviour
     }
 
     public GameObject containerInstructions;
-    public TextMeshProUGUI containerInstructionsText;
+    public TextMeshProUGUI resultsText;
 
     bool userChoiceSwapX;
     bool userChoiceSwapY;
@@ -108,15 +112,13 @@ public class ChooseControlsSequence : MonoBehaviour
     float _chooseTLeft;
     float _chooseTRight;
 
+
+    bool ShowingQuickSwap { get { return quickSwap.activeSelf; } set { quickSwap.SetActive(value); playingContainer.SetActive(!value); }}
     bool ShowingWindow { get { return windowContainer.activeSelf; } set { windowContainer.SetActive(value); }}
     bool ShowingTesting { get { return testingContainer.activeSelf; } set { 
         if (value)
         {
-            God.wren.PhaseShift(new Vector3(-41, 50, 42));
-            God.wren.state.TakeOff();
-            God.wren.physics.transform.forward = Vector3.forward;
-            God.wren.physics.vel = God.wren.physics.transform.forward * 20;
-            
+            ResetPosition();
             UpdateBirdParams();
         }
         testingContainer.SetActive(value); ShowingWindow = !value; 
@@ -134,6 +136,10 @@ public class ChooseControlsSequence : MonoBehaviour
     {
         StartCoroutine(SetupBird());
 
+        ShowingQuickSwap = false;
+
+        UpdateBirdParams();
+
         ShowScreen(false);    
         ShowInstructions(true);    
     }
@@ -141,17 +147,13 @@ public class ChooseControlsSequence : MonoBehaviour
     void UpdateBirdParams()
     {
         God.wren.physics.swapLR = userChoiceSwapX;
-        God.wren.physics.invert = !userChoiceSwapY;
+        God.wren.physics.invert = userChoiceSwapY;
+        resultsText.text = "swapLR:" + (userChoiceSwapX ? 'Y' : 'N') + " invertY:" + (userChoiceSwapY ? 'Y' : 'N');
     }
 
     void ShowInstructions(bool bShow)
     {
         containerInstructions.SetActive(bShow);
-        containerInstructionsText.text = "Hey there, this build is for helping us figure out which settings players prefer.";
-        containerInstructionsText.text += "\nOpen the Calibrate menu, play around and when you're done open this menu again and send us a screenshot or picture with this info:";
-        // show choices in text:
-        containerInstructionsText.text += "\n\nSwap LR: " + (everCalibrated ? (userChoiceSwapX ? "Yes" : "No") : "Not yet chosen");
-        containerInstructionsText.text += "\nInvert Y: " + (everCalibrated ? (userChoiceSwapY ? "No" : "Yes") : "Not yet chosen");
     }
     void ShowScreen(bool bShow)
     {
@@ -165,6 +167,14 @@ public class ChooseControlsSequence : MonoBehaviour
         playingContainer.SetActive(!bShow);
     }
 
+    void ResetPosition()
+    {
+        God.wren.PhaseShift(new Vector3(-41, 50, 42));
+        God.wren.state.TakeOff();
+        God.wren.physics.transform.forward = Vector3.forward;
+        God.wren.physics.vel = God.wren.physics.transform.forward * 20;
+    }
+
     private void Update()
     {
         if (God.input.dDownPressed)
@@ -172,16 +182,50 @@ public class ChooseControlsSequence : MonoBehaviour
             ShowInstructions(!containerInstructions.activeSelf);
         }
 
+        if (ShowingQuickSwap)
+        {
+            var colIdle = new Color(0,0,0,.56f);
+            var colPressed = new Color(0.5f,0.5f,0.5f,.56f);
+            quickSwapL.color = God.input.l1 > .5f ? colPressed : colIdle;
+            quickSwapR.color = God.input.r1 > .5f ? colPressed : colIdle;
+            if (God.input.r1Pressed)
+            {
+                userChoiceSwapY = !userChoiceSwapY;
+                UpdateBirdParams();
+            }
+            if (God.input.l1Pressed)
+            {
+                userChoiceSwapX = !userChoiceSwapX;
+                UpdateBirdParams();
+            }
+            if (God.input.trianglePressed || God.input.xPressed)
+            {
+                ShowingQuickSwap = false;
+            }
+            return;
+        } else {
+            if (God.input.trianglePressed)
+            {
+                ShowingQuickSwap = true;
+                return;
+            }
+        }
+
         if (containerInstructions.activeSelf)
         {
             if (God.input.xPressed)
             {
                 ShowInstructions(false);
+                ResetPosition();
             }
             if (!ShowingWindow && God.input.circlePressed)
-        {
-            ShowScreen(true);
-        }
+            {
+                ShowScreen(true);
+            }
+            if (God.input.trianglePressed)
+            {
+                ShowingTesting = true;
+            }
             return;
         }
 
@@ -199,10 +243,17 @@ public class ChooseControlsSequence : MonoBehaviour
         if (!ShowingWindow)
             return;
         
-        if (_stepI > 0 && God.input.squarePressed)
+        if (God.input.squarePressed)
         {
-            _stepI--;
-            SetStep(steps[_stepI]);
+            if (_stepI > 0)
+            {
+                _stepI--;
+                SetStep(steps[_stepI]);
+            } else if (_stepI == 0)
+            {
+                ShowScreen(false);
+                return;
+            }
         }
 
         int result;
@@ -216,23 +267,25 @@ public class ChooseControlsSequence : MonoBehaviour
                 break;
             case StepType.ChooseHorizontal:
 
-                birdLeft.SetMovement(-1, 0);
-                birdRight.SetMovement(1,0);
+                birdLeft.SetMovement(1, 0);
+                birdRight.SetMovement(-1,0);
 
                 if (HandleChoice(out result))
                 {
                     userChoiceSwapX = result == 1;
+                    UpdateBirdParams();
                     NextStep();
                 }
                 break;
             case StepType.ChooseVertical:
 
-                birdLeft.SetMovement(0, -1);
-                birdRight.SetMovement(0, 1);
+                birdLeft.SetMovement(0, 1);
+                birdRight.SetMovement(0, -1);
 
                 if (HandleChoice(out result))
                 {
                     userChoiceSwapY = result == 1;
+                    UpdateBirdParams();
 
                     NextStep();
                 }
@@ -256,8 +309,8 @@ public class ChooseControlsSequence : MonoBehaviour
             //     break;
 
             case StepType.ConfirmHorizontal:
-                birdLeft.SetMovement(userChoiceSwapX ? 1 : -1, 0);
-                birdRight.SetMovement(userChoiceSwapX ? 1 : -1, 0);
+                birdLeft.SetMovement(userChoiceSwapX ? -1 : 1, 0);
+                birdRight.SetMovement(userChoiceSwapX ? -1 : 1, 0);
 
                 if (God.input.xPressed)
                     NextStep();
@@ -267,8 +320,8 @@ public class ChooseControlsSequence : MonoBehaviour
 
                 break;
             case StepType.ConfirmVertical:
-                birdLeft.SetMovement(0, userChoiceSwapY ? 1 : -1);
-                birdRight.SetMovement(0, userChoiceSwapY ? 1 : -1);
+                birdLeft.SetMovement(0, userChoiceSwapY ? -1 : 1);
+                birdRight.SetMovement(0, userChoiceSwapY ? -1 : 1);
 
                 if (God.input.xPressed)
                     NextStep();
@@ -279,8 +332,8 @@ public class ChooseControlsSequence : MonoBehaviour
                 break;
 
             case StepType.Finished:
-                birdLeft.SetMovement(userChoiceSwapX ? 1 : -1, userChoiceSwapY ? 1 : -1);
-                birdRight.SetMovement(userChoiceSwapX ? 1 : -1, userChoiceSwapY ? 1 : -1);
+                birdLeft.SetMovement(userChoiceSwapX ? -1 : 1, userChoiceSwapY ? -1 : 1);
+                birdRight.SetMovement(userChoiceSwapX ? -1 : 1, userChoiceSwapY ? -1 : 1);
                 everCalibrated = true;
 
                 if (God.input.xPressed)
@@ -333,7 +386,7 @@ public class ChooseControlsSequence : MonoBehaviour
         birdsContainer.SetActive(false);
 
         buttonContinue.SetActive(false);
-        backButton.SetActive(stepType != StepType.Start && stepType != StepType.Finished);
+        backButton.SetActive(stepType != StepType.Finished);
         testButton.SetActive(false);
 
         controllerDirector.gameObject.SetActive(false);
@@ -411,6 +464,7 @@ public class ChooseControlsSequence : MonoBehaviour
         if (_stepI == steps.Length - 1)
         {
             ShowScreen(false);
+            ResetPosition();
             return;
         }
         _stepI++;

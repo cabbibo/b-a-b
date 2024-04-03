@@ -156,12 +156,12 @@ public class WrenInput : MonoBehaviour
         o_circle = circle;
 
         leftX = controller.left.x;
-        leftY = controller.left.y * (God.input.invertY ? -1 : 1);
+        leftY = controller.left.y;// * (God.input.invertY ? -1 : 1);
         left2 = controller.l2;
 
 
         rightX = controller.right.x;
-        rightY = controller.right.y * (God.input.invertY ? -1 : 1);
+        rightY = controller.right.y;// * (God.input.invertY ? -1 : 1);
         right2 = controller.r2;
 
 

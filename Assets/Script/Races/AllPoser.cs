@@ -143,18 +143,21 @@ public class AllPoser : MonoBehaviour
 
         if (!overrideInput)
         {
+            int invertY = 1;
+            invertY = wren.physics.invert ? -1 : 1;
+            // invertY = 0;
             if (setFromController)
             {
                 leftWingTuck = Mathf.Lerp(leftWingTuck, controller.l2, lerpSpeed);
                 leftWingTurnLeft = Mathf.Lerp(leftWingTurnLeft, Mathf.Clamp(-controller.left.x, 0, 1), lerpSpeed);
                 leftWingTurnRight = Mathf.Lerp(leftWingTurnRight, Mathf.Clamp(controller.left.x, 0, 1), lerpSpeed);
-                leftWingTwistUp = Mathf.Lerp(leftWingTwistUp, Mathf.Clamp(-controller.left.y, 0, 1), lerpSpeed);
-                leftWingTwistDown = Mathf.Lerp(leftWingTwistDown, Mathf.Clamp(controller.left.y, 0, 1), lerpSpeed);
+                leftWingTwistUp = Mathf.Lerp(leftWingTwistUp, Mathf.Clamp(-controller.left.y * invertY, 0, 1), lerpSpeed);
+                leftWingTwistDown = Mathf.Lerp(leftWingTwistDown, Mathf.Clamp(controller.left.y * invertY, 0, 1), lerpSpeed);
                 rightWingTuck = Mathf.Lerp(rightWingTuck, controller.r2, lerpSpeed);
                 rightWingTurnLeft = Mathf.Lerp(rightWingTurnLeft, Mathf.Clamp(-controller.right.x, 0, 1), lerpSpeed);
                 rightWingTurnRight = Mathf.Lerp(rightWingTurnRight, Mathf.Clamp(controller.right.x, 0, 1), lerpSpeed);
-                rightWingTwistUp = Mathf.Lerp(rightWingTwistUp, Mathf.Clamp(-controller.right.y, 0, 1), lerpSpeed);
-                rightWingTwistDown = Mathf.Lerp(rightWingTwistDown, Mathf.Clamp(controller.right.y, 0, 1), lerpSpeed);
+                rightWingTwistUp = Mathf.Lerp(rightWingTwistUp, Mathf.Clamp(-controller.right.y * invertY, 0, 1), lerpSpeed);
+                rightWingTwistDown = Mathf.Lerp(rightWingTwistDown, Mathf.Clamp(controller.right.y * invertY, 0, 1), lerpSpeed);
                 rightWingStop = Mathf.Lerp(rightWingStop, Mathf.Clamp(controller.r3 ? 1 : 0, 0, 1), lerpSpeed);
                 leftWingStop = Mathf.Lerp(leftWingStop, Mathf.Clamp(controller.l3 ? 1 : 0, 0, 1), lerpSpeed);
 
@@ -167,13 +170,13 @@ public class AllPoser : MonoBehaviour
                 leftWingTuck = Mathf.Lerp(leftWingTuck, wren.input.left2, lerpSpeed);
                 leftWingTurnLeft = Mathf.Lerp(leftWingTurnLeft, Mathf.Clamp(-wren.input.leftX, 0, 1), lerpSpeed);
                 leftWingTurnRight = Mathf.Lerp(leftWingTurnRight, Mathf.Clamp(wren.input.leftX, 0, 1), lerpSpeed);
-                leftWingTwistUp = Mathf.Lerp(leftWingTwistUp, Mathf.Clamp(-wren.input.leftY, 0, 1), lerpSpeed);
-                leftWingTwistDown = Mathf.Lerp(leftWingTwistDown, Mathf.Clamp(wren.input.leftY, 0, 1), lerpSpeed);
+                leftWingTwistUp = Mathf.Lerp(leftWingTwistUp, Mathf.Clamp(-wren.input.leftY * invertY, 0, 1), lerpSpeed);
+                leftWingTwistDown = Mathf.Lerp(leftWingTwistDown, Mathf.Clamp(wren.input.leftY * invertY, 0, 1), lerpSpeed);
                 rightWingTuck = Mathf.Lerp(rightWingTuck, wren.input.right2, lerpSpeed);
                 rightWingTurnLeft = Mathf.Lerp(rightWingTurnLeft, Mathf.Clamp(-wren.input.rightX, 0, 1), lerpSpeed);
                 rightWingTurnRight = Mathf.Lerp(rightWingTurnRight, Mathf.Clamp(wren.input.rightX, 0, 1), lerpSpeed);
-                rightWingTwistUp = Mathf.Lerp(rightWingTwistUp, Mathf.Clamp(-wren.input.rightY, 0, 1), lerpSpeed);
-                rightWingTwistDown = Mathf.Lerp(rightWingTwistDown, Mathf.Clamp(wren.input.rightY, 0, 1), lerpSpeed);
+                rightWingTwistUp = Mathf.Lerp(rightWingTwistUp, Mathf.Clamp(-wren.input.rightY * invertY, 0, 1), lerpSpeed);
+                rightWingTwistDown = Mathf.Lerp(rightWingTwistDown, Mathf.Clamp(wren.input.rightY * invertY, 0, 1), lerpSpeed);
                 rightWingStop = Mathf.Lerp(rightWingStop, Mathf.Clamp(wren.input.right3, 0, 1), lerpSpeed);
                 leftWingStop = Mathf.Lerp(leftWingStop, Mathf.Clamp(wren.input.left3, 0, 1), lerpSpeed);
 
