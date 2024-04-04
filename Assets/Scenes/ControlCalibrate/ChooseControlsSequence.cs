@@ -16,11 +16,9 @@ public class ChooseControlsSequence : MonoBehaviour
     public CanvasGroup canvasTopHalf;
 
     public GameObject windowContainer;
-    public GameObject testingContainer;
     public GameObject playingContainer;
 
     public GameObject backButton;
-    public GameObject testButton;
 
     public GameObject birdsContainer;
 
@@ -115,14 +113,6 @@ public class ChooseControlsSequence : MonoBehaviour
 
     bool ShowingQuickSwap { get { return quickSwap.activeSelf; } set { quickSwap.SetActive(value); playingContainer.SetActive(!value); }}
     bool ShowingWizard { get { return windowContainer.activeSelf; } set { windowContainer.SetActive(value); }}
-    bool ShowingTesting { get { return testingContainer.activeSelf; } set { 
-        if (value)
-        {
-            ResetPosition();
-            UpdateBirdParams();
-        }
-        testingContainer.SetActive(value); ShowingWizard = !value; 
-    }}
 
     void OnEnable()
     {
@@ -222,22 +212,12 @@ public class ChooseControlsSequence : MonoBehaviour
             {
                 ShowScreen(true);
             }
-            if (God.input.trianglePressed)
-            {
-                ShowingTesting = true;
-            }
             return;
         }
 
         if (!ShowingWizard && God.input.circlePressed)
         {
             ShowScreen(true);
-        }
-
-        if (ShowingTesting && God.input.trianglePressed)
-        {
-            ShowingTesting = false;
-            return;
         }
 
         if (!ShowingWizard)
@@ -315,8 +295,6 @@ public class ChooseControlsSequence : MonoBehaviour
                 if (God.input.xPressed)
                     NextStep();
 
-                if (God.input.trianglePressed)
-                    ShowingTesting = true;
 
                 break;
             case StepType.ConfirmVertical:
@@ -326,8 +304,6 @@ public class ChooseControlsSequence : MonoBehaviour
                 if (God.input.xPressed)
                     NextStep();
                 
-                if (God.input.trianglePressed)
-                    ShowingTesting = true;
 
                 break;
 
@@ -339,8 +315,6 @@ public class ChooseControlsSequence : MonoBehaviour
                 if (God.input.xPressed)
                     NextStep();
                 
-                if (God.input.trianglePressed)
-                    ShowingTesting = true;
 
                     break;
         }
@@ -387,7 +361,6 @@ public class ChooseControlsSequence : MonoBehaviour
 
         buttonContinue.SetActive(false);
         backButton.SetActive(stepType != StepType.Finished);
-        testButton.SetActive(false);
 
         controllerDirector.gameObject.SetActive(false);
 
@@ -436,7 +409,6 @@ public class ChooseControlsSequence : MonoBehaviour
             case StepType.ConfirmHorizontal:
             case StepType.ConfirmVertical:
                 stepDoneParent.SetActive(true);
-                testButton.SetActive(stepType != StepType.Finished);
                 break;
         }
 
