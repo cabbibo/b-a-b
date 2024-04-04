@@ -114,14 +114,14 @@ public class ChooseControlsSequence : MonoBehaviour
 
 
     bool ShowingQuickSwap { get { return quickSwap.activeSelf; } set { quickSwap.SetActive(value); playingContainer.SetActive(!value); }}
-    bool ShowingWindow { get { return windowContainer.activeSelf; } set { windowContainer.SetActive(value); }}
+    bool ShowingWizard { get { return windowContainer.activeSelf; } set { windowContainer.SetActive(value); }}
     bool ShowingTesting { get { return testingContainer.activeSelf; } set { 
         if (value)
         {
             ResetPosition();
             UpdateBirdParams();
         }
-        testingContainer.SetActive(value); ShowingWindow = !value; 
+        testingContainer.SetActive(value); ShowingWizard = !value; 
     }}
 
     void OnEnable()
@@ -158,7 +158,7 @@ public class ChooseControlsSequence : MonoBehaviour
     void ShowScreen(bool bShow)
     {
         // canvas.enabled = bShow;
-        ShowingWindow = bShow;
+        ShowingWizard = bShow;
         if (bShow)
         {
             _stepI = 0;
@@ -218,7 +218,7 @@ public class ChooseControlsSequence : MonoBehaviour
                 ShowInstructions(false);
                 ResetPosition();
             }
-            if (!ShowingWindow && God.input.circlePressed)
+            if (!ShowingWizard && God.input.circlePressed)
             {
                 ShowScreen(true);
             }
@@ -229,7 +229,7 @@ public class ChooseControlsSequence : MonoBehaviour
             return;
         }
 
-        if (!ShowingWindow && God.input.circlePressed)
+        if (!ShowingWizard && God.input.circlePressed)
         {
             ShowScreen(true);
         }
@@ -240,7 +240,7 @@ public class ChooseControlsSequence : MonoBehaviour
             return;
         }
 
-        if (!ShowingWindow)
+        if (!ShowingWizard)
             return;
         
         if (God.input.squarePressed)
