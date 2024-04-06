@@ -230,6 +230,12 @@ float _DistanceMax = .5;
 
   col = v.color * _Color;
   col *= shadow * shadow * shadow * shadow;;
+
+  col *= hsv( .3 * floor(m3 * 6 ) /6, .6,1);
+
+
+  col = floor(m3 * 6 ) /6;
+ // col += .4*(1-shadow) * hsv(.3 * floor(m3 * 6 ) /6  + .5, .5,1);// float3(0,0,1);
  // col *= noise(v.worldPos * 1) * .8 + .2;
     
 

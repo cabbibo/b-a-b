@@ -34,6 +34,7 @@ namespace WrenUtils
         public FullInterface _groundInterface;
         public AirInterface _airInterface;
 
+        public OceanInfoManager _oceanInfo;
 
 
         public CollectableController _collectableController;
@@ -133,6 +134,10 @@ namespace WrenUtils
             get { return instance._collectableController; }
         }
 
+        public static OceanInfoManager oceanInfo
+        {
+            get { return instance._oceanInfo; }
+        }
         public static Tween tween
         {
             get { return instance._tween; }
@@ -490,11 +495,11 @@ namespace WrenUtils
 
 #if UNITY_EDITOR
             // Ensure continuous Update calls.
-            if (!Application.isPlaying && updateInEdit )
+            if (!Application.isPlaying && updateInEdit)
             {
-        
-               UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
-               UnityEditor.SceneView.RepaintAll();
+
+                UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+                UnityEditor.SceneView.RepaintAll();
             }
 #endif
 
