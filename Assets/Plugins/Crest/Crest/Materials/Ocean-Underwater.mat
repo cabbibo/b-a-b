@@ -18,6 +18,7 @@ Material:
   - _COMPUTEDIRECTIONALLIGHT_ON
   - _DEBUGVISUALISE_NONE
   - _DIRECTIONALLIGHTVARYROUGHNESS_ON
+  - _FLOW_ON
   - _FOAM3DLIGHTING_ON
   - _FOAM_ON
   - _SHADOWS_ON
@@ -44,7 +45,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _FoamTexture:
-        m_Texture: {fileID: 2800000, guid: 36dd0b22da8874ed38075789055ca664, type: 3}
+        m_Texture: {fileID: 2800000, guid: 76e25da1cefc7f446bcc43a70fb13a0f, type: 3}
         m_Scale: {x: 0.1, y: 0.1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -126,14 +127,14 @@ Material:
     - _DebugVisualiseShapeSample: 0
     - _DirectionalLightBoost: 7
     - _DirectionalLightFallOff: 188
-    - _DirectionalLightFallOffFar: 42
+    - _DirectionalLightFallOffFar: 47
     - _DirectionalLightFarDistance: 137
     - _DirectionalLightVaryRoughness: 1
-    - _Flow: 0
+    - _Flow: 1
     - _Foam: 1
     - _Foam3DLighting: 1
-    - _FoamBubbleParallax: 0.463
-    - _FoamScale: 5.4
+    - _FoamBubbleParallax: 0.5
+    - _FoamScale: 6.6
     - _ForceUnderwater: 0
     - _FresnelPower: 1
     - _Invert: 1
@@ -182,12 +183,12 @@ Material:
     - _WaveFoamBubblesStart: 0.115
     - _WaveFoamBubblesStrength: 0.637
     - _WaveFoamCoverage: 0.38
-    - _WaveFoamFeather: 0.001
+    - _WaveFoamFeather: 0.207
     - _WaveFoamLightScale: 2
-    - _WaveFoamNormalStrength: 3.5
+    - _WaveFoamNormalStrength: 21.2
     - _WaveFoamNormalsY: 0.253
-    - _WaveFoamSpecularBoost: 0.15
-    - _WaveFoamSpecularFallOff: 293
+    - _WaveFoamSpecularBoost: 9.24
+    - _WaveFoamSpecularFallOff: 479
     - _WaveFoamStart: 0
     - _WaveFoamStrength: 1
     m_Colors:

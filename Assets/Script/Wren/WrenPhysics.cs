@@ -177,6 +177,27 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+    public float oceanVelocityForceMaxHeight; // max height, multiplication at 0 when wren at max height
+    public float oceanVelocityForceMultiplier; // overall multiplier
+
+    public float oceanMomentumForceMaxHeight; // max height, multiplication at 0 when wren at max height
+    public float oceanMomentumForceMultiplier; // overall multiplier
+
+
+
+    public float oceanNormalForceMaxHeight; // max height, multiplication at 0 when wren at max height
+    public float oceanNormalForceMultiplier; // overall multiplier
+
+    public float oceanNormalFlattener; // flattens normalForce so we move along the surface more
+
+    public float oceanBoyancyForceMaxHeight; // max height, multiplication at full when wren at max height ( negative )
+    public float oceanBoyancyForceMultiplier; // overall multiplier
+
+    public float waveLiftForceMaxHeight = 10;
+    public float waveLiftForceMultiplier = 10;
+
+
+
 
 
 
@@ -248,6 +269,20 @@ public class WrenPhysics : MonoBehaviour
 
     public Vector3 oceanForce;
     public Vector3 oceanForcePosition;
+
+
+    public Vector3 waveLiftForceL;
+    public Vector3 waveLiftForcePositionL;
+
+    public Vector3 waveLiftForceR;
+    public Vector3 waveLiftForcePositionR;
+
+
+
+    public Vector3 oceanVelocityForce; // Force that moves with velocity of ocean
+    public Vector3 oceanMomentumForce; // Force that adds to wrenVelocity ( so we can move with waves better? )
+    public Vector3 oceanNormalForce; // Force that gives us lift from the ocean
+    public Vector3 oceanBoyancyForce; // Force that pushes us up from underwater
 
     public float speed;
 
@@ -1186,10 +1221,130 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+
     void OceanForces()
     {
 
         oceanForce = Vector3.zero;
+
+        OceanInfoManager o = God.oceanInfo;
+
+
+        if (o.distanceToSurface < oceanVelocityForceMaxHeight && o.distanceToSurface > 0)
+        {
+            float n = o.distanceToSurface / oceanVelocityForceMaxHeight;
+            n = 1 - n;
+
+            n *= n;
+
+            oceanVelocityForce = o.waterSurfaceVel * oceanVelocityForceMultiplier * n;
+
+            oceanForce += oceanVelocityForce;
+        }
+
+
+        if (o.distanceToSurface < oceanMomentumForceMaxHeight && o.distanceToSurface > 0)
+        {
+            float n = o.distanceToSurface / oceanMomentumForceMaxHeight;
+            n = 1 - n;
+
+            n *= n;
+
+            oceanMomentumForce = vel * oceanMomentumForceMultiplier * n;
+
+            oceanForce += oceanMomentumForce;
+        }
+
+
+        if (o.distanceToSurface < oceanNormalForceMaxHeight && o.distanceToSurface > 0)
+        {
+            float n = o.distanceToSurface / oceanNormalForceMaxHeight;
+            n = 1 - n;
+
+            n *= n;
+
+            oceanNormalForce = o.normal * oceanNormalForceMultiplier * n;
+
+            oceanNormalForce = Vector3.Scale(oceanNormalForce, Vector3.right + Vector3.forward);
+
+            oceanForce += oceanNormalForce;
+        }
+
+        if (o.distanceToSurface < 0)
+        {
+            float n = -o.distanceToSurface / oceanBoyancyForceMaxHeight;
+
+            oceanBoyancyForce = Vector3.up * oceanBoyancyForceMultiplier * n;
+            oceanForce += oceanBoyancyForce;
+
+
+            // dampen it too?
+            oceanForce += vel * -.5f;
+
+
+
+        }
+
+
+        print(oceanForce);
+        oceanForcePosition = transform.position;
+
+
+        waveLiftForceL = Vector3.zero;
+        waveLiftForceR = Vector3.zero;
+        waveLiftForcePositionL = leftWing.position;
+        waveLiftForcePositionR = rightWing.position;
+
+
+
+        if (o.leftWingHeight < waveLiftForceMaxHeight)
+        {
+
+            float n = o.leftWingHeight / waveLiftForceMaxHeight;
+            n = 1 - n;
+            n *= n;
+
+            float match = Vector3.Dot(o.leftWingNormal, leftWing.up);
+            waveLiftForceL = o.leftWingNormal * waveLiftForceMultiplier * n * match;
+
+        }
+
+
+        if (o.rightWingHeight < waveLiftForceMaxHeight)
+        {
+
+            float n = o.rightWingHeight / waveLiftForceMaxHeight;
+            n = 1 - n;
+            n *= n;
+
+            float match = Vector3.Dot(o.rightWingNormal, rightWing.up);
+            print(match);
+            waveLiftForceR = o.rightWingNormal * waveLiftForceMultiplier * n * match;
+
+        }
+
+        //  oceanForce = Vector3.zero;
+        // oceanForcePosition = transform.position;
+
+
+        /*
+                        SampleHeightHelper sampleHeightHelper = new SampleHeightHelper();
+
+                        float distanceToSurface;
+                        float height;
+                        Vector3 normal;
+                        Vector3 displacement;
+                        Vector3 waterSurfaceVel;
+
+                        sampleHeightHelper.Init(transform.position, 1);
+                        sampleHeightHelper.Sample(out displacement, out normal, out waterSurfaceVel);
+                        height = OceanRenderer.Instance.SeaLevel + displacement.y;
+                        distanceToSurface = God.wren.transform.position.y - height;
+
+                        print(displacement.y);
+                        transform.position = new Vector3(transform.position.x, height, transform.position.z);
+
+        */
 
         /*
                 // Assume a primitive like a sphere or box.
@@ -1219,6 +1374,8 @@ public class WrenPhysics : MonoBehaviour
                 }
         */
 
+        //  oceanForce = Vector3.zero;
+
     }
 
 
@@ -1229,8 +1386,27 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+    public float skimForceUp = 50;
+    public float skimForceForward = 50;
+    public float skimImpulseMulitplier = 1;
+    public void Skim(Collision c)
+    {
 
+        AddForce(c.impulse.normalized * c.impulse.magnitude * skimImpulseMulitplier);
 
+        AddForce(rb.velocity.normalized * skimForceForward + c.contacts[0].normal * skimForceUp);
+
+    }
+
+    public void OnEnterWater()
+    {
+        print("ENTER WATER");
+    }
+
+    public void OnExitWater()
+    {
+        print("EXIT WATER");
+    }
 
 
 
@@ -1268,6 +1444,14 @@ public class WrenPhysics : MonoBehaviour
         AddForce(bumperApplicationForceR, rightWing.position);
 
         AddForce(oceanForce, oceanForcePosition);
+
+        AddForce(waveLiftForceL, waveLiftForcePositionL);
+        AddForce(waveLiftForceR, waveLiftForcePositionR);
+
+
+        // add a force here that has to do with the direction of the light
+
+
 
         // Straightens out!
         v1 = Vector3.Cross(rb.velocity, transform.forward);

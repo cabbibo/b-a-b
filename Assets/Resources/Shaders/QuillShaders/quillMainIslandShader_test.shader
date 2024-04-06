@@ -180,11 +180,16 @@ float4 frag (varyings v) : COLOR {
     for( int i = 0; i < 3; i++){
 
       float3 fPos = v.worldPos - normalize(v.eye) * float(i) * 1.3;
-      float v = (snoise(fPos * 4)+1)/2;
+      float v = (snoise(fPos * 10)+1)/2;
       traceColor += hsv((float)i/3,1,v);
 
     
     }//
+
+
+    float lightMatch = dot(v.nor, _WorldSpaceLightPos0.xyz);
+
+    float reflMatch = saturate(dot( reflect( -normalize(v.eye), v.nor), _WorldSpaceLightPos0.xyz));
 
  
 
@@ -195,10 +200,14 @@ float4 frag (varyings v) : COLOR {
   col *= shadow * shadow * shadow * shadow;;
 
 
-  col = length(traceColor) * ( shadow * shadow );;
+  col = shadow;
+  //col = length(traceColor) * ( shadow * shadow );;
 
- col = (tex2D(_MainTex, v.uv)* .5 + .5) * col * v.color * 2;
- col += pow(1-m,4);
+ col = (tex2D(_MainTex, v.uv * 3)* .1 + .9) * col * v.color * 2;
+ col *= hsv(.4 +.2*floor(lightMatch * 6)/6,.3,1);
+ col = floor( pow(reflMatch,8) *30)/6 ;
+ col += .4*floor(pow(1-m,4) * 6 /6);
+ //col 
 
  //col = m;
 
@@ -208,7 +217,7 @@ float4 frag (varyings v) : COLOR {
  }
  // col *= noise(v.worldPos * 1) * .8 + .2;
     
-
+//col = v.color;
     return float4(col,1);
 }
 

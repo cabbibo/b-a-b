@@ -663,8 +663,7 @@ public class Wren : MonoBehaviour
         God.audio.Play(God.sounds.skimGroundClip, c.impulse.magnitude / 10f);
         God.feedbackSystems.skimParticles.transform.position = c.contacts[0].point;
         God.feedbackSystems.skimParticles.Emit(100);
-        physics.AddForce(c.impulse.normalized * c.impulse.magnitude * 1);
-        physics.AddForce((physics.rb.velocity.normalized + c.contacts[0].normal) * 100);
+        physics.Skim(c);
 
     }
 

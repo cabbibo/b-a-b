@@ -26413,6 +26413,7 @@ MonoBehaviour:
   tuckDampeningReduction: 0
   velMatchMultiplier: 0
   bumperForce: 0
+  oceanForceMultiplier: 10
   groundPower: 10
   groundOut: 0.03
   groundDampening: 0.9
@@ -26422,6 +26423,17 @@ MonoBehaviour:
   takeOffForwardForce: 10
   takeOffUpForce: 10
   paintedWindForceMultiplier: 1
+  oceanVelocityForceMaxHeight: 0
+  oceanVelocityForceMultiplier: 0
+  oceanMomentumForceMaxHeight: 0
+  oceanMomentumForceMultiplier: 0
+  oceanNormalForceMaxHeight: 0
+  oceanNormalForceMultiplier: 0
+  oceanNormalFlattener: 0
+  oceanBoyancyForceMaxHeight: 0
+  oceanBoyancyForceMultiplier: 0
+  waveLiftForceMaxHeight: 10
+  waveLiftForceMultiplier: 10
   showDebugForces: 0
   reset: 0
   distToGround: 0
@@ -26459,6 +26471,16 @@ MonoBehaviour:
   rightFlapForcePosition: {x: 0, y: 0, z: 0}
   paintedWindForce: {x: 0, y: 0, z: 0}
   paintedWindForcePosition: {x: 0, y: 0, z: 0}
+  oceanForce: {x: 0, y: 0, z: 0}
+  oceanForcePosition: {x: 0, y: 0, z: 0}
+  waveLiftForceL: {x: 0, y: 0, z: 0}
+  waveLiftForcePositionL: {x: 0, y: 0, z: 0}
+  waveLiftForceR: {x: 0, y: 0, z: 0}
+  waveLiftForcePositionR: {x: 0, y: 0, z: 0}
+  oceanVelocityForce: {x: 0, y: 0, z: 0}
+  oceanMomentumForce: {x: 0, y: 0, z: 0}
+  oceanNormalForce: {x: 0, y: 0, z: 0}
+  oceanBoyancyForce: {x: 0, y: 0, z: 0}
   speed: 0
   tuckAmountL: 0
   tuckAmountR: 0
@@ -26500,6 +26522,9 @@ MonoBehaviour:
   bumperApplicationForceR: {x: 0, y: 0, z: 0}
   oLeft1: 0
   oRight1: 0
+  skimForceUp: 50
+  skimForceForward: 50
+  skimImpulseMulitplier: 1
   doBasicGroundControls: 0
   basicGroundLookControls_lookSpeed: 0
   basicGroundLookControls_moveSpeed: 0
