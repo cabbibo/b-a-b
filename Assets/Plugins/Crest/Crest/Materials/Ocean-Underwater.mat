@@ -12,9 +12,11 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _ALBEDO_ON
   - _APPLYNORMALMAPPING_ON
   - _CAUSTICS_ON
   - _CLIPSURFACE_ON
+  - _CLIPUNDERTERRAIN_ON
   - _COMPUTEDIRECTIONALLIGHT_ON
   - _DEBUGVISUALISE_NONE
   - _DIRECTIONALLIGHTVARYROUGHNESS_ON
@@ -98,7 +100,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Albedo: 0
+    - _Albedo: 1
     - _ApplyFlowToNormals: 0
     - _ApplyNormalMapping: 1
     - _BumpAmt: 0.514
@@ -113,7 +115,7 @@ Material:
     - _CausticsTextureAverage: 0.07
     - _CausticsTextureScale: 5
     - _ClipSurface: 1
-    - _ClipUnderTerrain: 0
+    - _ClipUnderTerrain: 1
     - _CompileShaderWithDebugInfo: 0
     - _ComputeDirectionalLight: 1
     - _CullMode: 0

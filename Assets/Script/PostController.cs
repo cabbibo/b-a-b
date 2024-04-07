@@ -8,9 +8,10 @@ using UnityEngine.Rendering.PostProcessing;
 using WrenUtils;
 
 [ExecuteAlways]
-public class PostController : MonoBehaviour{
+public class PostController : MonoBehaviour
+{
 
- 
+
     public PostProcessVolume volume;
     private MainPost post;
 
@@ -30,7 +31,7 @@ public class PostController : MonoBehaviour{
     void OnEnable()
     {
         volume = GetComponent<PostProcessVolume>();
-         
+
         volume.profile.TryGetSettings(out post);
     }
 
@@ -40,11 +41,14 @@ public class PostController : MonoBehaviour{
 
 
 
-    public void Update(){
+    public void Update()
+    {
 
-        if( God.wren != null ){
-            CartToPolar( God.wren.transform.position );
+        if (God.wren != null)
+        {
+            CartToPolar(God.wren.transform.position);
         }
+
         post._Hue.value = _Hue;
         post._Saturation.value = _Saturation;
         post._Lightness.value = _Lightness;
@@ -55,40 +59,41 @@ public class PostController : MonoBehaviour{
 
 
 
-    Vector2 CartToPolar( Vector3 position ){
+    Vector2 CartToPolar(Vector3 position)
+    {
 
-        float angle = Mathf.Atan2( position.x, position.z );
-        float radius = ( new Vector2( position.x , position.z )).magnitude;
-
-
-        float x = (position.x +2048)/4096;
-        float y = (position.z +2048)/4096;
-
-        Color c = biomeMap.GetPixelBilinear( x, y,0);
-
-//        print( c.a);
+        float angle = Mathf.Atan2(position.x, position.z);
+        float radius = (new Vector2(position.x, position.z)).magnitude;
 
 
-        float h,s,v;
+        float x = (position.x + 2048) / 4096;
+        float y = (position.z + 2048) / 4096;
 
-        Color.RGBToHSV(c, out h,out s,out v);
+        Color c = biomeMap.GetPixelBilinear(x, y, 0);
+
+        //        print( c.a);
+
+
+        float h, s, v;
+
+        Color.RGBToHSV(c, out h, out s, out v);
 
         _Hue = h;
         _Blend = c.a;
 
-    
-
-       /* angle = (angle > 0 ? angle : (2*Mathf.PI + angle));
-        angle /= 2 * Mathf.PI;
-
-        _Hue = angle;
-        _Hue += angleOffset;
-        _Hue %= 1;
 
 
-        print( _Hue );*/
+        /* angle = (angle > 0 ? angle : (2*Mathf.PI + angle));
+         angle /= 2 * Mathf.PI;
 
-        return new Vector2( angle , radius );
+         _Hue = angle;
+         _Hue += angleOffset;
+         _Hue %= 1;
+
+
+         print( _Hue );*/
+
+        return new Vector2(angle, radius);
 
     }
 
