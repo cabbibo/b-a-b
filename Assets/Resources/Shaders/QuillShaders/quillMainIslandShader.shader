@@ -93,7 +93,7 @@ Shader "Quill/quillMainIslandShader" {
         float3 noiseVal = hash33_float3( pos * _WindChangeSize + windDirection * flooredTime);
 
         float distanceMultiplier = length(pos - _WorldSpaceCameraPos) / 1000;
-        return _WindDirection * noiseVal * _WindAmount * distanceMultiplier;//windAmount;
+        return _WindDirection* noiseVal * _WindAmount * distanceMultiplier;//windAmount;
         
     }
 
@@ -245,7 +245,87 @@ Shader "Quill/quillMainIslandShader" {
         return fLCol;
     }
     
+    #include "UnityCG.cginc"
+    #include "AutoLight.cginc"
+    
+    
+    struct inputData {
+        float4 vertex : POSITION;
+        float4 tangent : TANGENT;
+        float3 normal : NORMAL;
+        float4 texcoord : TEXCOORD0;
+        float4 texcoord1 : TEXCOORD1;
+        fixed4 color : COLOR;
+        
+        uint   id                : SV_VertexID;
+        UNITY_VERTEX_INPUT_INSTANCE_ID
+        
+    };
 
+
+    
+    //A simple input struct for our pixel shader step containing a position.
+    struct varyings {
+        float4 pos      : SV_POSITION;
+        float3 nor      : TEXCOORD0;
+        float3 worldPos : TEXCOORD1;
+        float3 eye      : TEXCOORD2;
+        float3 debug    : TEXCOORD3;
+        float2 uv       : TEXCOORD4;
+        float2 uv2       : TEXCOORD6;
+        float4 color : TEXCOORD11;
+        float id        : TEXCOORD5;
+        int feather:TEXCOORD7;
+        float4 data1:TEXCOORD9;   
+
+        float3 tangent : TEXCOORD12;
+        float3 tspace0 : TEXCOORD13;
+        float3 tspace1 : TEXCOORD14;
+        float3 tspace2 : TEXCOORD15;
+        float offsetAmount : TEXCOORD16;
+        uint instanceID : SV_InstanceID;
+
+        // UNITY_VERTEX_INPUT_INSTANCE_ID // use this to access instanced properties in the fragment shader.
+        
+        UNITY_SHADOW_COORDS(8)
+        UNITY_FOG_COORDS(10)
+    };
+
+
+
+    #include "../Chunks/ShadowCasterPos.cginc"
+    float4 CustomShadowPos(float4 vertex, float3 normal)
+    {
+        float4 wPos = vertex;
+        float3 wNormal = normal;
+
+        if (unity_LightShadowBias.z != 0.0)
+        {
+            
+            float3 wLight = normalize(UnityWorldSpaceLightDir(wPos.xyz));
+
+            // apply normal offset bias (inset position along the normal)
+            // bias needs to be scaled by sine between normal and light direction
+            // (http://the-witness.net/news/2013/09/shadow-mapping-summary-part-1/)
+            //
+            // unity_LightShadowBias.z contains user-specified normal offset amount
+            // scaled by world space texel size.
+
+            float shadowCos = dot(wNormal, wLight);
+            float shadowSine = sqrt(1-shadowCos*shadowCos);
+            float normalBias = unity_LightShadowBias.z * shadowSine;
+
+            wPos.xyz -= wNormal * normalBias *10;
+        }
+
+        return mul(UNITY_MATRIX_VP, wPos);
+    }
+
+    
+
+    UNITY_INSTANCING_BUFFER_START(Props)
+    UNITY_INSTANCING_BUFFER_END(Props)
+    
 
     ENDCG
 
@@ -278,15 +358,7 @@ Shader "Quill/quillMainIslandShader" {
             Tags{ "LightMode" = "ForwardBase" }
             LOD 100 
             Cull Off
-            // Giving our selves stencil info 
-            // for our outline shader to use
-            Stencil
-            {
-                Ref 10
-                Comp always
-                Pass replace
-                ZFail keep
-            }
+            
 
             CGPROGRAM
             #pragma vertex vert
@@ -296,14 +368,7 @@ Shader "Quill/quillMainIslandShader" {
             #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
             #pragma multi_compile_instancing
 
-            #include "UnityCG.cginc"
-            #include "AutoLight.cginc"
             
-
-
-            UNITY_INSTANCING_BUFFER_START(Props)
-            UNITY_INSTANCING_BUFFER_END(Props)
-
 
             uniform float3 _Color;
 
@@ -313,45 +378,7 @@ Shader "Quill/quillMainIslandShader" {
             
             sampler2D _MainTex;
             
-            
-            struct inputData {
-                float4 vertex : POSITION;
-                float4 tangent : TANGENT;
-                float3 normal : NORMAL;
-                float4 texcoord : TEXCOORD0;
-                float4 texcoord1 : TEXCOORD1;
-                fixed4 color : COLOR;
-                
-                uint   id                : SV_VertexID;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-                
-            };
 
-
-            //A simple input struct for our pixel shader step containing a position.
-            struct varyings {
-                float4 pos      : SV_POSITION;
-                float3 nor      : TEXCOORD0;
-                float3 worldPos : TEXCOORD1;
-                float3 eye      : TEXCOORD2;
-                float3 debug    : TEXCOORD3;
-                float2 uv       : TEXCOORD4;
-                float2 uv2       : TEXCOORD6;
-                float4 color : TEXCOORD11;
-                float id        : TEXCOORD5;
-                int feather:TEXCOORD7;
-                float4 data1:TEXCOORD9;   
-
-                float3 tangent : TEXCOORD12;
-                float3 tspace0 : TEXCOORD13;
-                float3 tspace1 : TEXCOORD14;
-                float3 tspace2 : TEXCOORD15;
-                float offsetAmount : TEXCOORD16;
-                UNITY_VERTEX_INPUT_INSTANCE_ID // use this to access instanced properties in the fragment shader.
-                
-                UNITY_SHADOW_COORDS(8)
-                UNITY_FOG_COORDS(10)
-            };
 
 
             float _PainterlyLightImportance;
@@ -367,17 +394,16 @@ Shader "Quill/quillMainIslandShader" {
                 UNITY_SETUP_INSTANCE_ID(vert);
                 UNITY_TRANSFER_INSTANCE_ID(vert, o); // necessary only if you want to access instanced properties in the fragment Shader.
                 
-                float3 wPos = mul( unity_ObjectToWorld,  float4(vert.vertex.xyz,1)).xyz;
 
 
                 int instanceID = 0;
-                #ifdef INSTANCING_ON
-                    instanceID = vert.instanceID;
+                #if defined(UNITY_INSTANCING_ENABLED)
+                    instanceID = UNITY_GET_INSTANCE_ID(vert);
                 #endif
 
-                float3 windOffset = GetWindOffset( instanceID , wPos );
+                float3 wPos = mul( unity_ObjectToWorld,  float4(vert.vertex.xyz,1)).xyz;
+                float3 windOffset = GetWindOffset( instanceID, wPos );
                 o.worldPos = wPos + windOffset;//windAmount;
-                
                 o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
                 o.eye = _WorldSpaceCameraPos - o.worldPos;
                 o.nor = normalize(mul( unity_ObjectToWorld,  float4(vert.normal,0)).xyz);
@@ -548,8 +574,8 @@ Shader "Quill/quillMainIslandShader" {
                 //col.z = 0;
 
                 //                col.xy = sin(GetXYInLightSpace(v.worldPos));
-
-                DoEdgeDiscard(lightingData,v.worldPos,v.eye);
+                col *= lerp(float3(.1,.1,.2),float3(1,.9,.9),shadow * (.4+floor(lightMatch*5)/5));
+                //DoEdgeDiscard(lightingData,v.worldPos,v.eye);
                 DoWrenDiscard(v.worldPos);
 
                 return float4(col,1);
@@ -576,125 +602,7 @@ Shader "Quill/quillMainIslandShader" {
 
 
         
-        /*
-
-
-        // Outline Pass
-        Pass
-        {
-
-            Cull OFF
-            ZWrite ON
-            ZTest ON
-
-            // Here is where we set the values 
-            // so the outline will only show *outside* 
-            // the object
-            Stencil
-            {
-                Ref 10
-                Comp notequal
-                Fail keep
-                Pass replace
-            }
-            
-            CGPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            #pragma target 4.5
-
-            #pragma multi_compile_instancing
-
-
-
-            //A simple input struct for our pixel shader step containing a position.
-            struct varyings {
-                float4 pos      : SV_POSITION;
-                float3 nor      : TEXCOORD0;
-                float3 worldPos : TEXCOORD1;
-                float3 eye      : TEXCOORD2;
-                float3 debug    : TEXCOORD3;
-                float2 uv       : TEXCOORD4;
-                float2 uv2       : TEXCOORD6;
-                float4 color : TEXCOORD11;
-                float id        : TEXCOORD5;
-                int feather:TEXCOORD7;
-                float4 data1:TEXCOORD9;   
-                UNITY_VERTEX_INPUT_INSTANCE_ID // use this to access instanced properties in the fragment shader.
-                
-                UNITY_FOG_COORDS(10)
-            };
-
-
-
-            
-            struct inputData {
-                float4 vertex : POSITION;
-                float4 tangent : TANGENT;
-                float3 normal : NORMAL;
-                float4 texcoord : TEXCOORD0;
-                float4 texcoord1 : TEXCOORD1;
-                fixed4 color : COLOR;
-                uint   id                : SV_VertexID;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-                
-            };
-
-
-            float4 _OutlineColor;
-            float _OutlineAmount;
-
-            #include "UnityCG.cginc"
-            #include "AutoLight.cginc"
-            
-
-
-            UNITY_INSTANCING_BUFFER_START(Props)
-            UNITY_INSTANCING_BUFFER_END(Props)
-
-            
-            varyings vert ( inputData v )
-            {
-                varyings o;
-                
-                UNITY_SETUP_INSTANCE_ID(v);
-                //  UNITY_TRANSFER_INSTANCE_ID(vert, o); // necessary only if you want to access instanced properties in the fragment Shader.
-                // int instanceID = UNITY_GET_INSTANCE_ID(vert);
-                float3 wPos = mul( unity_ObjectToWorld,  float4(v.vertex.xyz,1)).xyz;
-                float3 wNor = normalize(mul( unity_ObjectToWorld,  float4(v.normal.xyz,0)).xyz) ;
-                //UNITY_VERTEX_INPUT_INSTANCE_ID
-
-                
-                int instanceID = 0;
-                #ifdef INSTANCING_ON
-                    instanceID = v.instanceID;
-                #endif
-
-                float3 windOffset = GetWindOffset( instanceID , wPos );
-                o.worldPos = wPos + windOffset;//windAmount;
-                
-                o.worldPos += wNor * _OutlineAmount;
-                
-                o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
-
-
-                return o;
-            }
-
-            fixed4 frag (varyings v) : SV_Target
-            {
-                fixed4 col = _OutlineColor;
-                return col;
-            }
-
-            ENDCG
-        }
-
         
-
-
-        */
-
 
         
 
@@ -709,120 +617,49 @@ Shader "Quill/quillMainIslandShader" {
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_shadowcaster
-            #include "UnityCG.cginc"
-
-
-
-            //A simple input struct for our pixel shader step containing a position.
-            struct varyings {
-                float4 pos      : SV_POSITION;
-                float3 nor      : TEXCOORD0;
-                float3 worldPos : TEXCOORD1;
-                float3 eye      : TEXCOORD2;
-                float3 debug    : TEXCOORD3;
-                float2 uv       : TEXCOORD4;
-                float2 uv2       : TEXCOORD6;
-                float4 color : TEXCOORD11;
-                float id        : TEXCOORD5;
-                int feather:TEXCOORD7;
-                float4 data1:TEXCOORD9;   
-                UNITY_VERTEX_INPUT_INSTANCE_ID // use this to access instanced properties in the fragment shader.
-                
-                UNITY_FOG_COORDS(10)
-            };
 
 
 
             
-            struct inputData {
-                float4 vertex : POSITION;
-                float4 tangent : TANGENT;
-                float3 normal : NORMAL;
-                float4 texcoord : TEXCOORD0;
-                float4 texcoord1 : TEXCOORD1;
-                fixed4 color : COLOR;
-                uint   id                : SV_VertexID;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-                
-            };
-
-            #include "../Chunks/ShadowCasterPos.cginc"
-            float4 CustomShadowPos(float4 vertex, float3 normal)
-            {
-                float4 wPos = vertex;
-                float3 wNormal = normal;
-
-                if (unity_LightShadowBias.z != 0.0)
-                {
-                    
-                    float3 wLight = normalize(UnityWorldSpaceLightDir(wPos.xyz));
-
-                    // apply normal offset bias (inset position along the normal)
-                    // bias needs to be scaled by sine between normal and light direction
-                    // (http://the-witness.net/news/2013/09/shadow-mapping-summary-part-1/)
-                    //
-                    // unity_LightShadowBias.z contains user-specified normal offset amount
-                    // scaled by world space texel size.
-
-                    float shadowCos = dot(wNormal, wLight);
-                    float shadowSine = sqrt(1-shadowCos*shadowCos);
-                    float normalBias = unity_LightShadowBias.z * shadowSine;
-
-                    wPos.xyz -= wNormal * normalBias;
-                }
-
-                return mul(UNITY_MATRIX_VP, wPos);
-            }
 
             
 
-            #include "UnityCG.cginc"
-            #include "AutoLight.cginc"
-            UNITY_INSTANCING_BUFFER_START(Props)
-            UNITY_INSTANCING_BUFFER_END(Props)
-            
-            
-
-            varyings vert(inputData v)
+            varyings vert(inputData vert)
             {
                 varyings o;
 
                 //float4 p = UnityObjectToClipPos(v.vertex);
-                float4 p = float4( v.vertex.xyz, 1);
+                float4 p = float4( vert.vertex.xyz, 1);
                 // TRANSFER_SHADOW_CASTER_NOPOS(o,o.pos);
 
                 
                 UNITY_SETUP_INSTANCE_ID(vert);
-                //  UNITY_TRANSFER_INSTANCE_ID(vert, o); // necessary only if you want to access instanced properties in the fragment Shader.
-                // int instanceID = UNITY_GET_INSTANCE_ID(vert);
-                float3 wPos = mul( unity_ObjectToWorld,  float4(v.vertex.xyz,1)).xyz;
-                //UNITY_VERTEX_INPUT_INSTANCE_ID
-
+                UNITY_TRANSFER_INSTANCE_ID(vert, o); // necessary only if you want to access instanced properties in the fragment Shader.
+                
                 
                 int instanceID = 0;
-                #ifdef INSTANCING_ON
-                    instanceID = vert.instanceID;
+                #if defined(UNITY_INSTANCING_ENABLED)
+                    instanceID = UNITY_GET_INSTANCE_ID(vert);
                 #endif
 
-                float windOffset = GetWindOffset( instanceID , wPos );
 
+                o.nor = normalize(mul( unity_ObjectToWorld,  float4( vert.normal,0)).xyz);
+                // o.worldPos = worldPos.xyz;
 
-
-                float4 worldPos = float4(wPos + windOffset,1);//windAmount;
+                float3 wPos = mul( unity_ObjectToWorld,  float4(vert.vertex.xyz,1)).xyz;
+                float3 windOffset = GetWindOffset( instanceID, wPos );
                 
+                o.worldPos = wPos + windOffset;//windAmount;
+                // o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
+
 
                 // o.pos = mul (UNITY_MATRIX_VP, float4(worldPos,1.0f));
-                o.eye = _WorldSpaceCameraPos - worldPos.xyz;
-                o.nor = normalize(mul( unity_ObjectToWorld,  float4(v.normal,0)).xyz);
-                o.worldPos = worldPos.xyz;
-
-
-
+                o.eye = _WorldSpaceCameraPos - o.worldPos.xyz;
                 //float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
-                float3 worldNormal  =  UnityObjectToWorldNormal(v.normal);
+                float3 worldNormal  = o.nor;// UnityObjectToWorldNormal( vert.normal);
 
                 float4 opos = 0;
-                opos = CustomShadowPos(worldPos, worldNormal);
+                opos = CustomShadowPos(float4(o.worldPos,1), worldNormal);
                 opos = UnityApplyLinearShadowBias(opos);
                 o.pos = opos;
 
@@ -840,7 +677,7 @@ Shader "Quill/quillMainIslandShader" {
                 // discard;
                 
 
-                //  DoEdgeDiscard(lightingData,i.worldPos,i.eye);
+                //DoEdgeDiscard(lightingData,i.worldPos,i.eye);
                 
 
                 SHADOW_CASTER_FRAGMENT(i);
