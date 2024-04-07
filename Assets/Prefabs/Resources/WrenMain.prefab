@@ -24178,7 +24178,7 @@ MonoBehaviour:
   oceanBoyancyForceMaxHeight: 1
   oceanBoyancyForceMultiplier: 1
   waveLiftForceMaxHeight: 10
-  waveLiftForceMultiplier: 1
+  waveLiftForceMultiplier: 0
   showDebugForces: 0
   reset: 0
   distToGround: 0

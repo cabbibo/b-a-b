@@ -663,7 +663,7 @@ add phase shift into onenable, not the set state!
 
             // always keeping clouds away form us
             tutorialClouds.transform.position = new Vector3(p.x, p.y - 300, p.z);
-            tutorialOcean.transform.position = new Vector3(p.x, p.y - 300, p.z);
+            tutorialOcean.transform.position = new Vector3(p.x, p.y - 400, p.z);
 
             if (p.y < 100)
             {

@@ -7,27 +7,23 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: justOutline
-  m_Shader: {fileID: 4800000, guid: b4d8e321a7debc1448500b8d344c354a, type: 3}
+  m_Name: SkyboxMainIsland
+  m_Shader: {fileID: 4800000, guid: aede60092bec1dd43b6cd824db157b67, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: 
+  m_LockedProperties: _BackfaceColor
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
     - _BumpMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _ColorMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -48,74 +44,72 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: 75862bda9f9646d4e898f9613ff863f6, type: 3}
+        m_Scale: {x: 11, y: 11}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 03fe3ff010bcfb3418536e2f7896257b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _PLightMap:
-        m_Texture: {fileID: 0}
+    - _PainterlyLightMap:
+        m_Texture: {fileID: 2800000, guid: fdcfac53f29f0b3448d104e84d565adc, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _ShinyMap:
+    - _TriplanarMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TriplanarNormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
-    - _ColorSize: 1
-    - _ColorStart: 0
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FullDarkCutoff: 1
+    - _Fade: 1.1111111e+10
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
-    - _NoiseExtrudeSubtractor: 0
-    - _NoiseNormalExtrude: 0.1
-    - _NoisePow: 1
-    - _NoiseSize: 3
-    - _NoiseSpeed: 13
-    - _NoiseStepRate: 8
-    - _NoiseTextureOffset: 0.01
-    - _Normal: 0
     - _OcclusionStrength: 1
-    - _OutlineAmount: 0.01
-    - _PainterlyLight: 0
+    - _OutlineAmount: 0
+    - _PainterlyLightImportance: 0
     - _Parallax: 0.02
-    - _ShadowColorMultiplier: 0
-    - _ShininessMultiplier: 2
-    - _SkinnedMesh: 0
+    - _ShadowStrength: 0
+    - _Size: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _StencilMask: 9
-    - _Triplanar: 0
-    - _TriplanarSharpness: 1
+    - _TriplanarNormalWeight: 0.4
+    - _TriplanarSharpness: 4
     - _UVSec: 0
+    - _WindAmount: 0.6
+    - _WindChangeSize: 1
+    - _WindChangeSpeed: 5
     - _ZWrite: 1
     m_Colors:
+    - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _TextureShadingWeights: {r: 0, g: 1, b: 2, a: 3}
-    - _TriplanarMultiplier: {r: 10, g: 10, b: 10, a: 1}
+    - _TriplanarMultiplier: {r: 0.001, g: 0.0001, b: 0.0001, a: 1}
+    - _WindDirection: {r: 11, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

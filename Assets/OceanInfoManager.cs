@@ -19,6 +19,8 @@ public class OceanInfoManager : MonoBehaviour
     public float oceanHeightSampleCutoff;
 
     SampleHeightHelper sampleHeightHelper;
+    SampleHeightHelper sampleHeightHelperL;
+    SampleHeightHelper sampleHeightHelperR;
 
     public bool closeToSurface;
 
@@ -27,6 +29,12 @@ public class OceanInfoManager : MonoBehaviour
     public float leftWingHeight;
     public float rightWingHeight;
 
+    public float leftWingDisplacement;
+    public float rightWingDisplacement;
+
+    public float leftWingDistanceToSurface;
+    public float rightWingDistanceToSurface;
+
     public Vector3 leftWingNormal;
     public Vector3 rightWingNormal;
 
@@ -34,16 +42,52 @@ public class OceanInfoManager : MonoBehaviour
     public Vector3 rightWingVel;
 
 
+
+
+
+    SampleHeightHelper sampleHeightHelperGround;
+
     void OnEnable()
     {
+
+    }
+
+    public Vector3 groundPosition;
+    public Vector3 GetGroundPosition(Vector3 pos)
+    {
+
+        if (OceanRenderer.Instance == null)
+        {
+            return pos;
+        }
+
+        if (sampleHeightHelperGround == null)
+        {
+            sampleHeightHelperGround = new SampleHeightHelper();
+        }
+
+        sampleHeightHelperGround.Init(pos, 1);
+
+        float displacement1;
+        Vector3 normal1;
+        Vector3 waterSurfaceVel1;
+
+        sampleHeightHelperGround.Sample(out displacement1, out normal1, out waterSurfaceVel1);
+
+        float h = displacement1;
+
+        return new Vector3(pos.x, h, pos.z);
+
 
     }
     // Update is called once per frame
     void Update()
     {
 
-        if (God.wren)
+        if (God.wren && OceanRenderer.Instance != null)
         {
+
+            groundPosition = GetGroundPosition(God.wren.transform.position);
 
             // Only care if we are close  to ocean height other wise we dont need to sample!
 
@@ -51,6 +95,20 @@ public class OceanInfoManager : MonoBehaviour
             if (dif > oceanHeightSampleCutoff)
             {
                 closeToSurface = false;
+
+                oHeight = height;
+                oDistanceToSurface = distanceToSurface;
+
+                height = OceanRenderer.Instance.SeaLevel;
+                distanceToSurface = dif;
+                leftWingHeight = oceanHeightSampleCutoff;
+                rightWingHeight = oceanHeightSampleCutoff;
+
+                leftWingNormal = Vector3.up;
+                rightWingNormal = Vector3.up;
+                leftWingVel = Vector3.zero;
+                rightWingVel = Vector3.zero;
+
 
                 return;
             }
@@ -83,22 +141,39 @@ public class OceanInfoManager : MonoBehaviour
 
                 //                print("hello");
 
-                sampleHeightHelper.Init(God.wren.physics.leftWing.position, 1);
-                sampleHeightHelper.Sample(out leftWingHeight, out leftWingNormal, out leftWingVel);
-
-                leftWingHeight = OceanRenderer.Instance.SeaLevel + leftWingHeight;
-                leftWingHeight = God.wren.physics.leftWing.position.y - leftWingHeight;
 
 
-                sampleHeightHelper.Init(God.wren.physics.rightWing.position, 1);
-                sampleHeightHelper.Sample(out rightWingHeight, out rightWingNormal, out rightWingVel);
+                if (sampleHeightHelperL == null)
+                {
+                    sampleHeightHelperL = new SampleHeightHelper();
+                }
 
-                rightWingHeight = OceanRenderer.Instance.SeaLevel + rightWingHeight;
-                rightWingHeight = God.wren.physics.rightWing.position.y - rightWingHeight;
+                sampleHeightHelperL.Init(God.wren.physics.leftWing.position, 1);
+                sampleHeightHelperL.Sample(out leftWingDisplacement, out leftWingNormal, out leftWingVel);
+
+                leftWingHeight = leftWingDisplacement;
+                leftWingDistanceToSurface = God.wren.physics.leftWing.position.y - leftWingHeight;
 
 
-                lineRenderer.SetPosition(0, God.wren.transform.position);
-                lineRenderer.SetPosition(1, new Vector3(God.wren.transform.position.x, height, God.wren.transform.position.z));
+                if (sampleHeightHelperR == null)
+                {
+                    sampleHeightHelperR = new SampleHeightHelper();
+                }
+
+
+                sampleHeightHelperR.Init(God.wren.physics.leftWing.position, 1);
+                sampleHeightHelperR.Sample(out rightWingDisplacement, out rightWingNormal, out rightWingVel);
+
+                rightWingHeight = rightWingDisplacement;
+                rightWingDistanceToSurface = God.wren.physics.rightWing.position.y - rightWingHeight;
+
+
+
+
+
+
+                lineRenderer.SetPosition(0, God.wren.physics.rightWing.position);
+                lineRenderer.SetPosition(1, new Vector3(God.wren.physics.rightWing.position.x, height, God.wren.physics.rightWing.position.z));
 
 
 

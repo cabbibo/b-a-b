@@ -11,6 +11,9 @@ public class Shard : MonoBehaviour
 
     public bool collected = false;
 
+    public GameObject Uncollected;
+    public GameObject Collected;
+
 
 
     // Start is called before the first frame update
@@ -25,6 +28,20 @@ public class Shard : MonoBehaviour
 
     }
 
+    void OnEnable()
+    {
+        if (collected)
+        {
+            Collected.SetActive(true);
+            Uncollected.SetActive(false);
+        }
+        else
+        {
+            Collected.SetActive(false);
+            Uncollected.SetActive(true);
+        }
+    }
+
 
     public void OnTriggerEnter(Collider c)
     {
@@ -36,6 +53,10 @@ public class Shard : MonoBehaviour
             God.wren.shards.CollectShards(ShardsToAdd);
             God.particleSystems.Emit(God.particleSystems.shardCollect, transform.position, ShardsToAdd);
             collected = true;
+            Collected.SetActive(true);
+            Uncollected.SetActive(false);
+
+
             if (destroyOnCollect)
             {
                 Destroy(gameObject);
