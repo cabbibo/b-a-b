@@ -39,6 +39,7 @@ public class Biome : MonoBehaviour
     public void DiscoverBiome()
     {
 
+        print("HELLOOO111");
         discovered = true;
         God.state.OnBiomeDiscovered(id);
         discoveredAnimation.Play();
@@ -104,7 +105,6 @@ public class Biome : MonoBehaviour
 
     public void OnEnterBiome()
     {
-        print("Biome entered");
         if (!discovered)
         {
             DiscoverBiome();
@@ -115,7 +115,6 @@ public class Biome : MonoBehaviour
 
     public void OnExitBiome()
     {
-        print("Biome exited");
 
     }
 

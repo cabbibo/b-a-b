@@ -1286,7 +1286,7 @@ public class WrenPhysics : MonoBehaviour
         }
 
 
-        print(oceanForce);
+        //        print(oceanForce);
         oceanForcePosition = transform.position;
 
 
@@ -1297,29 +1297,37 @@ public class WrenPhysics : MonoBehaviour
 
 
 
-        if (o.leftWingHeight < waveLiftForceMaxHeight)
+        if (o.leftWingDistanceToSurface < waveLiftForceMaxHeight)
         {
 
-            float n = o.leftWingHeight / waveLiftForceMaxHeight;
+            float n = o.leftWingDistanceToSurface / waveLiftForceMaxHeight;
             n = 1 - n;
             n *= n;
 
             float match = Vector3.Dot(o.leftWingNormal, leftWing.up);
-            waveLiftForceL = o.leftWingNormal * waveLiftForceMultiplier * n * match;
+            float match2 = Vector3.Dot(o.leftWingNormal, Vector3.up);
+
+            match2 = Mathf.Clamp(match2, 0, 1);
+            match2 = 1 - match2;
+            waveLiftForceL = o.leftWingNormal * waveLiftForceMultiplier * n * match * match2;
 
         }
 
 
-        if (o.rightWingHeight < waveLiftForceMaxHeight)
+        if (o.rightWingDistanceToSurface < waveLiftForceMaxHeight)
         {
 
-            float n = o.rightWingHeight / waveLiftForceMaxHeight;
+            float n = o.rightWingDistanceToSurface / waveLiftForceMaxHeight;
             n = 1 - n;
             n *= n;
 
             float match = Vector3.Dot(o.rightWingNormal, rightWing.up);
-            print(match);
-            waveLiftForceR = o.rightWingNormal * waveLiftForceMultiplier * n * match;
+
+            float match2 = Vector3.Dot(o.rightWingNormal, Vector3.up);
+
+            match2 = Mathf.Clamp(match2, 0, 1);
+            match2 = 1 - match2;
+            waveLiftForceR = o.rightWingNormal * waveLiftForceMultiplier * n * match * match2;
 
         }
 
@@ -1536,9 +1544,10 @@ public class WrenPhysics : MonoBehaviour
 
 
 
-
             Vector3 targetPos = wren.GroundIntersection(rb.position) + Vector3.up * groundUpVal;
             AddForce((targetPos - rb.position) * groundUpForce);
+
+
 
 
 

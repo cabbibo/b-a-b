@@ -47,74 +47,74 @@ Shader "Painterly/PainterlyBase"
         
         
     }
- 
-
-
-CGINCLUDE
-
-// This is the code that does the 'displacement' of the mesh
-// And will need to be in every pass of the shader looking the same
-
-float _NoiseSize;
-float _NoiseSpeed;
-float _NoiseStepRate;
-float _NoiseNormalExtrude;
-float _NoiseTextureOffset;
-float _NoiseExtrudeSubtractor;
-float _NoisePow;
-
-
-// Getting Some simple Triangular Noise
-float tri(in float x){return abs(frac(x)-.5);}
-float3 tri3(in float3 p){return float3( tri(p.y+tri(p.z)), tri(p.z+tri(p.x)), tri(p.y+tri(p.x)));}
-           
-float triAdd( in float3 p ){ return (tri(p.x+tri(p.y+tri(p.z)))); }
-
-float triangularNoise( float3 p ){
-
-    float totalFog = 0;
-
-    float noiseScale = 1;
-
-    float3 tmpPos = p;
-
-    float noiseContribution = 1;
-
-    float3 offset = 0;
-
-    p *= _NoiseSize;
-    p *= 2;
-
-   float speed = 1.1;
- 
-   p +=  tri3(p.xyz * .3 ) *1.6;
-   totalFog += triAdd(p.yxz * .3) * .35;
     
-   p +=  tri3(p.xyz * .4 + 121 ) * 1;
-   totalFog += triAdd(p.yxz * 1) * .25;
+
+
+    CGINCLUDE
+
+    // This is the code that does the 'displacement' of the mesh
+    // And will need to be in every pass of the shader looking the same
+
+    float _NoiseSize;
+    float _NoiseSpeed;
+    float _NoiseStepRate;
+    float _NoiseNormalExtrude;
+    float _NoiseTextureOffset;
+    float _NoiseExtrudeSubtractor;
+    float _NoisePow;
+
+
+    // Getting Some simple Triangular Noise
+    float tri(in float x){return abs(frac(x)-.5);}
+    float3 tri3(in float3 p){return float3( tri(p.y+tri(p.z)), tri(p.z+tri(p.x)), tri(p.y+tri(p.x)));}
     
-   p +=  tri3(p.xyz * .8 + 121 ) * 1;
-   totalFog += triAdd(p.yxz* 1.3) * .15;
+    float triAdd( in float3 p ){ return (tri(p.x+tri(p.y+tri(p.z)))); }
 
-  return totalFog;
+    float triangularNoise( float3 p ){
 
-}
+        float totalFog = 0;
+
+        float noiseScale = 1;
+
+        float3 tmpPos = p;
+
+        float noiseContribution = 1;
+
+        float3 offset = 0;
+
+        p *= _NoiseSize;
+        p *= 2;
+
+        float speed = 1.1;
+        
+        p +=  tri3(p.xyz * .3 ) *1.6;
+        totalFog += triAdd(p.yxz * .3) * .35;
+        
+        p +=  tri3(p.xyz * .4 + 121 ) * 1;
+        totalFog += triAdd(p.yxz * 1) * .25;
+        
+        p +=  tri3(p.xyz * .8 + 121 ) * 1;
+        totalFog += triAdd(p.yxz* 1.3) * .15;
+
+        return totalFog;
+
+    }
 
 
-// use our parameters to get our noise value
-float noiseVal( float3 p){
-    float n = triangularNoise( p.xyz * _NoiseSize + _NoiseSpeed * floor( _Time.y  * _NoiseStepRate)/_NoiseStepRate );
- return n;
-}
+    // use our parameters to get our noise value
+    float noiseVal( float3 p){
+        float n = triangularNoise( p.xyz * _NoiseSize + _NoiseSpeed * floor( _Time.y  * _NoiseStepRate)/_NoiseStepRate );
+        return n;
+    }
 
-// Use this noise value to extrude along our normal
-// The extra parameter is for our outline shaders extra offset
-float3 offsetPos( float3 p  , float3 nor , float nExtrude){
-    return p + ( pow((noiseVal(p)  * _NoiseNormalExtrude),_NoisePow)-_NoiseExtrudeSubtractor + nExtrude ) * nor;
-} 
+    // Use this noise value to extrude along our normal
+    // The extra parameter is for our outline shaders extra offset
+    float3 offsetPos( float3 p  , float3 nor , float nExtrude){
+        return p + ( pow((noiseVal(p)  * _NoiseNormalExtrude),_NoisePow)-_NoiseExtrudeSubtractor + nExtrude ) * nor;
+    } 
 
-ENDCG
- 
+    ENDCG
+    
 
     SubShader
     {
@@ -126,9 +126,9 @@ ENDCG
 
         /*
 
-            MAIN 
-            COLOR 
-            PASS
+        MAIN 
+        COLOR 
+        PASS
 
         */
         Pass
@@ -163,8 +163,8 @@ ENDCG
             #pragma multi_compile_fwdbase
             #pragma fragmentoption ARB_precision_hint_fastest
 
-			#include "Lighting.cginc"
-			#include "AutoLight.cginc"  
+            #include "Lighting.cginc"
+            #include "AutoLight.cginc"  
 
 
             // Our honkin-tonkin varyings
@@ -231,7 +231,7 @@ ENDCG
                 float nVal2 = triangularNoise( v.vertex.xyz * _NoiseSize + 1212.4144 + _NoiseSpeed * floor( _Time.y  * _NoiseStepRate)/_NoiseStepRate );
                 o.uv = v.texcoord + float2(nVal,nVal2) * _NoiseTextureOffset;
 
-             
+                
 
                 float3 worldNormal = normalize(mul( unity_ObjectToWorld, float4(v.normal,0) ).xyz);
                 o.nor = worldNormal;
@@ -239,7 +239,7 @@ ENDCG
 
 
                 /*
-                    Passing through information for normal mapping!
+                Passing through information for normal mapping!
                 */
                 half3 wNormal = worldNormal;
                 half3 wTangent = mul( unity_ObjectToWorld,float4(v.tangent.xyz,0) ).xyz* v.tangent.w;
@@ -267,65 +267,65 @@ ENDCG
                 #endif
                 
                 // Pass our lighting through to our fragment shader
-                 UNITY_TRANSFER_LIGHTING(o , o.worldPos );
+                UNITY_TRANSFER_LIGHTING(o , o.worldPos );
                 return o;
             }
 
 
 
 
-    // Sampling our triplanar texture for our 'sketch' shader
-    float3 _TriplanarMultiplier;
-    float _TriplanarSharpness;
+            // Sampling our triplanar texture for our 'sketch' shader
+            float3 _TriplanarMultiplier;
+            float _TriplanarSharpness;
 
-    float4 triplanarSample(float3 p , float3 n){
-        float nVal = triangularNoise( p.xyz * _NoiseSize + _NoiseSpeed * floor( _Time.y  * _NoiseStepRate)/_NoiseStepRate );
-        float nVal2 = triangularNoise( p.xyz * _NoiseSize + 1212.4144 + _NoiseSpeed * floor( _Time.y  * _NoiseStepRate)/_NoiseStepRate );
-             
-             
-        half3 blend = pow(abs(n),_TriplanarSharpness) ;;
-        
-        // make sure the weights sum up to 1 (divide by sum of x+y+z)
-        blend /= dot(blend,1.0);
-        // read the three texture projections, for x,y,z axes
-        fixed4 cx = tex2D(_PLightMap,(p.yz * _TriplanarMultiplier.x + float2(nVal,nVal2) * _NoiseTextureOffset) % 1);
-        fixed4 cy = tex2D(_PLightMap,(p.xz * _TriplanarMultiplier.y + float2(nVal,nVal2) * _NoiseTextureOffset) % 1);
-        fixed4 cz = tex2D(_PLightMap,(p.xy * _TriplanarMultiplier.z + float2(nVal,nVal2) * _NoiseTextureOffset) % 1);
-        // blend the textures based on weights
-        fixed4 c = cx * blend.x + cy * blend.y + cz * blend.z;
-        return c;
+            float4 triplanarSample(float3 p , float3 n){
+                float nVal = triangularNoise( p.xyz * _NoiseSize + _NoiseSpeed * floor( _Time.y  * _NoiseStepRate)/_NoiseStepRate );
+                float nVal2 = triangularNoise( p.xyz * _NoiseSize + 1212.4144 + _NoiseSpeed * floor( _Time.y  * _NoiseStepRate)/_NoiseStepRate );
+                
 
-    }
+                half3 blend = pow(abs(n),_TriplanarSharpness) ;;
+                
+                // make sure the weights sum up to 1 (divide by sum of x+y+z)
+                blend /= dot(blend,1.0);
+                // read the three texture projections, for x,y,z axes
+                fixed4 cx = tex2D(_PLightMap,(p.yz * _TriplanarMultiplier.x + float2(nVal,nVal2) * _NoiseTextureOffset) % 1);
+                fixed4 cy = tex2D(_PLightMap,(p.xz * _TriplanarMultiplier.y + float2(nVal,nVal2) * _NoiseTextureOffset) % 1);
+                fixed4 cz = tex2D(_PLightMap,(p.xy * _TriplanarMultiplier.z + float2(nVal,nVal2) * _NoiseTextureOffset) % 1);
+                // blend the textures based on weights
+                fixed4 c = cx * blend.x + cy * blend.y + cz * blend.z;
+                return c;
 
-
-
-    // Trying to get a normal map triplanr
-    float3 triplanarNormal(float3 p , float3 n, float3 t0,float3 t1,float3 t2){
-
-          float nVal = noise( p.xyz * _NoiseSize + _NoiseSpeed * floor( _Time.y  * _NoiseStepRate)/_NoiseStepRate );
-        float nVal2 = noise( p.xyz * _NoiseSize + 1212.4144 + _NoiseSpeed * floor( _Time.y  * _NoiseStepRate)/_NoiseStepRate );
-        
-        
-        half3 blend =  pow(abs(n),_TriplanarSharpness) ;
-        // make sure the weights sum up to 1 (divide by sum of x+y+z)
-        blend /= dot(blend,1.0);
-        // read the three texture projections, for x,y,z axes
-        half3 cx = UnpackNormal(tex2D(_NormalMap,(p.yz * _TriplanarMultiplier.x + float2(nVal,nVal2) * _NoiseTextureOffset) % 1));
-        half3 cy = UnpackNormal(tex2D(_NormalMap,(p.xz * _TriplanarMultiplier.y + float2(nVal,nVal2) * _NoiseTextureOffset) % 1));
-        half3 cz = UnpackNormal(tex2D(_NormalMap,(p.xy * _TriplanarMultiplier.z + float2(nVal,nVal2) * _NoiseTextureOffset) % 1));
-        // blend the textures based on weights
-        half3 c = cx * blend.x + cy * blend.y + cz * blend.z;
-
-        half3 worldNormal;
-        worldNormal.x = dot(t0, c);
-        worldNormal.y = dot(t1, c);
-        worldNormal.z = dot(t2, c);
-        return c;
-         
+            }
 
 
-    }
- 
+
+            // Trying to get a normal map triplanr
+            float3 triplanarNormal(float3 p , float3 n, float3 t0,float3 t1,float3 t2){
+
+                float nVal = noise( p.xyz * _NoiseSize + _NoiseSpeed * floor( _Time.y  * _NoiseStepRate)/_NoiseStepRate );
+                float nVal2 = noise( p.xyz * _NoiseSize + 1212.4144 + _NoiseSpeed * floor( _Time.y  * _NoiseStepRate)/_NoiseStepRate );
+                
+                
+                half3 blend =  pow(abs(n),_TriplanarSharpness) ;
+                // make sure the weights sum up to 1 (divide by sum of x+y+z)
+                blend /= dot(blend,1.0);
+                // read the three texture projections, for x,y,z axes
+                half3 cx = UnpackNormal(tex2D(_NormalMap,(p.yz * _TriplanarMultiplier.x + float2(nVal,nVal2) * _NoiseTextureOffset) % 1));
+                half3 cy = UnpackNormal(tex2D(_NormalMap,(p.xz * _TriplanarMultiplier.y + float2(nVal,nVal2) * _NoiseTextureOffset) % 1));
+                half3 cz = UnpackNormal(tex2D(_NormalMap,(p.xy * _TriplanarMultiplier.z + float2(nVal,nVal2) * _NoiseTextureOffset) % 1));
+                // blend the textures based on weights
+                half3 c = cx * blend.x + cy * blend.y + cz * blend.z;
+
+                half3 worldNormal;
+                worldNormal.x = dot(t0, c);
+                worldNormal.y = dot(t1, c);
+                worldNormal.z = dot(t2, c);
+                return c;
+                
+
+
+            }
+            
 
 
             fixed4 frag (v2f v) : SV_Target
@@ -347,16 +347,16 @@ ENDCG
                 #endif
 
                 #if defined(NORMAL_MAP) && defined(TRIPLANAR)
-                
+                    
                     // Unpacking and setting our normal map as a triplanar cunction
                     fNor = triplanarNormal( v.localPos , v.localNor , v.tspace0 , v.tspace1, v.tspace2);
                 #endif
-        
+                
 
 
                 // Getting our shadows
-                 float shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos);
-               
+                float shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos);
+                
                 // getting the 'Match' value. in this case 
                 // a combo of our shadows and how much our face matches
                 // a directional light sorce
@@ -373,7 +373,7 @@ ENDCG
                 #else
                     p = tex2D( _PLightMap , v.painterlyUV );
                 #endif
-            
+                
                 // set our final lighting color
                 // to the match color
                 float fLCol = 1-m/3;
@@ -388,13 +388,13 @@ ENDCG
                     float4 weights = 0;
                     if( m < _TextureShadingWeights.x){
                         weights = float4(1 , 0 , 0, 0);
-                    }else if( m >= _TextureShadingWeights.x && m < _TextureShadingWeights.y){
+                        }else if( m >= _TextureShadingWeights.x && m < _TextureShadingWeights.y){
                         weights = float4(1-(m-_TextureShadingWeights.x)/(_TextureShadingWeights.y-_TextureShadingWeights.x) ,(m-_TextureShadingWeights.x)/(_TextureShadingWeights.y-_TextureShadingWeights.x) , 0, 0);//lerp( p.x , p.y , m );
-                    }else if( m >= _TextureShadingWeights.y && m < _TextureShadingWeights.z){
+                        }else if( m >= _TextureShadingWeights.y && m < _TextureShadingWeights.z){
                         weights = float4(0,1-(m-_TextureShadingWeights.y)/(_TextureShadingWeights.z-_TextureShadingWeights.y) , (m-_TextureShadingWeights.y)/(_TextureShadingWeights.z-_TextureShadingWeights.y) ,  0);
-                    }else if( m >= _TextureShadingWeights.z && m < _TextureShadingWeights.w){
+                        }else if( m >= _TextureShadingWeights.z && m < _TextureShadingWeights.w){
                         weights = float4(0,0,1-(m-_TextureShadingWeights.z)/(_TextureShadingWeights.w-_TextureShadingWeights.z) , (m-_TextureShadingWeights.z)/(_TextureShadingWeights.w-_TextureShadingWeights.z) );
-                    }else{
+                        }else{
                         weights = float4(0,0,0 , 1);
                     }
 
@@ -412,8 +412,8 @@ ENDCG
                 // Using all our lighting info to get our toon color!
                 float3 toonCol = tex2D( _ColorMap , float2( saturate((1-fLCol) * _ColorSize + _ColorStart) , 0) ).xyz;
                 toonCol *= lerp(1,_ShadowColorMultiplier,1-fLCol);
-               
-               
+                
+                
                 // Getting the 'shininess' value from the lighting in our scene
                 // and how shiny it should be from our shiny map
                 float3 shiny = tex2D(_ShinyMap,v.shinyUV);
@@ -425,7 +425,7 @@ ENDCG
 
                 float3 fCol= lerp( toonCol ,  tCol * toonCol * _ShininessMultiplier , saturate(shiny.x * shiny.x * shiny.x * 30));//*shiny.x * fLCol;//fLCol*s3* skyColor;//v.nor * .5 + .5;
                 
-          
+                
                 fixed4 col = float4(fCol,1);//fLCol;//float4( i.nor * .5 + .5 , 1);//tex2D(_MainTex, i.uv);
                 return col;
             }
@@ -480,7 +480,7 @@ ENDCG
             float4 _OutlineColor;
             float _OutlineAmount;
 
-    
+            
             v2f vert ( appdata_full v )
             {
                 v2f o;
@@ -559,7 +559,7 @@ ENDCG
                     wPos -= wNormal * normalBias;
 
                     clipPos = mul(UNITY_MATRIX_VP, float4(wPos, 1));
-                }else {
+                    }else {
                     clipPos = UnityObjectToClipPos(vertex);
                 }
                 return clipPos;
@@ -574,7 +574,7 @@ ENDCG
                 float3 fNor = -v.normal;
                 float4 position =  ShadowCasterPos(fPos, fNor);
                 o.pos = UnityApplyLinearShadowBias(position);
-              
+                
                 return o;
             }
 

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: justOutline
+  m_Name: justOutline 1
   m_Shader: {fileID: 4800000, guid: b4d8e321a7debc1448500b8d344c354a, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -98,7 +98,7 @@ Material:
     - _NoiseTextureOffset: 0.01
     - _Normal: 0
     - _OcclusionStrength: 1
-    - _OutlineAmount: 0.01
+    - _OutlineAmount: 0.05
     - _PainterlyLight: 0
     - _Parallax: 0.02
     - _ShadowColorMultiplier: 0
@@ -115,7 +115,7 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _OutlineColor: {r: 0.34433958, g: 1, b: 0.92601377, a: 1}
     - _TextureShadingWeights: {r: 0, g: 1, b: 2, a: 3}
     - _TriplanarMultiplier: {r: 10, g: 10, b: 10, a: 1}
   m_BuildTextureStacks: []

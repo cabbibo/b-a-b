@@ -199,6 +199,11 @@ public class Wren : MonoBehaviour
         }
 
 
+        if (God.oceanInfo.groundPosition.y > newPos.y)
+        {
+            newPos = God.oceanInfo.groundPosition;
+        }
+
 
         return newPos;
 

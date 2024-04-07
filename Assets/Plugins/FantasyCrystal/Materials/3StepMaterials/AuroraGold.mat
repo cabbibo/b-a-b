@@ -84,8 +84,8 @@ Material:
     - _Mode: 0
     - _NoiseImportance: 11
     - _NoiseSharpness: 2.37
-    - _NoiseSize: 4.33
-    - _NoiseSpeed: 1
+    - _NoiseSize: 7
+    - _NoiseSpeed: 30
     - _NoiseSubtractor: 0
     - _NumSteps: 5
     - _OcclusionStrength: 1
