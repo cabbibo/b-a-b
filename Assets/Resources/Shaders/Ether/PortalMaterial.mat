@@ -94,7 +94,7 @@ Material:
     - _NoisePower: 1
     - _NoiseSharpness: 19.75
     - _NoiseSize: 8.41
-    - _NoiseSubtractor: -2.24
+    - _NoiseSubtractor: 0
     - _NumSteps: 5.8
     - _OcclusionStrength: 1
     - _Opaqueness: 1
@@ -102,7 +102,7 @@ Material:
     - _OrbSize: 1
     - _Parallax: 0.02
     - _ReflectionMultiplier: 0
-    - _ReflectionSharpness: 0
+    - _ReflectionSharpness: 1
     - _RefractionBackgroundSampleExtraStep: 0.1
     - _Scale: 40
     - _Size: 0.01
@@ -116,12 +116,12 @@ Material:
     m_Colors:
     - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _CenterOrbColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CenterOrbColor: {r: 0.066037714, g: 0.066037714, b: 0.066037714, a: 1}
     - _CenterOrbOffset: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _NoiseColor: {r: 1, g: 0, b: 0, a: 1}
     - _NoiseOffset: {r: 0, g: 0, b: 0, a: 1}
-    - _ReflectionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ReflectionColor: {r: 0.6509434, g: 0.6509434, b: 0.6509434, a: 1}
     - _TriplanarMultiplier: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

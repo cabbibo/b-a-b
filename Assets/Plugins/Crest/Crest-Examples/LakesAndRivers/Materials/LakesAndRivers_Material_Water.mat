@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _APPLYNORMALMAPPING_ON
   - _CAUSTICS_ON
   - _COMPUTEDIRECTIONALLIGHT_ON
   - _DEBUGVISUALISE_NONE
@@ -41,7 +42,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _FoamTexture:
-        m_Texture: {fileID: 2800000, guid: 02e417d5711139342884479f53dbecea, type: 3}
+        m_Texture: {fileID: 2800000, guid: abae5aff661c865459feb3f058a09ae9, type: 3}
         m_Scale: {x: 0.1, y: 0.1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -49,7 +50,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Normals:
-        m_Texture: {fileID: 2800000, guid: 800e061692ff7a84e887f439d3364410, type: 3}
+        m_Texture: {fileID: 2800000, guid: a53cf5449d11a15d1100a04b44295342, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ReflectionCubemapOverride:
@@ -96,7 +97,7 @@ Material:
     m_Floats:
     - _Albedo: 0
     - _ApplyFlowToNormals: 0
-    - _ApplyNormalMapping: 0
+    - _ApplyNormalMapping: 1
     - _BumpAmt: 0.514
     - _Caustics: 1
     - _CausticsBase: 0.07
@@ -129,14 +130,14 @@ Material:
     - _Flow: 1
     - _Foam: 1
     - _Foam3DLighting: 1
-    - _FoamBubbleParallax: 0.1
-    - _FoamScale: 5
+    - _FoamBubbleParallax: 0.165
+    - _FoamScale: 1.7
     - _FresnelPower: 5
     - _Invert: 1
     - _MipBias: 0
     - _Moving: 0.17
-    - _NormalsScale: 40
-    - _NormalsStrength: 0.08
+    - _NormalsScale: 58.6
+    - _NormalsStrength: 0.853
     - _NormalsStrengthOverall: 1
     - _Offset: 0.00008
     - _OverrideReflectionCubemap: 0
@@ -147,14 +148,14 @@ Material:
     - _ProceduralSky: 0
     - _Projection: 0
     - _RefractAmt: 0
-    - _RefractionStrength: 1
+    - _RefractionStrength: 1.773
     - _RefractiveIndexOfAir: 1
     - _RefractiveIndexOfWater: 1.333
     - _Roughness: 0
     - _S: 1
     - _Shadows: 0
-    - _ShorelineFoamMinDepth: 0.27
-    - _SkyDirectionality: 0.875
+    - _ShorelineFoamMinDepth: 5
+    - _SkyDirectionality: 0.426
     - _Specular: 1
     - _StartLevel: 0.157
     - _StencilFunction: 0
@@ -173,17 +174,17 @@ Material:
     - _Transparency: 1
     - _Underwater: 1
     - _Update: 0.083
-    - _WaveFoamBubblesCoverage: 1.68
+    - _WaveFoamBubblesCoverage: 1.26
     - _WaveFoamBubblesFeather: 0.32
     - _WaveFoamBubblesStart: 0.115
     - _WaveFoamBubblesStrength: 0.637
     - _WaveFoamCoverage: 0.38
-    - _WaveFoamFeather: 0.4
-    - _WaveFoamLightScale: 1.353
-    - _WaveFoamNormalStrength: 3.5
+    - _WaveFoamFeather: 0.567
+    - _WaveFoamLightScale: 0.473
+    - _WaveFoamNormalStrength: 30
     - _WaveFoamNormalsY: 0.253
-    - _WaveFoamSpecularBoost: 0.15
-    - _WaveFoamSpecularFallOff: 293
+    - _WaveFoamSpecularBoost: 16
+    - _WaveFoamSpecularFallOff: 512
     - _WaveFoamStart: 0
     - _WaveFoamStrength: 1
     m_Colors:

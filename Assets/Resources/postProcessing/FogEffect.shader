@@ -22,7 +22,7 @@
 
         
 
-        color.rgb = lerp( color.rgb , float3(1,1,1), saturate(10*pow((LinearEyeDepth(depth)/10000),2)));
+        color.rgb = lerp( color.rgb , float3(1,1,1), saturate(10*pow((LinearEyeDepth(depth)/20000),2)));
 
         return color;
     }
