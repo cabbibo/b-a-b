@@ -786,5 +786,5 @@ Shader "Crest/Ocean"
 	}
 
 	// If the above doesn't work then error.
-	FallBack "Hidden/InternalErrorShader"
+	FallBack "Diffuse"
 }

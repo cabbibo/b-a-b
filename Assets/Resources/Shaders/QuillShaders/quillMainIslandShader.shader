@@ -49,19 +49,6 @@ Shader "Quill/quillMainIslandShader" {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     CGINCLUDE
 
     #include "Lighting.cginc"
