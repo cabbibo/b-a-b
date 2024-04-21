@@ -40,6 +40,8 @@ public class Wren : MonoBehaviour
 
     public WrenMaker maker;
 
+    public WrenReverser revereser;
+
 
     public WrenBeacon beacon;
     public WrenColors colors;
@@ -332,6 +334,12 @@ public class Wren : MonoBehaviour
                 }
 
 
+                if (input.o_dLeft < .5 && input.dLeft > .5)
+                {
+                    print("hey");
+                    revereser.MoveToPrevious();
+                }
+
 
 
 
@@ -443,7 +451,6 @@ public class Wren : MonoBehaviour
 
             carrying.UpdateCarriedItems();
             sounds.UpdateSound();
-            cameraWork.CameraWork();
 
         }
         else
@@ -475,6 +482,16 @@ public class Wren : MonoBehaviour
 
         }
 
+    }
+
+    void LateUpdate()
+    {
+        if (state.isLocal)
+        {
+
+            bird.UpdateBody();
+            cameraWork.CameraWork();
+        }
     }
     void FixedUpdate()
     {
@@ -640,8 +657,8 @@ public class Wren : MonoBehaviour
                 //print(Vector3.Dot(c.impulse.normalized, physics.rb.velocity.normalized));
                 float dot = Vector3.Dot(c.impulse.normalized, physics.oVel.normalized);
 
-                print(dot);
-                print(c.impulse.magnitude);
+                //                print(dot);
+                //                print(c.impulse.magnitude);
                 if (dot < 0)
                 {
                     dot = -dot;
@@ -665,10 +682,14 @@ public class Wren : MonoBehaviour
     {
         print("skim");
 
-        God.audio.Play(God.sounds.skimGroundClip, c.impulse.magnitude / 10f);
-        God.feedbackSystems.skimParticles.transform.position = c.contacts[0].point;
-        God.feedbackSystems.skimParticles.Emit(100);
-        physics.Skim(c);
+        if (!state.onGround)
+        {
+            God.audio.Play(God.sounds.skimGroundClip, c.impulse.magnitude / 10f);
+            God.feedbackSystems.skimParticles.transform.position = c.contacts[0].point;
+            God.feedbackSystems.skimParticles.Emit(100);
+            shards.CollectShards(1000, -1, c.contacts[0].point);
+            physics.Skim(c);
+        }
 
     }
 
@@ -690,8 +711,11 @@ public class Wren : MonoBehaviour
                 carrying.GroundHit(Carryable.DropSettings.FromCrash(c));
             }
 
+            //            print("hit ground");
             if (!inEther)
             {
+
+                //  print("HEY");
                 growth.HurtCollision(c);
             }
 

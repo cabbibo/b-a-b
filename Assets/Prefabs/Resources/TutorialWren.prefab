@@ -26244,6 +26244,7 @@ MonoBehaviour:
   state: {fileID: 9156686790671013125}
   stats: {fileID: 6744424082612651983}
   maker: {fileID: 0}
+  revereser: {fileID: 0}
   beacon: {fileID: 1499124320774614241}
   colors: {fileID: 3856516255870990745}
   waterController: {fileID: 3650603336123196005}
@@ -26379,6 +26380,8 @@ MonoBehaviour:
   fastestBendAngle: 60
   twistLerpSpeed: 0.3
   bendLerpSpeed: 0.3
+  allFeathersMaxSpeed: 0
+  noFeathersMaxSpeed: 0
   maxSpeed: 400
   maxSpeedDamper: 0.1
   baseSpeed: 3
@@ -26881,6 +26884,7 @@ MonoBehaviour:
   satisfiedCutOff: 0
   ultraSatisfiedHealthAdder: 0
   ultraSatisfiedCutOff: 0
+  shardsLostPerHit: 0
 --- !u!114 &6744424082612651983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26895,6 +26899,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   wren: {fileID: 9160943688313912041}
   state: {fileID: 9156686790671013125}
+  cantDie: 1
   health: 0
   stamina: 0
   fullness: 0

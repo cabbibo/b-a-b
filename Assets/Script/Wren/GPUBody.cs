@@ -55,6 +55,7 @@ public class GPUBody : MonoBehaviour
     public void Create()
     {
 
+        print("Create GPUBody");
         meshes = new Mesh[2];
         meshes[0] = scapularFeather;
         meshes[1] = tailFeather;
@@ -79,11 +80,85 @@ public class GPUBody : MonoBehaviour
         lineBuffer = new ComputeBuffer(totalLinePoints, 3 * sizeof(float));
 
         featherBuffer = new ComputeBuffer(totalFeatherPoints, 32 * sizeof(float));
+        // populateFeatherData();
 
 
         populateMeshData();
 
 
+
+    }
+
+    public void populateFeatherData()
+    {
+
+        float[] values = new float[totalFeatherPoints * 32];
+
+
+        // Gets list of IDS
+        List<int> idArray = new List<int>();
+        for (int i = 0; i < totalFeatherPoints; i++)
+        {
+            idArray.Add(i);
+        }
+
+
+
+        for (int i = 0; i < totalFeatherPoints; i++)
+        {
+
+            values[i * 32 + 0] = 0;
+            values[i * 32 + 1] = 0;
+            values[i * 32 + 2] = 0;
+
+            values[i * 32 + 3] = 0;
+            values[i * 32 + 4] = 0;
+            values[i * 32 + 5] = 0;
+
+            values[i * 32 + 6] = 0;
+            values[i * 32 + 7] = 0;
+
+            values[i * 32 + 8] = 0;
+            values[i * 32 + 9] = 0;
+            values[i * 32 + 10] = 0;
+
+            values[i * 32 + 11] = 0;
+            values[i * 32 + 12] = 0;
+            values[i * 32 + 13] = 0;
+
+            values[i * 32 + 14] = 0;
+            values[i * 32 + 15] = 0;
+
+            values[i * 32 + 16] = 0;
+            values[i * 32 + 17] = 0;
+            values[i * 32 + 18] = 0;
+
+            values[i * 32 + 19] = 0;
+            values[i * 32 + 20] = 0;
+            values[i * 32 + 21] = 0;
+
+            values[i * 32 + 22] = 0;
+            values[i * 32 + 23] = 0;
+
+            values[i * 32 + 24] = 0;
+            values[i * 32 + 25] = 0;
+            values[i * 32 + 26] = 0;
+
+            values[i * 32 + 27] = 0;
+            values[i * 32 + 28] = 0;
+            values[i * 32 + 29] = 0;
+
+            values[i * 32 + 30] = 0;
+
+            // for each feather, assign a random ID
+            // then remove it from list so it can't be reassigned
+            int randomID = Random.Range(0, idArray.Count);
+            values[i * 32 + 31] = idArray[randomID];
+            idArray.RemoveAt(randomID);
+
+        }
+
+        featherBuffer.SetData(values);
 
     }
 
@@ -268,6 +343,10 @@ public class GPUBody : MonoBehaviour
         mpb.SetInt("_TrisPerMesh", trisPerMesh);
         mpb.SetInt("_NumberMeshes", meshes.Length);
         mpb.SetInt("_Count", totalLinePoints);
+
+
+        bird.SetBirdParameters(mpb);
+
 
         mpb.SetFloat("_Locked", lockedValue);
 

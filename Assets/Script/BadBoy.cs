@@ -184,6 +184,10 @@ public class BadBoy : MonoBehaviour
 
     public int numShardsOnEat = 2;
     public int numShardsOnAllAte = 50;
+
+
+    // the type of shard we are to eat!
+    public float type = 3;
     public void OnWrenAte(int id)
     {
 
@@ -191,7 +195,7 @@ public class BadBoy : MonoBehaviour
         trailsAte[id] = true;
         God.audio.Play(God.sounds.eatClip, Random.Range(.5f, 1));
         God.particleSystems.Emit(God.particleSystems.eatParticleSystem, trailTransforms[id].position, 100);
-        God.wren.shards.CollectShards(numShardsOnEat);
+        God.wren.shards.CollectShards(numShardsOnEat, type);
 
 
         bool allAte = true;
@@ -219,7 +223,7 @@ public class BadBoy : MonoBehaviour
         God.particleSystems.Emit(God.particleSystems.largeSuccessParticleSystem, transform.position, 1000);
 
 
-        God.wren.shards.CollectShards(numShardsOnAllAte);
+        God.wren.shards.CollectShards(numShardsOnAllAte, type);
     }
 
 

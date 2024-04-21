@@ -54,6 +54,8 @@ public class WrenPhysics : MonoBehaviour
     public float twistLerpSpeed;
     public float bendLerpSpeed;
 
+    public float allFeathersMaxSpeed;
+    public float noFeathersMaxSpeed;
     public float maxSpeed;
 
     public float maxSpeedDamper;
@@ -427,7 +429,7 @@ public class WrenPhysics : MonoBehaviour
     public void HitGround(Collision c)
     {
 
-        print("Hit");
+        //        print("Hit");
 
         //rb.position = rb.position + Vector3.up * 10;
         onGround = true;
@@ -516,6 +518,8 @@ public class WrenPhysics : MonoBehaviour
 
         oVel = vel;
         vel = rb.velocity;
+
+        maxSpeed = Mathf.Lerp(noFeathersMaxSpeed, allFeathersMaxSpeed, wren.shards.bodyPercentage);
 
 
         oTriangle = input.triangle > .5;

@@ -27755,6 +27755,7 @@ MonoBehaviour:
   state: {fileID: 9156686790671013125}
   stats: {fileID: 6744424082612651983}
   maker: {fileID: 0}
+  revereser: {fileID: 0}
   beacon: {fileID: 1499124320774614241}
   colors: {fileID: 3856516255870990745}
   waterController: {fileID: 3650603336123196005}
@@ -27890,6 +27891,8 @@ MonoBehaviour:
   fastestBendAngle: 22.5
   twistLerpSpeed: 0.8
   bendLerpSpeed: 0.8
+  allFeathersMaxSpeed: 0
+  noFeathersMaxSpeed: 0
   maxSpeed: 35
   maxSpeedDamper: 0.005
   baseSpeed: 2
@@ -28394,6 +28397,7 @@ MonoBehaviour:
   satisfiedCutOff: 0.5
   ultraSatisfiedHealthAdder: 0.001
   ultraSatisfiedCutOff: 0.9
+  shardsLostPerHit: 0
 --- !u!114 &6744424082612651983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28408,6 +28412,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   wren: {fileID: 9160943688313912041}
   state: {fileID: 9156686790671013125}
+  cantDie: 1
   health: 0
   stamina: 0
   fullness: 0
@@ -28461,7 +28466,16 @@ MonoBehaviour:
   wren: {fileID: 0}
   fullBird: {fileID: 0}
   numShardsInBody: 0
-  oShards: 0
+  oNumShards: 0
+  tmpNumShards: 0
+  collectPosition: {x: 0, y: 0, z: 0}
+  collectType: 0
+  lostPerCrash: 0
+  gainedPerSkim: 0
+  gainedWhileClose: 0
+  boostNumLost: 0
+  reverseNumLost: 0
+  callNumLost: 0
   bodyPercentage: 0
   shardPercentage: 0
   shardTrailPercentage: 0

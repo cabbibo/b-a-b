@@ -14,6 +14,11 @@ public class Shard : MonoBehaviour
     public GameObject Uncollected;
     public GameObject Collected;
 
+    public Transform collectionPosition;
+
+
+    public float type;
+
 
 
     // Start is called before the first frame update
@@ -32,13 +37,13 @@ public class Shard : MonoBehaviour
     {
         if (collected)
         {
-            Collected.SetActive(true);
-            Uncollected.SetActive(false);
+            if (Collected != null) Collected.SetActive(true);
+            if (Uncollected != null) Uncollected.SetActive(false);
         }
         else
         {
-            Collected.SetActive(false);
-            Uncollected.SetActive(true);
+            if (Collected != null) Collected.SetActive(false);
+            if (Uncollected != null) Uncollected.SetActive(true);
         }
     }
 
@@ -50,11 +55,15 @@ public class Shard : MonoBehaviour
         {
 
             print("LFG");
-            God.wren.shards.CollectShards(ShardsToAdd);
-            God.particleSystems.Emit(God.particleSystems.shardCollect, transform.position, ShardsToAdd);
+
+            Vector3 collectPosition = transform.position;
+            if (collectionPosition != null) collectPosition = collectionPosition.position;
+            God.wren.shards.CollectShards(ShardsToAdd, type, collectPosition);
+            God.particleSystems.Emit(God.particleSystems.shardCollect, collectPosition, ShardsToAdd);
             collected = true;
-            Collected.SetActive(true);
-            Uncollected.SetActive(false);
+
+            if (Collected != null) Collected.SetActive(true);
+            if (Uncollected != null) Uncollected.SetActive(false);
 
 
             if (destroyOnCollect)

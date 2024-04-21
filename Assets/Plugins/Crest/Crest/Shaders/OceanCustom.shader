@@ -253,89 +253,150 @@ Shader "Crest/OceanCustom"
             {
                 // We need this when sampling a screenspace texture.
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+                
 
+
+
+
+
+
+
+
+                /*
+
+                CLIP SURFACE 
+
+                */
+
+                //clipsurface means that the ocean surface is clipped by the water depth??? GPT
+                
                 #if _CLIPSURFACE_ON
+                {
+                    // Clip surface
+                    half clipValue = 0.0;
+
+                    uint slice0; uint slice1; float alpha;
+                    // Do not include transition slice to avoid blending as we do a black border instead.
+                    PosToSliceIndices(input.worldPos.xz, 0, _SliceCount - 1.0, _CrestCascadeData[0]._scale, slice0, slice1, alpha);
+
+                    const CascadeParams cascadeData0 = _CrestCascadeData[slice0];
+                    const CascadeParams cascadeData1 = _CrestCascadeData[slice1];
+                    const float weight0 = (1.0 - alpha) * cascadeData0._weight;
+                    const float weight1 = (1.0 - weight0) * cascadeData1._weight;
+
+                    bool clear = false;
+                    if (weight0 > 0.001)
                     {
-                        // Clip surface
-                        half clipValue = 0.0;
+                        const float3 uv = WorldToUV(input.worldPos.xz, cascadeData0, slice0);
+                        SampleClip(_LD_TexArray_ClipSurface, uv, weight0, clipValue);
 
-                        uint slice0; uint slice1; float alpha;
-                        // Do not include transition slice to avoid blending as we do a black border instead.
-                        PosToSliceIndices(input.worldPos.xz, 0, _SliceCount - 1.0, _CrestCascadeData[0]._scale, slice0, slice1, alpha);
-
-                        const CascadeParams cascadeData0 = _CrestCascadeData[slice0];
-                        const CascadeParams cascadeData1 = _CrestCascadeData[slice1];
-                        const float weight0 = (1.0 - alpha) * cascadeData0._weight;
-                        const float weight1 = (1.0 - weight0) * cascadeData1._weight;
-
-                        bool clear = false;
-                        if (weight0 > 0.001)
+                        if ((float)_LD_SliceIndex == _SliceCount - 1.0 && IsOutsideOfUV(uv.xy, cascadeData0._oneOverTextureRes))
                         {
-                            const float3 uv = WorldToUV(input.worldPos.xz, cascadeData0, slice0);
-                            SampleClip(_LD_TexArray_ClipSurface, uv, weight0, clipValue);
-
-                            if ((float)_LD_SliceIndex == _SliceCount - 1.0 && IsOutsideOfUV(uv.xy, cascadeData0._oneOverTextureRes))
-                            {
-                                clear = true;
-                            }
+                            clear = true;
                         }
-                        if (weight1 > 0.001)
-                        {
-                            const float3 uv = WorldToUV(input.worldPos.xz, cascadeData1, slice1);
-                            SampleClip(_LD_TexArray_ClipSurface, uv, weight1, clipValue);
-                        }
-
-                        if (clear)
-                        {
-                            clipValue = _CrestClipByDefault;
-                        }
-
-                        clipValue = lerp(_CrestClipByDefault, clipValue, weight0 + weight1);
-                        // Add 0.5 bias to tighten and smooth clipped edges.
-                        clip(-clipValue + 0.5);
                     }
+                    if (weight1 > 0.001)
+                    {
+                        const float3 uv = WorldToUV(input.worldPos.xz, cascadeData1, slice1);
+                        SampleClip(_LD_TexArray_ClipSurface, uv, weight1, clipValue);
+                    }
+
+                    if (clear)
+                    {
+                        clipValue = _CrestClipByDefault;
+                    }
+
+                    clipValue = lerp(_CrestClipByDefault, clipValue, weight0 + weight1);
+                    // Add 0.5 bias to tighten and smooth clipped edges.
+                    clip(-clipValue + 0.5);
+                }
                 #endif // _CLIPSURFACE_ON
+
+
+
+
+
+
+
+
+                /*
+
+                Cascade Data
+
+                */
+
 
                 const CascadeParams cascadeData0 = _CrestCascadeData[_LD_SliceIndex];
                 const CascadeParams cascadeData1 = _CrestCascadeData[_LD_SliceIndex + 1];
                 const PerCascadeInstanceData instanceData = _CrestPerCascadeInstanceData[_LD_SliceIndex];
 
+
+
+
+                /*
+
+                Checks if underwater
+                */
+
+
                 #if _UNDERWATER_ON
-                    const bool underwater = IsUnderwater(i_isFrontFace, _CrestForceUnderwater);
+                const bool underwater = IsUnderwater(i_isFrontFace, _CrestForceUnderwater);
                 #else
-                    const bool underwater = false;
+                const bool underwater = false;
                 #endif
+
+
+
+
+                // LOD Weights
 
                 const float lodAlpha = input.lodAlpha_worldXZUndisplaced_oceanDepth.x;
                 const float2 positionXZWSUndisplaced = input.lodAlpha_worldXZUndisplaced_oceanDepth.yz;
                 const float wt_smallerLod = (1.0 - lodAlpha) * cascadeData0._weight;
                 const float wt_biggerLod = (1.0 - wt_smallerLod) * cascadeData1._weight;
 
+
+
+                // SCreen position
                 half3 screenPos = input.screenPosXYW;
                 half2 uvDepth = screenPos.xy / screenPos.z;
 
+
+
+
+
                 #if CREST_WATER_VOLUME
-                    ApplyVolumeToOceanSurface(input.positionCS);
+                //ApplyVolumeToOceanSurface(input.positionCS);
                 #endif
+
 
                 #if _CLIPUNDERTERRAIN_ON
-                    clip(input.lodAlpha_worldXZUndisplaced_oceanDepth.w + 2.0);
+                clip(input.lodAlpha_worldXZUndisplaced_oceanDepth.w + 2.0);
                 #endif
 
+
+
+
+
+                // view position
                 half3 view = normalize(_WorldSpaceCameraPos - input.worldPos);
 
                 // water surface depth, and underlying scene opaque surface depth
                 float pixelZ = CrestLinearEyeDepth(input.positionCS.z);
+
                 // Raw depth is logarithmic for perspective, and linear (0-1) for orthographic.
                 float rawDepth = CREST_SAMPLE_SCENE_DEPTH_X(uvDepth);
+
+                // scene depth
                 float sceneZ = CrestLinearEyeDepth(rawDepth);
 
+                // getting light direction and color
                 float3 lightDir = WaveHarmonic::Crest::WorldSpaceLightDir(input.worldPos);
                 half3 lightCol = _LightColor0;
                 // Soft shadow, hard shadow
                 fixed2 shadow = (fixed2)1.0
                 #if _SHADOWS_ON
-                    - input.flow_shadow.zw
+                - input.flow_shadow.zw
                 #endif
                 ;
 
@@ -344,10 +405,10 @@ Shader "Crest/OceanCustom"
                 float3 n_pixel = float3(0.0, 1.0, 0.0);
                 half sss = 0.;
                 #if _FOAM_ON
-                    float foam = 0.0;
+                float foam = 0.0;
                 #endif
                 #if _ALBEDO_ON
-                    half4 albedo = 0.0;
+                half4 albedo = 0.0;
                 #endif
                 if (wt_smallerLod > 0.001)
                 {
@@ -355,11 +416,11 @@ Shader "Crest/OceanCustom"
                     SampleDisplacementsNormals(_LD_TexArray_AnimatedWaves, uv_slice_smallerLod, wt_smallerLod, cascadeData0._oneOverTextureRes, cascadeData0._texelWidth, dummy, n_pixel.xz, sss);
 
                     #if _FOAM_ON
-                        SampleFoam(_LD_TexArray_Foam, uv_slice_smallerLod, wt_smallerLod, foam);
+                    SampleFoam(_LD_TexArray_Foam, uv_slice_smallerLod, wt_smallerLod, foam);
                     #endif
 
                     #if _ALBEDO_ON
-                        SampleAlbedo(_LD_TexArray_Albedo, uv_slice_smallerLod, wt_smallerLod, albedo);
+                    SampleAlbedo(_LD_TexArray_Albedo, uv_slice_smallerLod, wt_smallerLod, albedo);
                     #endif
                 }
                 if (wt_biggerLod > 0.001)
@@ -368,28 +429,28 @@ Shader "Crest/OceanCustom"
                     SampleDisplacementsNormals(_LD_TexArray_AnimatedWaves, uv_slice_biggerLod, wt_biggerLod, cascadeData1._oneOverTextureRes, cascadeData1._texelWidth, dummy, n_pixel.xz, sss);
 
                     #if _FOAM_ON
-                        SampleFoam(_LD_TexArray_Foam, uv_slice_biggerLod, wt_biggerLod, foam);
+                    SampleFoam(_LD_TexArray_Foam, uv_slice_biggerLod, wt_biggerLod, foam);
                     #endif
 
                     #if _ALBEDO_ON
-                        SampleAlbedo(_LD_TexArray_Albedo, uv_slice_biggerLod, wt_biggerLod, albedo);
+                    SampleAlbedo(_LD_TexArray_Albedo, uv_slice_biggerLod, wt_biggerLod, albedo);
                     #endif
                 }
 
                 #if _SUBSURFACESCATTERING_ON
-                    // Extents need the default SSS to avoid popping and not being noticeably different.
-                    if (_LD_SliceIndex == ((uint)_SliceCount - 1))
-                    {
-                        sss = CREST_SSS_MAXIMUM - CREST_SSS_RANGE;
-                    }
+                // Extents need the default SSS to avoid popping and not being noticeably different.
+                if (_LD_SliceIndex == ((uint)_SliceCount - 1))
+                {
+                    sss = CREST_SSS_MAXIMUM - CREST_SSS_RANGE;
+                }
                 #endif
 
                 #if _APPLYNORMALMAPPING_ON
-                    #if _FLOW_ON
-                        ApplyNormalMapsWithFlow(_NormalsTiledTexture, positionXZWSUndisplaced, input.flow_shadow.xy, lodAlpha, cascadeData0, instanceData, n_pixel);
-                    #else
-                        n_pixel.xz += SampleNormalMaps(_NormalsTiledTexture, positionXZWSUndisplaced, 0.0, lodAlpha, cascadeData0, instanceData);
-                    #endif
+                #if _FLOW_ON
+                ApplyNormalMapsWithFlow(_NormalsTiledTexture, positionXZWSUndisplaced, input.flow_shadow.xy, lodAlpha, cascadeData0, instanceData, n_pixel);
+                #else
+                n_pixel.xz += SampleNormalMaps(_NormalsTiledTexture, positionXZWSUndisplaced, 0.0, lodAlpha, cascadeData0, instanceData);
+                #endif
                 #endif
 
                 n_pixel.xz += float2(-input.seaLevelDerivs.x, -input.seaLevelDerivs.y);
@@ -402,51 +463,51 @@ Shader "Crest/OceanCustom"
                 // Foam - underwater bubbles and whitefoam
                 half3 bubbleCol = (half3)0.;
                 #if _FOAM_ON
-                    // Foam can saturate.
-                    foam = saturate(foam);
+                // Foam can saturate.
+                foam = saturate(foam);
 
-                    half4 whiteFoamCol;
-                    #if !_FLOW_ON
-                        ComputeFoam
-                        (
-                        _FoamTiledTexture,
-                        foam,
-                        input.worldPos.xz,
-                        positionXZWSUndisplaced,
-                        0.0, // Flow
-                        n_pixel,
-                        pixelZ,
-                        sceneZ,
-                        view,
-                        lightDir,
-                        shadow.y,
-                        lodAlpha,
-                        bubbleCol,
-                        whiteFoamCol,
-                        cascadeData0,
-                        cascadeData1
-                        );
-                    #else
-                        ComputeFoamWithFlow
-                        (
-                        _FoamTiledTexture,
-                        input.flow_shadow.xy,
-                        foam,
-                        positionXZWSUndisplaced,
-                        input.worldPos.xz,
-                        n_pixel,
-                        pixelZ,
-                        sceneZ,
-                        view,
-                        lightDir,
-                        shadow.y,
-                        lodAlpha,
-                        bubbleCol,
-                        whiteFoamCol,
-                        cascadeData0,
-                        cascadeData1
-                        );
-                    #endif // _FLOW_ON
+                half4 whiteFoamCol;
+                #if !_FLOW_ON
+                ComputeFoam
+                (
+                _FoamTiledTexture,
+                foam,
+                input.worldPos.xz,
+                positionXZWSUndisplaced,
+                0.0, // Flow
+                n_pixel,
+                pixelZ,
+                sceneZ,
+                view,
+                lightDir,
+                shadow.y,
+                lodAlpha,
+                bubbleCol,
+                whiteFoamCol,
+                cascadeData0,
+                cascadeData1
+                );
+                #else
+                ComputeFoamWithFlow
+                (
+                _FoamTiledTexture,
+                input.flow_shadow.xy,
+                foam,
+                positionXZWSUndisplaced,
+                input.worldPos.xz,
+                n_pixel,
+                pixelZ,
+                sceneZ,
+                view,
+                lightDir,
+                shadow.y,
+                lodAlpha,
+                bubbleCol,
+                whiteFoamCol,
+                cascadeData0,
+                cascadeData1
+                );
+                #endif // _FLOW_ON
                 #endif // _FOAM_ON
 
                 // Compute color of ocean - in-scattered light + refracted scene
@@ -454,13 +515,13 @@ Shader "Crest/OceanCustom"
                 (
                 input.lodAlpha_worldXZUndisplaced_oceanDepth.w,
                 #if defined(CREST_UNDERWATER_BEFORE_TRANSPARENT) && defined(_SHADOWS_ON)
-                    underwater ? UnderwaterShadowSSS(_WorldSpaceCameraPos.xz) :
+                underwater ? UnderwaterShadowSSS(_WorldSpaceCameraPos.xz) :
                 #endif
                 shadow.x,
                 sss,
                 view,
                 #if CREST_UNDERWATER_BEFORE_TRANSPARENT
-                    underwater ? _CrestAmbientLighting :
+                underwater ? _CrestAmbientLighting :
                 #endif
                 WaveHarmonic::Crest::AmbientLight(),
                 lightDir,
@@ -490,21 +551,21 @@ Shader "Crest/OceanCustom"
 
                 // Soften reflection at intersections with objects/surfaces
                 #if _TRANSPARENCY_ON
-                    // Above water depth outline is handled in OceanEmission.
-                    sceneZ = (underwater ? CrestLinearEyeDepth(CREST_MULTISAMPLE_SCENE_DEPTH(uvDepth, rawDepth)) : sceneZ);
-                    float reflAlpha = saturate((sceneZ  - pixelZ) / 0.2);
+                // Above water depth outline is handled in OceanEmission.
+                sceneZ = (underwater ? CrestLinearEyeDepth(CREST_MULTISAMPLE_SCENE_DEPTH(uvDepth, rawDepth)) : sceneZ);
+                float reflAlpha = saturate((sceneZ  - pixelZ) / 0.2);
                 #else
-                    // This addresses the problem where screenspace depth doesnt work in VR, and so neither will this. In VR people currently
-                    // disable transparency, so this will always be 1.0.
-                    float reflAlpha = 1.0;
+                // This addresses the problem where screenspace depth doesnt work in VR, and so neither will this. In VR people currently
+                // disable transparency, so this will always be 1.0.
+                float reflAlpha = 1.0;
                 #endif
 
                 #if _UNDERWATER_ON
-                    if (underwater)
-                    {
-                        ApplyReflectionUnderwater(view, n_pixel, lightDir, shadow.y, screenPos.xyzz, scatterCol, reflAlpha, col);
-                    }
-                    else
+                if (underwater)
+                {
+                    ApplyReflectionUnderwater(view, n_pixel, lightDir, shadow.y, screenPos.xyzz, scatterCol, reflAlpha, col);
+                }
+                else
                 #endif
                 {
                     ApplyReflectionSky(view, n_pixel, lightDir, shadow.y, screenPos.xyzz, pixelZ, reflAlpha, col);
@@ -512,22 +573,22 @@ Shader "Crest/OceanCustom"
 
                 // Override final result with white foam - bubbles on surface
                 #if _FOAM_ON
-                    col = lerp(col, whiteFoamCol.rgb, whiteFoamCol.a);
+                col = lerp(col, whiteFoamCol.rgb, whiteFoamCol.a);
                 #endif
 
                 // Composite albedo input on top
                 #if _ALBEDO_ON
-                    col = lerp(col, albedo.xyz, albedo.w * reflAlpha);
+                col = lerp(col, albedo.xyz, albedo.w * reflAlpha);
                 #endif
                 
 
                 
                 #if CREST_UNDERWATER_BEFORE_TRANSPARENT
-                    else
-                    {
-                        // underwater - do depth fog
-                        col = lerp(col, scatterCol, saturate(1. - exp(-_DepthFogDensity.xyz * pixelZ)));
-                    }
+                else
+                {
+                    // underwater - do depth fog
+                    col = lerp(col, scatterCol, saturate(1. - exp(-_DepthFogDensity.xyz * pixelZ)));
+                }
                 #endif
 
                 
@@ -542,10 +603,78 @@ Shader "Crest/OceanCustom"
 
                 float3 eyeMatch = dot( normalize(eye),normal);
                 
-                col = 1-eyeMatch;//bubbleCol + whiteFoamCol;
+                /* col = 1-eyeMatch;//bubbleCol + whiteFoamCol;
                 col = sin(input.positionCS);
+                col = 0;
+                col.x = sin( input.worldPos.x * 1.0);
+                col.z = sin( input.worldPos.z * 1.0);
+
+
+
+                //lodAlpha;
+                //positionXZWSUndisplaced;
+                //wt_smallerLod;
+                //wt_biggerLod;
+
+
+                //  col = lerp(0, 10, whiteFoamCol.a);
+                // col = normal * .5 + .5;
+
                 col = normal * .5 + .5;
-                //col = sceneZ;//whiteFoamCol * whiteFoamCol.a;
+
+                col = 1-pow( dot( normal , _WorldSpaceLightPos0),4) * 1000;
+                col =pow( dot( normal , _WorldSpaceLightPos0),4);*/
+
+
+
+                //                col = albedo;
+                
+                /* 
+
+                view,
+                n_pixel,
+                lightDir,
+                input.grabPos,
+                pixelZ,
+                input.positionCS.z,
+                uvDepth,
+                input.positionCS.xy,
+                sceneZ,
+                rawDepth,
+                bubbleCol,
+                underwater,
+                scatterCol,
+                cascadeData0,
+                cascadeData1
+                
+                */
+                
+                col = rawDepth * 100;
+
+                col = bubbleCol;
+                col = underwater ? 1 : 0;
+                col = scatterCol; // how are we getting this? can we make more expensive but do got rays?
+                col = cascadeData0._weight;
+                col = 0;
+                col.xy= sin(10*uvDepth);
+                col = input.grabPos;
+                col = lightDir;
+
+                float3 refl = normalize(reflect( _WorldSpaceLightPos0, normal));
+
+                float reflMatch = dot( refl, -normalize(eye));
+
+                col = saturate(pow( reflMatch, 1000) * 4);
+
+                float rim = 1-saturate(dot( normal, normalize(eye)));
+
+                //col += saturate( pow( rim , 30) * 1);
+
+                //                col = foam;
+                
+
+
+                
                 return half4(col, 1.);
             }
 
@@ -634,7 +763,7 @@ Shader "Crest/OceanCustom"
                 
                 int instanceID = 0;
                 #if defined(UNITY_INSTANCING_ENABLED)
-                    instanceID = UNITY_GET_INSTANCE_ID(vert);
+                instanceID = UNITY_GET_INSTANCE_ID(vert);
                 #endif
 
 

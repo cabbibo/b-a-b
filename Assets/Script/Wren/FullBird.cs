@@ -300,11 +300,69 @@ public class FullBird : MonoBehaviour
 
       totalShards = body_gpu.totalFeatherPoints + leftWing_gpu.totalFeathers + rightWing_gpu.totalFeathers;
 
+
+      SetRandomIDs();
       ResetFeatherValues();
       SetMaterialProperties();
 
 
    }
+
+
+   void SetRandomIDs()
+   {
+
+
+      // Gets list of IDS
+      List<int> idArray = new List<int>();
+      for (int i = 0; i < totalShards; i++)
+      {
+         idArray.Add(i);
+      }
+
+
+      float[] values = new float[32 * leftWing_gpu.totalFeathers];
+      for (int i = 0; i < leftWing_gpu.totalFeathers; i++)
+      {
+
+         int randomID = Random.Range(0, idArray.Count);
+         values[i * 32 + 31] = (float)idArray[randomID];
+         idArray.RemoveAt(randomID);
+
+      }
+
+      leftWing_gpu.featherBuffer.SetData(values);
+
+      values = new float[32 * rightWing_gpu.totalFeathers];
+      for (int i = 0; i < rightWing_gpu.totalFeathers; i++)
+      {
+
+         int randomID = Random.Range(0, idArray.Count);
+         values[i * 32 + 31] = (float)idArray[randomID];
+         idArray.RemoveAt(randomID);
+      }
+
+      rightWing_gpu.featherBuffer.SetData(values);
+
+
+      values = new float[body_gpu.totalFeatherPoints * 32];
+
+      for (int i = 0; i < body_gpu.totalFeatherPoints; i++)
+      {
+
+         int randomID = Random.Range(0, idArray.Count);
+         values[i * 32 + 31] = idArray[randomID];
+         idArray.RemoveAt(randomID);
+      }
+
+      body_gpu.featherBuffer.SetData(values);
+
+
+
+
+   }
+
+
 
    void OnDisable()
    {
@@ -324,7 +382,7 @@ public class FullBird : MonoBehaviour
    }
 
    // Update is called once per frame
-   void FixedUpdate()
+   public void UpdateBody()
    {
 
       leftWing.limbLengths[0] = wren._ScaleMultiplier * chestToShoulder;
@@ -380,7 +438,6 @@ public class FullBird : MonoBehaviour
       rightWing_gpu.lockedValue = _LockedValue;
       body_gpu.lockedValue = _LockedValue;
 
-
       leftWing_gpu.UpdateFeathers();
       rightWing_gpu.UpdateFeathers();
       body_gpu.UpdateFeathers();
@@ -407,8 +464,6 @@ public class FullBird : MonoBehaviour
       }
 
 
-      SetUpDebug();
-      SetUpDraw();
 
    }
 
@@ -416,19 +471,19 @@ public class FullBird : MonoBehaviour
    {
 
 
-      leftWing.UpdatePositions();
-      rightWing.UpdatePositions();
-      tail.UpdatePositions();
+      // leftWing.UpdatePositions();
+      //rightWing.UpdatePositions();
+      //tail.UpdatePositions();
 
 
-      body_gpu.UpdateFeathers();
+      //body_gpu.UpdateFeathers();
+      //leftWing_gpu.UpdateFeathers();
+      //rightWing_gpu.UpdateFeathers();
+
+      SetUpDebug();
+      SetUpDraw();
       body_gpu.DrawFeathers();
-
-
-      leftWing_gpu.UpdateFeathers();
       leftWing_gpu.DrawFeathers();
-
-      rightWing_gpu.UpdateFeathers();
       rightWing_gpu.DrawFeathers();
 
 
@@ -569,8 +624,8 @@ public class FullBird : MonoBehaviour
       _ExplosionVector = c.impulse;
 
 
-      print(c.impulse);
-      print(wren.physics.vel);
+      //      print(c.impulse);
+      //      print(wren.physics.vel);
 
       leftWing_gpu.UpdateFeathers();
       rightWing_gpu.UpdateFeathers();
@@ -687,6 +742,8 @@ public class FullBird : MonoBehaviour
       shader.SetFloat("_BaseTailFeatherScale", wren._ScaleMultiplier * _BaseTailFeatherScale);
 
 
+      shader.SetVector("_WrenVel", wren.physics.vel);
+
       shader.SetFloat("_LockStartTime", _LockStartTime);
       shader.SetFloat("_Locked", _LockedValue);
       shader.SetFloat("_Explosion", _ExplosionValue);
@@ -701,6 +758,13 @@ public class FullBird : MonoBehaviour
 
       shader.SetFloat("_Locked", _LockedValue);
 
+      shader.SetFloat("_TotalShardsInBody", totalShards);
+      shader.SetFloat("_ONumShards", wren.shards.oNumShards);
+      shader.SetFloat("_NumShards", wren.shards.numShards);
+      shader.SetFloat("_TmpNumShards", wren.shards.tmpNumShards);
+
+      shader.SetVector("_CollectionPosition", wren.shards.collectPosition);
+      shader.SetFloat("_CollectionType", wren.shards.collectType);
 
 
       shader.SetInt("_NumPrimaryFeathers", _NumPrimaryFeathers);
@@ -713,6 +777,7 @@ public class FullBird : MonoBehaviour
       shader.SetFloat("_DT", Time.deltaTime);
 
 
+
    }
 
 
@@ -720,6 +785,7 @@ public class FullBird : MonoBehaviour
    public void SetBirdParameters(MaterialPropertyBlock shader)
    {
 
+      // print(shader);
 
 
       /*
@@ -762,6 +828,7 @@ public class FullBird : MonoBehaviour
       shader.SetFloat("_ScaleMultiplier", wren._ScaleMultiplier);
 
 
+      shader.SetVector("_WrenVel", wren.physics.vel);
       shader.SetFloat("_VortexInForce", _VortexInForce);
       shader.SetFloat("_VortexCurlForce", _VortexCurlForce);
       shader.SetFloat("_VortexNoiseForce", _VortexNoiseForce);
@@ -806,6 +873,7 @@ public class FullBird : MonoBehaviour
 
       shader.SetFloat("_Locked", _LockedValue);
 
+      shader.SetFloat("_BodyShardPercentage", wren.shards.bodyPercentage);
 
 
       shader.SetInt("_NumPrimaryFeathers", _NumPrimaryFeathers);
@@ -816,6 +884,15 @@ public class FullBird : MonoBehaviour
 
       shader.SetFloat("_Time", Time.time);
       shader.SetFloat("_DT", Time.deltaTime);
+
+      shader.SetFloat("_TotalShardsInBody", totalShards);
+      shader.SetFloat("_ONumShards", wren.shards.oNumShards);
+      shader.SetFloat("_NumShards", wren.shards.numShards);
+      shader.SetFloat("_TmpNumShards", wren.shards.tmpNumShards);
+
+      shader.SetVector("_CollectionPosition", wren.shards.collectPosition);
+      shader.SetFloat("_CollectionType", wren.shards.collectType);
+      //      print(wren.shards.numShards);
 
 
    }

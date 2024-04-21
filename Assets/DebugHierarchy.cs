@@ -29,7 +29,12 @@ public class DebugHierarchy : MonoBehaviour
     public bool debugConnections;
     public bool debugBasis;
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
+    {
+
+    }
+
+    public void SetUpConnections()
     {
 
         if (debugConnections || debugBasis)
@@ -48,35 +53,47 @@ public class DebugHierarchy : MonoBehaviour
                 return;
             }
 
-            if (mpb == null)
-            {
-                mpb = new MaterialPropertyBlock();
-            }
 
-            if (matrixMPB == null)
-            {
-                matrixMPB = new MaterialPropertyBlock();
-            }
 
 
             _connectionsBuffer.SetData(connections);
 
-            if (debugConnections)
-            {
 
-                mpb.SetInt("_Count", connections.Length);
-                mpb.SetBuffer("_TransformBuffer", _buffer);
-                mpb.SetBuffer("_ConnectionBuffer", _connectionsBuffer);
-                Graphics.DrawProcedural(connectionsMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, connections.Length * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-            }
 
-            if (debugBasis)
-            {
-                matrixMPB.SetInt("_Count", transforms.Length);
-                matrixMPB.SetBuffer("_TransformBuffer", _buffer);
-                Graphics.DrawProcedural(matrixMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, transforms.Length * 3 * 2 * 3, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
-            }
+        }
 
+    }
+
+    void LateUpdate()
+    {
+
+
+        SetUpConnections();
+        if (mpb == null)
+        {
+            mpb = new MaterialPropertyBlock();
+        }
+
+
+        if (matrixMPB == null)
+        {
+            matrixMPB = new MaterialPropertyBlock();
+        }
+
+        if (debugConnections)
+        {
+
+            mpb.SetInt("_Count", connections.Length);
+            mpb.SetBuffer("_TransformBuffer", _buffer);
+            mpb.SetBuffer("_ConnectionBuffer", _connectionsBuffer);
+            Graphics.DrawProcedural(connectionsMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, connections.Length * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+        }
+
+        if (debugBasis)
+        {
+            matrixMPB.SetInt("_Count", transforms.Length);
+            matrixMPB.SetBuffer("_TransformBuffer", _buffer);
+            Graphics.DrawProcedural(matrixMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, transforms.Length * 3 * 2 * 3, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
         }
     }
 

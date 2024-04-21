@@ -9,6 +9,8 @@ public class WrenStats : MonoBehaviour
     public Wren wren;
     public WrenState state;
 
+    public bool cantDie = true;
+
 
     public float health; // this goes to 0 and you die
     public float stamina; // this goes to 0 you can't flap? also your health starts going down?
@@ -50,7 +52,7 @@ public class WrenStats : MonoBehaviour
         }
 
 
-        if (health < 0)
+        if (health < 0 && !cantDie)
         {
             state.OnDie();
         }

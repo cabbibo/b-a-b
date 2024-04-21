@@ -1,0 +1,209 @@
+﻿#pragma kernel Flow
+
+struct Vert{
+    float3 pos;
+    float3 vel;
+    float3 nor;
+    float3 ogPos;
+    float3 axis;
+    float life;
+};
+
+
+
+RWStructuredBuffer<Vert> _VertBuffer;
+RWStructuredBuffer<float3> _TrailBuffer;
+
+int _VertBuffer_COUNT;
+int _TrailBuffer_COUNT;
+
+#include "../../Chunks/safeID.cginc"
+#include "../../Chunks/snoise.cginc"
+#include "../../Chunks/hash.cginc"
+#include "../../Chunks/curlNoise.cginc"
+#include "../../Chunks/ParticleAxisHelpers.cginc"
+
+
+float3 _Chest;
+
+float4x4 _WorldToLocal;
+
+float3 getTrailPos(int id){
+    // return mul( _WorldToLocal , float4(_TrailBuffer[ safeID( id , _TrailBuffer_COUNT) ],1) );
+    return  _TrailBuffer[ safeID( id , _TrailBuffer_COUNT) ];
+
+}
+
+
+#include "../../Chunks/cubicCurve.cginc"
+float3 cubicFromValue( in float val , out float3 upPos , out float3 doPos ){
+
+    float3 p0 = float3( 0. , 0. , 0. );
+    float3 v0 = float3( 0. , 0. , 0. );
+    float3 p1 = float3( 0. , 0. , 0. );
+    float3 v1 = float3( 0. , 0. , 0. );
+
+    float3 p2 = float3( 0. , 0. , 0. );
+
+    float vPP = float(_TrailBuffer_COUNT);
+
+    float base = val * (vPP-1);
+
+    int baseUp   = floor( base );
+    int baseDown = ceil( base );
+    float amount = base - float(baseUp);
+
+
+
+    if( baseUp == 0 ){
+
+        p0 = getTrailPos( baseUp );
+        p1 = getTrailPos( baseDown     );
+        p2 = getTrailPos( baseDown + 1 );
+
+
+
+
+        v1 = .5 * ( p2 - p0 );
+
+        }else if( baseDown == vPP-1 ){
+
+        p0 = getTrailPos( baseUp     );
+        p1 = getTrailPos( baseDown   );
+        p2 = getTrailPos( baseUp - 1 );
+
+        v0 = .5 * ( p1 - p2 );
+
+        }else{
+
+        p0 = getTrailPos( baseUp   );
+        p1 = getTrailPos( baseDown );
+
+
+        float3 pMinus = float3(0,0,0);
+
+        pMinus = getTrailPos( baseUp   - 1 );
+        p2 =     getTrailPos( baseDown + 1 );
+
+        v1 = .5 * ( p2 - p0 );
+        v0 = .5 * ( p1 - pMinus );
+
+    }
+
+    float3 c0 = p0;
+    float3 c1 = p0 + v0/3.;
+    float3 c2 = p1 - v1/3.;
+    float3 c3 = p1;
+
+    float3 pos = cubicCurve( amount , c0 , c1 , c2 , c3 );
+
+    upPos = cubicCurve( amount  + .01 , c0 , c1 , c2 , c3 );
+    doPos = cubicCurve( amount  - .01 , c0 , c1 , c2 , c3 );
+
+    return pos;
+
+}
+
+int _TotalShardsInBody;
+int _ONumShards;
+int _NumShards;
+int _TmpNumShards;
+
+float _Reset;
+
+float3 _CollectionPosition;
+float _CollectionType;
+
+float3 _WrenVel;
+float3 _WrenPos;
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Flow(uint3 id : SV_DispatchThreadID) {
+    int pID = id.x;
+    pID = safeID(pID,_VertBuffer_COUNT);
+    Vert vert = _VertBuffer[pID];
+
+
+    int trailShardID = _NumShards - _TotalShardsInBody;
+    int tTrailShardID = _TmpNumShards - _TotalShardsInBody;
+
+    if( pID < trailShardID ){
+
+
+
+        float3 upPos;
+        float3 doPos;
+
+
+
+        float3 cubicPos = cubicFromValue( float(pID)/float(_VertBuffer_COUNT), upPos , doPos );
+
+        if( pID > tTrailShardID){
+
+            float3 offset = hash(float(pID) * 0.1) * float3(1,0,0) *2
+            + hash(float(pID) * 11) * float3(0,1,0) *2
+            + hash(float(pID) * 3) * float3(0,0,1) *2;
+            
+
+            offset = (normalize(offset) -.5) * 2;
+            vert.pos = _CollectionPosition + offset;
+
+            vert.vel  = offset * 4 * .01 + _WrenVel * .03;
+            
+            vert.life = _CollectionType;
+        }
+
+        if( _Reset > .5 ){
+
+            vert.pos = _WrenPos;
+        }
+
+
+        float3 force = 0;
+        float3 pos = vert.pos;
+
+        float3 diff = cubicPos - pos;
+
+        force += _WrenVel * .8;
+        
+
+        if( length(diff) > 1 ){
+
+            force += normalize(diff) * 40;
+            
+        }
+
+        //force += hash(float(pID) * 0.1) * float3(0,1,0);
+        //force += hash(float(pID) * 0.3) * float3(1,0,0);
+        //force += hash(float(pID) * 1) * float3(0,0,1);
+
+        
+
+        force += curlNoise(pos * .1 + float(pID) * .001 )* 1;
+
+        if( length( vert.pos - _Chest ) > 3){
+            //vert.pos = _Chest + hash(float(pID) * 0.1) * float3(0,1,0);
+            
+        }
+
+        
+        vert.vel += force * .001;
+        vert.pos += vert.vel;
+        vert.vel *= .95;
+
+
+        //        vert.pos = getTrailPos( pID % _TrailBuffer_COUNT );
+
+        //      vert.pos = cubicPos;
+
+    }
+
+    
+    
+
+
+    
+    _VertBuffer[pID] = vert;
+}
