@@ -6,6 +6,9 @@ Shader "Crest/OceanCustom"
 {
     Properties
     {
+        _PainterlyMap("Painterly Map", 2D) = "white" {}
+
+
         [Header(Normals)]
         // Strength of the final surface normal (includes both wave normal and normal map)
         _NormalsStrengthOverall( "Overall Normal Strength", Range( 0.0, 1.0 ) ) = 1.0
@@ -239,6 +242,9 @@ Shader "Crest/OceanCustom"
             CGPROGRAM
 
             #include "Underwater/CustomShared.hlsl"
+            #include "Assets/Resources/Shaders/Chunks/snoise.cginc"
+            #include "Assets/Resources/Shaders/Chunks/noise.cginc"
+
             // Argument name is v because some macros like COMPUTE_EYEDEPTH require it.
             Varyings Vert(Attributes v)
             {
@@ -248,6 +254,9 @@ Shader "Crest/OceanCustom"
                 
                 return o;
             }
+
+
+            sampler2D _PainterlyMap;
 
             half4 Frag(const Varyings input, const bool i_isFrontFace : SV_IsFrontFace) : SV_Target
             {
@@ -410,6 +419,12 @@ Shader "Crest/OceanCustom"
                 #if _ALBEDO_ON
                 half4 albedo = 0.0;
                 #endif
+
+
+                float3 displacement = 0;
+
+                // we have to blend if our two LODS are biggger then zero
+                /// this gets us our FOAM  , Albedo and Displacement
                 if (wt_smallerLod > 0.001)
                 {
                     const float3 uv_slice_smallerLod = WorldToUV(positionXZWSUndisplaced, cascadeData0, _LD_SliceIndex);
@@ -422,6 +437,10 @@ Shader "Crest/OceanCustom"
                     #if _ALBEDO_ON
                     SampleAlbedo(_LD_TexArray_Albedo, uv_slice_smallerLod, wt_smallerLod, albedo);
                     #endif
+
+                    
+                    SampleDisplacements(_LD_TexArray_AnimatedWaves, uv_slice_smallerLod, wt_smallerLod, displacement);
+
                 }
                 if (wt_biggerLod > 0.001)
                 {
@@ -435,7 +454,12 @@ Shader "Crest/OceanCustom"
                     #if _ALBEDO_ON
                     SampleAlbedo(_LD_TexArray_Albedo, uv_slice_biggerLod, wt_biggerLod, albedo);
                     #endif
+
+                    
+                    SampleDisplacements(_LD_TexArray_AnimatedWaves, uv_slice_biggerLod, wt_biggerLod, displacement);
                 }
+
+
 
                 #if _SUBSURFACESCATTERING_ON
                 // Extents need the default SSS to avoid popping and not being noticeably different.
@@ -445,6 +469,9 @@ Shader "Crest/OceanCustom"
                 }
                 #endif
 
+
+
+                // normal map
                 #if _APPLYNORMALMAPPING_ON
                 #if _FLOW_ON
                 ApplyNormalMapsWithFlow(_NormalsTiledTexture, positionXZWSUndisplaced, input.flow_shadow.xy, lodAlpha, cascadeData0, instanceData, n_pixel);
@@ -452,6 +479,8 @@ Shader "Crest/OceanCustom"
                 n_pixel.xz += SampleNormalMaps(_NormalsTiledTexture, positionXZWSUndisplaced, 0.0, lodAlpha, cascadeData0, instanceData);
                 #endif
                 #endif
+
+
 
                 n_pixel.xz += float2(-input.seaLevelDerivs.x, -input.seaLevelDerivs.y);
 
@@ -646,7 +675,15 @@ Shader "Crest/OceanCustom"
                 scatterCol,
                 cascadeData0,
                 cascadeData1
-                
+                input.seaLevelDerivs
+                input.positionCS  float4
+                input flow_shadow float4
+                input screenPosXYW  float3
+                lodAlpha_worldXZUndisplaced_oceanDepth float4
+                worldPos float3
+                grabPos float4
+                seaLevelDerivs float2
+                displacement!
                 */
                 
                 col = rawDepth * 100;
@@ -672,8 +709,60 @@ Shader "Crest/OceanCustom"
 
                 //                col = foam;
                 
+                col = 0;
+                col.xyz = normalize(input.flow_shadow.xyz );//* 10000;
+
+                col = normal * .5 + .5;
+                col *= .3;
+
+                col = 0;// bubbleCol;
+
+                #if _FOAM_ON
+                /// col = foam ;
+                
+                col = lerp(col, whiteFoamCol.rgb, whiteFoamCol.a);
+                col = whiteFoamCol * foam;//whiteFoamCol.a;
+                col = whiteFoamCol.a * 10;
+                col = bubbleCol;
+                #endif
 
 
+                col = pow( reflMatch , 300) * 4;
+                //                col = n_pixel - float3(0,.4,0);
+
+                //col = n_pixel;
+                //  col = normal * .5 + .5;
+
+                //col = dot( normal, normalize(eye)) < 0;
+
+                //col = normalize(-eye) * .5 + .5;
+                /* if( !underwater && dot( normal, normalize(eye)) < 0){
+                    col = float3(1,0,0);
+                    col = noise( input.worldPos  * .1) + noise( input.worldPos  * .3) * .5 + noise( input.worldPos  * .7) * .25;
+                    col *= 1/1.75;
+                    col = pow( col,10) * 100;
+                }*/
+
+                //col = sin( displacement * .1);
+
+                //if( displacement.y * .8 > abs(displacement.x) && displacement.y * .8 > abs(displacement.z)){
+                    //    col= 1;
+                //}
+
+
+                float lightMatch = dot( normal, lightDir);
+
+                col = tex2D(_PainterlyMap, uvPosition * .04).rgb;
+
+                if( lightMatch < .2){
+                    col = col.x;
+                    }else{
+                    col = col.z;
+                }
+
+                col += lightMatch;
+
+                //col = normal * .5 + .5;
                 
                 return half4(col, 1.);
             }
