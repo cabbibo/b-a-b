@@ -93,12 +93,17 @@ Shader "IMMAT/Debug/ShardMesh" {
 
           
           float4x4 t = translationMatrix(v.pos);
-          float4x4 r = look_at_matrix(normalize(v.vel),float3(0,1,0));
+          float4x4 r = look_at_matrix(normalize(v.vel) ,normalize(cross(normalize(v.vel),float3(0,0,1))));
           float4x4 s = scaleMatrix(1);
 
           float4x4 rts =mul(t,mul(r,s));
 
-          o.worldPos =   v.pos + vert.pos * _Size;//mul( rts, float4(vert.pos * _Size, 1)).xyz;
+          float3 fwd = normalize(v.vel);
+          float3 up = normalize(cross(fwd, float3(1,0,0)));
+          float3 right = normalize(cross(up,fwd));
+          // o.worldPos =   v.pos + vert.pos * _Size;//
+          o.worldPos = mul( rts, float4(vert.pos * _Size, 1)).xyz;
+          o.nor = vert.nor;// normalize(mul( rts, float4(vert.nor, 0)).xyz);
           o.eye = _WorldSpaceCameraPos - o.worldPos;
           o.nor =v.nor;
           o.uv = v.uv;
@@ -120,17 +125,21 @@ Shader "IMMAT/Debug/ShardMesh" {
       //Pixel function returns a solid color for each point.
       float4 frag (varyings v) : COLOR {
 
+
+        float3 flatNormal = normalize( cross( ddx(v.worldPos), ddy(v.worldPos) ) );
         //if( length( v.uv2 -.5) > .5 ){ discard;}
 
 
 
         
-        float4 color = float4(_Color.xyz,1);// v.debug.x * 10;
+        float3 col = float4(_Color.xyz,1);// v.debug.x * 10;
 
         //color.xyz = hsv(v.life / _LifeDivider,1,1).xyz;
 
-        
-        return float4(color.xyz,1 );
+        col = v.nor * .5  + .5;
+
+        col = flatNormal;
+        return float4(col,1 );
       }
 
       ENDCG

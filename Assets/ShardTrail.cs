@@ -108,6 +108,7 @@ public class ShardTrail : MonoBehaviour
     public int totalTris;
 
     public int allVerts;
+    public int allTris;
 
 
     public void populateMeshData()
@@ -230,6 +231,10 @@ public class ShardTrail : MonoBehaviour
 
     void RenderShards()
     {
+
+        allVerts = shardMesh.vertices.Length * maxShards;
+        allTris = shardMesh.triangles.Length * maxShards;
+
         mpb.SetBuffer("_ShardBuffer", shardBuffer);
         mpb.SetBuffer("_VertBuffer", vertBuffer);
         mpb.SetBuffer("_TriBuffer", triBuffer);
