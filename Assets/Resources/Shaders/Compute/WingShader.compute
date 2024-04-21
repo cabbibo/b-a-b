@@ -8,6 +8,10 @@ float4x4 transform;
 
 #include "../Chunks/CubicValues.cginc"
 
+
+float3 _WrenVel;
+
+
 int _NumScapularRows;
 
 float4x4 _Transform;
@@ -37,19 +41,19 @@ float3 finger; float3 fingerU; float3 fingerR; float3 fingerF;
 float3 chest; float3 chestU; float3 chestR; float3 chestF;
 
 void setFromMatrix( float4x4 mat , out float3 p , out float3 r, out float3 u  , out float3 f){
-    p = mul( mat , float4( 0, 0, 0, 1)).xyz;
-    r = _ScaleMultiplier * normalize(mul( mat , float4( 1, 0, 0, 0)).xyz) * (_LeftOrRight);
-    u = _ScaleMultiplier * normalize(mul( mat , float4( 0, 1, 0, 0)).xyz);
-    f = _ScaleMultiplier * normalize(mul( mat , float4( 0, 0, 1, 0)).xyz);
+  p = mul( mat , float4( 0, 0, 0, 1)).xyz;
+  r = _ScaleMultiplier * normalize(mul( mat , float4( 1, 0, 0, 0)).xyz) * (_LeftOrRight);
+  u = _ScaleMultiplier * normalize(mul( mat , float4( 0, 1, 0, 0)).xyz);
+  f = _ScaleMultiplier * normalize(mul( mat , float4( 0, 0, 1, 0)).xyz);
 } 
 
 
 void SetUpValues(){
-    setFromMatrix(_Hand,hand,handR,handU,handF);
-    setFromMatrix(_Chest,chest,chestR,chestU,chestF);
-    setFromMatrix(_Elbow,elbow,elbowR,elbowU,elbowF);
-    setFromMatrix(_Shoulder,shoulder,shoulderR,shoulderU,shoulderF);
-    setFromMatrix(_Finger,finger,fingerR,fingerU,fingerF);
+  setFromMatrix(_Hand,hand,handR,handU,handF);
+  setFromMatrix(_Chest,chest,chestR,chestU,chestF);
+  setFromMatrix(_Elbow,elbow,elbowR,elbowU,elbowF);
+  setFromMatrix(_Shoulder,shoulder,shoulderR,shoulderU,shoulderF);
+  setFromMatrix(_Finger,finger,fingerR,fingerU,fingerF);
 }
 
 
@@ -71,7 +75,7 @@ struct Feather{
   float3 ogPos;
   float3 ogNor;
   float touchingGround;
-  float debug;
+  float id;
 };
 
 RWStructuredBuffer<Feather> _FeatherBuffer;
@@ -141,6 +145,18 @@ float _GroundLockForce;
 
 
 
+
+
+float _TotalShardsInBody;
+float _NumShards;
+float _TmpNumShards;
+float _ONumShards;
+
+float3 _CollectionPosition;
+float _CollectionType;
+
+
+
 #include "../Chunks/WingShaderFeatherValues.cginc"
 #include "../Chunks/nanCheckFeather.cginc"
 
@@ -154,73 +170,112 @@ float4x4 _SpecialTarget;
 float3 _SpecialLockPos;
 float3 _ResetLocation;
 
-#define NR_THREADS 128
+#define NR_THREADS 64
 [numthreads(NR_THREADS,1,1)]
 void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID) {
 
-    SetUpValues();
+  SetUpValues();
 
-    uint pID = threadID + u3GroupID.x * NR_THREADS;
+  uint pID = threadID + u3GroupID.x * NR_THREADS;
 
-    Feather feather = _FeatherBuffer[pID];
-    float3 forcePos = feather.pos;
-    float3 vel = feather.vel;
+  Feather feather = _FeatherBuffer[pID];
+  float3 forcePos = feather.pos;
+  float3 vel = feather.vel;
 
-    float3 lockPos;
-    float3 lockFwd;
-    float3 lockUp;
-    float3 lockScale;
+  float3 lockPos;
+  float3 lockFwd;
+  float3 lockUp;
+  float3 lockScale;
 
-    int whichFeatherType = 0;
+  int whichFeatherType = 0;
 
-    if( pID < _NumPrimaryFeathers ){
-      whichFeatherType = 0;
-      primaryFeathers( pID , lockPos , lockFwd , lockUp , lockScale );
+  if( pID < _NumPrimaryFeathers ){
+    whichFeatherType = 0;
+    primaryFeathers( pID , lockPos , lockFwd , lockUp , lockScale );
     }else if( pID < _NumPrimaryFeathers + _NumPrimaryCoverts ){
-      whichFeatherType = 1; 
-      primaryCoverts( pID , lockPos , lockFwd , lockUp , lockScale );
+    whichFeatherType = 1; 
+    primaryCoverts( pID , lockPos , lockFwd , lockUp , lockScale );
     }else if( pID < _NumPrimaryFeathers + _NumPrimaryCoverts + _NumLesserCovertRows * _NumLesserCovertRows ){
-      whichFeatherType = 2; 
-      lesserCoverts( pID , lockPos , lockFwd , lockUp , lockScale );
+    whichFeatherType = 2; 
+    lesserCoverts( pID , lockPos , lockFwd , lockUp , lockScale );
     }else{  
-      whichFeatherType = 3; 
-      lesserCoverts( pID , lockPos , lockFwd , lockUp , lockScale );
-    }
+    whichFeatherType = 3; 
+    lesserCoverts( pID , lockPos , lockFwd , lockUp , lockScale );
+  }
 
-    float3 groundPos; float3 groundNor;
-
-
-    GetTerrainData( feather.pos , groundPos , groundNor );
+  float3 groundPos; float3 groundNor;
 
 
-    float3 dif = feather.pos - lockPos;
+  GetTerrainData( feather.pos , groundPos , groundNor );
 
 
+
+  
+  if( feather.id < _NumShards && feather.id > _TmpNumShards ){
+    feather.locked = 0;
+    feather.pos = _CollectionPosition;
+    feather.ogNor.x = _CollectionType;
+    feather.ogNor.y = 0;
+    feather.ogNor.z = 0;
+  }
+
+  if( feather.id > _NumShards ){
+    vel += curlNoise( feather.pos) * 1;
+    feather.locked = 0;
+  }
+
+  float3 dif = feather.pos - lockPos;
+
+
+  if( feather.id < _NumShards ){
     
     /*
 
-
-      Vortex Position
+    Vortex Position
 
     */
     
-    // noise for prettiness
-    vel += curlNoise( forcePos * _VortexNoiseSize ) * _VortexNoiseForce  ;//
+    
+    if( _Locked == 0  ){
+      // noise for prettiness
+      vel += curlNoise( forcePos * _VortexNoiseSize ) * _VortexNoiseForce;//
 
-    // Towards center force
-    vel += ( chest-forcePos ) *  _VortexInForce ;
+      // Towards center force
+      vel += ( chest-forcePos ) *  _VortexInForce;
 
-    // Curls around normal
-    vel += cross( normalize( chest-forcePos) , normalize(groundNor) ) * _VortexCurlForce ;
+      // Curls around normal
+      vel += cross( normalize( chest-forcePos) , normalize(groundNor) ) * _VortexCurlForce;
+    }
+
+
 
     
+    if( _Locked == -1){
+
+      float3 sp = mul(_SpecialTarget, float4(0,0,0,1)).xyz;
+      // noise for prettiness
+      vel += curlNoise( forcePos * _VortexNoiseSize ) * _VortexNoiseForce;//
+
+      // Towards center force
+      vel += ( sp-forcePos ) *  _VortexInForce * 100;
+
+      //vel += float3(0,1,0);
+
+      // Curls around normal
+      vel += cross( normalize( sp-forcePos) , normalize(groundNor) ) * _VortexCurlForce;
+
+      vel *= .9;
+
+
+    }
     
 
- // EXPLOSITION
-    float3 c = curlNoise( forcePos * 10 );
+    // EXPLOSITION
+    float3 c = curlNoise( forcePos * 1 );
 
     if( _Explosion == 1 ){
-      vel = 0;
+      //vel = 0;
+      vel *= float3(1,0,1);
       // Goes BOOM
       vel += (_ExplosionVector * _ExplosionUpForce + c * _ExplosionOutForce );
     }
@@ -229,58 +284,62 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
     // The longer after jumping off, the more force towards original location
     vel -= dif * _ReturnToLockForce * _Locked * pow( clamp((_Time - _LockStartTime ) * _ReturnToLockTimeMultiplier,0,1000000) , 2 );
 
-    // adding to our force position
-    forcePos += vel * _DT * .1;//.001;
+    vel -= c * .3;
+
+
+
+    }else{
+    // unlocked
     
-    // dampening if locked vs not locked
-    vel *= .96 - .19 * clamp(_Locked,0,1);
+    vel += curlNoise( feather.pos) * 1;
+    feather.locked = 0;
+  }
+
+  
+  vel += _WrenVel;
+
+  vel *=  (hash(float(pID)) * .6 + .4);
+  if( length( vel ) > 1000 ){
+    vel = normalize(vel) * 1000;
+  }
+
+  // adding to our force position
+  forcePos += vel * _DT * .1;//.001;
+  if( length(forcePos - lockPos) > 50){
+    forcePos = lockPos + normalize(forcePos - lockPos) * 50;
+  }
+  // dampening if locked vs not locked
+  vel *= .96 - .19 * clamp(_Locked,0,1);
 
 
 
 
- float3 fPos = forcePos;
+  float3 fPos = forcePos;
 
 
   float lerpVal = clamp( 1-max(length( dif )-_LockDistance,0) * _LockLerp , 0, 1);
 
-   float3 fFwd = lerp( normalize(vel) , lockFwd , lerpVal );
-   float3 fScale = lerp( .3 * lockScale , lockScale , lerpVal );
+  float3 fFwd = lerp( normalize(vel) , lockFwd , lerpVal );
+  float3 fScale = lerp( .3 * lockScale , lockScale , lerpVal );
   
   float3 fUp = lockUp;
 
 
-   if( _Locked < .5 ){
-     feather.locked = 0;
-   }
+  if( _Locked < .5 ){
+    feather.locked = 0;
+  }
 
 
-      if( _Locked == -1 ){
 
-      float3 sp = mul(_SpecialTarget, float4(0,0,0,1)).xyz;
-      // noise for prettiness
-      vel += curlNoise( forcePos * _VortexNoiseSize ) * _VortexNoiseForce;//
-
-      // Towards center force
-      vel += ( sp-forcePos ) *  _VortexInForce;
-
-      //vel += float3(0,1,0);
-
-      // Curls around normal
-      vel += cross( normalize( sp-forcePos) , normalize(groundNor) ) * _VortexCurlForce;
-
-      vel *= .9;
-    }
-    
-
-   if( length( dif ) < _LockDistance && _Locked >= 1 ){
-     feather.locked = 1;
-   }
-   
-   if( feather.locked >= .5 && _Locked >= 1){
-     fPos = lockPos;
-     fFwd = lockFwd;
-     fScale = lockScale;
-   }
+  if( length( dif ) < _LockDistance && _Locked >= 1  && feather.id < _NumShards){
+    feather.locked = 1;
+  }
+  
+  if( feather.locked >= .5 && _Locked >= 1){
+    fPos = lockPos;
+    fFwd = lockFwd;
+    fScale = lockScale;
+  }
 
 
 
@@ -290,99 +349,98 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
   Offsetting ground
 
   */
-    
-    // Tells us that we are super close to ground
+  
+  // Tells us that we are super close to ground
 
-    GetTerrainData( fPos , groundPos , groundNor );
-    if( groundPos.y + _GroundLockHeight > fPos.y ){
+  GetTerrainData( fPos , groundPos , groundNor );
+  if( groundPos.y + _GroundLockHeight > fPos.y ){
 
-      float lVal = clamp( (groundPos.y + _GroundLockHeight - fPos.y)/_GroundLockHeight , 0 , 1);
+    float lVal = clamp( (groundPos.y + _GroundLockHeight - fPos.y)/_GroundLockHeight , 0 , 1);
 
-      feather.touchingGround = 1;
-     // fPos.y += lVal * _GroundLockForce;
+    feather.touchingGround = 1;
+    // fPos.y += lVal * _GroundLockForce;
     
     }else{
-      feather.touchingGround = 0;
+    feather.touchingGround = 0;
+  }
+  
+
+
+  if( _ResetValue > .5 ){
+    
+    fPos = lockPos; 
+    fUp = lockUp;
+    fFwd = lockFwd;
+    fScale = lockScale;
+    feather.ogPos = fPos;
+    feather.ogNor = normalize(lockFwd);
+    feather.touchingGround = 0;
+    vel = 0;
+
+    
+  }
+  
+  if( _ResetValue > 1.5 && _ResetValue < 2.5 ){
+
+    // reseting at position w/ a bit of offset to give it vortex
+    float3 centerPos = _ResetLocation;
+    
+    if( _Locked == -1  ){
+      centerPos = mul(_SpecialTarget, float4(0,0,0,1)).xyz;
     }
+
+    fPos = centerPos + lockUp + lockFwd;  
+
+    fUp =lockUp;
+    fFwd = lockFwd;
+    fScale = lockScale;
+    feather.ogPos = lockPos;
+    feather.ogNor = lockFwd;
+    feather.touchingGround = 0;
+    vel = 0;
+  }
+
+
+  
+  if( _ResetValue>2.5){
+
+    feather.pos += _ResetLocation;
     
-
-
-   if( _ResetValue > .5 ){
-    
-     fPos = lockPos; 
-     fUp = lockUp;
-     fFwd = lockFwd;
-     fScale = lockScale;
-     feather.ogPos = fPos;
-     feather.ogNor = normalize(lockFwd);
-     feather.touchingGround = 0;
-     feather.debug = 0;
-
-      
-   }
-  
-    if( _ResetValue > 1.5 && _ResetValue < 2.5 ){
-
-     // reseting at position w/ a bit of offset to give it vortex
-      float3 centerPos = _ResetLocation;
-      
-      if( _Locked == -1  ){
-        centerPos = mul(_SpecialTarget, float4(0,0,0,1)).xyz;
-      }
-
-     fPos = centerPos + lockUp + lockFwd;  
-
-     fUp =lockUp;
-     fFwd = lockFwd;
-     fScale = lockScale;
-     feather.ogPos = lockPos;
-     feather.ogNor = lockFwd;
-     feather.touchingGround = 0;
-     feather.debug = 0;
-     vel = 0;
-   }
-
-
-   
-   if( _ResetValue>2.5){
-
-      feather.pos += _ResetLocation;
-   
-   }
+  }
 
 
 
 
-    //fPos = lockPos;
+  //fPos = lockPos;
 
-    float sNoiseSlow = snoise( feather.ogPos * _NoiseSizeForFlutter + _MinFlutterSpeed * _Time) * _MinFlutter;
-    float sNoiseFast = snoise( feather.ogPos * _NoiseSizeForFlutter + _MaxFlutterSpeed * _Time) * _MaxFlutter;
+  float sNoiseSlow = snoise( feather.ogPos * _NoiseSizeForFlutter + _MinFlutterSpeed * _Time) * _MinFlutter;
+  float sNoiseFast = snoise( feather.ogPos * _NoiseSizeForFlutter + _MaxFlutterSpeed * _Time) * _MaxFlutter;
 
-    fFwd += fUp *  lerp( sNoiseSlow, sNoiseFast , length(_Velocity)/400 );
-   // fFwd = -normalize(cross(normalize(cross( fFwd , fUp )), fFwd));
-    fFwd = normalize(fFwd);
-
-
-    float4x4 t = translationMatrix(fPos);
-    float4x4 r = look_at_matrix(fFwd,fUp);
-    float4x4 s = scaleMatrix(fScale);
+  fFwd += fUp *  lerp( sNoiseSlow, sNoiseFast , length(_Velocity)/400 );
+  // fFwd = -normalize(cross(normalize(cross( fFwd , fUp )), fFwd));
+  fFwd = normalize(fFwd);
 
 
-    float4x4 rts =mul(t,mul(r,s));
+  float4x4 t = translationMatrix(fPos);
+  float4x4 r = look_at_matrix(fFwd,fUp);
+  float4x4 s = scaleMatrix(fScale);
+
+
+  float4x4 rts =mul(t,mul(r,s));
 
   
-    feather.pos = fPos;//fPos;
-    feather.vel = vel;
-    feather.featherType = float(whichFeatherType);
-    feather.ltw = rts;
+  feather.pos = fPos;//fPos;
+  feather.vel = vel;
+  feather.featherType = float(whichFeatherType);
+  feather.ltw = rts;
 
-    nanCheck(feather);
-  //}
+  nanCheck(feather);
+//}
 
-    //feather.newData1 =  _HeightMap.SampleLevel(sampler_HeightMap,.5, 1);
+//feather.newData1 =  _HeightMap.SampleLevel(sampler_HeightMap,.5, 1);
 
-    _FeatherBuffer[pID] = feather;
- 
-  
+_FeatherBuffer[pID] = feather;
+
+
 }
 

@@ -7,8 +7,13 @@
     TEXTURE2D_SAMPLER2D(_MainTex, sampler_MainTex);
     TEXTURE2D_SAMPLER2D(_DepthTex, sampler_DepthTex);
     TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
+    
 
+    //samplerCube _Cubemap;
     float _Intensity;
+
+    float _StartDistance;
+    float _EndDistance;
 
     float4 Frag(VaryingsDefault i) : SV_Target
     {
@@ -22,7 +27,7 @@
 
         
 
-        color.rgb = lerp( color.rgb , float3(1,1,1), saturate(10*pow((LinearEyeDepth(depth)/20000),2)));
+        color.rgb = lerp( color.rgb , float3(1,1,1), saturate(10*pow((LinearEyeDepth(depth)/20000),1)));
 
         return color;
     }

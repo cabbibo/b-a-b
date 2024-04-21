@@ -311,12 +311,13 @@ public class SceneController : MonoBehaviour
         God.wren.airInterface.Toggle(false);
         God.wren.fullInterface.Toggle(false);
 
-        if (newSceneID == 0)
+        if (newSceneID == 1)
         {
             God.wren.inEther = true;
         }
         else
         {
+
             God.wren.inEther = false;
         }
 

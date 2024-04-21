@@ -11,11 +11,11 @@ void nanCheck( inout Feather v  ){
     nan = isnan(v.ogPos);
     if( nan ){ v.ogPos = float3(0,0,0); }
 
-    nan = isnan(v.ogNor);
-    if( nan ){ v.ogNor = float3(1,0,0); }
+    //nan = isnan(v.ogNor);
+    //if( nan ){ v.ogNor = float3(1,0,0); }
 
-    nan = isnan(v.ogNor);
-    if( nan ){ v.ogNor = float3(1,0,0); }
+    //nan = isnan(v.ogNor);
+    //if( nan ){ v.ogNor = float3(1,0,0); }
 
     nan = isnan(v.touchingGround);
     if( nan ){ v.touchingGround = 1; }
