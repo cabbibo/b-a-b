@@ -1225,6 +1225,9 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+    public float oceanToFlatOnExit = .3f;
+    public float velocityReductionOnEnterWater = .3f;
+
 
     void OceanForces()
     {
@@ -1242,6 +1245,7 @@ public class WrenPhysics : MonoBehaviour
             n *= n;
 
             oceanVelocityForce = o.waterSurfaceVel * oceanVelocityForceMultiplier * n;
+            oceanVelocityForce.y = 0;
 
             oceanForce += oceanVelocityForce;
         }
@@ -1286,6 +1290,26 @@ public class WrenPhysics : MonoBehaviour
             oceanForce += vel * -.5f;
 
 
+        }
+
+
+
+        if (o.waterJustHit == true)
+        {
+            print("WATER HIT");
+            oceanForce = -vel * velocityReductionOnEnterWater * 1;
+            // vel = Vector3.zero;
+            print("waterhit");
+
+        }
+
+        if (o.waterJustLeft == true)
+        {
+            print("WATER LEFT");
+
+            vel.y *= oceanToFlatOnExit;
+            oceanForce = Vector3.Scale(vel, new Vector3(1, oceanToFlatOnExit, 1));
+            print("waterLeft");
 
         }
 
@@ -1409,6 +1433,14 @@ public class WrenPhysics : MonoBehaviour
         AddForce(rb.velocity.normalized * skimForceForward + c.contacts[0].normal * skimForceUp);
 
     }
+
+
+    public float boostMultiplier;
+    public void Boost()
+    {
+        AddForce(transform.forward * boostMultiplier);
+    }
+
 
     public void OnEnterWater()
     {

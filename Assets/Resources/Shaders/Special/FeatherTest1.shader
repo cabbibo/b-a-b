@@ -17,7 +17,7 @@ Shader "Feathers/FeatherTest1" {
 
   SubShader{
 
-    Tags { "Queue" = "Geometry+10" }
+    Tags { "Queue" = "Geometry+8" }
     Pass{
 
       LOD 100 

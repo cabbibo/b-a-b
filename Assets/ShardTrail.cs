@@ -242,7 +242,7 @@ public class ShardTrail : MonoBehaviour
         mpb.SetInt("_TriCount", totalTris);
         mpb.SetInt("_VertCount", totalVerts);
         mpb.SetMatrix("_Model", wren.transform.localToWorldMatrix);
-        Graphics.DrawProcedural(debugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, maxShards * totalTris, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+        Graphics.DrawProcedural(debugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, maxShards * totalTris, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Default"));
 
 
     }
