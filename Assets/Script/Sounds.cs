@@ -19,7 +19,6 @@ public class Sounds : MonoBehaviour
     public AudioClip onGroundLoop;
 
 
-
     public AudioClip raceEndSound;
 
     public AudioClip[] backgroundSounds;
@@ -32,6 +31,7 @@ public class Sounds : MonoBehaviour
 
     public AudioClip eatClip;
 
+    public AudioClip boostClip;
     public AudioClip hurtClip;
     public AudioClip hitGroundClip;
     public AudioClip takeoffClip;

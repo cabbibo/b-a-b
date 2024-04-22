@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using Crest;
 using WrenUtils;
 
@@ -81,7 +82,7 @@ public class OceanInfoManager : MonoBehaviour
 
     }
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
 
         if (God.wren && OceanRenderer.Instance != null)
@@ -117,7 +118,8 @@ public class OceanInfoManager : MonoBehaviour
 
 
 
-
+            waterJustHit = false;
+            waterJustLeft = false;
 
             if (OceanRenderer.Instance != null)
             {
@@ -196,13 +198,23 @@ public class OceanInfoManager : MonoBehaviour
 
     }
 
+    public bool waterJustHit;
+    public bool waterJustLeft;
+
+    public UnityEvent OnEnterWaterEvent;
+    public UnityEvent OnExitWaterEvent;
+
     public void OnEnterWater()
     {
+        waterJustHit = true;
         // print("enter");
+        OnEnterWaterEvent.Invoke();
     }
 
     public void OnExitWater()
     {
+        waterJustLeft = true;
         // print("exit");
+        OnExitWaterEvent.Invoke();
     }
 }

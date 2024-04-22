@@ -37,7 +37,8 @@ public class WrenShardManager : MonoBehaviour
 
     public void DoBoost()
     {
-
+        print("SPEND");
+        SpendShards((int)boostNumLost);
     }
 
     public void DoDisintegrate()

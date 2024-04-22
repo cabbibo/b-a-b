@@ -2601,6 +2601,8 @@ MonoBehaviour:
   numThreads: 128
   totalVerts: 156
   totalTris: 156
+  allVerts: 0
+  allTris: 0
 --- !u!120 &5083185910036669614
 LineRenderer:
   serializedVersion: 2
@@ -24299,7 +24301,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8120365990806255992
 Transform:
   m_ObjectHideFlags: 0
@@ -24539,11 +24541,11 @@ MonoBehaviour:
   oceanVelocityForceMultiplier: 0
   oceanMomentumForceMaxHeight: 50
   oceanMomentumForceMultiplier: 0
-  oceanNormalForceMaxHeight: 50
-  oceanNormalForceMultiplier: 0
-  oceanNormalFlattener: 0
-  oceanBoyancyForceMaxHeight: 1
-  oceanBoyancyForceMultiplier: 1
+  oceanNormalForceMaxHeight: 100
+  oceanNormalForceMultiplier: 11
+  oceanNormalFlattener: 1
+  oceanBoyancyForceMaxHeight: 3
+  oceanBoyancyForceMultiplier: 5
   waveLiftForceMaxHeight: 10
   waveLiftForceMultiplier: 0
   showDebugForces: 0
@@ -24634,9 +24636,12 @@ MonoBehaviour:
   bumperApplicationForceR: {x: 0, y: 0, z: 0}
   oLeft1: 0
   oRight1: 0
+  oceanToFlatOnExit: 0.3
+  velocityReductionOnEnterWater: 0.3
   skimForceUp: 50
   skimForceForward: 50
   skimImpulseMulitplier: 1
+  boostMultiplier: 1000
   doBasicGroundControls: 0
   basicGroundLookControls_lookSpeed: 3
   basicGroundLookControls_moveSpeed: 0
@@ -25071,7 +25076,7 @@ MonoBehaviour:
   lostPerCrash: 0
   gainedPerSkim: 0
   gainedWhileClose: 0
-  boostNumLost: 0
+  boostNumLost: 1000
   reverseNumLost: 0
   callNumLost: 0
   bodyPercentage: 1.3419816

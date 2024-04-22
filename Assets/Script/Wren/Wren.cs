@@ -265,17 +265,19 @@ public class Wren : MonoBehaviour
             if (doInterface)
             {
 
-                if (input.o_circle < .5 && input.circle > .5)
+                if (input.o_square < .5 && input.square > .5)
                 {
                     caller.Call();
                 }
 
 
-                // Only drop items in air ( is that correct? )
-                if (input.o_square < .5 && input.square > .5 && state.canTakeOff)
-                {
-                    reseter.Reset();
-                }
+                // Reset Position ( dont need any more because of rewind )
+                /*  if (input.o_square < .5 && input.square > .5 && state.canTakeOff)
+                  {
+                      reseter.Reset();
+                  }*/
+
+
 
                 // Only drop items in air ( is that correct? )
                 if (input.o_triangle < .5 && input.triangle > .5 && state.canTakeOff)
@@ -331,6 +333,13 @@ public class Wren : MonoBehaviour
                 {
                     God.audio.Play(God.sounds.takeoffClip);
                     state.TakeOff();
+                }
+
+                if (input.o_circle < .5 && input.circle > .5 && physics.onGround == false && state.inInterface == false)
+                {
+                    God.audio.Play(God.sounds.boostClip);
+                    shards.DoBoost(); ;
+                    physics.Boost();
                 }
 
 
@@ -687,7 +696,10 @@ public class Wren : MonoBehaviour
             God.audio.Play(God.sounds.skimGroundClip, c.impulse.magnitude / 10f);
             God.feedbackSystems.skimParticles.transform.position = c.contacts[0].point;
             God.feedbackSystems.skimParticles.Emit(100);
-            shards.CollectShards(1000, -1, c.contacts[0].point);
+            // Get biome ID
+
+
+            shards.CollectShards(1000, God.islandData.maxBiomeID, c.contacts[0].point);
             physics.Skim(c);
         }
 
