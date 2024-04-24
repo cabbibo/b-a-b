@@ -324,10 +324,22 @@ public class Wren : MonoBehaviour
 
 
                 // Only drop items in air ( is that correct? )
-                if (input.o_ex < .5 && input.ex > .5 && physics.onGround == false)
+                /*   if (input.o_ex < .5 && input.ex > .5 && physics.onGround == false)
+                   {
+                       carrying.DropFirstCarriedItem();
+                   }
+                 */
+
+                if (input.left1 < .5 && input.o_left1 > .5 && physics.onGround == false && state.inInterface == false && state.canTakeOff)
                 {
-                    carrying.DropFirstCarriedItem();
+                    carrying.DropLeftFootItems();
                 }
+
+                if (input.right1 < .5 && input.o_right1 > .5 && physics.onGround == false && state.inInterface == false && state.canTakeOff)
+                {
+                    carrying.DropRightFootItems();
+                }
+
 
                 if (input.o_ex < .5 && input.ex > .5 && physics.onGround == true && state.inInterface == false && state.canTakeOff)
                 {
@@ -335,7 +347,7 @@ public class Wren : MonoBehaviour
                     state.TakeOff();
                 }
 
-                if (input.o_circle < .5 && input.circle > .5 && physics.onGround == false && state.inInterface == false)
+                if (input.o_circle < .5 && input.circle > .5 && physics.onGround == false && state.inInterface == false && shards.numShards > 0)
                 {
                     God.audio.Play(God.sounds.boostClip);
                     shards.DoBoost(); ;
@@ -612,6 +624,41 @@ public class Wren : MonoBehaviour
     public float grazeAngleMax;
     public float grazeForceMax;
     public float autoTakeoffVelocityReducer;
+
+
+    public void CheckPickUp(GameObject g)
+    {
+        if (!state.onGround)
+        {
+
+            if (input.left1 > input.right1)
+            {
+                carrying.PickUpItem(g, 0);
+            }
+            else if (input.right1 > input.left1)
+            {
+                carrying.PickUpItem(g, 1);
+            }
+
+            if (input.left1 > .4f && input.right1 > .4f)
+            {
+
+                // check which its closer to!
+                float leftDist = Vector3.Distance(g.transform.position, bird.leftFoot.position);
+                float rightDist = Vector3.Distance(g.transform.position, bird.rightFoot.position);
+
+                if (leftDist < rightDist)
+                {
+                    carrying.PickUpItem(g, 0);
+                }
+                else
+                {
+                    carrying.PickUpItem(g, 1);
+                }
+            }
+
+        }
+    }
     void OnCollisionEnter(Collision c)
     {
         if (state.isLocal)
@@ -619,24 +666,15 @@ public class Wren : MonoBehaviour
 
             if (c.collider.tag == "Food")
             {
-                if (!state.onGround)
-                {
-                    carrying.PickUpItem(c.collider.gameObject);
-                }
+                CheckPickUp(c.collider.gameObject);
             }
             else if (c.collider.tag == "Ball")
             {
-                if (!state.onGround)
-                {
-                    carrying.PickUpItem(c.collider.gameObject);
-                }
+                CheckPickUp(c.collider.gameObject);
             }
             else if (c.collider.tag == "Fire")
             {
-                if (!state.onGround)
-                {
-                    carrying.PickUpItem(c.collider.gameObject);
-                }
+                CheckPickUp(c.collider.gameObject);
             }
             else if (c.collider.tag == "Resetable")
             {
@@ -698,8 +736,7 @@ public class Wren : MonoBehaviour
             God.feedbackSystems.skimParticles.Emit(100);
             // Get biome ID
 
-
-            shards.CollectShards(1000, God.islandData.maxBiomeID, c.contacts[0].point);
+            shards.DoSkim(c.contacts[0].point);
             physics.Skim(c);
         }
 
@@ -751,24 +788,17 @@ public class Wren : MonoBehaviour
 
             if (c.tag == "Food")
             {
-                if (!state.onGround)
-                {
-                    carrying.PickUpItem(c.gameObject);
-                }
+                CheckPickUp(c.gameObject);
             }
             else if (c.tag == "Ball")
             {
-                if (!state.onGround)
-                {
-                    carrying.PickUpItem(c.gameObject);
-                }
+
+                CheckPickUp(c.gameObject);
             }
             else if (c.tag == "Fire")
             {
-                if (!state.onGround)
-                {
-                    carrying.PickUpItem(c.gameObject);
-                }
+
+                CheckPickUp(c.gameObject);
             }
             else if (c.tag == "Resetable")
             {
@@ -780,7 +810,8 @@ public class Wren : MonoBehaviour
             }
             else if (c.tag == "WaterDrop")
             {
-                carrying.PickUpItem(c.gameObject);
+
+                CheckPickUp(c.gameObject);
             }
             else if (c.tag == "Boost")
             {

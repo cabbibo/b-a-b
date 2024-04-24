@@ -28,12 +28,18 @@ public class AllPoser : MonoBehaviour
     [Range(0, 1)] public float leftWingTwistDown;
     [Range(0, 1)] public float leftWingStop;
 
+    [Range(0, 1)] public float leftFootOut;
+
     [Range(0, 1)] public float rightWingTuck;
     [Range(0, 1)] public float rightWingTurnLeft;
     [Range(0, 1)] public float rightWingTurnRight;
     [Range(0, 1)] public float rightWingTwistUp;
     [Range(0, 1)] public float rightWingTwistDown;
     [Range(0, 1)] public float rightWingStop;
+
+
+    [Range(0, 1)] public float rightFootOut;
+
 
 
     public Pose p_Base;
@@ -45,7 +51,7 @@ public class AllPoser : MonoBehaviour
     public Pose p_leftWingTwistUp;
     public Pose p_leftWingTwistDown;
     public Pose p_leftWingStop;
-
+    public Pose p_leftFootOut;
 
     public Pose p_rightWingTuck;
     public Pose p_rightWingTurnLeft;
@@ -53,16 +59,27 @@ public class AllPoser : MonoBehaviour
     public Pose p_rightWingTwistUp;
     public Pose p_rightWingTwistDown;
     public Pose p_rightWingStop;
+    public Pose p_rightFootOut;
 
     private Vector3 wingRot1_L;
     private Vector3 wingRot2_L;
     private Vector3 wingRot3_L;
     private Vector3 wingRot4_L;
 
+    private Vector3 legRot1_L;
+    private Vector3 legRot2_L;
+    private Vector3 legRot3_L;
+
     private Vector3 wingRot1_R;
     private Vector3 wingRot2_R;
     private Vector3 wingRot3_R;
     private Vector3 wingRot4_R;
+
+
+    private Vector3 legRot1_R;
+    private Vector3 legRot2_R;
+    private Vector3 legRot3_R;
+
 
     private Vector3 tailRot;
     private Vector3 hipRot;
@@ -82,10 +99,22 @@ public class AllPoser : MonoBehaviour
     private Vector3 wingRot3_L_vel;
     private Vector3 wingRot4_L_vel;
 
+
+    private Vector3 legRot1_L_vel;
+    private Vector3 legRot2_L_vel;
+    private Vector3 legRot3_L_vel;
+
+
     private Vector3 wingRot1_R_vel;
     private Vector3 wingRot2_R_vel;
     private Vector3 wingRot3_R_vel;
     private Vector3 wingRot4_R_vel;
+
+
+    private Vector3 legRot1_R_vel;
+    private Vector3 legRot2_R_vel;
+    private Vector3 legRot3_R_vel;
+
 
     private Vector3 tailRot_vel;
     private Vector3 hipRot_vel;
@@ -104,10 +133,19 @@ public class AllPoser : MonoBehaviour
     private Vector3 wingRot3_L_target;
     private Vector3 wingRot4_L_target;
 
+    private Vector3 legRot1_L_target;
+    private Vector3 legRot2_L_target;
+    private Vector3 legRot3_L_target;
     private Vector3 wingRot1_R_target;
     private Vector3 wingRot2_R_target;
     private Vector3 wingRot3_R_target;
     private Vector3 wingRot4_R_target;
+
+
+    private Vector3 legRot1_R_target;
+    private Vector3 legRot2_R_target;
+    private Vector3 legRot3_R_target;
+
 
     private Vector3 tailRot_target;
     private Vector3 hipRot_target;
@@ -158,6 +196,9 @@ public class AllPoser : MonoBehaviour
                 rightWingStop = Mathf.Lerp(rightWingStop, Mathf.Clamp(controller.r3 ? 1 : 0, 0, 1), lerpSpeed);
                 leftWingStop = Mathf.Lerp(leftWingStop, Mathf.Clamp(controller.l3 ? 1 : 0, 0, 1), lerpSpeed);
 
+                leftFootOut = Mathf.Lerp(leftFootOut, controller.l1, lerpSpeed);
+                rightFootOut = Mathf.Lerp(rightFootOut, controller.r1, lerpSpeed);
+
 
             }
 
@@ -177,6 +218,10 @@ public class AllPoser : MonoBehaviour
                 rightWingStop = Mathf.Lerp(rightWingStop, Mathf.Clamp(wren.input.right3, 0, 1), lerpSpeed);
                 leftWingStop = Mathf.Lerp(leftWingStop, Mathf.Clamp(wren.input.left3, 0, 1), lerpSpeed);
 
+
+                leftFootOut = Mathf.Lerp(leftFootOut, wren.input.left1, lerpSpeed);
+                rightFootOut = Mathf.Lerp(rightFootOut, wren.input.right1, lerpSpeed);
+
             }
         }
 
@@ -192,6 +237,15 @@ public class AllPoser : MonoBehaviour
         wingRot3_R_target = p_Base.wingRot3_R;
         wingRot4_R_target = p_Base.wingRot4_R;
 
+        legRot1_L_target = p_Base.legRot1_L;
+        legRot2_L_target = p_Base.legRot2_L;
+        legRot3_L_target = p_Base.legRot3_L;
+
+        legRot1_R_target = p_Base.legRot1_R;
+        legRot2_R_target = p_Base.legRot2_R;
+        legRot3_R_target = p_Base.legRot3_R;
+
+
         tailRot_target = p_Base.tailRot;
         hipRot_target = p_Base.hipRot;
         spineRot_target = p_Base.spineRot;
@@ -205,15 +259,24 @@ public class AllPoser : MonoBehaviour
 
 
 
-
         wingRot1_L = Vector3.zero;
         wingRot2_L = Vector3.zero;
         wingRot3_L = Vector3.zero;
         wingRot4_L = Vector3.zero;
+
+        legRot1_L = Vector3.zero;
+        legRot2_L = Vector3.zero;
+        legRot3_L = Vector3.zero;
+
         wingRot1_R = Vector3.zero;
         wingRot2_R = Vector3.zero;
         wingRot3_R = Vector3.zero;
         wingRot4_R = Vector3.zero;
+
+        legRot1_R = Vector3.zero;
+        legRot2_R = Vector3.zero;
+        legRot3_R = Vector3.zero;
+
         tailRot = Vector3.zero;
         hipRot = Vector3.zero;
         spineRot = Vector3.zero;
@@ -230,12 +293,14 @@ public class AllPoser : MonoBehaviour
         AddPose(leftWingTwistUp, p_leftWingTwistUp);
         AddPose(leftWingTwistDown, p_leftWingTwistDown);
         AddPose(leftWingStop, p_leftWingStop);
+        AddPose(leftFootOut, p_leftFootOut);
 
         AddPose(rightWingTuck, p_rightWingTuck);
         AddPose(rightWingTurnLeft, p_rightWingTurnLeft);
         AddPose(rightWingTurnRight, p_rightWingTurnRight);
         AddPose(rightWingTwistUp, p_rightWingTwistUp);
         AddPose(rightWingTwistDown, p_rightWingTwistDown);
+        AddPose(rightFootOut, p_rightFootOut);
 
 
         AddPose(rightWingStop, p_rightWingStop);
@@ -265,10 +330,20 @@ public class AllPoser : MonoBehaviour
         wingRot2_L_target += wingRot2_L;
         wingRot3_L_target += wingRot3_L;
         wingRot4_L_target += wingRot4_L;
+
+        legRot1_L_target += legRot1_L;
+        legRot2_L_target += legRot2_L;
+        legRot3_L_target += legRot3_L;
+
         wingRot1_R_target += wingRot1_R;
         wingRot2_R_target += wingRot2_R;
         wingRot3_R_target += wingRot3_R;
         wingRot4_R_target += wingRot4_R;
+
+        legRot1_R_target += legRot1_R;
+        legRot2_R_target += legRot2_R;
+        legRot3_R_target += legRot3_R;
+
         tailRot_target += tailRot;
         hipRot_target += hipRot;
         spineRot_target += spineRot;
@@ -348,6 +423,31 @@ public class AllPoser : MonoBehaviour
         output.tailRot3 += tailRot3_vel;
         tailRot3_vel *= dampening;
 
+        legRot1_L_vel += (legRot1_L_target - output.legRot1_L) * towardsTargetForce;
+        output.legRot1_L += legRot1_L_vel;
+        legRot1_L_vel *= dampening;
+
+        legRot2_L_vel += (legRot2_L_target - output.legRot2_L) * towardsTargetForce;
+        output.legRot2_L += legRot2_L_vel;
+        legRot2_L_vel *= dampening;
+
+        legRot3_L_vel += (legRot3_L_target - output.legRot3_L) * towardsTargetForce;
+        output.legRot3_L += legRot3_L_vel;
+        legRot3_L_vel *= dampening;
+
+        legRot1_R_vel += (legRot1_R_target - output.legRot1_R) * towardsTargetForce;
+        output.legRot1_R += legRot1_R_vel;
+        legRot1_R_vel *= dampening;
+
+        legRot2_R_vel += (legRot2_R_target - output.legRot2_R) * towardsTargetForce;
+        output.legRot2_R += legRot2_R_vel;
+        legRot2_R_vel *= dampening;
+
+        legRot3_R_vel += (legRot3_R_target - output.legRot3_R) * towardsTargetForce;
+        output.legRot3_R += legRot3_R_vel;
+        legRot3_R_vel *= dampening;
+
+
 
 
 
@@ -367,6 +467,15 @@ public class AllPoser : MonoBehaviour
         wingRot2_R += strength * (pose.wingRot2_R - p_Base.wingRot2_R);
         wingRot3_R += strength * (pose.wingRot3_R - p_Base.wingRot3_R);
         wingRot4_R += strength * (pose.wingRot4_R - p_Base.wingRot4_R);
+
+        legRot1_L += strength * (pose.legRot1_L - p_Base.legRot1_L);
+        legRot2_L += strength * (pose.legRot2_L - p_Base.legRot2_L);
+        legRot3_L += strength * (pose.legRot3_L - p_Base.legRot3_L);
+
+        legRot1_R += strength * (pose.legRot1_R - p_Base.legRot1_R);
+        legRot2_R += strength * (pose.legRot2_R - p_Base.legRot2_R);
+        legRot3_R += strength * (pose.legRot3_R - p_Base.legRot3_R);
+
 
         tailRot += strength * (pose.tailRot - p_Base.tailRot);
         hipRot += strength * (pose.hipRot - p_Base.hipRot);

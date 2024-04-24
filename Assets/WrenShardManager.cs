@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using WrenUtils;
 
 
 [ExecuteAlways]
@@ -41,9 +42,19 @@ public class WrenShardManager : MonoBehaviour
         SpendShards((int)boostNumLost);
     }
 
+    public void DoSkim(Vector3 location)
+    {
+        CollectShards((int)gainedPerSkim, God.islandData.maxBiomeID, location);
+    }
+
     public void DoDisintegrate()
     {
 
+    }
+
+    public void DoCrash()
+    {
+        SpendExtraShards();
     }
 
     public void DoReverse()
@@ -113,6 +124,10 @@ public class WrenShardManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (wren.physics.distToGround < 3 && wren.physics.onGround == false)
+        {
+            CollectShards((int)gainedWhileClose, God.islandData.maxBiomeID, wren.transform.position);
+        }
 
         if (oNumShards == numShards)
         {
@@ -189,6 +204,16 @@ public class WrenShardManager : MonoBehaviour
     {
         numShards--;
         UpdateShards();
+    }
+
+    public void SpendExtraShards()
+    {
+        if (numShards > numShardsInBody)
+        {
+            numShards = numShardsInBody;
+        }
+        UpdateShards();
+
     }
 
     public float bodyPercentage;

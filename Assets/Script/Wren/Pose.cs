@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Pose : MonoBehaviour
 {
-   
+
 
    public Vector3 wingRot1_L;
    public Vector3 wingRot2_L;
@@ -26,6 +26,14 @@ public class Pose : MonoBehaviour
    public Vector3 tailRot1;
    public Vector3 tailRot2;
    public Vector3 tailRot3;
+
+   public Vector3 legRot1_L;
+   public Vector3 legRot2_L;
+   public Vector3 legRot3_L;
+
+   public Vector3 legRot1_R;
+   public Vector3 legRot2_R;
+   public Vector3 legRot3_R;
 
 
 

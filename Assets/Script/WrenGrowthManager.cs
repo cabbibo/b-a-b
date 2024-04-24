@@ -116,8 +116,6 @@ public class WrenGrowthManager : MonoBehaviour
 
 
 
-    public int shardsLostPerHit;
-
     //TODO: do we need to pass state on this one?
     public void HurtCollision(Collision c)
     {
@@ -127,8 +125,7 @@ public class WrenGrowthManager : MonoBehaviour
         if (state.isLocal)
         {
 
-            wren.shards.SpendShards(shardsLostPerHit);
-
+            wren.shards.DoCrash();
             stats.HealthAdd(-c.relativeVelocity.magnitude * hurtCollisionMultiplier);
             God.audio.Play(God.sounds.hurtClip);
             if (God.glitchHit != null) { God.glitchHit.StartGlitch(); }

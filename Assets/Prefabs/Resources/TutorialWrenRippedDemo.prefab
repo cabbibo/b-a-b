@@ -549,6 +549,12 @@ MonoBehaviour:
   tailRot1: {x: 3, y: 20, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: 3, y: -20, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &687666778160617702
 GameObject:
   m_ObjectHideFlags: 0
@@ -972,6 +978,12 @@ MonoBehaviour:
   tailRot1: {x: 0, y: 27, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: 24, y: -55, z: 7.4}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &687666778284187028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1033,6 +1045,12 @@ MonoBehaviour:
   tailRot1: {x: 0, y: 49, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: 20, y: -40, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &687666778338606156
 GameObject:
   m_ObjectHideFlags: 0
@@ -1198,6 +1216,7 @@ MonoBehaviour:
   beak: {fileID: 7643670994601658526}
   _ResetLocation: {x: 0, y: 0, z: 0}
   totalShards: 0
+  debug: 0
   debugHierarchyConnections: 0
   debugHierarchyBasis: 0
   debugHierarchy: {fileID: 5978150348886614211}
@@ -1371,6 +1390,12 @@ MonoBehaviour:
   tailRot1: {x: -4, y: 10, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: 0, y: -15, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &687666778752507942
 GameObject:
   m_ObjectHideFlags: 0
@@ -2572,6 +2597,12 @@ MonoBehaviour:
   tailRot1: {x: 0, y: 55, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: -30, y: -27, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &687666779177528897
 GameObject:
   m_ObjectHideFlags: 0
@@ -2633,6 +2664,12 @@ MonoBehaviour:
   tailRot1: {x: -30.67, y: 27, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: 0, y: -55, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &687666779286386080
 GameObject:
   m_ObjectHideFlags: 0
@@ -2694,6 +2731,12 @@ MonoBehaviour:
   tailRot1: {x: 0, y: 15, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: -4, y: -10, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &687666779298809699
 GameObject:
   m_ObjectHideFlags: 0
@@ -3077,6 +3120,12 @@ MonoBehaviour:
   tailRot1: {x: 2.9999998, y: 20, z: -2.4e-44}
   tailRot2: {x: 1e-45, y: 0, z: 0}
   tailRot3: {x: 3.0000002, y: -20, z: 2e-44}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!114 &687666779572013908
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3102,12 +3151,14 @@ MonoBehaviour:
   leftWingTwistUp: 3e-45
   leftWingTwistDown: 3e-45
   leftWingStop: 3e-45
+  leftFootOut: 0
   rightWingTuck: 3e-45
   rightWingTurnLeft: 3e-45
   rightWingTurnRight: 3e-45
   rightWingTwistUp: 3e-45
   rightWingTwistDown: 3e-45
   rightWingStop: 3e-45
+  rightFootOut: 0
   p_Base: {fileID: 687666778128427387}
   p_leftWingTuck: {fileID: 687666778625767550}
   p_leftWingTurnLeft: {fileID: 687666779177528896}
@@ -3115,12 +3166,14 @@ MonoBehaviour:
   p_leftWingTwistUp: {fileID: 687666779816990960}
   p_leftWingTwistDown: {fileID: 687666779649687275}
   p_leftWingStop: {fileID: 2096485535001446003}
+  p_leftFootOut: {fileID: 0}
   p_rightWingTuck: {fileID: 687666779286386087}
   p_rightWingTurnLeft: {fileID: 687666778249269292}
   p_rightWingTurnRight: {fileID: 687666779033626487}
   p_rightWingTwistUp: {fileID: 687666778284187050}
   p_rightWingTwistDown: {fileID: 687666779608037176}
   p_rightWingStop: {fileID: 2096485536014676255}
+  p_rightFootOut: {fileID: 0}
   towardsTargetForce: 0.1
   dampening: 0.7
   totalBones: 16
@@ -3185,6 +3238,12 @@ MonoBehaviour:
   tailRot1: {x: 0, y: 20, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: -20, y: -40, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &687666779649687252
 GameObject:
   m_ObjectHideFlags: 0
@@ -3246,6 +3305,12 @@ MonoBehaviour:
   tailRot1: {x: -20, y: 40, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: 0, y: -20, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &687666779816990961
 GameObject:
   m_ObjectHideFlags: 0
@@ -3307,6 +3372,12 @@ MonoBehaviour:
   tailRot1: {x: 20, y: 40, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: 0, y: -49, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &687666779932528318
 GameObject:
   m_ObjectHideFlags: 0
@@ -3368,6 +3439,12 @@ MonoBehaviour:
   tailRot1: {x: 24.08, y: 55.4, z: -7.4}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: 0, y: -27.9, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &748584889813777508
 GameObject:
   m_ObjectHideFlags: 0
@@ -4407,6 +4484,12 @@ MonoBehaviour:
   tailRot1: {x: -14.6, y: 39.82, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: 3, y: -20, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &2096485536014676249
 GameObject:
   m_ObjectHideFlags: 0
@@ -4468,6 +4551,12 @@ MonoBehaviour:
   tailRot1: {x: 3, y: 20, z: 0}
   tailRot2: {x: 0, y: 0, z: 0}
   tailRot3: {x: -21.5, y: -39.82, z: 0}
+  legRot1_L: {x: 0, y: 0, z: 0}
+  legRot2_L: {x: 0, y: 0, z: 0}
+  legRot3_L: {x: 0, y: 0, z: 0}
+  legRot1_R: {x: 0, y: 0, z: 0}
+  legRot2_R: {x: 0, y: 0, z: 0}
+  legRot3_R: {x: 0, y: 0, z: 0}
 --- !u!1 &2118853793043483834
 GameObject:
   m_ObjectHideFlags: 0
@@ -27927,6 +28016,7 @@ MonoBehaviour:
   tuckDampeningReduction: 0.8
   velMatchMultiplier: -2
   bumperForce: 0
+  bumperTorqueForce: 0
   oceanForceMultiplier: 10
   groundPower: 6
   groundOut: 0.3
@@ -28034,11 +28124,16 @@ MonoBehaviour:
   horizonRightingForcePosition: {x: 0, y: 0, z: 0}
   bumperApplicationForceL: {x: 0, y: 0, z: 0}
   bumperApplicationForceR: {x: 0, y: 0, z: 0}
+  bumperApplicationPositionL: {x: 0, y: 0, z: 0}
+  bumperApplicationPositionR: {x: 0, y: 0, z: 0}
   oLeft1: 0
   oRight1: 0
+  oceanToFlatOnExit: 0.3
+  velocityReductionOnEnterWater: 0.3
   skimForceUp: 50
   skimForceForward: 50
   skimImpulseMulitplier: 1
+  boostMultiplier: 0
   doBasicGroundControls: 0
   basicGroundLookControls_lookSpeed: 3
   basicGroundLookControls_moveSpeed: 0
@@ -28174,9 +28269,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51de878a15f030848bbc811fa4f3cd1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  wren: {fileID: 0}
   upDistCarrying: 0
   backDistCarrying: -1.4
   CarriedItems: []
+  FeetCarriedItems: 
 --- !u!114 &7282418919974470726
 MonoBehaviour:
   m_ObjectHideFlags: 0

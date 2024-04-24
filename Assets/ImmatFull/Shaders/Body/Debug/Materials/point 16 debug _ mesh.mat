@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: point 16 debug _ mesh
-  m_Shader: {fileID: 4800000, guid: d6cfda97b253dc54c83d7a192dbf8792, type: 3}
+  m_Shader: {fileID: 4800000, guid: eeff49170586f54459621fbc04e8a18f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -73,7 +73,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Size: 0.01
+    - _Size: 0.3
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1

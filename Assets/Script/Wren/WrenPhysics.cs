@@ -130,6 +130,7 @@ public class WrenPhysics : MonoBehaviour
 
 
     public float bumperForce;
+    public float bumperTorqueForce;
 
 
 
@@ -1171,6 +1172,11 @@ public class WrenPhysics : MonoBehaviour
     public Vector3 bumperApplicationForceL;
     public Vector3 bumperApplicationForceR;
 
+
+    public Vector3 bumperApplicationPositionL;
+    public Vector3 bumperApplicationPositionR;
+
+
     public float oLeft1;
     public float oRight1;
 
@@ -1189,12 +1195,41 @@ public class WrenPhysics : MonoBehaviour
 
 
 
-        bumperApplicationForceL = transform.right * velLeft1 * bumperForce * -1;
-        bumperApplicationForceR = transform.right * velRight1 * bumperForce * 1;
+        // bumperApplicationForceL = transform.right * velLeft1 * bumperForce * -1;
+        // bumperApplicationForceR = transform.right * velRight1 * bumperForce * 1;
 
-        bumperApplicationForceL = Vector3.Scale(bumperApplicationForceL, Vector3.right + Vector3.forward);
-        bumperApplicationForceR = Vector3.Scale(bumperApplicationForceR, Vector3.right + Vector3.forward);
+        // bumperApplicationForceL = Vector3.Scale(bumperApplicationForceL, Vector3.right + Vector3.forward);
+        //bumperApplicationForceR = Vector3.Scale(bumperApplicationForceR, Vector3.right + Vector3.forward);
 
+
+        rb.AddTorque(transform.forward * velLeft1 * bumperTorqueForce * -1);
+        rb.AddTorque(transform.forward * velRight1 * bumperTorqueForce * 1);
+
+
+
+
+
+        /*bumperApplicationForceL = -vel * bumperForce * input.left1;
+        bumperApplicationForceR = -vel * bumperForce * input.right1;
+
+        bumperApplicationPositionL = transform.position - Vector3.right * 2 - Vector3.up;
+        bumperApplicationPositionR = transform.position + Vector3.right * 2 - Vector3.up;
+*/
+
+        bumperApplicationForceL = (-transform.right * vel.magnitude * .02f - Vector3.up * .2f) * bumperForce * input.left1;
+        bumperApplicationForceR = (transform.right * vel.magnitude * .02f - Vector3.up * .2f) * bumperForce * input.right1;
+
+        bumperApplicationPositionL = transform.position + transform.forward * 2 - transform.right * 1.5f;
+        bumperApplicationPositionR = transform.position + transform.forward * 2 + transform.right * 1.5f;
+
+
+
+
+        // bumperApplicationForceL = Vector3.zero;
+        // bumperApplicationForceR = Vector3.zero;
+
+        //bumperApplicationPositionL = Vector3.zero;
+        //bumperApplicationPositionR = Vector3.zero;
 
 
         //bumperApplicationForceL = Vector3.Scale(bumperApplicationForceL, Vector3.up);
@@ -1207,6 +1242,14 @@ public class WrenPhysics : MonoBehaviour
 
 
     }
+
+
+    /*
+
+    Foot out forces;
+
+
+    */
 
 
 
@@ -1484,8 +1527,8 @@ public class WrenPhysics : MonoBehaviour
         AddForce(upwardsRightingForce, upwardsRightingForcePosition);
         AddForce(horizonRightingForce, horizonRightingForcePosition);
         AddForce(paintedWindForce, paintedWindForcePosition);
-        AddForce(bumperApplicationForceL, leftWing.position);
-        AddForce(bumperApplicationForceR, rightWing.position);
+        AddForce(bumperApplicationForceL, bumperApplicationPositionL);
+        AddForce(bumperApplicationForceR, bumperApplicationPositionR);
 
         AddForce(oceanForce, oceanForcePosition);
 

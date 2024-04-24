@@ -58,6 +58,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: 86f7d07dde38b154188fd60359df541e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _PainterlyMap:
+        m_Texture: {fileID: 2800000, guid: a6ea6dffb01316440bce2e208ded2121, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _ReflectionCubemapOverride:
         m_Texture: {fileID: 8900000, guid: f51281e892e14f543ab00d78ba86938b, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -142,8 +146,8 @@ Material:
     - _Invert: 1
     - _MipBias: 0
     - _Moving: 0.17
-    - _NormalsScale: 3.8
-    - _NormalsStrength: 0.771
+    - _NormalsScale: 75.2
+    - _NormalsStrength: 0.396
     - _NormalsStrengthOverall: 1
     - _Offset: 0.00008
     - _OverrideReflectionCubemap: 0
