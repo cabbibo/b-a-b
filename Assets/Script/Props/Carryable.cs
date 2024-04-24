@@ -44,6 +44,8 @@ public class Carryable : RealtimeComponent<CarryableModel>
 
     private Vector3 _initialScale;
 
+    public float whileCarryingScaleMultiplier = .3f;
+
 
     public bool BeingCarried
     {
@@ -125,6 +127,7 @@ public class Carryable : RealtimeComponent<CarryableModel>
         _realtimeView.RequestOwnership();
         _realtimeTransform.RequestOwnership();
 
+        transform.localScale *= whileCarryingScaleMultiplier;
 
         // TODO: Ask jacob if we need this line
         if (setPositionOnPickup)
@@ -143,6 +146,8 @@ public class Carryable : RealtimeComponent<CarryableModel>
 
     public void UpdateCarriedPosition(WrenCarrying carrier, Vector3 targetPosition)
     {
+        //_rigidbody.position = targetPosition;
+
         _rigidbody.AddForce(carryForce * (targetPosition - transform.position));
     }
 
@@ -156,6 +161,7 @@ public class Carryable : RealtimeComponent<CarryableModel>
         _rigidbody.useGravity = gravityOnDrop;
         //_transform.localScale = new Vector3(4,4,4);
 
+        transform.localScale /= whileCarryingScaleMultiplier;
         if (dropSettings != null)
         {
             if (dropSettings.ExplosiveDirection.HasValue)

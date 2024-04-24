@@ -381,10 +381,14 @@ public class FullBird : MonoBehaviour
 
    }
 
+
+
+
    // Update is called once per frame
    public void UpdateBody()
    {
 
+      //      print("Updating Body");
       leftWing.limbLengths[0] = wren._ScaleMultiplier * chestToShoulder;
       leftWing.limbLengths[1] = wren._ScaleMultiplier * shoulderToElbow;
       leftWing.limbLengths[2] = wren._ScaleMultiplier * elbowToHand;
@@ -427,6 +431,26 @@ public class FullBird : MonoBehaviour
       rightWing.transform.localPosition = Vector3.right * wren._ScaleMultiplier * shoulderWidth;
 
 
+      leftHip.localPosition = Vector3.left * wren._ScaleMultiplier * hipSpread;
+      rightHip.localPosition = Vector3.right * wren._ScaleMultiplier * hipSpread;
+
+      leftKnee.localPosition = Vector3.down * wren._ScaleMultiplier * hipToKnee;
+      rightKnee.localPosition = Vector3.down * wren._ScaleMultiplier * hipToKnee;
+
+      leftFoot.localPosition = Vector3.down * wren._ScaleMultiplier * kneeToFoot;
+      rightFoot.localPosition = Vector3.down * wren._ScaleMultiplier * kneeToFoot;
+
+      leftHip.localRotation = Quaternion.Euler(pose.legRot1_L);
+      leftKnee.localRotation = Quaternion.Euler(pose.legRot2_L);
+      leftFoot.localRotation = Quaternion.Euler(pose.legRot3_L);
+
+      rightHip.localRotation = Quaternion.Euler(pose.legRot1_R);
+      rightKnee.localRotation = Quaternion.Euler(pose.legRot2_R);
+      rightFoot.localRotation = Quaternion.Euler(pose.legRot3_R);
+
+
+
+
 
 
 
@@ -467,6 +491,7 @@ public class FullBird : MonoBehaviour
 
    }
 
+   public bool debug;
    public void LateUpdate()
    {
 
@@ -479,6 +504,11 @@ public class FullBird : MonoBehaviour
       //body_gpu.UpdateFeathers();
       //leftWing_gpu.UpdateFeathers();
       //rightWing_gpu.UpdateFeathers();
+
+      if (debug)
+      {
+         UpdateBody();
+      }
 
       SetUpDebug();
       SetUpDraw();

@@ -78,6 +78,9 @@ public class WrenInput : MonoBehaviour
     public float o_dUp;
     public float o_dDown;
 
+    public float o_left1;
+    public float o_right1;
+
 
     public void GetInput()
     {
@@ -154,6 +157,9 @@ public class WrenInput : MonoBehaviour
         o_right3 = right3;
         o_ex = ex;
         o_circle = circle;
+
+        o_left1 = left1;
+        o_right1 = right1;
 
         leftX = controller.left.x;
         leftY = controller.left.y * (God.input.invertY ? -1 : 1);

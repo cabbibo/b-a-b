@@ -10,10 +10,12 @@ using WrenUtils;
 public class WrenCarrying : MonoBehaviour
 {
 
-
+    public Wren wren;
     public float upDistCarrying = .1f;
     public float backDistCarrying = .4f;
     public List<Carryable> CarriedItems = new List<Carryable>();
+
+    public List<int> FeetCarriedItems = new List<int>();
 
     // TODO: don't use God, use info from Wren
     public int GetNormalClientId()
@@ -21,12 +23,12 @@ public class WrenCarrying : MonoBehaviour
         return God.wrenMaker.GetNormalClientId();
     }
 
-    public bool PickUpItem(GameObject g)
+    public bool PickUpItem(GameObject g, int footID)
     {
         Carryable carryable;
         if (g.TryGetComponent(out carryable))
         {
-            return PickUpItem(carryable);
+            return PickUpItem(carryable, footID);
         }
         else
         {
@@ -35,7 +37,7 @@ public class WrenCarrying : MonoBehaviour
         return false;
     }
 
-    public bool PickUpItem(Carryable c)
+    public bool PickUpItem(Carryable c, int footID)
     {
         var targetPosition = transform.position - transform.up * upDistCarrying - transform.forward * backDistCarrying;
         if (c.TryToCarry(this, targetPosition))
@@ -43,6 +45,7 @@ public class WrenCarrying : MonoBehaviour
 
             God.audio.Play(God.sounds.collectablePickedUpSounds);
             CarriedItems.Add(c);
+            FeetCarriedItems.Add(footID);
 
             print(CarriedItems.Count);
         }
@@ -75,6 +78,35 @@ public class WrenCarrying : MonoBehaviour
         }
     }
 
+
+    public void DropLeftFootItems()
+    {
+        for (var i = 0; i < CarriedItems.Count; i++)
+        {
+            if (FeetCarriedItems[i] == 0)
+            {
+                if (DropCarriedItemAtIndex(i))
+                {
+                    i--;
+                }
+            }
+        }
+    }
+
+    public void DropRightFootItems()
+    {
+        for (var i = 0; i < CarriedItems.Count; i++)
+        {
+            if (FeetCarriedItems[i] == 1)
+            {
+                if (DropCarriedItemAtIndex(i))
+                {
+                    i--;
+                }
+            }
+        }
+    }
+
     public bool DropFirstCarriedItem(Carryable.DropSettings dropSettings = null)
     {
         return DropCarriedItemAtIndex(0, dropSettings);
@@ -91,6 +123,7 @@ public class WrenCarrying : MonoBehaviour
         {
             God.audio.Play(God.sounds.collectableDroppedSounds);
             CarriedItems.RemoveAt(index);
+            FeetCarriedItems.RemoveAt(index);
             return true;
         }
         return false;
@@ -101,13 +134,25 @@ public class WrenCarrying : MonoBehaviour
     public void UpdateCarriedItems()
     {
         Vector3 targetPosition = transform.position;
+        int index = 0;
         foreach (var c in CarriedItems)
         {
-            targetPosition -= transform.up * c.carryUpDistance - transform.forward * c.carryBackDistance;
+
+            int id = FeetCarriedItems[index];
+            if (id == 0)
+            {
+                targetPosition = wren.bird.leftFoot.position;
+            }
+            else
+            {
+                targetPosition = wren.bird.rightFoot.position;
+            }
+
+
+            // targetPosition -= transform.up * c.carryUpDistance - transform.forward * c.carryBackDistance;
             c.UpdateCarriedPosition(this, targetPosition);
 
-            //g.GetComponent<Rigidbody>().AddForce( -30 * (g.transform.position - targetPosition));
-            //targetPosition = c.GetAttachableTargetPos();
+
         }
 
     }
