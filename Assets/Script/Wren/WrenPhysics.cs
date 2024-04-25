@@ -1716,7 +1716,7 @@ public class WrenPhysics : MonoBehaviour
 
 
             Vector3 targetPos = wren.GroundIntersection(rb.position) + Vector3.up * groundUpVal;
-            AddForce((targetPos - rb.position) * groundUpForce);
+            AddForce((targetPos - rb.position).normalized * groundUpForce);
 
 
 

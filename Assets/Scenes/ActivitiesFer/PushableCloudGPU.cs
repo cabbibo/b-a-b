@@ -98,14 +98,14 @@ public class PushableCloudGPU : MonoBehaviour
 
         [Header("Physics")]
         public float pushForce;
-        [Range(0,1)] public float vortexForce;
+        [Range(0, 1)] public float vortexForce;
         public float forwardAmount;
 
         [Header("Hole")]
         public bool hole;
         public bool holeConstant;
-        [Range(0,1)] public float holeFalloff;
-        [Range(-1,1)] public float sizeDelta;
+        [Range(0, 1)] public float holeFalloff;
+        [Range(-1, 1)] public float sizeDelta;
 
         [Header("Light")]
         public bool light;
@@ -137,19 +137,20 @@ public class PushableCloudGPU : MonoBehaviour
     }
 
     public float playerForwardAmount = 1;
-    
-    public Vector3 PlayerPosition { get { return player.position; }}
-    public Vector3 PlayerForward { get { return player.forward; }}
+
+    public Vector3 PlayerPosition { get { return player.position; } }
+    public Vector3 PlayerForward { get { return player.forward; } }
 
     [System.Serializable]
-    struct BigParticle {
+    struct BigParticle
+    {
         public Vector3 startPosition;
         public Vector3 position;
         public Vector3 velocity;
         public float size;
         public float life;
     }
-    
+
     [SerializeField] BigParticle[] _savedParticles;
 
     BigParticle[] bigParticles;
@@ -157,7 +158,7 @@ public class PushableCloudGPU : MonoBehaviour
 
     ComputeBuffer particleBuffer;
 
-    [Range(-1,1)] public float startSize;
+    [Range(-1, 1)] public float startSize;
 
     PushableCloudGPUBrush[] brushes;
 
@@ -213,7 +214,7 @@ public class PushableCloudGPU : MonoBehaviour
                 bigParticles[i].position = bigParticles[i].startPosition = transform.position + new Vector3(Random.Range(-areaSize.x, areaSize.x), Random.Range(-areaSize.y, areaSize.y), Random.Range(-areaSize.z, areaSize.z)) * .5f;
                 bigParticles[i].velocity = Random.onUnitSphere * .1f;
                 bigParticles[i].life = Random.value;
-                foreach(var b in brushes)
+                foreach (var b in brushes)
                 {
                     if (b.brushData.hole)
                         HoleParticle(i, b);
@@ -236,11 +237,13 @@ public class PushableCloudGPU : MonoBehaviour
         NativeArray<Matrix4x4> particleMatricesNative = new NativeArray<Matrix4x4>(bigParticles.Length, Allocator.TempJob);
         NativeArray<BigParticle> bigParticlesNative = new NativeArray<BigParticle>(bigParticles, Allocator.TempJob);
         NativeArray<BrushData> brushesNative = new NativeArray<BrushData>(brushes.Length, Allocator.TempJob);
+
         for (int i = 0; i < brushes.Length; i++)
         {
             brushesNative[i] = brushes[i].brushData;
         }
-        for(int i = 0; i < brushes.Length; i++)
+
+        for (int i = 0; i < brushes.Length; i++)
         {
             BrushJob j = new BrushJob
             {
@@ -269,7 +272,7 @@ public class PushableCloudGPU : MonoBehaviour
             numBrushes = brushes.Length
         };
         JobHandle handle = job.Schedule(bigParticles.Length, 64);
-        
+
         handle.Complete();
         bigParticlesNative.CopyTo(bigParticles);
         particleMatricesNative.CopyTo(particleMatrices);
@@ -281,13 +284,13 @@ public class PushableCloudGPU : MonoBehaviour
 
     void UpdateBuffers()
     {
-        
+
 
         particleBuffer.SetData(bigParticles);
         particleMaterial.SetBuffer("particleBuffer", particleBuffer);
 
         int li = 1;
-        foreach(var b in brushes)
+        foreach (var b in brushes)
         {
             if (b.brushData.light)
             {
@@ -310,12 +313,12 @@ public class PushableCloudGPU : MonoBehaviour
     void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(transform.position, areaSize);
-        
+
         Gizmos.DrawWireSphere(PlayerPosition, 1);
         Gizmos.DrawWireSphere(PlayerPosition + PlayerForward * playerForwardAmount, 1);
         // Gizmos.DrawWireSphere(PlayerPosition + PlayerForward * playerForwardAmount, playerPushRadius);
     }
-    
+
     // Editor
 
     internal void SaveParticles()
