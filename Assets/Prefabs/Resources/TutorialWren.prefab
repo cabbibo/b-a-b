@@ -26507,6 +26507,8 @@ MonoBehaviour:
   bumperForce: 0
   bumperTorqueForce: 0
   oceanForceMultiplier: 10
+  carryingForceMultiplier: 0
+  carryingDragMultiplier: 0
   groundPower: 10
   groundOut: 0.03
   groundDampening: 0.9
@@ -26574,6 +26576,10 @@ MonoBehaviour:
   oceanMomentumForce: {x: 0, y: 0, z: 0}
   oceanNormalForce: {x: 0, y: 0, z: 0}
   oceanBoyancyForce: {x: 0, y: 0, z: 0}
+  carryingForceL: {x: 0, y: 0, z: 0}
+  carryingForcePositionL: {x: 0, y: 0, z: 0}
+  carryingForceR: {x: 0, y: 0, z: 0}
+  carryingForcePositionR: {x: 0, y: 0, z: 0}
   speed: 0
   tuckAmountL: 0
   tuckAmountR: 0
@@ -26685,6 +26691,8 @@ MonoBehaviour:
   o_dRight: 0
   o_dUp: 0
   o_dDown: 0
+  o_left1: 0
+  o_right1: 0
 --- !u!114 &9156686790671013125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26981,7 +26989,6 @@ MonoBehaviour:
   satisfiedCutOff: 0
   ultraSatisfiedHealthAdder: 0
   ultraSatisfiedCutOff: 0
-  shardsLostPerHit: 0
 --- !u!114 &6744424082612651983
 MonoBehaviour:
   m_ObjectHideFlags: 0

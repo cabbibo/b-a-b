@@ -25146,6 +25146,8 @@ MonoBehaviour:
   bumperForce: 3
   bumperTorqueForce: -300
   oceanForceMultiplier: 10
+  carryingForceMultiplier: 1
+  carryingDragMultiplier: 0
   groundPower: 3
   groundOut: 0.3
   groundDampening: 0.98
@@ -25213,6 +25215,10 @@ MonoBehaviour:
   oceanMomentumForce: {x: 0, y: 0, z: 0}
   oceanNormalForce: {x: 0, y: 0, z: 0}
   oceanBoyancyForce: {x: 0, y: 0, z: 0}
+  carryingForceL: {x: 0, y: 0, z: 0}
+  carryingForcePositionL: {x: 0, y: 0, z: 0}
+  carryingForceR: {x: 0, y: 0, z: 0}
+  carryingForcePositionR: {x: 0, y: 0, z: 0}
   speed: 0
   tuckAmountL: 0
   tuckAmountR: 0
@@ -25687,13 +25693,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d297911d9b576d49a3249a558de3cca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numShards: 7087
+  numShards: 4110
   maxShards: 10000
   wren: {fileID: 6951865465235407638}
   fullBird: {fileID: 3880365654864790025}
   numShardsInBody: 4471
-  oNumShards: 7087
-  tmpNumShards: 7087
+  oNumShards: 4110
+  tmpNumShards: 4110
   collectPosition: {x: -27.40899, y: 296.59265, z: 64.28639}
   collectType: 3
   lostPerCrash: 0
@@ -25702,9 +25708,9 @@ MonoBehaviour:
   boostNumLost: 1000
   reverseNumLost: 0
   callNumLost: 0
-  bodyPercentage: 1.585104
-  shardPercentage: 0.7087
-  shardTrailPercentage: 0.4731416
+  bodyPercentage: 0.91925746
+  shardPercentage: 0.411
+  shardTrailPercentage: -0.0652921
 --- !u!114 &2035757486640604507
 MonoBehaviour:
   m_ObjectHideFlags: 0
