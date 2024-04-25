@@ -146,6 +146,15 @@ public class WrenPhysics : MonoBehaviour
     public float oceanForceMultiplier = 10; // add above water force too
 
 
+    /*
+
+
+        Carrying Stuff
+
+    */
+
+    public float carryingForceMultiplier;
+    public float carryingDragMultiplier;
 
 
 
@@ -286,6 +295,16 @@ public class WrenPhysics : MonoBehaviour
     public Vector3 oceanMomentumForce; // Force that adds to wrenVelocity ( so we can move with waves better? )
     public Vector3 oceanNormalForce; // Force that gives us lift from the ocean
     public Vector3 oceanBoyancyForce; // Force that pushes us up from underwater
+
+
+    public Vector3 carryingForceL;
+    public Vector3 carryingForcePositionL;
+
+
+    public Vector3 carryingForceR;
+    public Vector3 carryingForcePositionR;
+
+
 
     public float speed;
 
@@ -492,7 +511,7 @@ public class WrenPhysics : MonoBehaviour
             BumperForces();
             OceanForces();
 
-
+            CarryingForces();
             ApplyForces();
 
         }
@@ -1180,6 +1199,22 @@ public class WrenPhysics : MonoBehaviour
     public float oLeft1;
     public float oRight1;
 
+
+
+
+
+
+
+
+    /*
+
+    Foot out forces;
+
+
+    */
+
+
+
     public virtual void BumperForces()
     {
 
@@ -1246,24 +1281,79 @@ public class WrenPhysics : MonoBehaviour
 
     /*
 
-    Foot out forces;
-
+        Carrying Forces
 
     */
+
+    public void CarryingForces()
+    {
+
+        List<Carryable> c = wren.carrying.CarriedItems;
+        List<int> f = wren.carrying.FeetCarriedItems;
+
+
+        int totalCarriedLeft = 0;
+        int totalCarriedRight = 0;
+        for (int i = 0; i < c.Count; i++)
+        {
+
+            if (f[i] == 0)
+            {
+                totalCarriedLeft++;
+            }
+
+            if (f[i] == 1)
+            {
+                totalCarriedRight++;
+            }
+
+
+        }
+
+        if (totalCarriedLeft > 0)
+        {
+
+            carryingForceL = Vector3.down * totalCarriedLeft * carryingForceMultiplier;
+            carryingForcePositionL = transform.position - transform.right * 2;
+
+        }
+        else
+        {
+            carryingForceL = Vector3.zero;
+        }
+
+
+        if (totalCarriedRight > 0)
+        {
+
+            carryingForceR = Vector3.down * totalCarriedRight * carryingForceMultiplier;
+            carryingForcePositionR = transform.position + transform.right * 2;
+
+        }
+        else
+        {
+            carryingForceR = Vector3.zero;
+        }
+
+
+    }
+
+
+
 
 
 
     /*
 
-        
-   ____       ____    _____     ____        __      _      _________     ____     ______       ____    _____    _____  
-  / __ \     / ___)  / ___/    (    )      /  \    / )    (_   _____)   / __ \   (   __ \     / ___)  / ___/   / ____\ 
- / /  \ \   / /     ( (__      / /\ \     / /\ \  / /       ) (___     / /  \ \   ) (__) )   / /     ( (__    ( (___   
-( ()  () ) ( (       ) __)    ( (__) )    ) ) ) ) ) )      (   ___)   ( ()  () ) (    __/   ( (       ) __)    \___ \  
-( ()  () ) ( (      ( (        )    (    ( ( ( ( ( (        ) (       ( ()  () )  ) \ \  _  ( (      ( (           ) ) 
- \ \__/ /   \ \___   \ \___   /  /\  \   / /  \ \/ /       (   )       \ \__/ /  ( ( \ \_))  \ \___   \ \___   ___/ /  
-  \____/     \____)   \____\ /__(  )__\ (_/    \__/         \_/         \____/    )_) \__/    \____)   \____\ /____/   
-                                                                                                                       
+
+    ____       ____    _____     ____        __      _      _________     ____     ______       ____    _____    _____  
+    / __ \     / ___)  / ___/    (    )      /  \    / )    (_   _____)   / __ \   (   __ \     / ___)  / ___/   / ____\ 
+    / /  \ \   / /     ( (__      / /\ \     / /\ \  / /       ) (___     / /  \ \   ) (__) )   / /     ( (__    ( (___   
+    ( ()  () ) ( (       ) __)    ( (__) )    ) ) ) ) ) )      (   ___)   ( ()  () ) (    __/   ( (       ) __)    \___ \  
+    ( ()  () ) ( (      ( (        )    (    ( ( ( ( ( (        ) (       ( ()  () )  ) \ \  _  ( (      ( (           ) ) 
+    \ \__/ /   \ \___   \ \___   /  /\  \   / /  \ \/ /       (   )       \ \__/ /  ( ( \ \_))  \ \___   \ \___   ___/ /  
+    \____/     \____)   \____\ /__(  )__\ (_/    \__/         \_/         \____/    )_) \__/    \____)   \____\ /____/   
+
     */
 
 
@@ -1272,7 +1362,7 @@ public class WrenPhysics : MonoBehaviour
     public float velocityReductionOnEnterWater = .3f;
 
 
-    void OceanForces()
+    public void OceanForces()
     {
 
         oceanForce = Vector3.zero;
@@ -1529,6 +1619,8 @@ public class WrenPhysics : MonoBehaviour
         AddForce(paintedWindForce, paintedWindForcePosition);
         AddForce(bumperApplicationForceL, bumperApplicationPositionL);
         AddForce(bumperApplicationForceR, bumperApplicationPositionR);
+        AddForce(carryingForceL, carryingForcePositionL);
+        AddForce(carryingForceR, carryingForcePositionR);
 
         AddForce(oceanForce, oceanForcePosition);
 

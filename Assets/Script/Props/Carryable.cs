@@ -128,6 +128,7 @@ public class Carryable : RealtimeComponent<CarryableModel>
         _realtimeTransform.RequestOwnership();
 
         transform.localScale *= whileCarryingScaleMultiplier;
+        GetComponent<Collider>().enabled = false;
 
         // TODO: Ask jacob if we need this line
         if (setPositionOnPickup)
@@ -161,6 +162,7 @@ public class Carryable : RealtimeComponent<CarryableModel>
         _rigidbody.useGravity = gravityOnDrop;
         //_transform.localScale = new Vector3(4,4,4);
 
+        GetComponent<Collider>().enabled = true;
         transform.localScale /= whileCarryingScaleMultiplier;
         if (dropSettings != null)
         {

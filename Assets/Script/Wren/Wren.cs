@@ -330,12 +330,12 @@ public class Wren : MonoBehaviour
                    }
                  */
 
-                if (input.left1 < .5 && input.o_left1 > .5 && physics.onGround == false && state.inInterface == false && state.canTakeOff)
+                if (input.left1 < .5 && input.o_left1 > .5 && state.inInterface == false)
                 {
                     carrying.DropLeftFootItems();
                 }
 
-                if (input.right1 < .5 && input.o_right1 > .5 && physics.onGround == false && state.inInterface == false && state.canTakeOff)
+                if (input.right1 < .5 && input.o_right1 > .5 && state.inInterface == false)
                 {
                     carrying.DropRightFootItems();
                 }
