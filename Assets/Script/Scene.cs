@@ -30,7 +30,7 @@ namespace WrenUtils
         void OnEnable()
         {
 
-            print("scene enabled");
+            //            print("scene enabled");
             SceneLoaded();
         }
 

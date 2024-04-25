@@ -55,7 +55,7 @@ public class GPUBody : MonoBehaviour
     public void Create()
     {
 
-        print("Create GPUBody");
+        //        print("Create GPUBody");
         meshes = new Mesh[2];
         meshes[0] = scapularFeather;
         meshes[1] = tailFeather;

@@ -81,7 +81,7 @@ add phase shift into onenable, not the set state!
         FlyingTutorialSequence.OnFreeFlightStarted += SetFreeFlightState;
         FlyingTutorialSequence.OnTutorialDiveFinished += SetTransitionState;
 
-        print(" Which Start Status : ");
+        //        print(" Which Start Status : ");
 
 
 
@@ -111,7 +111,7 @@ add phase shift into onenable, not the set state!
                 if (God.state.islandDiscovered == false)
                 {
 
-                    print("on tutorial island finished ");
+                    // print("on tutorial island finished ");
                     // Start from the reveal of the island
                     OnTutorialIslandFinishedEnd();
 
@@ -119,7 +119,7 @@ add phase shift into onenable, not the set state!
                 else
                 {
 
-                    print("full game started");
+                    //                    print("full game started");
                     // Start the full game
                     FullGameStart();
                 }

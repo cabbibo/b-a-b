@@ -7,6 +7,8 @@ using WrenUtils;
 [ExecuteInEditMode]
 public class BeeController : MonoBehaviour
 {
+    public Biome biome;
+
     public List<Transform> bees;
     public List<bool> droppedOff;
     public List<bool> followingWren;
@@ -40,6 +42,8 @@ public class BeeController : MonoBehaviour
     public void OnEnable()
     {
 
+
+
         if (reset)
         {
 
@@ -64,9 +68,19 @@ public class BeeController : MonoBehaviour
                 print(whichTemple[i]);
                 bees.Add(Instantiate(beePrefab, temples[whichTemple[i]].position + Random.insideUnitSphere, Quaternion.identity).transform);
                 bees[i].parent = beeHolder;
-                droppedOff.Add(false);
-                followingWren.Add(false);
-                lockedOnTrunk.Add(false);
+
+                if (biome.completed)
+                {
+                    droppedOff.Add(true);
+                    followingWren.Add(false);
+                    lockedOnTrunk.Add(true);
+                }
+                else
+                {
+                    droppedOff.Add(false);
+                    followingWren.Add(false);
+                    lockedOnTrunk.Add(false);
+                }
                 vels.Add(Vector3.zero);
                 positionsOnTrunk.Add(dropOffLocation.position + Random.insideUnitSphere * 4f);
             }
@@ -90,6 +104,8 @@ public class BeeController : MonoBehaviour
 
     //
 
+    public int totalLocked;
+    public float completionAmount;
     // Update is called once per frame
     void Update()
     {
@@ -103,11 +119,16 @@ public class BeeController : MonoBehaviour
             toFollow = debugWren;
         }
 
+
+        totalLocked = 0;
         for (int i = 0; i < bees.Count; i++)
         {
 
+
             if (lockedOnTrunk[i])
             {
+
+                totalLocked++;
                 bees[i].transform.position = positionsOnTrunk[i];
                 continue;
             }
@@ -161,6 +182,13 @@ public class BeeController : MonoBehaviour
 
 
 
+        }
+
+        completionAmount = (float)totalLocked / (float)bees.Count;
+
+        if (biome.completed == false)
+        {
+            biome.SetCompletion(completionAmount);
         }
 
     }

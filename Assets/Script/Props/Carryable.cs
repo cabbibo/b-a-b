@@ -115,6 +115,12 @@ public class Carryable : RealtimeComponent<CarryableModel>
 
     }
 
+    public void TryOwnership()
+    {
+        _realtimeView.RequestOwnership();
+        _realtimeTransform.RequestOwnership();
+    }
+
     public bool TryToCarry(WrenCarrying carrier, Vector3 targetPosition)
     {
         if (!CheckAvailableToCarry(carrier))

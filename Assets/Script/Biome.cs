@@ -20,6 +20,7 @@ public class Biome : MonoBehaviour
     public PlayCutScene startedAnimation;
     public PlayCutScene completedAnimation;
 
+    public List<GameObject> localObjects;
 
     public void AddToCompletion(float amount)
     {
@@ -32,6 +33,18 @@ public class Biome : MonoBehaviour
             amountComplete = 1;
             CompleteBiome();
         }
+    }
+
+    public void SetCompletion(float amount)
+    {
+        amountComplete = amount;
+        if (amountComplete >= 1)
+        {
+            print("Biome complete");
+            amountComplete = 1;
+            CompleteBiome();
+        }
+
     }
 
 
@@ -101,10 +114,25 @@ public class Biome : MonoBehaviour
             portal.SetPortalFull();
         }
 
+        print("HELLO I AM ENABLED");
+        print(gameObject.name);
+        print(discovered);
+        print(started);
+        print(completed);
+
+
     }
 
     public void OnEnterBiome()
     {
+
+        print("HELLO I AM ENTERED");
+
+        for (int i = 0; i < localObjects.Count; i++)
+        {
+            localObjects[i].SetActive(true);
+        }
+
         if (!discovered)
         {
             DiscoverBiome();
@@ -115,6 +143,12 @@ public class Biome : MonoBehaviour
 
     public void OnExitBiome()
     {
+        print("HELLO I AM EXITED");
+
+        for (int i = 0; i < localObjects.Count; i++)
+        {
+            localObjects[i].SetActive(false);
+        }
 
     }
 
