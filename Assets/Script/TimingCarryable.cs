@@ -36,6 +36,10 @@ public class TimingCarryable : MonoBehaviour
     void Update()
     {
 
+        if (!beingCarried)
+        {
+            GetComponent<Rigidbody>().AddForce((transform.position - (respawnTransform.position + respawnOffset)) * -3);
+        }
 
         // currently carrying in a location where
         // the water is fading away
@@ -127,13 +131,17 @@ public class TimingCarryable : MonoBehaviour
     {
 
         Reset();
-        Destroy();
+        if (destroyOnDry)
+        {
+            Destroy();
+        }
 
     }
 
 
     public void Reset()
     {
+
         currentAmount = 0;
         foreach (Wren w in God.wrens)
         {
@@ -152,8 +160,9 @@ public class TimingCarryable : MonoBehaviour
             transform.position = respawnTransform.position + respawnOffset;
         }
 
-        transform.GetComponent<Rigidbody>().position = transform.position;
+        transform.GetComponent<Rigidbody>().position = respawnTransform.position + respawnOffset;
         transform.GetComponent<Rigidbody>().velocity = Vector3.zero;
+
 
         if (autoRefill)
         {
@@ -169,11 +178,7 @@ public class TimingCarryable : MonoBehaviour
 
     public void Destroy()
     {
-        if (destroyOnDry)
-        {
-            Realtime.Destroy(this.gameObject);
-        }
-
+        Realtime.Destroy(this.gameObject);
     }
 
     public void OnSpawn()

@@ -31,7 +31,7 @@ public class FullState : MonoBehaviour
 
     public void OnEnable()
     {
-        print("full state enabled");
+        //   print("full state enabled");
         LoadState();
     }
 

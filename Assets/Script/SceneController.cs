@@ -41,13 +41,13 @@ public class SceneController : MonoBehaviour
     public void OnEnable()
     {
 
-        print("scene Controller enabled");
+        // print("scene Controller enabled");
 
         int c = SceneManager.sceneCount;
 
 
-        print(c);
-        print(SceneManager.sceneCount);
+        // print(c);
+        //print(SceneManager.sceneCount);
 
         SceneManager.sceneLoaded += OnSceneLoaded;
         SceneManager.sceneUnloaded += OnSceneUnloaded;
@@ -57,14 +57,14 @@ public class SceneController : MonoBehaviour
         for (int i = 0; i < scenes.Length; i++)
         {
 
-            print(scenes[i]);
+            //            print(scenes[i]);
 
             UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneByName(scenes[i]);
 
             if (scene != null)
             {
 
-                print(scene.name);
+                //  print(scene.name);
 
                 if (scene.name != "BaseScene" && scene.name != null)
                 {
@@ -211,7 +211,7 @@ public class SceneController : MonoBehaviour
 
     public void HardLoad(int id)
     {
-        print("hard load");
+        //        print("hard load");
 
         sceneLoaded = true;
 
@@ -241,7 +241,7 @@ public class SceneController : MonoBehaviour
     IEnumerator SceneSwitch(int newScene, int oldScene)
     {
 
-        print("SwitchScene");
+        //        print("SwitchScene");
 
         //        print("switching scene");
         //        print(newScene);
@@ -304,7 +304,7 @@ public class SceneController : MonoBehaviour
     public void SetNewScene(int newSceneID, int oldSceneID)
     {
 
-        print("SetNewScene");
+        //        print("SetNewScene");
 
         Camera.main.gameObject.GetComponent<LerpTo>().enabled = true;
         God.wren.state.inInterface = false;
@@ -343,8 +343,8 @@ public class SceneController : MonoBehaviour
     public void OnSceneFinishedLoading(WrenUtils.Scene wrenScene)
     {
 
-        print("On Scene finished loading");
-        print(wrenScene);
+        //      print("On Scene finished loading");
+        //        print(wrenScene);
 
 
         //print( biome );
@@ -434,7 +434,7 @@ public class SceneController : MonoBehaviour
     public void HardStart()
     {
 
-        print("hard start");
+        //   print("hard start");
 
         // TODO DO I NEED?
         /*

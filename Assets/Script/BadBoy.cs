@@ -10,6 +10,7 @@ public class BadBoy : MonoBehaviour
 
 
 
+    public BadBoyManager manager;
 
     // if goes outside of cage, if far enough away from wren, will return to cage
     public Transform cage;
@@ -44,6 +45,8 @@ public class BadBoy : MonoBehaviour
     public int trailLength;
     public Transform[] trailTransforms;
     public bool[] trailsAte;
+
+    public Vector3[] trailVels;
 
 
 
@@ -167,6 +170,8 @@ public class BadBoy : MonoBehaviour
 
         trailTransforms = new Transform[trailLength];
         trailsAte = new bool[trailLength];
+        trailVels = new Vector3[trailLength];
+
         for (int i = 0; i < trailLength; i++)
         {
             GameObject g = Instantiate(trailPrefab, trailHolder);
@@ -190,6 +195,11 @@ public class BadBoy : MonoBehaviour
     public float type = 3;
     public void OnWrenAte(int id)
     {
+
+        if (trailsAte[id] == true)
+        {
+            return;
+        }
 
         trailTransforms[id].GetComponent<MeshRenderer>().material.SetColor("_Color", Color.red);
         trailsAte[id] = true;
@@ -217,14 +227,51 @@ public class BadBoy : MonoBehaviour
 
     }
 
+
+    public void SetComplete()
+    {
+
+        for (int i = 0; i < trailTransforms.Length; i++)
+        {
+            trailTransforms[i].GetComponent<MeshRenderer>().material.SetColor("_Color", Color.red);
+            trailsAte[i] = true;
+        }
+
+        completed = true;
+    }
+
     void OnAllAte()
     {
+
+        print("OnAllAte");
+
+        completed = true;
+
+        // Some sort of explosion
+
         God.audio.Play(God.sounds.largeSuccessSound, 1);
         God.particleSystems.Emit(God.particleSystems.largeSuccessParticleSystem, transform.position, 1000);
-
-
         God.wren.shards.CollectShards(numShardsOnAllAte, type);
+
+
+        manager.OnBadBoyComplete(this);
+        //gameObject.SetActive(false);
+
+
     }
+
+    public Transform targetOnceCompleted;
+
+
+    public float forceTowardsTargetOnceComplete = 1;
+    public float curlForceOnceComplete = 1;
+    public float randomForceOnceComplete = 1;
+    public float dampeningOnceComplete = .9f;
+
+    Vector3 tmp1;
+    Vector3 tmp2;
+
+
 
 
     // Update is called once per frame
@@ -465,20 +512,54 @@ public class BadBoy : MonoBehaviour
 
         */
 
-        trailTransforms[0].position = Vector3.Lerp(trailTransforms[0].position, transform.position, trailFollowLerp);
-        trailTransforms[0].LookAt(transform.position);
-
-        for (int i = trailLength - 1; i > 0; i--)
+        if (completed == false)
         {
-            trailTransforms[i].position = Vector3.Lerp(trailTransforms[i].position, trailTransforms[i - 1].position, trailFollowLerp);
-            trailTransforms[i].LookAt(trailTransforms[i - 1].position);
+            trailTransforms[0].position = Vector3.Lerp(trailTransforms[0].position, transform.position, trailFollowLerp);
+            trailTransforms[0].LookAt(transform.position);
+
+            for (int i = trailLength - 1; i > 0; i--)
+            {
+                trailTransforms[i].position = Vector3.Lerp(trailTransforms[i].position, trailTransforms[i - 1].position, trailFollowLerp);
+                trailTransforms[i].LookAt(trailTransforms[i - 1].position);
 
 
-            float n = (i / (float)trailLength);
-            float fScale = Mathf.Min(n * 10, (1 - n));
-            bool isAte = trailsAte[i];
-            float extraScale = isAte ? .1f : 1;
-            trailTransforms[i].localScale = Vector3.one * extraScale * Mathf.Lerp(trailMinScale, trailMaxScale, fScale);
+                float n = (i / (float)trailLength);
+                float fScale = Mathf.Min(n * 10, (1 - n));
+                bool isAte = trailsAte[i];
+                float extraScale = isAte ? .1f : 1;
+                trailTransforms[i].localScale = Vector3.one * extraScale * Mathf.Lerp(trailMinScale, trailMaxScale, fScale);
+            }
+        }
+        else
+        {
+
+
+            for (int i = 0; i < trailTransforms.Length; i++)
+            {
+                float n = (i / (float)trailLength);
+                float fScale = Mathf.Min(n * 10, (1 - n));
+                bool isAte = trailsAte[i];
+                float extraScale = isAte ? .1f : 1;
+                trailTransforms[i].localScale = Vector3.one * extraScale * Mathf.Lerp(trailMinScale, trailMaxScale, fScale);
+
+                tmp1 = trailTransforms[i].position - targetOnceCompleted.position;
+
+                trailVels[i] += -tmp1.normalized * forceTowardsTargetOnceComplete;
+                trailVels[i] += Vector3.Cross(tmp1.normalized, Vector3.up) * curlForceOnceComplete;
+
+                tmp2 = Random.insideUnitSphere;
+                tmp2.Normalize();
+
+                trailVels[i] += tmp2 * randomForceOnceComplete;
+
+                trailTransforms[i].position += trailVels[i];
+                trailVels[i] *= dampeningOnceComplete;
+
+
+
+
+            }
+
         }
 
 
@@ -488,7 +569,6 @@ public class BadBoy : MonoBehaviour
 
 
     }
-
     void Update()
     {
 
@@ -542,6 +622,11 @@ public class BadBoy : MonoBehaviour
     }
 
     public float eatAmount = 1;
+    public float shardsLostPerHit = 1000;
+    public bool completed;
+
+
+
 
     public void OnCollisionEnter(Collision collision)
     {
@@ -551,8 +636,10 @@ public class BadBoy : MonoBehaviour
 
         if (God.IsOurWren(collision.collider))
         {
+            print("wren hit");
             print(-collision.relativeVelocity.magnitude * .1f * eatAmount);
-            God.wren.stats.HealthAdd(-collision.relativeVelocity.magnitude * .1f * eatAmount);
+            God.wren.shards.SpendShards((int)shardsLostPerHit);
+            // God.wren.stats.HealthAdd(-collision.relativeVelocity.magnitude * .1f * eatAmount);
         }
         else
         {

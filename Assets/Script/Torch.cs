@@ -5,11 +5,16 @@ using UnityEngine;
 
 using Normal.Realtime;
 
-public class Torch: MonoBehaviour
+
+public class Torch : MonoBehaviour
 {
 
     public bool lit;
-    public string firePrefab = "Fire";
+
+
+    public string firePrefab;
+
+    public GameObject fire;
 
 
     public ParticleSystem flameParticleSystem;
@@ -19,45 +24,39 @@ public class Torch: MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
 
-    public void OnEnable(){
-        if( lit ){
+    public void OnEnable()
+    {
+        if (lit)
+        {
             Light();
         }
     }
 
-    void OnTriggerEnter(Collider c){
+    void OnTriggerEnter(Collider c)
+    {
 
-    
-        if( c.tag == "Fire"){
 
-            print( "readyToLight");
-            if( lit == false ){
+        if (c.tag == "Fire")
+        {
+
+            print("readyToLight");
+            if (lit == false)
+            {
                 //var tc = c.gameObject.GetComponent<TimingCarryable>();
-                
-               // if( tc ){ tc.OnDry(); }
-               print("lighting");
+
+                // if( tc ){ tc.OnDry(); }
+                print("lighting");
                 Light();
             }
         }
 
-        if( c.tag == "Wren" ){
+        if (c.tag == "Wren")
+        {
 
-            print( c.gameObject );
-            print(c.attachedRigidbody.gameObject );
-
-            if( c.attachedRigidbody.gameObject.GetComponent<WrenCarrying>().CarriedItems.Count == 0 && lit ){
-
-                print("MADE IT HERE");
-                GameObject go = Realtime.Instantiate( firePrefab , transform );
-                go.transform.parent = transform;
-                go.GetComponent<TimingCarryable>().respawnTransform = transform;
-                go.GetComponent<TimingCarryable>().Reset();
-
-            }
         }
 
     }
@@ -65,9 +64,22 @@ public class Torch: MonoBehaviour
 
 
 
-    void Light(){
+    void Light()
+    {
         lit = true;
         flameParticleSystem.Play();
-        lit  = true;
+        lit = true;
+        print("MADE IT HERE");
+
+        if (fire == null)
+        {
+            fire = Realtime.Instantiate(firePrefab, transform);
+
+            fire.transform.parent = transform;
+            fire.transform.position = transform.position;
+            fire.GetComponent<TimingCarryable>().respawnTransform = transform;
+            fire.GetComponent<TimingCarryable>().Reset();
+        }
+
     }
 }
