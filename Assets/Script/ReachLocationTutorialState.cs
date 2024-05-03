@@ -46,12 +46,12 @@ public class ReachLocationTutorialState : TutorialState
     public void OnTriggerEnter(Collider c)
     {
 
-        print(c.attachedRigidbody);
-        print("triggy enter");
+        //print(c.attachedRigidbody);
+        //print("triggy enter");
 
         if (c.attachedRigidbody == God.wren.physics.rb && hasFired == false)
         {
-            print("lets go");
+            // print("lets go");
             OnLocationReached.Invoke();
             God.audio.Play(God.sounds.tutorialSuccessSound);
             hasFired = true;

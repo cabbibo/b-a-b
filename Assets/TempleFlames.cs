@@ -32,7 +32,7 @@ public class TempleFlames : MonoBehaviour
     {
 
 
-        print("TEMPLE FLAMES ENABLED");
+        //        print("TEMPLE FLAMES ENABLED");
 
         if (biome.completed == false)
         {

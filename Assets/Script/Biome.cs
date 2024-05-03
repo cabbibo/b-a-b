@@ -61,21 +61,36 @@ public class Biome : MonoBehaviour
     public void CompleteBiome()
     {
 
-        print("HELLOOO");
+        if (completed == false)
+        {
+            print("HELLOOO");
 
-        completed = true;
-        portal.OpenPortal();
-        God.state.OnBiomeCompleted(id);
-        completedAnimation.Play();
+            completed = true;
+            portal.OpenPortal();
+            God.state.OnBiomeCompleted(id);
+            completedAnimation.Play();
+        }
+        else
+        {
+            print("already completed");
+
+        }
 
     }
 
     public void StartBiome()
     {
 
-        started = true;
-        God.state.OnBiomeStarted(id);
-        startedAnimation.Play();
+        if (started == false)
+        {
+            started = true;
+            God.state.OnBiomeStarted(id);
+            startedAnimation.Play();
+        }
+        else
+        {
+            print("already started");
+        }
     }
 
 
@@ -114,11 +129,11 @@ public class Biome : MonoBehaviour
             portal.SetPortalFull();
         }
 
-        print("HELLO I AM ENABLED");
-        print(gameObject.name);
-        print(discovered);
-        print(started);
-        print(completed);
+        // print("HELLO I AM ENABLED");
+        //print(gameObject.name);
+        //print(discovered);
+        //print(started);
+        //print(completed);
 
 
     }
@@ -126,7 +141,7 @@ public class Biome : MonoBehaviour
     public void OnEnterBiome()
     {
 
-        print("HELLO I AM ENTERED");
+        //print("HELLO I AM ENTERED");
 
         for (int i = 0; i < localObjects.Count; i++)
         {
@@ -143,7 +158,7 @@ public class Biome : MonoBehaviour
 
     public void OnExitBiome()
     {
-        print("HELLO I AM EXITED");
+        //print("HELLO I AM EXITED");
 
         for (int i = 0; i < localObjects.Count; i++)
         {

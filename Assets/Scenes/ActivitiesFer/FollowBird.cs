@@ -49,6 +49,8 @@ public class FollowBirdEditor : Editor
 [ExecuteAlways()]
 public class FollowBird : MonoBehaviour
 {
+
+    public BirdFinder birdFinder;
     public Transform player;
 
     public float startMovingRadius = 15;
@@ -71,6 +73,7 @@ public class FollowBird : MonoBehaviour
         _moving = true;
     }
 
+
     void Update()
     {
         var dtp = Vector3.Distance(player.position, transform.position);
@@ -81,8 +84,15 @@ public class FollowBird : MonoBehaviour
         {
             _lastTouchTime = Time.time;
             moveSpeed *= 3;
+
+            if (_moving == false)
+            {
+                birdFinder.OnBirdFind();
+            }
+
+
         }
-        
+
         if (_moving)
         {
             _curveTime += Time.deltaTime * moveSpeed;
@@ -106,7 +116,7 @@ public class FollowBird : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Gizmos.color = new Color(1,0,1,1);
+        Gizmos.color = new Color(1, 0, 1, 1);
         Gizmos.DrawWireSphere(transform.position, startMovingRadius);
         Gizmos.DrawWireSphere(transform.position, stopMovingRadius);
     }

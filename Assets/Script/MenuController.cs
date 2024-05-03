@@ -29,29 +29,11 @@ public class MenuController : MonoBehaviour
     public string currentMenu = "";
 
     // Start is called before the first frame update
-    void Start()
-    {
-        //TurnMenuOn();
-
-        //  God.audio.Play( menuCloseSound );
-        //DeactivateMenu();
-        //God.fade.FadeIn(.1f);  
-
-        //  God.sceneController.HardStart();
-    }
 
     void OnEnable()
     {
-
-        //        print("menu enabling");
-
         God.audio.Play(menuOpenSound);
-
-        if (God.sceneController.autoLoad == true)
-        {
-            OnContinue();
-        }
-
+        TurnMenuOn();
     }
 
     // Update is called once per frame
@@ -60,7 +42,7 @@ public class MenuController : MonoBehaviour
 
 
         // can only do this if we aren't in the middle of fading!
-        if (God.input.menuPressed && God.fade.fading == false && God.wren != null)
+        if (God.input.menuPressed && God.wren != null)
         {
 
 
@@ -124,29 +106,19 @@ public class MenuController : MonoBehaviour
 
     }
 
-    /*void ToggleMenu(){
 
-        print("TOGLIN");
-        if(menuOn){
-            TurnMenuOff();
-        }else{
-            TurnMenuOn();
-        }
-    }*/
 
 
     public void TurnMenuOff()
     {
 
         God.audio.Play(menuCloseSound);
-        God.fade.FadeIn(.1f);
-        // DeactivateMenu();
-
+        God.postController.FadeIn();
         if (God.wren != null)
         {
             God.wren.canMove = true;
         }
-        // God.fade.FadeIn(.5f);
+
     }
 
 
@@ -157,7 +129,7 @@ public class MenuController : MonoBehaviour
 
         //        print("menu turning off");
         God.audio.Play(menuCloseSound);
-        God.fade.FadeIn(l);
+        God.postController.FadeIn();
         // DeactivateMenu();
         if (God.wren != null)
         {
@@ -173,8 +145,9 @@ public class MenuController : MonoBehaviour
     public void TurnMenuOn()
     {
 
-        print("somewhere the menu is turning on");
-        God.fade.FadeOut(Color.white, .5f, () => { ActivateMainMenu(); return 0; });
+        //        print("somewhere the menu is turning on");
+        God.postController.FadeOut();
+        ActivateMainMenu();
         God.audio.Play(menuOpenSound);
         if (God.wren != null)
         {
@@ -285,6 +258,8 @@ public class MenuController : MonoBehaviour
         }
         else
         {
+
+
             God.sceneController.OnSceneLoadEvent.AddListener(OnSceneLoaded);//m_MyEvent.AddListener(MyAction);
             God.sceneController.HardStart();
 
