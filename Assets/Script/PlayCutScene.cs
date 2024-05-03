@@ -400,7 +400,7 @@ public class PlayCutScene : MonoBehaviour
     public void SetStartValues()
     {
 
-
+        //        print(gameObject.name);
 
 
         startPos = Camera.main.transform.position;

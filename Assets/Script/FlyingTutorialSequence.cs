@@ -214,7 +214,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         stateManager.SetCinematicFlightTutorialState();
 
-        God.fade.FadeIn(3);
+        God.postController.FadeIn();
 
         groupContainer.alpha = 0;
         ShowContinue(false);

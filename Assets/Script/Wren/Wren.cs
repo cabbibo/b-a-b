@@ -93,6 +93,7 @@ public class Wren : MonoBehaviour
         FindInfo();
 
 
+        print("WREN ENABLED");
         startingPosition = GameObject.Find("StartPosition").transform;
 
         maker.wrens.Add(this);
@@ -111,7 +112,7 @@ public class Wren : MonoBehaviour
         state.SetInRace(-1);
         rt_Tranform.RequestOwnership();
 
-        FullReset();
+        //  FullReset();
 
 
 
@@ -149,6 +150,13 @@ public class Wren : MonoBehaviour
 
         physics.Reset();
 
+        print("Full Reset");
+        print(startingPosition.position);
+        print(God.state.lastPosition);
+
+        //        print(God.state.lastPosition);
+        //        print(startingPosition.position);
+
 
         Vector3 fPos = startingPosition.position + Vector3.up * physics.groundUpVal;
         Crash(fPos);
@@ -164,7 +172,8 @@ public class Wren : MonoBehaviour
     public void Crash(Vector3 p)
     {
 
-        //        print("crash1");
+        print("From position crash" + p);
+        print("crash1");
         physics.TransportToPosition(GroundIntersection(p) + Vector3.up * physics.groundUpVal, Vector3.zero);
         state.HitGround();
         if (autoTakeOff)
@@ -535,6 +544,7 @@ public class Wren : MonoBehaviour
 
     public virtual void LocalReset()
     {
+        print("local reset");
         bird.ResetFeatherValues();
         physics.LocalReset();
         cameraWork.Reset();
@@ -836,6 +846,16 @@ public class Wren : MonoBehaviour
     }
 
 
+
+    public void SetFullPosition(Vector3 position)
+    {
+
+        print("SET FULL POSITION");
+        God.state.SetLastPosition(position);
+        startingPosition.position = position;
+        FullReset();
+
+    }
 
 
 

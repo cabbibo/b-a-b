@@ -1429,20 +1429,20 @@ public class WrenPhysics : MonoBehaviour
 
         if (o.waterJustHit == true)
         {
-            print("WATER HIT");
+            //print("WATER HIT");
             oceanForce = -vel * velocityReductionOnEnterWater * 1;
             // vel = Vector3.zero;
-            print("waterhit");
+            //print("waterhit");
 
         }
 
         if (o.waterJustLeft == true)
         {
-            print("WATER LEFT");
+            //print("WATER LEFT");
 
             vel.y *= oceanToFlatOnExit;
             oceanForce = Vector3.Scale(vel, new Vector3(1, oceanToFlatOnExit, 1));
-            print("waterLeft");
+            //            print("waterLeft");
 
         }
 

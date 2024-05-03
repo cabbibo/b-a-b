@@ -38,14 +38,16 @@ public class FullState : MonoBehaviour
     public int framesBetweenSaves = 2000;
     public void Update()
     {
-        if (Time.frameCount % framesBetweenSaves == 0)
+        if (Time.frameCount % framesBetweenSaves == framesBetweenSaves - 1)
         {
-            UpdateState();
+            UpdateLastPosition();
         }
+
     }
     public void UpdateState()
     {
 
+        print("Updating State");
         // TODO save all this to player prefs
 
         PlayerPrefsX.SetBool("_GameStarted", gameStarted);
@@ -60,13 +62,6 @@ public class FullState : MonoBehaviour
         PlayerPrefsX.SetBoolArray("_BiomesDiscovered", biomesDiscovered);
 
 
-        if (God.wren != null)
-        {
-            lastPosition = God.wren.transform.position;
-        }
-
-        // saving the position of the bird!
-        PlayerPrefsX.SetVector3("_LastPosition", lastPosition);
 
         PlayerPrefs.SetInt("_CurrentScene", currentSceneID);
         PlayerPrefs.SetInt("_CurrentBiome", currentBiomeID);
@@ -75,9 +70,28 @@ public class FullState : MonoBehaviour
 
     }
 
+    public void UpdateLastPosition()
+    {
+
+        if (God.wren != null)
+        {
+            lastPosition = God.wren.transform.position;
+            // saving the position of the bird!
+            PlayerPrefsX.SetVector3("_LastPosition", lastPosition);
+        }
+    }
+
+    public void SetLastPosition(Vector3 v)
+    {
+        lastPosition = v;
+        PlayerPrefsX.SetVector3("_LastPosition", lastPosition);
+    }
+
+
 
     public void LoadState()
     {
+
 
         // TODO load all this from player prefs
 
@@ -91,8 +105,8 @@ public class FullState : MonoBehaviour
         currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
         currentBiomeID = PlayerPrefs.GetInt("_CurrentBiome", -1);
 
+        ///        print("Loading last Position");
         lastPosition = PlayerPrefsX.GetVector3("_LastPosition", Vector3.zero);
-
 
 
         biomesStarted = PlayerPrefsX.GetBoolArray("_BiomesStarted");
@@ -226,8 +240,6 @@ public class FullState : MonoBehaviour
         islandDiscovered = true;
         UpdateState();
     }
-
-
 
     public void LoadLocalState()
     {

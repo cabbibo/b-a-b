@@ -78,6 +78,7 @@ public class WrenSimulationController : MonoBehaviour
     public void SetPosition(Transform t)
     {
 
+        print("SETTING start position here");
         wren.startingPosition = t;
         wren.FullReset();
 

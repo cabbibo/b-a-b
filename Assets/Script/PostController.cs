@@ -98,4 +98,41 @@ public class PostController : MonoBehaviour
     }
 
 
+    public void FadeOut()
+    {
+        StartCoroutine(DoFadeOut());
+    }
+
+    public void FadeIn()
+    {
+        StartCoroutine(DoFadeIn());
+    }
+
+    public float fadeInSpeed = 1;
+    public float fadeOutSpeed = 1;
+
+    IEnumerator DoFadeOut()
+    {
+        float t = 0;
+        while (t < 1)
+        {
+            t += .03f * fadeOutSpeed;
+            _Fade = t;
+            yield return null;
+        }
+    }
+
+    IEnumerator DoFadeIn()
+    {
+        float t = 1;
+        while (t > 0)
+        {
+            t -= .03f * fadeInSpeed;
+            _Fade = t;
+            yield return null;
+        }
+    }
+
+
+
 }

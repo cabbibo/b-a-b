@@ -350,7 +350,7 @@ public class IslandData : MonoBehaviour
     public void OnExitBiome(int oldBiome)
     {
 
-        print("old Biome : " + oldBiome);
+        //print("old Biome : " + oldBiome);
         if (oldBiome == -1 || oldBiome == 7)
         {
             LeaveNeutralZone();
@@ -364,7 +364,7 @@ public class IslandData : MonoBehaviour
 
     public void OnEnterBiome(int newBiome)
     {
-        print(" new Biome : " + newBiome);
+        //        print(" new Biome : " + newBiome);
         if (newBiome == -1 || newBiome == 7)
         {
             EnterNeutralZone();

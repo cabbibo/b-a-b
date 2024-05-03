@@ -549,7 +549,7 @@ add phase shift into onenable, not the set state!
     public void SetIslandReachedState()
     {
 
-        print("setting island reached state");
+        //print("setting island reached state");
         hasCrashed = true;
         flightFinished = true;
         inFreeFlight = false;
@@ -557,11 +557,11 @@ add phase shift into onenable, not the set state!
         islandReached = true;
 
         // Set Wren position to last position loaded in state;
-        if (God.wren)
+        /*if (God.wren)
         {
-            print(God.state.lastPosition);
+            //print(God.state.lastPosition);
             God.wren.PhaseShift(God.state.lastPosition);
-        }
+        }*/
 
         fadeOrb.SetActive(false);
         tutorialIsland.SetActive(false);
@@ -614,11 +614,11 @@ add phase shift into onenable, not the set state!
         islandReached = true;
 
         // Set Wren position to last position loaded in state;
-        if (God.wren)
+        /*if (God.wren)
         {
             print(God.state.lastPosition);
             God.wren.PhaseShift(God.state.lastPosition);
-        }
+        }*/
 
         fadeOrb.SetActive(false);
         tutorialIsland.SetActive(false);

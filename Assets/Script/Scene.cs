@@ -25,23 +25,32 @@ namespace WrenUtils
         public bool startInFlight;
 
 
-
-        // Start is called before the first frame update
-        void OnEnable()
+        public void SceneLoaded(int newSceneID, bool loadedFromPortal)
         {
 
-            //            print("scene enabled");
-            SceneLoaded();
-        }
+            print("7) Wren Scene Loaded");
+
+            //print("scene calling scene Loaded");
 
 
+            Camera.main.gameObject.GetComponent<LerpTo>().enabled = true;
+            God.wren.state.inInterface = false;
+            God.wren.airInterface.Toggle(false);
+            God.wren.fullInterface.Toggle(false);
 
-        public void SceneLoaded()
-        {
+            if (newSceneID == 1)
+            {
+                God.wren.inEther = true;
+            }
+            else
+            {
+
+                God.wren.inEther = false;
+            }
+
+            God.wren.canMove = true;
 
 
-
-            //            print("hello");
             God.skyboxUpdater.UpdateSkybox(skyboxMaterial);
 
             God.currentScene = this;
@@ -52,51 +61,70 @@ namespace WrenUtils
                 portals[i].demo = isDemo;
             }
 
+            Vector3 startPos = baseStartPosition.position;
+
+
             if (God.wren != null)
             {
+
+                //                print("wren exists");
 
                 God.wren.parameters.Load(physicsParameters);
 
 
-                if (God.state.currentBiomeID >= 0)
+                // If we dont load from the portal, we grab the last saved position!
+                // Otherwise we use the portal!
+                if (loadedFromPortal == false)
                 {
-
-                    if (God.state.currentBiomeID >= portals.Length)
-                    {
-                        God.wren.startingPosition = baseStartPosition;
-                        God.state.SetCurrentBiome(-1);
-                    }
-                    else
-                    {
-
-                        // return / spawn at gate that is our current biome!
-                        // when bird dies, we respawn at our first starting position
-                        God.wren.startingPosition = portals[God.state.currentBiomeID].startPoint;
-                    }
-
-
-
+                    // loading from last position
+                    print("Setting from last position");
+                    print(God.state.lastPosition);
+                    startPos = God.state.lastPosition;
                 }
                 else
                 {
-                    God.wren.startingPosition = baseStartPosition;
+                    if (God.state.currentBiomeID >= 0)
+                    {
+                        print("totalPortals");
+                        print(portals.Length);
+
+                        if (God.state.currentBiomeID >= portals.Length)
+                        {
+                            startPos = baseStartPosition.position;
+                            God.state.SetCurrentBiome(-1);
+                        }
+                        else
+                        {
+
+                            God.state.SetLastPosition(portals[God.state.currentBiomeID].startPoint.position);
+                            print("Getting Correct Biome");
+                            print(portals[God.state.currentBiomeID].startPoint);
+                            print(portals[God.state.currentBiomeID].startPoint.position);
+
+                            // return / spawn at gate that is our current biome!
+                            // when bird dies, we respawn at our first starting position
+                            startPos = portals[God.state.currentBiomeID].startPoint.position;
+                        }
+
+
+
+                    }
+                    else
+                    {
+                        print("helllllo");
+                        God.wren.startingPosition.position = God.state.lastPosition;
+
+                    }
                 }
 
-                God.wren.FullReset();
+                God.wren.SetFullPosition(startPos);
+
                 if (startInFlight)
                 {
                     God.wren.state.TakeOff();
                 }
+
             }
-
-
-
-
-            /*  if( God.sceneController.oldScene < startPositions.Length){
-                  God.wren.startingPosition = startPositions[God.sceneController.oldScene];
-              }else{
-                  God.wren.startingPosition = startPositions[0];
-              }*/
 
 
 
@@ -109,7 +137,8 @@ namespace WrenUtils
             OnLoadEvent.Invoke();
 
 
-            God.sceneController.OnSceneFinishedLoading(this);
+
+
 
         }
 

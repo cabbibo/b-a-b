@@ -65,7 +65,7 @@ public class BeeController : MonoBehaviour
             {
 
                 whichTemple.Add(Random.Range(0, temples.Length));
-                print(whichTemple[i]);
+                //                print(whichTemple[i]);
                 bees.Add(Instantiate(beePrefab, temples[whichTemple[i]].position + Random.insideUnitSphere, Quaternion.identity).transform);
                 bees[i].parent = beeHolder;
 

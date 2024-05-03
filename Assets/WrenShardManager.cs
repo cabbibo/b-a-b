@@ -44,7 +44,11 @@ public class WrenShardManager : MonoBehaviour
 
     public void DoSkim(Vector3 location)
     {
-        CollectShards((int)gainedPerSkim, God.islandData.maxBiomeID, location);
+
+
+        int id = Random.Range(-1, 7);
+        if (wren.inEther == false) { id = God.islandData.maxBiomeID; }
+        CollectShards((int)gainedPerSkim, id, location);
     }
 
     public void DoDisintegrate()
@@ -124,8 +128,11 @@ public class WrenShardManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         if (wren.physics.distToGround < 3 && wren.physics.onGround == false)
         {
+            int id = Random.Range(-1, 7);
+            if (wren.inEther == false) { id = God.islandData.maxBiomeID; }
             CollectShards((int)gainedWhileClose, God.islandData.maxBiomeID, wren.transform.position);
         }
 
@@ -166,7 +173,7 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShards(int amount, float type)
     {
-        print("collected");
+        //print("collected");
         numShards += amount;
         collectType = type;
         collectPosition = wren.transform.position;
@@ -175,7 +182,7 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShards(int amount, float type, Vector3 position)
     {
-        print("collected");
+        //        print("collected");
         numShards += amount;
         collectType = type;
         collectPosition = position;
@@ -185,7 +192,7 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShards(int amount, float type, Transform position)
     {
-        print("collected");
+        //print("collected");
         numShards += amount;
         collectType = type;
         collectPosition = transform.position;

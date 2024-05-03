@@ -19,8 +19,6 @@ public class DesertWater : MonoBehaviour
     public float dropRadius;
 
     public bool wrenCarryingWater;
-
-    public GameObject flamePrefab;
     public GameObject wrenWithWater;
     public GameObject wrenGatheringWater;
 
@@ -33,6 +31,8 @@ public class DesertWater : MonoBehaviour
     public float waterValue;
 
     public float maxWaterValue = 1;
+
+    public LineRenderer whileGatheringLine;
 
 
     // Start is called before the first frame update
@@ -63,6 +63,8 @@ public class DesertWater : MonoBehaviour
 
     public Transform testTransform;
 
+    public bool isGathering;
+
 
     // Update is called once per frame
     void Update()
@@ -71,27 +73,40 @@ public class DesertWater : MonoBehaviour
 
         if (God.wren == null) { testTransform = debugWren; } else { testTransform = God.wren.transform; }
 
+        isGathering = false;
 
-        bool isGathering = false;
 
         for (int i = 0; i < waterLocations.Count; i++)
         {
             if (!wrenCarryingWater)
             {
 
-                if (Vector3.Distance(waterLocations[i].position, testTransform.position) < pickUpRadius)
+                float d = Vector3.Distance(waterLocations[i].position, testTransform.position);
+                if (d < pickUpRadius)
                 {
+                    print("is gathering");
                     isGathering = true;
-                    WhileWrenGatheringWater();
+                    WhileWrenGatheringWater(i);
                 }
 
             }
         }
 
+        if (isGathering == false)
+        {
+            whileGatheringLine.positionCount = 0;
+        }
 
-        if (waterValue > 0)
+
+
+        if (waterValue > 0 && isGathering == false)
         {
             wrenCarryingWater = true;
+        }
+
+        if (isGathering == true && waterValue >= maxWaterValue)
+        {
+            MaxWaterCollected();
         }
 
         if (wrenCarryingWater)
@@ -104,8 +119,12 @@ public class DesertWater : MonoBehaviour
 
     }
 
-    public void WhileWrenGatheringWater()
+    public void WhileWrenGatheringWater(int i)
     {
+        whileGatheringLine.positionCount = 2;
+        whileGatheringLine.SetPosition(0, testTransform.position);
+        whileGatheringLine.SetPosition(1, waterLocations[i].position);
+
 
         wrenGatheringWater.transform.position = testTransform.position;
         waterValue += waterPickUpSpeed;
@@ -125,7 +144,7 @@ public class DesertWater : MonoBehaviour
         }
 
         wrenWithWater.transform.position = testTransform.position;
-        wrenWithWater.transform.localScale = Vector3.one * (.001f * carryingScaleMultiplier * waterValue);
+        wrenWithWater.transform.localScale = Vector3.one * (carryingScaleMultiplier * waterValue);
         waterValue -= waterKillSpeed;
 
 
@@ -152,5 +171,12 @@ public class DesertWater : MonoBehaviour
         onWaterParticles.Play();
     }
 
+
+    // Do Something fun for collection here
+    public void MaxWaterCollected()
+    {
+        wrenCarryingWater = true;
+
+    }
 
 }
