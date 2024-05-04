@@ -1,6 +1,6 @@
 ﻿
 
-Shader "FantasyCrystals/TrippyCrystal1"
+Shader "FantasyCrystals/PortalMaterial"
 {
 
   Properties {
@@ -34,6 +34,8 @@ Shader "FantasyCrystals/TrippyCrystal1"
     _NoiseImportance("NoiseImportance", float) = 1
     _NoiseSharpness("NoiseSharpness",float) = 1
     _NoiseSubtractor("NoiseSubtractor",float)=0
+
+    _OpenAmount("OpenAmount",float) = 1
   }
 
 
@@ -83,6 +85,8 @@ Shader "FantasyCrystals/TrippyCrystal1"
       float _ReflectionMultiplier;
       float4 _ReflectionColor;
 
+      float4 _Color;
+      float _OpenAmount;
 
 
       //A simple input struct for our pixel shader step containing a position.
@@ -217,9 +221,6 @@ Shader "FantasyCrystals/TrippyCrystal1"
 
       }
 
-      float4 _Color;
-
-      float _OpenAmount;
 
       //Pixel function returns a solid color for each point.
       float4 frag (varyings v) : COLOR {
@@ -296,13 +297,12 @@ Shader "FantasyCrystals/TrippyCrystal1"
 
         col = col * pow( length(col),4) * .2;
 
-        if( length(col.xyz) / 1000 > _OpenAmount){
+        if( length(col.xyz)  > _OpenAmount){
           col = float3(1,0,0);
-          //discard;
+          discard;
         }
 
-        col = _OpenAmount;
-
+        //col = _OpenAmount;
         // col =float3(1,0,0);// saturate(col);
         return float4( col.xyz , 1);//saturate(float4(col,3*length(col) ));
 

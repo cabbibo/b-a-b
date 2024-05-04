@@ -14,6 +14,7 @@ namespace WrenUtils
 
 
         public UnityEvent OnLoadEvent;
+
         public string name;
         public Material skyboxMaterial;
         public string physicsParameters;

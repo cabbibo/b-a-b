@@ -53,8 +53,9 @@ public class IslandData : MonoBehaviour
 
 
 
-    void OnEnable()
+    public void Initialize()
     {
+        print("Enabling");
 
         //biomeMap = painter.biomeMap;
         heightMap = God.terrainData.heightmapTexture;
@@ -66,9 +67,13 @@ public class IslandData : MonoBehaviour
         Shader.SetGlobalTexture("_BiomeMap2", biomeMap2);
         Shader.SetGlobalTexture("_FoodMap", foodMap);
 
-        // Shader.SetGlobalTexture("_BiomeMap");
+        for (int i = 0; i < biomes.Length; i++)
+        {
+            biomes[i].Initialize();
+        }
 
     }
+
 
 
 
