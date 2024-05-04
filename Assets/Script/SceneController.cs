@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
+using Crest;
 
 using WrenUtils;
 
@@ -19,10 +20,10 @@ public class SceneController : MonoBehaviour
     //public int God.state.currentSceneID = -1;
     public int oldScene = 0;
     public int newScene = 0;
-    int loadedScene = -1;
+    // int loadedScene = -1;
 
+    public bool loadedFromPortal;
     public bool sceneLoaded = false;
-    public bool useStartScene = false;
 
     public bool autoLoad = true;
 
@@ -73,7 +74,6 @@ public class SceneController : MonoBehaviour
 
         loadedFromPortal = false;
 
-        print("1) ROOM CONNECTION ");
 
         if (autoLoad)
         {
@@ -121,8 +121,6 @@ public class SceneController : MonoBehaviour
 
 
 
-    public UnityEngine.SceneManagement.Scene currentMainScene;
-    public bool loadedFromPortal;
 
     public void LoadSceneFromPortal(Portal portal)
     {
@@ -148,8 +146,6 @@ public class SceneController : MonoBehaviour
 
     public void HardLoad(int id)
     {
-        print("2) HARD LOAD!");
-
         sceneLoaded = true;
         StartCoroutine(SceneSwitch(id, God.state.currentSceneID));
 
@@ -166,32 +162,25 @@ public class SceneController : MonoBehaviour
     IEnumerator SceneSwitch(int NS, int OS)
     {
 
-        print("3) SCENE SWITCH");
-
-
         newScene = NS;
         oldScene = OS;
 
-        //        print(newScene + " " + oldScene);
         if (newScene == oldScene)
         {
-            //          print("same scene");
             // yield break;
         }
 
         UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneByName(scenes[oldScene]);
 
-        //        print(scene);
         if (scene != null)
         {
 
             if (scene.isLoaded)
             {
-                print("3.5) UNLOAD SCENE");
                 // unloading old scne
                 var progress2 = SceneManager.UnloadSceneAsync(scene);
 
-                //            print(progress2);
+
 
                 if (progress2 != null)
                 {
@@ -209,8 +198,6 @@ public class SceneController : MonoBehaviour
         }
 
 
-        print("4) LOAD NEW SCENE");
-
         SceneManager.LoadScene(scenes[newScene], LoadSceneMode.Additive);
 
         // Set the animation stuff when new scene is loaded
@@ -223,18 +210,8 @@ public class SceneController : MonoBehaviour
     public void SetNewScene(int newSceneID, int oldSceneID)
     {
 
-        print("6) SET NEW SCENE");
 
-        oldScene = God.state.currentSceneID;
 
-        // figure out if we are loadign from a portal or not
-        God.state.SetCurrentScene(newSceneID);
-
-        loadedScene = God.state.currentSceneID;
-
-        currentMainScene = SceneManager.GetSceneByName(scenes[newSceneID]);
-
-        // Animation In plays when we load the new scene
 
 
 
@@ -254,29 +231,38 @@ public class SceneController : MonoBehaviour
     void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, LoadSceneMode mode)
     {
 
-        print("5) On SCENE LOADED");
 
         GameObject[] rootObjects = scene.GetRootGameObjects();
 
         WrenUtils.Scene wrenScene = rootObjects[0].GetComponent<WrenUtils.Scene>();
 
-        SetNewScene(newScene, oldScene);
+        God.state.SetCurrentScene(newScene);
 
-        wrenScene.SceneLoaded(newScene, loadedFromPortal);
 
-        //print( biome );
+        LerpTo lt = Camera.main.GetComponent<LerpTo>();
+        lt.enabled = true;
+
+
+        if (wrenScene != null)
+        {
+            God.currentScene = wrenScene;
+            wrenScene.SceneLoaded(newScene, loadedFromPortal);
+        }
+
         // Only animate in if we have animation!
         if (God.state.currentBiomeID >= 0 && God.state.currentBiomeID < wrenScene.portals.Length && God.wren != null)
         {
-            //            print("ANIMATION IN!");
+            print("starting portal animation in");
             StartCoroutine(PortalAnimationIn(wrenScene.portals[God.state.currentBiomeID]));
         }
         else
         {
-
+            print("starting base animation in");
+            StartCoroutine(BaseAnimationIn());
         }
 
         OnSceneLoadEvent.Invoke();
+
     }
 
     void OnSceneLoaded()
@@ -344,11 +330,8 @@ public class SceneController : MonoBehaviour
     public float portalAnimationOutLength = 3;
     IEnumerator PortalAnimationOut(Portal portal)
     {
-        print("portal Animation out");
 
         float StartTime = Time.time;
-        float EndTime = Time.time + portalAnimationOutLength;
-
 
         Vector3 startPoint = God.camera.transform.position;
         Vector3 endPoint = portal.collisionPoint.position;
@@ -373,18 +356,10 @@ public class SceneController : MonoBehaviour
 
     }
 
-    public float portalAnimationInLength = 3;
     IEnumerator PortalAnimationIn(Portal portal)
     {
 
-        print("8) PORTAL ANIMATION IN");
-
-
-
-        //        print("portal animation in!!!");
-
         float StartTime = Time.time;
-        float EndTime = Time.time + portalAnimationInLength;
 
         float v1 = Vector3.Distance(portal.collisionPointFront.position, portal.startPoint.position);
         float v2 = Vector3.Distance(portal.collisionPointBack.position, portal.startPoint.position);
@@ -404,25 +379,65 @@ public class SceneController : MonoBehaviour
         Vector3 startPoint = God.wren.cameraWork.camTarget.position;//portal.startPoint.position + portal.startPoint.forward * -God.wren.cameraWork.groundBackAmount + portal.startPoint.up * -God.wren.cameraWork.groundUpAmount;
         Quaternion startRot = God.wren.cameraWork.camTarget.rotation;//portal.startPoint.rotation;
 
-        God.wren.FullReset();
-        while (Time.time - StartTime < portalAnimationInLength)
+        while (Time.time - StartTime < fadeInLength)
         {
 
-            float val = (Time.time - StartTime) / portalAnimationInLength;
+            float val = (Time.time - StartTime) / fadeInLength;
             //God.fade
             God.postController._Fade = (1 - val);
             God.camera.transform.position = Vector3.Lerp(endPoint, startPoint, val);///.Lerp()
             God.camera.transform.rotation = Quaternion.Slerp(endRot, startRot, val);///.Lerp()
-  //         print(val);
 
 
             yield return null;
         }
 
-        God.wren.FullReset();
+        OnFadedIn();
+
+
+    }
+
+
+    public float fadeInLength = 3;
+    IEnumerator BaseAnimationIn()
+    {
+
+        float StartTime = Time.time;
 
 
 
+        Vector3 endPoint = God.wren.cameraWork.camTarget.position;
+        Quaternion endRot = God.wren.cameraWork.camTarget.rotation;
+
+
+        Vector3 startPoint = God.wren.cameraWork.camTarget.position;//portal.startPoint.position + portal.startPoint.forward * -God.wren.cameraWork.groundBackAmount + portal.startPoint.up * -God.wren.cameraWork.groundUpAmount;
+        Quaternion startRot = God.wren.cameraWork.camTarget.rotation;//portal.startPoint.rotation;
+
+
+        while (Time.time - StartTime < fadeInLength)
+        {
+
+
+            float val = (Time.time - StartTime) / fadeInLength;
+            //God.fade
+            God.postController._Fade = (1 - val);
+            God.camera.transform.position = Vector3.Lerp(endPoint, startPoint, val);///.Lerp()
+            God.camera.transform.rotation = Quaternion.Slerp(endRot, startRot, val);///.Lerp()
+
+            yield return null;
+        }
+
+
+
+        OnFadedIn();
+
+
+    }
+
+    public void OnFadedIn()
+    {
+
+        God.wren.canMove = true;
     }
 
 
@@ -450,10 +465,8 @@ public class SceneController : MonoBehaviour
     IEnumerator DemoAnimationOut(Portal portal)
     {
 
-        print("demo animation out");
 
         float StartTime = Time.time;
-        float EndTime = Time.time + portalAnimationOutLength;
 
 
         Vector3 startPoint = God.camera.transform.position;
@@ -482,9 +495,6 @@ public class SceneController : MonoBehaviour
 
     public void EndDemo(Portal portal)
     {
-
-
-        print("end demo");
         // make it so we dont hurt ourselves
         God.wren.inEther = true;
         God.wren.Crash(portal.collisionPoint.position);

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using Crest;
 
 
 
@@ -25,35 +26,29 @@ namespace WrenUtils
         public bool startInFlight;
 
 
-        public void SceneLoaded(int newSceneID, bool loadedFromPortal)
+        public void SceneLoaded(int newScene, bool loadedFromPortal)
         {
 
-            print("7) Wren Scene Loaded");
-
-            //print("scene calling scene Loaded");
 
 
-            Camera.main.gameObject.GetComponent<LerpTo>().enabled = true;
+            // Set WrenState
             God.wren.state.inInterface = false;
             God.wren.airInterface.Toggle(false);
             God.wren.fullInterface.Toggle(false);
 
-            if (newSceneID == 1)
+            if (newScene == 1)
             {
                 God.wren.inEther = true;
+                Camera.main.GetComponent<UnderwaterRenderer>().enabled = false;
             }
             else
             {
-
                 God.wren.inEther = false;
+                Camera.main.GetComponent<UnderwaterRenderer>().enabled = true;
             }
-
-            God.wren.canMove = true;
 
 
             God.skyboxUpdater.UpdateSkybox(skyboxMaterial);
-
-            God.currentScene = this;
 
             // Sets up our demo info
             for (int i = 0; i < portals.Length; i++)
@@ -61,63 +56,15 @@ namespace WrenUtils
                 portals[i].demo = isDemo;
             }
 
-            Vector3 startPos = baseStartPosition.position;
 
+            Vector3 startPos = baseStartPosition.position;
 
             if (God.wren != null)
             {
 
-                //                print("wren exists");
-
                 God.wren.parameters.Load(physicsParameters);
 
-
-                // If we dont load from the portal, we grab the last saved position!
-                // Otherwise we use the portal!
-                if (loadedFromPortal == false)
-                {
-                    // loading from last position
-                    print("Setting from last position");
-                    print(God.state.lastPosition);
-                    startPos = God.state.lastPosition;
-                }
-                else
-                {
-                    if (God.state.currentBiomeID >= 0)
-                    {
-                        print("totalPortals");
-                        print(portals.Length);
-
-                        if (God.state.currentBiomeID >= portals.Length)
-                        {
-                            startPos = baseStartPosition.position;
-                            God.state.SetCurrentBiome(-1);
-                        }
-                        else
-                        {
-
-                            God.state.SetLastPosition(portals[God.state.currentBiomeID].startPoint.position);
-                            print("Getting Correct Biome");
-                            print(portals[God.state.currentBiomeID].startPoint);
-                            print(portals[God.state.currentBiomeID].startPoint.position);
-
-                            // return / spawn at gate that is our current biome!
-                            // when bird dies, we respawn at our first starting position
-                            startPos = portals[God.state.currentBiomeID].startPoint.position;
-                        }
-
-
-
-                    }
-                    else
-                    {
-                        print("helllllo");
-                        God.wren.startingPosition.position = God.state.lastPosition;
-
-                    }
-                }
-
-                God.wren.SetFullPosition(startPos);
+                SetWrenStartPosition(loadedFromPortal);
 
                 if (startInFlight)
                 {
@@ -128,23 +75,63 @@ namespace WrenUtils
 
 
 
-
-            LerpTo lt = Camera.main.GetComponent<LerpTo>();
-            lt.enabled = true;
-
-
-
             OnLoadEvent.Invoke();
-
-
-
 
 
         }
 
 
+        public void SetWrenStartPosition(bool loadedFromPortal)
+        {
 
 
+            Vector3 startPos = new Vector3(1000, 0, 0);
+
+
+
+            // If we dont load from the portal, we grab the last saved position!
+            // Otherwise we use the portal!
+            if (loadedFromPortal == false)
+            {
+                print("loaded from portal false");
+                // loading from last position
+                startPos = God.state.lastPosition;
+            }
+            else
+            {
+                if (God.state.currentBiomeID >= 0)
+                {
+                    if (God.state.currentBiomeID >= portals.Length)
+                    {
+                        startPos = baseStartPosition.position;
+                        God.state.SetCurrentBiome(-1);
+                    }
+                    else
+                    {
+
+                        God.state.SetLastPosition(portals[God.state.currentBiomeID].startPoint.position);
+                        // return / spawn at gate that is our current biome!
+                        // when bird dies, we respawn at our first starting position
+                        startPos = portals[God.state.currentBiomeID].startPoint.position;
+
+                    }
+
+                }
+                else
+                {
+                    startPos = God.state.lastPosition;
+
+                }
+
+            }
+
+            print(startPos);
+
+            God.wren.SetFullPosition(startPos);
+
+
+
+        }
 
 
 

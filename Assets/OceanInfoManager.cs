@@ -81,6 +81,14 @@ public class OceanInfoManager : MonoBehaviour
 
 
     }
+
+    public bool hasOcean
+    {
+        get
+        {
+            return OceanRenderer.Instance != null;
+        }
+    }
     // Update is called once per frame
     void FixedUpdate()
     {
