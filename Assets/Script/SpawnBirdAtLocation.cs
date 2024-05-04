@@ -12,23 +12,29 @@ public class SpawnBirdAtLocation : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
 
-    void Spawn(){
+    void Spawn()
+    {
 
-        if( God.wren != null ){
+
+        print("spawn");
+        if (God.wren != null)
+        {
 
             God.wren.bird.ResetAtLocation(resetLocation.position);
 
-        }else{
+        }
+        else
+        {
             print("whoops");
         }
     }

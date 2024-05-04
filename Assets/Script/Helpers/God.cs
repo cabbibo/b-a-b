@@ -76,14 +76,10 @@ namespace WrenUtils
             {
                 if (_instance == null)
                 {
-                    print("getting instance");
                     _instance = Object.FindObjectOfType<God>();//WithTag GetComponent
-                    print("INTSNACE");
-                    print(_instance);
 
                     if (_instance != null && Application.isPlaying)
                     {
-                        print("dont do it");
                         DontDestroyOnLoad(_instance.gameObject);
                     }
 
@@ -241,9 +237,7 @@ namespace WrenUtils
 
                 if (instance._terrain == null)
                 {
-                    //                    print("FINDING TERRAIN");
                     instance._terrain = (Terrain)FindObjectOfType(typeof(Terrain));
-                    //print(instance._terrain);
                 }
                 return instance._terrain;
             }
@@ -257,9 +251,7 @@ namespace WrenUtils
 
                 if (instance._islandData == null)
                 {
-                    //              print("FINDING islandData");
                     instance._islandData = (IslandData)FindObjectOfType(typeof(IslandData));
-                    //                print(instance._islandData);
                 }
                 return instance._islandData;
             }
@@ -321,8 +313,6 @@ namespace WrenUtils
         {
             get
             {
-                //                print(instance);
-                //              print(instance._skyboxUpdater);
                 return instance._skyboxUpdater;
             }
         }
@@ -434,7 +424,6 @@ namespace WrenUtils
         public static void GetWrenSavedPosition()
         {
 
-            print("GETTING WREN SAVED POSITION");
 
             // float x = PlayerPrefs.GetFloat("_CurrentWrenX", 0);
             // float y = PlayerPrefs.GetFloat("_CurrentWrenY", 100);

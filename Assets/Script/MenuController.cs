@@ -61,14 +61,8 @@ public class MenuController : MonoBehaviour
                 if (currentMenu == "main")
                 {
 
-                    // cant turn off menu if we just opened game!
-                    if (God.sceneController.sceneLoaded != false)
-                    {
-                        //print("hmmm");
-                        DeactivateMenu();
-                        TurnMenuOff();
-                    }
 
+                    OnContinue();
                 }
                 else
                 {
@@ -87,13 +81,7 @@ public class MenuController : MonoBehaviour
             if (currentMenu == "main")
             {
 
-                // cant turn off menu if we just opened game!
-                if (God.sceneController.sceneLoaded != false)
-                {
-                    //print("hmmm");
-                    DeactivateMenu();
-                    TurnMenuOff();
-                }
+                OnContinue();
 
             }
             else
@@ -106,6 +94,11 @@ public class MenuController : MonoBehaviour
 
     }
 
+
+    public void Continue()
+    {
+
+    }
 
 
 
@@ -258,8 +251,6 @@ public class MenuController : MonoBehaviour
         }
         else
         {
-
-
             God.sceneController.OnSceneLoadEvent.AddListener(OnSceneLoaded);//m_MyEvent.AddListener(MyAction);
             God.sceneController.HardStart();
 
@@ -281,9 +272,10 @@ public class MenuController : MonoBehaviour
 
     }
 
+
+    // Turn off the menu but only once scene is loaded
     public void OnSceneLoaded()
     {
-        //        print("Scene Loaded");
         God.sceneController.OnSceneLoadEvent.RemoveListener(OnSceneLoaded);
         DeactivateMenu();
         TurnMenuOff(.5f);

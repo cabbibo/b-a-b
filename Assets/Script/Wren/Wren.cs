@@ -93,7 +93,6 @@ public class Wren : MonoBehaviour
         FindInfo();
 
 
-        print("WREN ENABLED");
         startingPosition = GameObject.Find("StartPosition").transform;
 
         maker.wrens.Add(this);
@@ -127,12 +126,11 @@ public class Wren : MonoBehaviour
     public void PhaseShift(Vector3 p)
     {
 
+        print("PHASE SHIFT CALLED");
+
         // teleport bird
         // teleport camera
         //gpu bird teleport
-
-        print("PHASE SHIFT");
-        print(p);
 
         cameraWork.Offset(p - transform.position);
         bird.PhaseShift(p - transform.position);
@@ -147,23 +145,19 @@ public class Wren : MonoBehaviour
     public void FullReset()
     {
 
+        print("FULL RESET CALLED");
+        print(startingPosition.position);
 
         physics.Reset();
-
-        print("Full Reset");
-        print(startingPosition.position);
-        print(God.state.lastPosition);
-
-        //        print(God.state.lastPosition);
-        //        print(startingPosition.position);
-
 
         Vector3 fPos = startingPosition.position + Vector3.up * physics.groundUpVal;
         Crash(fPos);
         state.LookAt(fPos + startingPosition.forward);
+
+        print(fPos);
         bird.ResetAtLocation(fPos);//Values();
 
-
+        print(startingPosition.position);
         cameraWork.Reset();
 
     }
@@ -172,9 +166,12 @@ public class Wren : MonoBehaviour
     public void Crash(Vector3 p)
     {
 
-        print("From position crash" + p);
-        print("crash1");
-        physics.TransportToPosition(GroundIntersection(p) + Vector3.up * physics.groundUpVal, Vector3.zero);
+        print("CRASH CALLED");
+
+        Vector3 fPos = GroundIntersection(p) + Vector3.up * physics.groundUpVal;
+        print(fPos);
+
+        physics.TransportToPosition(fPos, Vector3.zero);
         state.HitGround();
         if (autoTakeOff)
         {
@@ -210,12 +207,19 @@ public class Wren : MonoBehaviour
         }
 
 
-        if (God.oceanInfo.groundPosition.y > newPos.y)
+
+        if (God.oceanInfo.hasOcean)
         {
-            newPos = God.oceanInfo.groundPosition;
+
+
+            if (God.oceanInfo.groundPosition.y > newPos.y)
+            {
+
+
+                newPos = God.oceanInfo.groundPosition;
+            }
+
         }
-
-
         return newPos;
 
     }
@@ -366,7 +370,6 @@ public class Wren : MonoBehaviour
 
                 if (input.o_dLeft < .5 && input.dLeft > .5)
                 {
-                    print("hey");
                     revereser.MoveToPrevious();
                 }
 
@@ -433,7 +436,6 @@ public class Wren : MonoBehaviour
                         RaycastHit hit;
                         if (Physics.Raycast(ray, out hit, 10000))
                         {
-                            print(hit.collider.gameObject.name);
                             beacon.PlaceBeacon(hit.point);
                         }
 
@@ -459,7 +461,6 @@ public class Wren : MonoBehaviour
 
                             //   // If we are in a race, end it!
                             //   if( God.wren.state.inRace != -1 ){
-                            //       print("WREN IN RACE: " + God.wren.state.inRace);
                             //       God.races[God.wren.state.inRace].AbortRace();
                             //   }
 
@@ -544,7 +545,9 @@ public class Wren : MonoBehaviour
 
     public virtual void LocalReset()
     {
-        print("local reset");
+
+
+        print("LOCAL RESET CALLED");
         bird.ResetFeatherValues();
         physics.LocalReset();
         cameraWork.Reset();
@@ -570,8 +573,6 @@ public class Wren : MonoBehaviour
 
         //physics.rb.isKinematic = onOff;
 
-
-        print("TOGGLING ON OFF: " + onOff);
         state.inInterface = onOff;//true;
 
         if (physics.onGround)
@@ -707,15 +708,8 @@ public class Wren : MonoBehaviour
             {
 
 
-                // print(physics.rb.velocity.magnitude);
-                // print(physics.rb.velocity);
-                //print(c.impulse.magnitude);
-                // print(c.impulse);
-                //print(Vector3.Dot(c.impulse.normalized, physics.rb.velocity.normalized));
                 float dot = Vector3.Dot(c.impulse.normalized, physics.oVel.normalized);
 
-                //                print(dot);
-                //                print(c.impulse.magnitude);
                 if (dot < 0)
                 {
                     dot = -dot;
@@ -737,7 +731,6 @@ public class Wren : MonoBehaviour
 
     public void Skim(Collision c)
     {
-        print("skim");
 
         if (!state.onGround)
         {
@@ -754,9 +747,8 @@ public class Wren : MonoBehaviour
 
     public void Crash(Collision c)
     {
-        print("crash2");
 
-
+        print("COLLISION CRASH CALLED");
 
         if (!state.onGround)
         {
@@ -770,11 +762,9 @@ public class Wren : MonoBehaviour
                 carrying.GroundHit(Carryable.DropSettings.FromCrash(c));
             }
 
-            //            print("hit ground");
             if (!inEther)
             {
 
-                //  print("HEY");
                 growth.HurtCollision(c);
             }
 
@@ -849,8 +839,10 @@ public class Wren : MonoBehaviour
 
     public void SetFullPosition(Vector3 position)
     {
+        print("SET FULL POSITION  CALLED");
 
-        print("SET FULL POSITION");
+        print(position);
+
         God.state.SetLastPosition(position);
         startingPosition.position = position;
         FullReset();

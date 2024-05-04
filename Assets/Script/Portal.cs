@@ -61,8 +61,6 @@ public class Portal : MonoBehaviour
         portalMPB.SetFloat("_OpenAmount", portalShownAmount);
         portalRenderer.SetPropertyBlock(portalMPB);
 
-
-
     }
 
 
@@ -82,6 +80,16 @@ public class Portal : MonoBehaviour
         }
 
         collision = c;
+
+
+
+
+        /*
+
+        Flying tutorial!
+
+        */
+
         System.Action doEnd = () =>
         {
             if (demo)

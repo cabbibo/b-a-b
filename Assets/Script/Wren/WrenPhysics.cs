@@ -382,16 +382,20 @@ public class WrenPhysics : MonoBehaviour
 
 
         rb.velocity = Vector3.zero;
-        if (wren.beacon)
-        {
-            rb.position = wren.beacon.nest.transform.position;
-            transform.position = wren.beacon.nest.transform.position;//new Vector3( 0 ,2000, 0 );
-        }
-        else
-        {
-            rb.position = wren.startingPosition.position;
-            transform.position = wren.startingPosition.position;
-        }
+        /* if (wren.beacon)
+         {
+             print("has beacon");
+             rb.position = wren.beacon.nest.transform.position;
+             transform.position = wren.beacon.nest.transform.position;//new Vector3( 0 ,2000, 0 );
+         }
+         else
+         {*/
+
+        print("physics reset");
+        print(wren.startingPosition.position);
+        rb.position = wren.startingPosition.position;
+        transform.position = wren.startingPosition.position;
+        //}
     }
 
     public void LocalReset()
