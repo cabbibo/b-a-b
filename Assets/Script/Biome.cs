@@ -94,7 +94,7 @@ public class Biome : MonoBehaviour
     }
 
 
-    public void OnEnable()
+    public void Initialize()
     {
 
         discovered = God.state.biomesDiscovered[id];
@@ -106,18 +106,37 @@ public class Biome : MonoBehaviour
         startedAnimation.SetStartValues();
         discoveredAnimation.SetStartValues();
 
-        if (discovered)
+
+        // Setting state from animations!
+        if (!discovered)
         {
+            print("HELLO I AM NOT DISCOVERED");
+            discoveredAnimation.SetStartValues();
+        }
+
+        if (discovered && !started)
+        {
+            print("discovered not started");
             discoveredAnimation.SetEndValues();
+            startedAnimation.SetStartValues();
         }
-        if (started)
+
+        if (discovered && started && !completed)
         {
+            print("discovered started not completed");
+            discoveredAnimation.SetEndValues();
             startedAnimation.SetEndValues();
+            completedAnimation.SetStartValues();
         }
-        if (completed)
+
+        if (discovered && started && completed)
         {
+            print("Setting All End Values");
+            discoveredAnimation.SetEndValues();
+            startedAnimation.SetEndValues();
             completedAnimation.SetEndValues();
         }
+
 
 
         if (!completed)

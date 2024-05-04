@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: PortalMaterial
-  m_Shader: {fileID: 4800000, guid: 619475724d9a5794390b1afea24b3d57, type: 3}
+  m_Shader: {fileID: 4800000, guid: a415746afec188f4f94a504765beb553, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -98,6 +98,7 @@ Material:
     - _NumSteps: 5.8
     - _OcclusionStrength: 1
     - _Opaqueness: 1
+    - _OpenAmount: 1.13
     - _OrbHeight: 0
     - _OrbSize: 1
     - _Parallax: 0.02
@@ -118,7 +119,7 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _CenterOrbColor: {r: 0.066037714, g: 0.066037714, b: 0.066037714, a: 1}
     - _CenterOrbOffset: {r: 0, g: 0, b: 0, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _NoiseColor: {r: 1, g: 0, b: 0, a: 1}
     - _NoiseOffset: {r: 0, g: 0, b: 0, a: 1}

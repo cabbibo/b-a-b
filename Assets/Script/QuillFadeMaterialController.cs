@@ -30,32 +30,30 @@ public class QuillFadeMaterialController : MonoBehaviour
 
         }
 
-        if (renderers == null)
-        {
-            renderers = new Renderer[1];
-        }
-        if (renderers[0] == null)
-        {
-            renderers[0] = GetComponent<Renderer>();
-            renderers[0].GetPropertyBlock(mpb);
-        }
 
-        mpb.SetFloat("_Fade", fade);
-        mpb.SetColor("_Color", color);
-        mpb.SetFloat("_Multiplier", multiplier);
-
-        if (fadeLocation != null)
-        {
-            mpb.SetVector("_FadeLocation", fadeLocation.transform.position);
-        }
-        else
-        {
-            mpb.SetVector("_FadeLocation", transform.position);
-        }
 
         for (int i = 0; i < renderers.Length; i++)
         {
+
+
+            renderers[i].GetPropertyBlock(mpb);
+
+            mpb.SetFloat("_Fade", fade);
+            mpb.SetColor("_Color", color);
+            mpb.SetFloat("_Multiplier", multiplier);
+
+            if (fadeLocation != null)
+            {
+                mpb.SetVector("_FadeLocation", fadeLocation.transform.position);
+            }
+            else
+            {
+                mpb.SetVector("_FadeLocation", transform.position);
+            }
+
+
             renderers[i].SetPropertyBlock(mpb);
+
         }
 
     }

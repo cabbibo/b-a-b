@@ -57,10 +57,10 @@ public class Portal : MonoBehaviour
             portalMPB = new MaterialPropertyBlock();
         }
 
+
         portalRenderer.GetPropertyBlock(portalMPB);
         portalMPB.SetFloat("_OpenAmount", portalShownAmount);
         portalRenderer.SetPropertyBlock(portalMPB);
-
     }
 
 
@@ -103,29 +103,31 @@ public class Portal : MonoBehaviour
             collider.enabled = false;
         };
 
+        /* 
+        // NEEDED ONLY FOR FLYING TUTORIAL
         if (FlyingTutorialSequence.Instance)
-        {
-            God.wren.physics.rb.velocity = Vector3.zero;
-            God.wren.physics.rb.angularVelocity = Vector3.zero;
-            FlyingTutorialSequence.Instance.TryEndDemo(endConfirmed =>
-            {
-                if (endConfirmed)
-                {
-                    doEnd();
-                }
-                else
-                {
-                    God.wren.physics.rb.velocity = Vector3.zero;
-                    God.wren.physics.rb.angularVelocity = Vector3.zero;
-                    God.wren.PhaseShift(new Vector3(-5150, 507, -659));
-                }
-            });
-        }
-        else
-        {
-            doEnd();
-        }
+         {
+             God.wren.physics.rb.velocity = Vector3.zero;
+             God.wren.physics.rb.angularVelocity = Vector3.zero;
+             FlyingTutorialSequence.Instance.TryEndDemo(endConfirmed =>
+             {
+                 if (endConfirmed)
+                 {
+                     doEnd();
+                 }
+                 else
+                 {
+                     God.wren.physics.rb.velocity = Vector3.zero;
+                     God.wren.physics.rb.angularVelocity = Vector3.zero;
+                     God.wren.PhaseShift(new Vector3(-5150, 507, -659));
+                 }
+             });
+         }
+         else
+         {
+         }*/
 
+        doEnd();
 
     }
 
