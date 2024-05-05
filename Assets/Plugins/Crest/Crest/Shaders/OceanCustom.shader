@@ -730,12 +730,12 @@ Shader "Crest/OceanCustom"
                 col = pow( reflMatch , 300) * 4;
                 //                col = n_pixel - float3(0,.4,0);
 
-                //col = n_pixel;
-                //  col = normal * .5 + .5;
+                col = n_pixel;
+                col = normal * .5 + .5;
 
-                //col = dot( normal, normalize(eye)) < 0;
+                col = dot( normal, normalize(eye)) < 0;
 
-                //col = normalize(-eye) * .5 + .5;
+                col = normalize(-eye) * .5 + .5;
                 /* if( !underwater && dot( normal, normalize(eye)) < 0){
                     col = float3(1,0,0);
                     col = noise( input.worldPos  * .1) + noise( input.worldPos  * .3) * .5 + noise( input.worldPos  * .7) * .25;
@@ -752,7 +752,8 @@ Shader "Crest/OceanCustom"
 
                 float lightMatch = dot( normal, lightDir);
 
-                col = tex2D(_PainterlyMap, uvPosition * .04).rgb;
+                float3 paint = tex2D(_PainterlyMap, uvPosition * .04).rgb;
+                float3 paint2 = tex2D(_PainterlyMap, uvPosition * .05).rgb;
 
                 if( lightMatch < .2){
                     col = col.x;
@@ -760,10 +761,14 @@ Shader "Crest/OceanCustom"
                     col = col.z;
                 }
 
-                col += lightMatch;
+                //col += lightMatch;
 
                 //col = normal * .5 + .5;
+
+                col = normal * .5 + .5;
+                col =lerp(float3(0.2,.3,.6) * length(paint2) * .2, float3(.8,.9,1) *length(paint),1-pow( dot( normal, float3(0,1,0)), 2));
                 
+                ApplyReflectionSky(view, n_pixel, lightDir, shadow.y, screenPos.xyzz, pixelZ, reflAlpha, col);
                 return half4(col, 1.);
             }
 
