@@ -47,7 +47,10 @@ public class WrenShardManager : MonoBehaviour
 
 
         int id = Random.Range(-1, 7);
-        if (wren.inEther == false) { id = God.islandData.maxBiomeID; }
+        if (wren.inEther == false)
+        {
+            id = God.islandData.maxBiomeID;
+        }
         CollectShards((int)gainedPerSkim, id, location);
     }
 
@@ -199,6 +202,20 @@ public class WrenShardManager : MonoBehaviour
         UpdateShards();
     }
 
+    public void CollectBodyShards()
+    {
+        if (numShards < numShardsInBody)
+        {
+            numShards = numShardsInBody;
+        }
+        UpdateShards();
+    }
+
+    public void SetToBodyShards()
+    {
+        numShards = numShardsInBody;
+        UpdateShards();
+    }
 
     public void SpendShards(int amount)
     {
@@ -222,6 +239,8 @@ public class WrenShardManager : MonoBehaviour
         UpdateShards();
 
     }
+
+
 
     public float bodyPercentage;
     public float shardPercentage;

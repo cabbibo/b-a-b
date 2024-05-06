@@ -74,7 +74,7 @@ add phase shift into onenable, not the set state!
 
 
 
-    public void OnEnable()
+    public void Initialize()
     {
 
         FlyingTutorialSequence.OnTutorialStart += SetCinematicFlightTutorialState;
@@ -84,8 +84,8 @@ add phase shift into onenable, not the set state!
         //        print(" Which Start Status : ");
 
 
-
-
+        tutorialIslandCutScene.SetStartValues();
+        islandFinishedCutScene.SetStartValues();
         if (God.state.tutorialFinished == false)
         {
 
@@ -166,6 +166,7 @@ add phase shift into onenable, not the set state!
         if (God.wren)
         {
             God.wren.state.TakeOff();
+            God.wren.shards.SetToBodyShards();
         }
 
         flyingTutorialSequence.StartTutorial();
@@ -351,6 +352,7 @@ add phase shift into onenable, not the set state!
     public void OnFirstCrashEnd()
     {
 
+        tutorialIslandCutScene.SetEndValues();
         God.wren.shards.SpendAllShards();
         SetFirstCrashEndState();
 
@@ -448,6 +450,7 @@ add phase shift into onenable, not the set state!
 
     public void OnTutorialIslandFinishedEnd()
     {
+        islandFinishedCutScene.SetEndValues();
         SetTutorialIslandFinishedEndState();
     }
 
@@ -633,6 +636,11 @@ add phase shift into onenable, not the set state!
 
         /// hmmmmmm
         tutorialClouds.SetActive(false);
+
+
+        tutorialIslandCutScene.SetEndValues();
+        islandFinishedCutScene.SetEndValues();
+
 
     }
 

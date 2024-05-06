@@ -255,7 +255,7 @@ Shader "Feathers/FeatherTest1" {
 
         col = hsv(.5*(v.randID/ _TotalShardsInBody),1,1);
 
-        col = hsv(v.collectionType / 10 ,1,1);
+        col = hsv(v.collectionType / 7,1,1);
 
         //col = v.nor * .5 +.5;
         return float4(col,1);
