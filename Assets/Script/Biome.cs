@@ -22,6 +22,8 @@ public class Biome : MonoBehaviour
 
     public List<GameObject> localObjects;
 
+    public IslandData islandData;
+
     public void AddToCompletion(float amount)
     {
         amountComplete += amount;
@@ -65,9 +67,7 @@ public class Biome : MonoBehaviour
         {
             print("HELLOOO");
 
-            completed = true;
             portal.OpenPortal();
-            God.state.OnBiomeCompleted(id);
             completedAnimation.Play();
         }
         else
@@ -184,6 +184,14 @@ public class Biome : MonoBehaviour
             localObjects[i].SetActive(false);
         }
 
+    }
+
+    public void OnCompletedAnimationFinished()
+    {
+
+        completed = true;
+        God.state.OnBiomeCompleted(id);
+        islandData.OnBiomeCompleted(id);
     }
 
 

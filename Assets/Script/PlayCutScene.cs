@@ -51,6 +51,7 @@ public class PlayCutScene : MonoBehaviour
     void OnEnable()
     {
 
+        playing = false;
 
         if (director == null)
         {
