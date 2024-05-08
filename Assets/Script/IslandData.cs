@@ -391,5 +391,26 @@ public class IslandData : MonoBehaviour
 
     }
 
+    public void OnBiomeCompleted(int i)
+    {
+
+        bool islandCompleted = true;
+
+        for (int j = 0; j < biomes.Length; j++)
+        {
+            if (biomes[j].completed == false)
+            {
+                islandCompleted = false;
+            }
+        }
+
+        if (islandCompleted == true)
+        {
+            print("ISLAND COMPLETED");
+            islandCompleteCutScene.Play();
+
+        }
+    }
+
 
 }
