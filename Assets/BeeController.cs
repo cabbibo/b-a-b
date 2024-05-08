@@ -203,6 +203,7 @@ public class BeeController : MonoBehaviour
     {
         if (Vector3.Distance(bees[i].transform.position, dropOffLocation.position) < dropOffRadius)
         {
+            print("dropped off");
             droppedOff[i] = true;
             followingWren[i] = false;
         }
