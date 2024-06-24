@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
+using WrenUtils;
+using UnityEditor;
 
 
 
@@ -16,6 +18,14 @@ public class CustomFog : MonoBehaviour
     private FogEffect fog;
 
     private VolumeProfile profile;
+
+    public float _Intensity;
+    public Matrix4x4 _InverseProjection;
+
+    public RenderTexture heightMap;
+    public Vector3 mapSize;
+
+    public Camera cam;
     void OnEnable()
     {
         volume = GetComponent<PostProcessVolume>();
@@ -27,7 +37,17 @@ public class CustomFog : MonoBehaviour
     void Update()
     {
 
+        fog.intensity.value = _Intensity;
+        heightMap = God.terrainData.heightmapTexture;
+        mapSize = God.terrainData.size;
 
+
+        //fog.inverseProjection.value = _InverseProjection;
+
+        //       print("helloa");
+        //        print(heightMap);
+        fog.heightMap.value = heightMap;
+        fog.mapSize.value = mapSize;
         // glitch.blend.value = blend;
     }
 

@@ -140,8 +140,10 @@ public class OceanInfoManager : MonoBehaviour
 
                 oHeight = height;
                 oDistanceToSurface = distanceToSurface;
+
                 sampleHeightHelper.Init(God.wren.transform.position, 10);
                 sampleHeightHelper.Sample(out displacement, out normal, out waterSurfaceVel);
+
                 height = OceanRenderer.Instance.SeaLevel + displacement.y;
                 distanceToSurface = God.wren.transform.position.y - height;
 
