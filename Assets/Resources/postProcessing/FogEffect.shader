@@ -70,14 +70,18 @@
     }
 
 
-
-    float4 Frag(VaryingsDefault i) : SV_Target
+    float hash21(float2 p) {
+        p = 50.0 * frac(p * 0.3183099 + float2(0.71, 0.113));
+        return frac(p.x * p.y * (p.x + p.y));
+    }
+    float4 Frag(VaryingsDefault v) : SV_Target
     {
 
         float3 ro = _WorldSpaceCameraPos;
-        float3 rd = GetRayDirection(i.texcoord);
+        
+        float3 rd = GetRayDirection(v.texcoord);
 
-        float2 uvR = i.texcoord;
+        float2 uvR = v.texcoord;
         float4 color = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uvR);
         float depth = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, uvR).r;
 
@@ -85,8 +89,27 @@
 
         float3 totalFog = 0;
 
-        for( int i = 0; i < 10; i++ ){
-            float3 p = ro + rd * distance;
+        
+        float3 viewVector = mul( _InverseProjection , float4(v.texcoord.x * 2 - 1 , v.texcoord.y * 2 - 1, 0, 1));
+        viewVector = mul( _InverseView, viewVector).xyz;
+
+
+
+        
+
+        float offset = 80 * hash21( v.texcoord + _Time.y );
+        
+        for( int i = 0; i < 100; i++ ){
+
+            float dist = 60 * float(i) + offset;
+
+            if( dist > distance ){
+                break;
+            }
+
+            float3 p = ro + viewVector *dist;
+
+
 
             // sample the height map, to see how far away we are from the ground
             // the closer we are to the ground, the more fog we should apply
@@ -94,20 +117,37 @@
             float height = getTerrainHeight(p);// SAMPLE_TEXTURE2D(_HeightMap, sampler_HeightMap, uvR).r;1
 
             float d = p.y - height;
+            totalFog += clamp( 1/(d * .0001),0,1000) * (float(i)/100);
+            if( d < 0){
+                break;
+            }
 
-            totalFog += d;;
+            // totalFog += 1/(d*100);
             
         }
 
+        totalFog /= 1000;
 
-        totalFog = normalize(rd);;
+        totalFog *= float3(1,.1,.5);
+
+        // totalFog = distance/ 10000;
+        
+
+
+
+        //totalFog = normalize(rd);;
+        //totalFog = normalize(viewVector);
 
         //color *= _Intensity;
 
         
 
         //color.rgb = lerp( color.rgb , float3(1,1,1), saturate(10*pow((LinearEyeDepth(depth)/20000),1)));
-        color.rgb =color.rgb + normalize(totalFog);
+        //color.rgb =   color.rgb + totalFog/1000;
+
+        color.rgb = color.rgb + totalFog;//getTerrainHeight( float3(v.texcoord.x,0,v.texcoord.y) * 4096);
+
+
 
         return color;
     }

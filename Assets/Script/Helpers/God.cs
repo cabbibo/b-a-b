@@ -17,6 +17,7 @@ namespace WrenUtils
         public Camera _camera;
         public Terrain _terrain;
         public TerrainData _terrainData;
+        public Vector3 _terrainOffset;
 
         public IslandData _islandData;
         public Wren _localWren;
@@ -243,6 +244,10 @@ namespace WrenUtils
             }
         }
 
+        public static void SetIslandData(IslandData islandData)
+        {
+            instance._islandData = islandData;
+        }
 
         public static IslandData islandData
         {

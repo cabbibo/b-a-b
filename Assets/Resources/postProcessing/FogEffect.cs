@@ -37,22 +37,29 @@ public sealed class FogEffect : PostProcessEffectSettings
 
 public sealed class FogEffectRenderer : PostProcessEffectRenderer<FogEffect>
 {
+
+    public Camera camera;
     public override void Render(PostProcessRenderContext context)
     {
+
+
         var sheet = context.propertySheets.Get(Shader.Find("PostProcessing/FogEffect"));
         sheet.properties.SetFloat("_Intensity", settings.intensity);
 
 
-        Debug.Log(context.camera.transform.position);
+        // Debug.Log(context.camera.transform.position);
+        Debug.Log(context.camera.projectionMatrix.inverse);
+        Debug.Log(context.camera.cameraToWorldMatrix.inverse);
 
-        //Matrix4x4 projectionInverse = GL.GetGPUProjectionMatrix(context.camera.projectionMatrix, false).inverse;
-        Matrix4x4 projectionInverse = context.camera.projectionMatrix.inverse;
-        Matrix4x4 viewInverse = context.camera.cameraToWorldMatrix.inverse;
+        Matrix4x4 projectionInverse = GL.GetGPUProjectionMatrix(context.camera.projectionMatrix, false).inverse;
+        //Matrix4x4 projectionInverse = context.camera.projectionMatrix.inverse;
+        Matrix4x4 viewInverse = context.camera.cameraToWorldMatrix;
 
 
 
 
-        Matrix4x4 inverseViewProjection = (viewInverse * projectionInverse);
+
+        Matrix4x4 inverseViewProjection = (projectionInverse * viewInverse);
 
         sheet.properties.SetTexture("_HeightMap", settings.heightMap);
         sheet.properties.SetVector("_MapSize", settings.mapSize);
