@@ -400,6 +400,8 @@ public class WrenPhysics : MonoBehaviour
 
     public void LocalReset()
     {
+
+        Debug.LogWarning("LOCAL RESET wont work in ether?");
         rb.velocity = Vector3.zero;
         transform.position = new Vector3(transform.position.x, terrain.SampleHeight(transform.position) + 100, transform.position.z);// wren.beacon.position;//new Vector3( 0 ,2000, 0 );
 

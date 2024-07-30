@@ -59,6 +59,21 @@
     float3 _MapSize;
 
 
+    float _FogMultiplier;
+    float _FogHeightMultiplier;
+    float _FogHeightPower;
+    float _FogDensityAtFar;
+    float _FogDensityAtNear;
+    float _FogStepSize;
+    float _MaxFogTotal;
+    float4 _FogColorNear;
+    float4 _FogColorFar;
+    float4 _FogColorDistant;
+    float _OceanHeight;
+    #define _FogSamples 100
+    
+
+
     float getTerrainHeight(float3 p){
         float2 samplePosition = p.xz;
         float2 uv = (samplePosition + _MapSize.xz/2) / _MapSize.xz;
@@ -87,7 +102,8 @@
 
         float distance = LinearEyeDepth(depth);
 
-        float3 totalFog = 0;
+        float totalFog = 0;
+        float4 totalFogColor=0;
 
         
         float3 viewVector = mul( _InverseProjection , float4(v.texcoord.x * 2 - 1 , v.texcoord.y * 2 - 1, 0, 1));
@@ -97,13 +113,17 @@
 
         
 
-        float offset = 80 * hash21( v.texcoord + _Time.y );
-        
-        for( int i = 0; i < 100; i++ ){
+        float offset = _FogStepSize * 1 * hash21( v.texcoord + _Time.y );
+        bool hasBroke = false;
+        for( int i = 0; i < _FogSamples; i++ ){
 
-            float dist = 60 * float(i) + offset;
+            float ni = float(i)/ float(_FogSamples);
 
+            float dist = _FogStepSize * float(i) + offset;
+
+            // if its farther than scene depth, break
             if( dist > distance ){
+                hasBroke = true;
                 break;
             }
 
@@ -113,12 +133,28 @@
 
             // sample the height map, to see how far away we are from the ground
             // the closer we are to the ground, the more fog we should apply
-
             float height = getTerrainHeight(p);// SAMPLE_TEXTURE2D(_HeightMap, sampler_HeightMap, uvR).r;1
 
+            height = max(height, _OceanHeight);
             float d = p.y - height;
-            totalFog += clamp( 1/(d * .0001),0,1000) * (float(i)/100);
+
+            
             if( d < 0){
+                hasBroke = true;
+
+                break;
+            }
+
+            float fogValue = clamp( 1/(pow( d, _FogHeightPower) * _FogHeightMultiplier),0,1000) * lerp(_FogDensityAtNear, _FogDensityAtFar, ni);
+
+            totalFog += fogValue;
+            
+            totalFogColor += lerp( _FogColorNear, _FogColorFar,ni ) * fogValue;
+            
+            if( totalFog > _MaxFogTotal){
+                totalFog = _MaxFogTotal;
+                totalFogColor = _FogColorFar;
+                hasBroke = true;
                 break;
             }
 
@@ -126,9 +162,17 @@
             
         }
 
-        totalFog /= 1000;
+        
 
-        totalFog *= float3(1,.1,.5);
+        totalFog /= float(_FogSamples);
+        totalFog *= _FogMultiplier;
+        totalFogColor /= float(_FogSamples);
+        totalFogColor *= _FogMultiplier;
+        
+        if( hasBroke == false){
+            totalFog = _MaxFogTotal;
+            totalFogColor = _FogColorDistant;
+        }   
 
         // totalFog = distance/ 10000;
         
@@ -145,8 +189,9 @@
         //color.rgb = lerp( color.rgb , float3(1,1,1), saturate(10*pow((LinearEyeDepth(depth)/20000),1)));
         //color.rgb =   color.rgb + totalFog/1000;
 
-        color.rgb = color.rgb + totalFog;//getTerrainHeight( float3(v.texcoord.x,0,v.texcoord.y) * 4096);
+        // color.rgb = lerp( color.rgb , color.rgb * _FogColor.xyz,totalFog/_MaxFogTotal);//float3(1,.1,.5);//getTerrainHeight( float3(v.texcoord.x,0,v.texcoord.y) * 4096);
 
+        color.rgb = totalFogColor.rgb + color.rgb ;;
 
 
         return color;
