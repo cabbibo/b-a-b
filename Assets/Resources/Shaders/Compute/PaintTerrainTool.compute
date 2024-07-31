@@ -35,19 +35,20 @@ float _Shift;
 float _FN;
 
 // resolution of our map painting
- int _Width;
+int _Width;
 
 float weight[5] =  {0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216};
 
 Texture2D<float4> _HeightMap;
 SamplerState sampler_HeightMap;
 float3 _MapSize;
+float3 _MapOffset;
 
-    float3 worldPos( float3 pos ){
-        float4 c = _HeightMap.SampleLevel(sampler_HeightMap, (pos.xz) / _MapSize.xz + .5 /1024  , 1);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
-        pos.y = _MapSize.y * c.x;//* sin(.1 *length(pos.xz)) ;//c.x * 1000;//_MapHeight;
-        return pos;
-    }
+float3 worldPos( float3 pos ){
+  float4 c = _HeightMap.SampleLevel(sampler_HeightMap, (pos.xz) / _MapSize.xz + .5 /1024  , 1);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
+  pos.y = _MapSize.y * c.x;//* sin(.1 *length(pos.xz)) ;//c.x * 1000;//_MapHeight;
+  return pos;
+}
 
 
 
@@ -61,15 +62,19 @@ SamplerState sampler_TextureReset;
 
 
 float3 worldPosTexture( float3 pos ){
-    float4 c = _TextureReset.SampleLevel(sampler_TextureReset, (pos.xz) / _MapSize.xz + .5 /1024  , 1);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
-    pos.y = _MapSize.y * c.x;//* sin(.1 *length(pos.xz)) ;//c.x * 1000;//_MapHeight;
-    return pos;
+
+  float2 fPos = pos.xz - _MapOffset.xz;
+  fPos -= _MapSize.xz;
+
+  float4 c = _TextureReset.SampleLevel(sampler_TextureReset, (pos.xz) / _MapSize.xz + .5 /1024  , 1);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
+  pos.y = _MapSize.y * c.x;//* sin(.1 *length(pos.xz)) ;//c.x * 1000;//_MapHeight;
+  return pos;
 }
 
-  float4 getResetTexture( float3 pos ){
-      float4 c = _TextureReset.SampleLevel(sampler_TextureReset, (pos.xz) / _MapSize.xz  + .5 /1024 , 1);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
-      return c;
-  }
+float4 getResetTexture( float3 pos ){
+  float4 c = _TextureReset.SampleLevel(sampler_TextureReset, (pos.xz) / _MapSize.xz  + .5 /1024 , 1);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
+  return c;
+}
 
 
 float4 getUndoTexture( float3 pos ){
@@ -81,17 +86,17 @@ float4 getUndoTexture( float3 pos ){
 
 
 
-    float3 getNormal( float3 pos ){
+float3 getNormal( float3 pos ){
 
-      float delta = .01;
-      float3 dU = worldPos( pos + float3(delta,0,0) );
-      float3 dD = worldPos( pos + float3(-delta,0,0) );
-      float3 dL = worldPos( pos + float3(0,0,delta) );
-      float3 dR = worldPos( pos + float3(0,0,-delta) );
+  float delta = .01;
+  float3 dU = worldPos( pos + float3(delta,0,0) );
+  float3 dD = worldPos( pos + float3(-delta,0,0) );
+  float3 dL = worldPos( pos + float3(0,0,delta) );
+  float3 dR = worldPos( pos + float3(0,0,-delta) );
 
-      return -normalize(cross(dU.xyz-dD.xyz , dL.xyz-dR.xyz));
+  return -normalize(cross(dU.xyz-dD.xyz , dL.xyz-dR.xyz));
 
-    }
+}
 
 
 float3 getPos( int id ){
@@ -99,12 +104,20 @@ float3 getPos( int id ){
   float z = float(id / _Width);
 
   float fW = float(_Width);
-
+  /*
   float3 pos = float3(
-    ((x + .5)/fW-.5) * _MapSize.x,
-    0,
-    ((z + .5)/fW-.5) * _MapSize.z
+  ((x + .5)/fW-.5) * 1 * _MapSize.x,
+  0,
+  ((z + .5)/fW-.5) * 1 * _MapSize.z 
   );
+  */
+  
+  float3 pos = float3(
+  ((x + .5)/fW) * 1 * _MapSize.x + _MapOffset.x,
+  0,
+  ((z + .5)/fW) * 1 * _MapSize.z + _MapOffset.z
+  );
+
 
   pos.y = _HeightMap.SampleLevel(sampler_HeightMap, float2((x + .5)/ fW , (z + .5) / fW),0)  * _MapSize.y*2;
 
@@ -123,92 +136,92 @@ float3 getPos( int id ){
 [numthreads(NR_THREADS,1,1)]
 void PaintWind(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
-    int pID = threadID + u3GroupID.x * NR_THREADS;
+  int pID = threadID + u3GroupID.x * NR_THREADS;
 
-    int sID = pID;//safeID( pID , _VectorBuffer_COUNT );
+  int sID = pID;//safeID( pID , _VectorBuffer_COUNT );
 
-    int baseID = sID ;
-
-
-    float3 pos = getPos(sID);
+  int baseID = sID ;
 
 
+  float3 pos = getPos(sID);
 
-    float4 v = _VectorBuffer[baseID];
 
 
-       float3 dir = v.xyz;
+  float4 v = _VectorBuffer[baseID];
+
+
+  float3 dir = v.xyz;
   float3 newVal = 0;
 
   
-        float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
-    // updating our windDirection
-    if( _WhichBrush == 0  ){
-      newVal = float3(_PaintDirection.x , _PaintDirection.y, _PaintDirection.z)  * _PaintOpacity*_PaintStrength;
+  float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
+  // updating our windDirection
+  if( _WhichBrush == 0  ){
+    newVal = float3(_PaintDirection.x , _PaintDirection.y, _PaintDirection.z)  * _PaintOpacity*_PaintStrength;
 
 
     }else if( _WhichBrush == 1){
-        // Paint Up
-        newVal = float3( 0 ,_PaintScreenDirection.y, 0 )* _PaintOpacity*_PaintStrength;
-        newVal -= dir * 4 * float3(1,0,1);
+    // Paint Up
+    newVal = float3( 0 ,_PaintScreenDirection.y, 0 )* _PaintOpacity*_PaintStrength;
+    newVal -= dir * 4 * float3(1,0,1);
 
     }else if( _WhichBrush == 2){
 
-                // make zero 
+    // make zero 
 
-        newVal = -dir * 4;
+    newVal = -dir * 4;
 
-  
+    
 
 
     }else if( _WhichBrush ==3){
-                // make zero 
+    // make zero 
 
-        newVal = +dir;
+    newVal = +dir;
 
     }else{
     // should never trigger
-    }
+  }
 
 
-        newVal = lerp( newVal , float3(0,0,0) , l );
-        dir += newVal * .01;
+  newVal = lerp( newVal , float3(0,0,0) , l );
+  dir += newVal * .01;
 
-      //  dir = float3(1,0,0);
-      if( length(dir)== 0 ){
-        dir = float3(0,.00001,0);
-      }
-        v.xyz = dir;
-        
-        v.w = length(v.xyz);
-
-
-
+  //  dir = float3(1,0,0);
+  if( length(dir)== 0 ){
+    dir = float3(0,.00001,0);
+  }
+  v.xyz = dir;
+  
+  v.w = length(v.xyz);
 
 
 
-    if( _Reset == 1 ){
-      v.xyz  = float3(0,.00001,0);
-      v.w = 0;
-    }
 
 
-    if( _Reset == 2 ){
 
-      float4 tCol = getResetTexture( pos );
-      v = tCol;
-
-    }
-
-
-    if( _Reset == 3 ){
-
-      float4 tCol = getUndoTexture( pos );
-      v= tCol;
-    }
+  if( _Reset == 1 ){
+    v.xyz  = float3(0,.00001,0);
+    v.w = 0;
+  }
 
 
-    _VectorBuffer[baseID] = v;
+  if( _Reset == 2 ){
+
+    float4 tCol = getResetTexture( pos );
+    v = tCol;
+
+  }
+
+
+  if( _Reset == 3 ){
+
+    float4 tCol = getUndoTexture( pos );
+    v= tCol;
+  }
+
+
+  _VectorBuffer[baseID] = v;
 
 
 }
@@ -216,68 +229,68 @@ void PaintWind(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
 
 float4 SetVal( float val , float4 v , int _WhichBrush ){
-if( _WhichBrush == 0 ){
-  v.x = val;
-}else if( _WhichBrush == 1 ){
-  v.y = val;
-}else if( _WhichBrush == 2 ){
-  v.z = val;
-}else if( _WhichBrush == 3 ){
-  v.w = val;
-}
+  if( _WhichBrush == 0 ){
+    v.x = val;
+    }else if( _WhichBrush == 1 ){
+    v.y = val;
+    }else if( _WhichBrush == 2 ){
+    v.z = val;
+    }else if( _WhichBrush == 3 ){
+    v.w = val;
+  }
 
-return v;
+  return v;
 }
 
 #define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
 void PaintFood(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
-    int pID = threadID + u3GroupID.x * NR_THREADS;
+  int pID = threadID + u3GroupID.x * NR_THREADS;
 
-    int sID = pID;//safeID( pID , _VectorBuffer_COUNT );
+  int sID = pID;//safeID( pID , _VectorBuffer_COUNT );
 
-    int baseID = sID ;
-
-
-    float3 pos = getPos(sID);
-
-    float4 v = _VectorBuffer[baseID];
+  int baseID = sID ;
 
 
-     float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
+  float3 pos = getPos(sID);
 
-    float val =  v[_WhichBrush];
-
-        val += .04*lerp( _PaintOpacity * _PaintStrength , 0 , l );
-     val =  saturate( val);
- 
+  float4 v = _VectorBuffer[baseID];
 
 
+  float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
 
-    if( _Reset == 1 ){
-      val = 0;
-    }
+  float val =  v[_WhichBrush];
 
-
-    if( _Reset == 2 ){
-
-      float4 tCol = getResetTexture( pos );
-      val = tCol[_WhichBrush];
-
-    }
+  val += .04*lerp( _PaintOpacity * _PaintStrength , 0 , l );
+  val =  saturate( val);
+  
 
 
-    if( _Reset == 3 ){
 
-      float4 tCol = getUndoTexture( pos );
-      val = tCol[_WhichBrush];
-    }
+  if( _Reset == 1 ){
+    val = 0;
+  }
 
 
-    v = SetVal( val,v, _WhichBrush );
+  if( _Reset == 2 ){
 
-    _VectorBuffer[baseID] = v;
+    float4 tCol = getResetTexture( pos );
+    val = tCol[_WhichBrush];
+
+  }
+
+
+  if( _Reset == 3 ){
+
+    float4 tCol = getUndoTexture( pos );
+    val = tCol[_WhichBrush];
+  }
+
+
+  v = SetVal( val,v, _WhichBrush );
+
+  _VectorBuffer[baseID] = v;
 
 
 }
@@ -289,51 +302,51 @@ void PaintFood(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 [numthreads(NR_THREADS,1,1)]
 void PaintBiome(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
-    int pID = threadID + u3GroupID.x * NR_THREADS;
+  int pID = threadID + u3GroupID.x * NR_THREADS;
 
-    int sID = pID;//safeID( pID , _VectorBuffer_COUNT );
+  int sID = pID;//safeID( pID , _VectorBuffer_COUNT );
 
-    int baseID = sID ;
-
-
-    float3 pos = getPos(sID);
-
-    float4 v = _VectorBuffer[baseID];
+  int baseID = sID ;
 
 
-     float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
+  float3 pos = getPos(sID);
 
-    float val =  v[_WhichBrush];
-
-        val += .04*lerp( _PaintOpacity * _PaintStrength , 0 , l );
-     val =  saturate( val);
- 
+  float4 v = _VectorBuffer[baseID];
 
 
+  float l = saturate( length(pos - _PaintPosition ) / _PaintSize );
 
-    if( _Reset == 1 ){
-      val = 0;
-    }
+  float val =  v[_WhichBrush];
 
-
-    if( _Reset == 2 ){
-
-      float4 tCol = getResetTexture( pos );
-      val = tCol[_WhichBrush];
-
-    }
+  val += .04*lerp( _PaintOpacity * _PaintStrength , 0 , l );
+  val =  saturate( val);
+  
 
 
-    if( _Reset == 3 ){
 
-      float4 tCol = getUndoTexture( pos );
-      val = tCol[_WhichBrush];
-    }
+  if( _Reset == 1 ){
+    val = 0;
+  }
 
 
-    v = SetVal( val,v, _WhichBrush );
+  if( _Reset == 2 ){
 
-    _VectorBuffer[baseID] = v;
+    float4 tCol = getResetTexture( pos );
+    val = tCol[_WhichBrush];
+
+  }
+
+
+  if( _Reset == 3 ){
+
+    float4 tCol = getUndoTexture( pos );
+    val = tCol[_WhichBrush];
+  }
+
+
+  v = SetVal( val,v, _WhichBrush );
+
+  _VectorBuffer[baseID] = v;
 
 
 }

@@ -159,7 +159,7 @@ namespace IMMATERIA
       {
         DebugThis("kernel: " + kernelName + " : Couldn't be found");
 #if UNITY_EDITOR
-                EditorGUIUtility.PingObject(this.gameObject);
+        EditorGUIUtility.PingObject(this.gameObject);
 #endif
       }
     }
@@ -613,6 +613,9 @@ namespace IMMATERIA
 
       foreach (BoundTexture b in boundTextureList)
       {
+        // print(b.nameInShader);
+        //print(b.lambda());
+        //print(gameObject);
         shader.SetTexture(kernel, b.nameInShader, b.lambda());
       }
 
