@@ -33,7 +33,14 @@ public class TerrainPainter : Simulation
 
 
   // String for saving safeness;
-  public string safeName;
+  string safeName
+  {
+    get
+    {
+      return WrenUtils.God.islandData.name + "_" + gameObject.name;
+    }
+
+  }
 
 
   //Textur informs the start
@@ -230,6 +237,9 @@ public class TerrainPainter : Simulation
     life.BindVector3("_MapSize", () => WrenUtils.God.terrainData.size);
 
 
+    life.BindVector3("_MapOffset", () => WrenUtils.God.terrainOffset);
+
+
 
   }
 
@@ -265,11 +275,12 @@ public class TerrainPainter : Simulation
 
     mpb.SetTexture("_HeightMap", WrenUtils.God.terrainData.heightmapTexture);
     mpb.SetVector("_MapSize", WrenUtils.God.terrainData.size);
+    mpb.SetVector("_MapOffset", WrenUtils.God.terrainOffset);
 
     mpb.SetInt("_ShownBrushes", debugDrawMultiplier);
 
 
-    Graphics.DrawProcedural(debugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, (verts.count * debugDrawMultiplier) * 3, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+    Graphics.DrawProcedural(debugMaterial, new Bounds(transform.position, Vector3.one * 100000), MeshTopology.Triangles, (verts.count * debugDrawMultiplier) * 3, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
 
   }
 
@@ -290,6 +301,7 @@ public class TerrainPainter : Simulation
   {
 
 
+    print(WrenUtils.God.terrainOffset);
 
     // paintPosition = data.land.Trace( ray.origin, ray.direction);
     paintTip.position = paintPosition;

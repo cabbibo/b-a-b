@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
+
+[ExecuteAlways]
 public class IslandController : MonoBehaviour
 {
 
@@ -18,7 +20,13 @@ public class IslandController : MonoBehaviour
         "Finishing" and island makes it so all the activites on that island appear ( and new ones appear on tutorial island? )
 
 
+    need to fix all the rest of the painters
+    need to fix the compute lookups
+    need to find all assundry extra calcuations that use map size and remake them
+
     */
+
+    public int defaultIslandID = 0;
 
     public IslandData[] islands;
 
@@ -68,6 +76,9 @@ public class IslandController : MonoBehaviour
     {
         islandDistances = new Vector2[islands.Length];
         islandUVs = new Vector2[islands.Length];
+
+
+        OnNewIslandEntered(defaultIslandID);
     }
 
     // Update is called once per frame
