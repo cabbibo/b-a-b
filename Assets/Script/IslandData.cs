@@ -26,7 +26,11 @@ public class IslandData : MonoBehaviour
     public TerrainPainter biomePainter2;
 
 
+    public Quest[] quests;
+
     public Biome[] biomes;
+
+    public int[] biomeIDs = new int[8] { 0, 1, 2, 3, 4, 5, 6, 7 };
 
 
 
@@ -70,9 +74,9 @@ public class IslandData : MonoBehaviour
         Shader.SetGlobalTexture("_BiomeMap2", biomeMap2);
         Shader.SetGlobalTexture("_FoodMap", foodMap);
 
-        for (int i = 0; i < biomes.Length; i++)
+        for (int i = 0; i < quests.Length; i++)
         {
-            biomes[i].Initialize();
+            quests[i].Initialize();
         }
 
     }
@@ -336,9 +340,9 @@ public class IslandData : MonoBehaviour
         // print("old Biome : " + oldBiome);
         // print(" new Biome : " + newBiome);
 
-
-
         BiomeChangeEvent.Invoke(oldBiome, newBiome);
+
+
 
 
     }
@@ -388,7 +392,7 @@ public class IslandData : MonoBehaviour
 
     }
 
-    public void OnBiomeCompleted(int i)
+    /*public void OnBiomeCompleted(int i)
     {
 
         bool islandCompleted = true;
@@ -407,7 +411,7 @@ public class IslandData : MonoBehaviour
             islandCompleteCutScene.Play();
 
         }
-    }
+    }*/
 
 
 }

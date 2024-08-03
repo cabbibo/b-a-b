@@ -6,156 +6,190 @@ using WrenUtils;
 public class Biome : MonoBehaviour
 {
 
-    public bool discovered;
-    public bool started;
-    public bool completed;
+    public AudioClip[] loops;
+    public AudioClip[] ambiance;
 
-    public int id;
-
-    public Portal portal;
-    public float amountComplete;
-
-
-    public PlayCutScene discoveredAnimation;
-    public PlayCutScene startedAnimation;
-    public PlayCutScene completedAnimation;
+    public Color color;
 
     public List<GameObject> localObjects;
 
-    public IslandData islandData;
+    public GameObject fog;
 
-    public void AddToCompletion(float amount)
-    {
-        amountComplete += amount;
+    //TODO:
 
-        if (amountComplete >= 1)
+    // Make it so that every object fades in and fades out somehow
+    // Make it so fog fades in and fades out
+
+
+
+
+
+
+
+
+
+    /*
+        public bool discovered;
+        public bool started;
+        public bool completed;
+
+        public int id;
+
+        public Portal portal;
+        public float amountComplete;
+
+
+        public PlayCutScene discoveredAnimation;
+        public PlayCutScene startedAnimation;
+        public PlayCutScene completedAnimation;
+
+        public List<GameObject> localObjects;
+
+        public IslandData islandData;
+
+        public void AddToCompletion(float amount)
         {
+            amountComplete += amount;
 
-            print("Biome complete");
-            amountComplete = 1;
-            CompleteBiome();
-        }
-    }
+            if (amountComplete >= 1)
+            {
 
-    public void SetCompletion(float amount)
-    {
-        amountComplete = amount;
-        if (amountComplete >= 1)
-        {
-            print("Biome complete");
-            amountComplete = 1;
-            CompleteBiome();
-        }
-
-    }
-
-
-
-    public void DiscoverBiome()
-    {
-
-        print("HELLOOO111");
-        discovered = true;
-        God.state.OnBiomeDiscovered(id);
-        discoveredAnimation.Play();
-
-    }
-    public void CompleteBiome()
-    {
-
-        if (completed == false)
-        {
-            print("HELLOOO");
-
-            portal.OpenPortal();
-            completedAnimation.Play();
-        }
-        else
-        {
-            print("already completed");
-
+                print("Biome complete");
+                amountComplete = 1;
+                CompleteBiome();
+            }
         }
 
-    }
-
-    public void StartBiome()
-    {
-
-        if (started == false)
+        public void SetCompletion(float amount)
         {
-            started = true;
-            God.state.OnBiomeStarted(id);
-            startedAnimation.Play();
-        }
-        else
-        {
-            print("already started");
-        }
-    }
+            amountComplete = amount;
+            if (amountComplete >= 1)
+            {
+                print("Biome complete");
+                amountComplete = 1;
+                CompleteBiome();
+            }
 
-
-    public void Initialize()
-    {
-
-        discovered = God.state.biomesDiscovered[id];
-        started = God.state.biomesStarted[id];
-        completed = God.state.biomesCompleted[id];
-
-
-        completedAnimation.SetStartValues();
-        startedAnimation.SetStartValues();
-        discoveredAnimation.SetStartValues();
-
-
-        // Setting state from animations!
-        if (!discovered)
-        {
-            print("HELLO I AM NOT DISCOVERED");
-            discoveredAnimation.SetStartValues();
         }
 
-        if (discovered && !started)
+
+
+        public void DiscoverBiome()
         {
-            print("discovered not started");
-            discoveredAnimation.SetEndValues();
-            startedAnimation.SetStartValues();
+
+            print("HELLOOO111");
+            discovered = true;
+            God.state.OnBiomeDiscovered(id);
+            discoveredAnimation.Play();
+
+        }
+        public void CompleteBiome()
+        {
+
+            if (completed == false)
+            {
+                print("HELLOOO");
+
+                portal.OpenPortal();
+                completedAnimation.Play();
+            }
+            else
+            {
+                print("already completed");
+
+            }
+
         }
 
-        if (discovered && started && !completed)
+        public void StartBiome()
         {
-            print("discovered started not completed");
-            discoveredAnimation.SetEndValues();
-            startedAnimation.SetEndValues();
+
+            if (started == false)
+            {
+                started = true;
+                God.state.OnBiomeStarted(id);
+                startedAnimation.Play();
+            }
+            else
+            {
+                print("already started");
+            }
+        }
+
+
+        public void Initialize()
+        {
+
+            discovered = God.state.biomesDiscovered[id];
+            started = God.state.biomesStarted[id];
+            completed = God.state.biomesCompleted[id];
+
+
             completedAnimation.SetStartValues();
+            startedAnimation.SetStartValues();
+            discoveredAnimation.SetStartValues();
+
+
+            // Setting state from animations!
+            if (!discovered)
+            {
+                print("HELLO I AM NOT DISCOVERED");
+                discoveredAnimation.SetStartValues();
+            }
+
+            if (discovered && !started)
+            {
+                print("discovered not started");
+                discoveredAnimation.SetEndValues();
+                startedAnimation.SetStartValues();
+            }
+
+            if (discovered && started && !completed)
+            {
+                print("discovered started not completed");
+                discoveredAnimation.SetEndValues();
+                startedAnimation.SetEndValues();
+                completedAnimation.SetStartValues();
+            }
+
+            if (discovered && started && completed)
+            {
+                print("Setting All End Values");
+                discoveredAnimation.SetEndValues();
+                startedAnimation.SetEndValues();
+                completedAnimation.SetEndValues();
+            }
+
+
+
+            if (!completed)
+            {
+                portal.SetPortalOff();
+            }
+            else
+            {
+                portal.SetPortalFull();
+            }
+
+            // print("HELLO I AM ENABLED");
+            //print(gameObject.name);
+            //print(discovered);
+            //print(started);
+            //print(completed);
+
+
         }
 
-        if (discovered && started && completed)
+   
+
+        public void OnCompletedAnimationFinished()
         {
-            print("Setting All End Values");
-            discoveredAnimation.SetEndValues();
-            startedAnimation.SetEndValues();
-            completedAnimation.SetEndValues();
+
+            completed = true;
+            God.state.OnBiomeCompleted(id);
         }
+    */
 
-
-
-        if (!completed)
-        {
-            portal.SetPortalOff();
-        }
-        else
-        {
-            portal.SetPortalFull();
-        }
-
-        // print("HELLO I AM ENABLED");
-        //print(gameObject.name);
-        //print(discovered);
-        //print(started);
-        //print(completed);
-
-
-    }
 
     public void OnEnterBiome()
     {
@@ -167,10 +201,10 @@ public class Biome : MonoBehaviour
             localObjects[i].SetActive(true);
         }
 
-        if (!discovered)
-        {
-            DiscoverBiome();
-        }
+        /*  if (!discovered)
+          {
+              DiscoverBiome();
+          }*/
 
 
     }
@@ -179,20 +213,10 @@ public class Biome : MonoBehaviour
     {
         //print("HELLO I AM EXITED");
 
-        for (int i = 0; i < localObjects.Count; i++)
-        {
-            localObjects[i].SetActive(false);
-        }
+        /*for (int i = 0; i < localObjects.Count; i++)
+         {
+             localObjects[i].SetActive(false);
+         }*/
 
     }
-
-    public void OnCompletedAnimationFinished()
-    {
-
-        completed = true;
-        God.state.OnBiomeCompleted(id);
-        islandData.OnBiomeCompleted(id);
-    }
-
-
 }

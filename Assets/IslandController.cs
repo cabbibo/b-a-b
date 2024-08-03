@@ -77,6 +77,10 @@ public class IslandController : MonoBehaviour
         islandDistances = new Vector2[islands.Length];
         islandUVs = new Vector2[islands.Length];
 
+        for (int i = 0; i < islands.Length; i++)
+        {
+            islands[i].Initialize();
+        }
 
         OnNewIslandEntered(defaultIslandID);
     }
@@ -175,4 +179,7 @@ public class IslandController : MonoBehaviour
         God.UnsetIslandData();
 
     }
+
+
+
 }

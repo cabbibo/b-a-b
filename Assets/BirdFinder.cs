@@ -5,7 +5,7 @@ using UnityEngine;
 public class BirdFinder : MonoBehaviour
 {
 
-    public Biome biome;
+    public Quest quest;
 
     public int numberOfTimesToFind;
 
@@ -22,7 +22,7 @@ public class BirdFinder : MonoBehaviour
         print("Bird found");
 
         timesFound++;
-        biome.SetCompletion((float)timesFound / (float)numberOfTimesToFind);
+        quest.SetCompletion((float)timesFound / (float)numberOfTimesToFind);
 
     }
 
