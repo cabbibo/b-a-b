@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
-public class BiomeStarter : MonoBehaviour
+public class QuestStarter : MonoBehaviour
 {
 
-    public Biome biome;
+    public Quest quest;
 
     public void OnTriggerEnter(Collider c)
     {
@@ -16,9 +16,9 @@ public class BiomeStarter : MonoBehaviour
 
         if (God.IsOurWren(c))
         {
-            if (!biome.started)
+            if (!quest.started)
             {
-                biome.StartBiome();
+                quest.StartQuest();
             }
         }
     }

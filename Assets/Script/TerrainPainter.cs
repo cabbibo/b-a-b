@@ -411,6 +411,7 @@ public class TerrainPainter : Simulation
 
   public void ResetToOriginal()
   {
+    print("TEST");
     Load();
   }
 
@@ -536,6 +537,7 @@ public class TerrainPainter : Simulation
   {
 
     print("LOADING");
+    print(safeName);
     string path = "StreamingAssets/Terrain/" + safeName;
     path = Application.dataPath + "/" + path + ".jpg";
 
@@ -566,6 +568,7 @@ public class TerrainPainter : Simulation
   public void Load()
   {
     string path = "StreamingAssets/Terrain/" + safeName;
+    print(path);
     Saveable.Load(verts, path);
   }
 

@@ -613,9 +613,6 @@ namespace IMMATERIA
 
       foreach (BoundTexture b in boundTextureList)
       {
-        // print(b.nameInShader);
-        //print(b.lambda());
-        //print(gameObject);
         shader.SetTexture(kernel, b.nameInShader, b.lambda());
       }
 
