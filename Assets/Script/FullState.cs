@@ -18,11 +18,21 @@ public class FullState : MonoBehaviour
     public bool[] biomesStarted;
     public bool[] biomesCompleted;
 
+
+
+    public bool[] questsDiscovered;
+    public bool[] questsStarted;
+    public bool[] questsCompleted;
+
+    public int numQuests = 7;
+
+
     public bool gameFinished;
 
 
     public int currentSceneID;
     public int currentBiomeID;
+    public int currentQuestID;
 
 
     public int numBiomes = 7;
@@ -62,9 +72,15 @@ public class FullState : MonoBehaviour
         PlayerPrefsX.SetBoolArray("_BiomesDiscovered", biomesDiscovered);
 
 
+        PlayerPrefsX.SetBoolArray("_QuestsStarted", questsStarted);
+        PlayerPrefsX.SetBoolArray("_QuestsCompleted", questsCompleted);
+        PlayerPrefsX.SetBoolArray("_QuestsDiscovered", questsDiscovered);
+
+
 
         PlayerPrefs.SetInt("_CurrentScene", currentSceneID);
         PlayerPrefs.SetInt("_CurrentBiome", currentBiomeID);
+        PlayerPrefs.SetInt("_CurrentQuest", currentQuestID);
 
 
 
@@ -104,6 +120,7 @@ public class FullState : MonoBehaviour
 
         currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
         currentBiomeID = PlayerPrefs.GetInt("_CurrentBiome", -1);
+        currentQuestID = PlayerPrefs.GetInt("_CurrentQuest", -1);
 
         ///        print("Loading last Position");
         lastPosition = PlayerPrefsX.GetVector3("_LastPosition", Vector3.zero);
@@ -128,6 +145,28 @@ public class FullState : MonoBehaviour
             biomesDiscovered = new bool[numBiomes];
         }
 
+
+
+
+
+        questsStarted = PlayerPrefsX.GetBoolArray("_QuestsStarted");
+        questsCompleted = PlayerPrefsX.GetBoolArray("_QuestsCompleted");
+        questsDiscovered = PlayerPrefsX.GetBoolArray("_QuestsDiscovered");
+
+        if (questsStarted.Length != numQuests)
+        {
+            questsStarted = new bool[numQuests];
+        }
+
+        if (questsCompleted.Length != numQuests)
+        {
+            questsCompleted = new bool[numQuests];
+        }
+
+        if (questsDiscovered.Length != numQuests)
+        {
+            questsDiscovered = new bool[numQuests];
+        }
 
 
 
@@ -157,6 +196,11 @@ public class FullState : MonoBehaviour
         biomesCompleted = new bool[numBiomes];
 
 
+        questsDiscovered = new bool[numQuests];
+        questsStarted = new bool[numQuests];
+        questsCompleted = new bool[numQuests];
+
+
 
         UpdateState();
 
@@ -172,6 +216,12 @@ public class FullState : MonoBehaviour
     public void SetCurrentBiome(int i)
     {
         currentBiomeID = i;
+        UpdateState();
+    }
+
+    public void SetCurrentQuest(int i)
+    {
+        currentQuestID = i;
         UpdateState();
     }
 
@@ -208,6 +258,42 @@ public class FullState : MonoBehaviour
 
         UpdateState();
     }
+
+
+    public void OnQuestDiscovered(int i)
+    {
+        questsDiscovered[i] = true;
+        UpdateState();
+    }
+
+    public void OnQuestStarted(int i)
+    {
+        questsStarted[i] = true;
+        UpdateState();
+    }
+
+    public void OnQuestCompleted(int i)
+    {
+        questsCompleted[i] = true;
+
+
+        bool allCompleted = true;
+        for (int j = 0; j < questsCompleted.Length; j++)
+        {
+            if (!questsCompleted[j])
+            {
+                allCompleted = false;
+            }
+        }
+
+        if (allCompleted)
+        {
+            OnGameFinish();
+        }
+
+        UpdateState();
+    }
+
 
     public void OnGameStart()
     {

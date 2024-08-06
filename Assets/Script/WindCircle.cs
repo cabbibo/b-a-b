@@ -21,7 +21,7 @@ public class WindCircle : MonoBehaviour
             dif.y = 0;
             if (dif.magnitude > radius)
             {
-                God.wren.physics.rb.AddForce(dif.normalized * speed);
+                God.wren.physics.AddForce(dif.normalized * speed);
                 inWind = true;
                 // TODO add wind sound / particles
 

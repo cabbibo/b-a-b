@@ -352,6 +352,7 @@ public class SceneController : MonoBehaviour
         }
 
         God.state.SetCurrentBiome(portal.biome);
+        God.state.SetCurrentQuest(portal.questID);
         HardLoad(portal.sceneID);
 
     }

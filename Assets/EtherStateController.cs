@@ -13,7 +13,7 @@ public class EtherStateController : MonoBehaviour
         for (int i = 0; i < portals.Length; i++)
         {
 
-            if (God.state.biomesCompleted[i])
+            if (God.state.questsCompleted[i])
             {
                 portals[i].SetPortalFull();
             }

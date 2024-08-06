@@ -7,7 +7,7 @@ using WrenUtils;
 [ExecuteInEditMode]
 public class BeeController : MonoBehaviour
 {
-    public Biome biome;
+    public Quest quest;
 
     public List<Transform> bees;
     public List<bool> droppedOff;
@@ -37,7 +37,7 @@ public class BeeController : MonoBehaviour
 
     public Transform toFollow;
 
-    // TODO: load based on biome
+    // TODO: load based on quest
     // TODO: 
     public void OnEnable()
     {
@@ -69,7 +69,7 @@ public class BeeController : MonoBehaviour
                 bees.Add(Instantiate(beePrefab, temples[whichTemple[i]].position + Random.insideUnitSphere, Quaternion.identity).transform);
                 bees[i].parent = beeHolder;
 
-                if (biome.completed)
+                if (quest.completed)
                 {
                     droppedOff.Add(true);
                     followingWren.Add(false);
@@ -186,9 +186,9 @@ public class BeeController : MonoBehaviour
 
         completionAmount = (float)totalLocked / (float)bees.Count;
 
-        if (biome.completed == false)
+        if (quest.completed == false)
         {
-            biome.SetCompletion(completionAmount);
+            quest.SetCompletion(completionAmount);
         }
 
     }
