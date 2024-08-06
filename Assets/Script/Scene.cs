@@ -100,9 +100,9 @@ namespace WrenUtils
             }
             else
             {
-                if (God.state.currentBiomeID >= 0)
+                if (God.state.currentQuestID >= 0)
                 {
-                    if (God.state.currentBiomeID >= portals.Length)
+                    if (God.state.currentQuestID >= portals.Length)
                     {
                         startPos = baseStartPosition.position;
                         God.state.SetCurrentBiome(-1);
@@ -110,10 +110,10 @@ namespace WrenUtils
                     else
                     {
 
-                        God.state.SetLastPosition(portals[God.state.currentBiomeID].startPoint.position);
+                        God.state.SetLastPosition(portals[God.state.currentQuestID].startPoint.position);
                         // return / spawn at gate that is our current biome!
                         // when bird dies, we respawn at our first starting position
-                        startPos = portals[God.state.currentBiomeID].startPoint.position;
+                        startPos = portals[God.state.currentQuestID].startPoint.position;
 
                     }
 

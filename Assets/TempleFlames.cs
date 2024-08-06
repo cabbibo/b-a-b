@@ -8,7 +8,7 @@ using WrenUtils;
 public class TempleFlames : MonoBehaviour
 {
 
-    public Biome biome;
+    public Quest quest;
 
     public List<Transform> torches;
     public List<GameObject> flames;
@@ -34,7 +34,7 @@ public class TempleFlames : MonoBehaviour
 
         //        print("TEMPLE FLAMES ENABLED");
 
-        if (biome.completed == false)
+        if (quest.completed == false)
         {
             for (int i = 0; i < torches.Count; i++)
             {
@@ -46,7 +46,7 @@ public class TempleFlames : MonoBehaviour
         }
 
 
-        if (biome.completed == true)
+        if (quest.completed == true)
         {
             for (int i = 0; i < torches.Count; i++)
             {
@@ -162,7 +162,7 @@ public class TempleFlames : MonoBehaviour
 
         float amount = (float)totalLitTorches / (float)lit.Count;
         print(amount);
-        biome.SetCompletion(amount);
+        quest.SetCompletion(amount);
 
 
     }

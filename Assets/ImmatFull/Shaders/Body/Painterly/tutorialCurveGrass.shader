@@ -205,17 +205,17 @@
 
                 float3 eye = _WorldSpaceCameraPos - v.world;
 
-float3 shadowCol = 0;
- for( int i = 0; i < 3; i++){
+                float3 shadowCol = 0;
+                for( int i = 0; i < 3; i++){
 
-      float3 fPos = v.world - normalize(eye) * float(i) * 1.3;
-      float v = (noise(fPos * 10));
-      shadowCol += hsv((float)i/3,1,v);
+                    float3 fPos = v.world - normalize(eye) * float(i) * 1.3;
+                    float v = (noise(fPos * 10));
+                    shadowCol += hsv((float)i/3,1,v);
 
-    
-    }//
+                    
+                }//
 
-    fCol += pow( shadowCol, 10) * 10 * float3(1,.8,.3);
+                fCol += pow( shadowCol, 10) * 10 * float3(1,.8,.3);
 
                 //fCol = v.debug.x * .01;
 
@@ -225,7 +225,7 @@ float3 shadowCol = 0;
 
                 //fCol *= 1-abs(dot(v.bi, float3(0,1,0)));
 
-               // fCol = fLCol;// skyColor;
+                // fCol = fLCol;// skyColor;
                 //fCol = v.debug.x;
                 fixed4 col = float4(fCol,1);//fLCol;//float4( i.nor * .5 + .5 , 1);//tex2D(_MainTex, i.uv);
                 return col;
@@ -280,6 +280,7 @@ float3 shadowCol = 0;
                 float2 uv : TEXCOORD0;
             };
 
+            sampler2D _AudioMap;
 
             v2f vert(appdata_base input, uint id : SV_VertexID)
             {

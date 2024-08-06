@@ -8,7 +8,7 @@ using WrenUtils;
 public class DesertWater : MonoBehaviour
 {
 
-    public Biome biome;
+    public Quest quest;
 
     public List<Transform> waterLocations;
     public Transform locationToWater;
@@ -42,13 +42,13 @@ public class DesertWater : MonoBehaviour
 
 
 
-        if (biome.completed == false)
+        if (quest.completed == false)
         {
             amountWatered = 0;
         }
 
 
-        if (biome.completed == true)
+        if (quest.completed == true)
         {
             amountWatered = 1;
         }
@@ -166,7 +166,7 @@ public class DesertWater : MonoBehaviour
         amountWatered += waterValue;
         waterValue = 0;
         wrenCarryingWater = false;
-        biome.SetCompletion(amountWatered);
+        quest.SetCompletion(amountWatered);
 
         onWaterParticles.Play();
     }

@@ -17,6 +17,7 @@ public class Portal : MonoBehaviour
 
 
     public int biome;
+    public int questID;
     public Transform startPoint;
 
     public PortalCollision portalCollision;
@@ -141,6 +142,8 @@ public class Portal : MonoBehaviour
 
     public void SetPortalFull()
     {
+
+        print(gameObject.name + " SETTING FULL");
         collider.enabled = true;
         portalRenderer.enabled = true;
         portalShownAmount = 1;

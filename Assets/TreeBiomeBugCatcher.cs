@@ -8,7 +8,7 @@ public class TreeBiomeBugCatcher : MonoBehaviour
 
 
     public ButterflySpawner[] butterflySpawners;
-    public Biome biome;
+    public Quest quest;
 
 
     // Start is called before the first frame update
@@ -26,9 +26,9 @@ public class TreeBiomeBugCatcher : MonoBehaviour
 
         if (God.IsOurWren(c))
         {
-            if (!biome.started)
+            if (!quest.started)
             {
-                biome.StartBiome();
+                quest.StartQuest();
             }
         }
     }
@@ -38,7 +38,7 @@ public class TreeBiomeBugCatcher : MonoBehaviour
     {
         print("BUG ATE");
         print(v);
-        biome.AddToCompletion(v);
+        quest.AddToCompletion(v);
 
     }
 

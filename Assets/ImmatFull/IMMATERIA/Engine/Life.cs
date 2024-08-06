@@ -159,7 +159,7 @@ namespace IMMATERIA
       {
         DebugThis("kernel: " + kernelName + " : Couldn't be found");
 #if UNITY_EDITOR
-                EditorGUIUtility.PingObject(this.gameObject);
+        EditorGUIUtility.PingObject(this.gameObject);
 #endif
       }
     }

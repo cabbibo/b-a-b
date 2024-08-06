@@ -16,6 +16,8 @@ public class IslandData : MonoBehaviour
     public UnityEvent OnIslandLeaveEvent;
 
 
+    public Terrain terrain;
+
     public TerrainPainter windPainter;
     public TerrainPainter foodPainter;
     public TerrainPainter weatherPainter;
@@ -24,7 +26,11 @@ public class IslandData : MonoBehaviour
     public TerrainPainter biomePainter2;
 
 
+    public Quest[] quests;
+
     public Biome[] biomes;
+
+    public int[] biomeIDs = new int[8] { 0, 1, 2, 3, 4, 5, 6, 7 };
 
 
 
@@ -45,6 +51,7 @@ public class IslandData : MonoBehaviour
 
 
     public Vector3 size;
+    public Vector3 offset;
     public Vector4 currentFoodValues;
 
 
@@ -58,8 +65,8 @@ public class IslandData : MonoBehaviour
         print("Enabling");
 
         //biomeMap = painter.biomeMap;
-        heightMap = God.terrainData.heightmapTexture;
-        size = God.terrainData.size;
+        heightMap = terrain.terrainData.heightmapTexture;
+        size = terrain.terrainData.size;
 
 
         Shader.SetGlobalTexture("_WindMap", windMap);
@@ -67,9 +74,9 @@ public class IslandData : MonoBehaviour
         Shader.SetGlobalTexture("_BiomeMap2", biomeMap2);
         Shader.SetGlobalTexture("_FoodMap", foodMap);
 
-        for (int i = 0; i < biomes.Length; i++)
+        for (int i = 0; i < quests.Length; i++)
         {
-            biomes[i].Initialize();
+            quests[i].Initialize();
         }
 
     }
@@ -139,28 +146,29 @@ public class IslandData : MonoBehaviour
     // Check to see if we are in our island or not
     void WhileHibernate()
     {
+        /*
+                // TODO can remove
+                if (wrenUVPosition.x > 1 || wrenUVPosition.y > 1 || wrenUVPosition.x < 0 || wrenUVPosition.y < 0)
+                {
+                    if (oWrenUVPosition.x <= 1 && oWrenUVPosition.y <= 1 && oWrenUVPosition.x >= 0 && oWrenUVPosition.y >= 0)
+                    {
+                        OnIslandLeave();
+                    }
+                }
+                else
+                {
+                    if (oWrenUVPosition.x > 1 || oWrenUVPosition.y > 1 || oWrenUVPosition.x < 0 || oWrenUVPosition.y < 0)
+                    {
+                        OnIslandEnter();
+                    }
+                }
+        */
 
-        if (God.wren)
-        {
-            Vector3 wrenPos = God.wren.transform.position;
-            Vector3 islandPos = transform.position;
-            float distance = Vector3.Distance(wrenPos, islandPos);
-            if (distance > radius && active)
-            {
-                OnIslandLeave();
-            }
-            else if (distance < radius && !active)
-            {
-                OnIslandEnter();
-            }
-        }
+
 
     }
     void Update()
     {
-
-
-
         // In editor ( no wren ) have a debug transform we can check values with!
 
         Vector3 positionToCheck = Vector3.zero;
@@ -175,66 +183,54 @@ public class IslandData : MonoBehaviour
         wrenUVPosition = God.UVInMap(positionToCheck);
 
 
-
-        if (wrenUVPosition.x > 1 || wrenUVPosition.y > 1 || wrenUVPosition.x < 0 || wrenUVPosition.y < 0)
+        if (!onIsland)
         {
-            if (oWrenUVPosition.x <= 1 && oWrenUVPosition.y <= 1 && oWrenUVPosition.x >= 0 && oWrenUVPosition.y >= 0)
-            {
-                OnIslandLeave();
-            }
+            WhileHibernate();
         }
         else
         {
-            if (oWrenUVPosition.x > 1 || oWrenUVPosition.y > 1 || oWrenUVPosition.x < 0 || oWrenUVPosition.y < 0)
+
+
+            currentWindDirection = GetWind(wrenUVPosition);
+            currentBiomeValues = GetBiomeValues(wrenUVPosition);
+            currentFoodValues = GetFood(wrenUVPosition);
+
+            oSecondMaxBiomeValue = secondMaxBiomeValue;
+            oMaxBiomeID = maxBiomeID;
+
+            oMaxBiomeValue = maxBiomeValue;
+            oSecondMaxBiomeValue = secondMaxBiomeValue;
+
+            maxBiomeValue = 0;
+            secondMaxBiomeValue = 0;
+
+            maxBiomeID = -1;
+            oSecondMaxBiomeID = -1;
+
+            for (int i = 0; i < currentBiomeValues.Length; i++)
             {
-                OnIslandEnter();
-            }
-        }
-
-
-
-        currentWindDirection = GetWind(wrenUVPosition);
-        currentBiomeValues = GetBiomeValues(wrenUVPosition);
-        currentFoodValues = GetFood(wrenUVPosition);
-
-
-        oSecondMaxBiomeValue = secondMaxBiomeValue;
-        oMaxBiomeID = maxBiomeID;
-
-        oMaxBiomeValue = maxBiomeValue;
-        oSecondMaxBiomeValue = secondMaxBiomeValue;
-
-        maxBiomeValue = 0;
-        secondMaxBiomeValue = 0;
-
-        maxBiomeID = -1;
-        oSecondMaxBiomeID = -1;
-        for (int i = 0; i < currentBiomeValues.Length; i++)
-        {
-            if (currentBiomeValues[i] > maxBiomeValue)
-            {
-                secondMaxBiomeValue = maxBiomeValue;
-                secondMaxBiomeID = maxBiomeID;
-                if (secondMaxBiomeValue == 0)
+                if (currentBiomeValues[i] > maxBiomeValue)
                 {
-                    secondMaxBiomeValue = currentBiomeValues[i];
-                    secondMaxBiomeID = i;
+                    secondMaxBiomeValue = maxBiomeValue;
+                    secondMaxBiomeID = maxBiomeID;
+                    if (secondMaxBiomeValue == 0)
+                    {
+                        secondMaxBiomeValue = currentBiomeValues[i];
+                        secondMaxBiomeID = i;
+                    }
+                    maxBiomeValue = currentBiomeValues[i];
+                    maxBiomeID = i;
                 }
-                maxBiomeValue = currentBiomeValues[i];
-                maxBiomeID = i;
             }
+
+
+
+            if (maxBiomeID != oMaxBiomeID)
+            {
+                OnBiomeChange(oMaxBiomeID, maxBiomeID);
+            }
+
         }
-
-
-
-        if (maxBiomeID != oMaxBiomeID)
-        {
-            OnBiomeChange(oMaxBiomeID, maxBiomeID);
-        }
-
-
-
-
 
 
     }
@@ -344,9 +340,9 @@ public class IslandData : MonoBehaviour
         // print("old Biome : " + oldBiome);
         // print(" new Biome : " + newBiome);
 
-
-
         BiomeChangeEvent.Invoke(oldBiome, newBiome);
+
+
 
 
     }
@@ -377,6 +373,11 @@ public class IslandData : MonoBehaviour
         else
         {
 
+            print("ENTERING BIOME");
+            print(newBiome);
+            print(biomes.Length);
+            print(gameObject.name);
+
             biomes[newBiome].OnEnterBiome();
         }
     }
@@ -391,7 +392,7 @@ public class IslandData : MonoBehaviour
 
     }
 
-    public void OnBiomeCompleted(int i)
+    /*public void OnBiomeCompleted(int i)
     {
 
         bool islandCompleted = true;
@@ -410,7 +411,7 @@ public class IslandData : MonoBehaviour
             islandCompleteCutScene.Play();
 
         }
-    }
+    }*/
 
 
 }

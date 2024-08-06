@@ -17,8 +17,12 @@ namespace WrenUtils
         public Camera _camera;
         public Terrain _terrain;
         public TerrainData _terrainData;
+        public Vector3 _terrainOffset;
 
         public IslandData _islandData;
+
+        public bool _hasIslandData;
+
         public Wren _localWren;
         public WrenMaker _wrenMaker;
 
@@ -243,6 +247,38 @@ namespace WrenUtils
             }
         }
 
+        public static bool hasIslandData
+        {
+            get
+            {
+                return instance._hasIslandData;
+            }
+        }
+
+        public static Vector3 terrainOffset
+        {
+            get
+            {
+                return instance._terrainOffset;
+            }
+        }
+
+        public static void SetIslandData(IslandData islandData)
+        {
+            instance._islandData = islandData;
+            instance._terrain = islandData.terrain;
+            instance._terrainData = islandData.terrain.terrainData;
+            instance._terrainOffset = islandData.transform.position;
+            instance._hasIslandData = true;
+
+
+        }
+
+        public static void UnsetIslandData()
+        {
+            instance._hasIslandData = false;
+
+        }
 
         public static IslandData islandData
         {
@@ -325,6 +361,8 @@ namespace WrenUtils
             {
                 shader.SetTexture(kernel, "_HeightMap", terrainData.heightmapTexture);
                 shader.SetVector("_MapSize", terrainData.size);
+                shader.SetVector("_MapOffset", terrainOffset);
+                shader.SetInt("_HasIslandData", hasIslandData ? 1 : 0);
             }
         }
 
@@ -334,6 +372,8 @@ namespace WrenUtils
             {
                 mpb.SetTexture("_HeightMap", terrainData.heightmapTexture);
                 mpb.SetVector("_MapSize", terrainData.size);
+                mpb.SetVector("_MapOffset", terrainOffset);
+                mpb.SetInt("_HasIslandData", hasIslandData ? 1 : 0);
             }
         }
 
@@ -445,20 +485,29 @@ namespace WrenUtils
 
         }
 
+        public static Vector3 NormalizedPosition(Vector3 p, Vector3 mapSize, Vector3 offset)
+        {
+            Vector3 difference = p - offset - Vector3.right * mapSize.x / 2 - Vector3.forward * mapSize.z / 2;
+
+            return new Vector3(
+                 (difference.x + mapSize.x / 2) / mapSize.x,
+                 (difference.y / mapSize.y),
+                 (difference.z + mapSize.z / 2) / mapSize.z
+             );
+
+        }
+
 
         public static Vector3 NormalizedPositionInMap(Vector3 p)
         {
-
-            p += new Vector3(terrainData.size.x / 2, 0, terrainData.size.z / 2);
-            return new Vector3(p.x / terrainData.size.x, p.y / terrainData.size.y, p.z / terrainData.size.z);
-
+            return NormalizedPosition(p, terrainData.size, terrainOffset);
         }
 
         public static Vector2 UVInMap(Vector3 p)
         {
+            Vector3 nPos = NormalizedPosition(p, terrainData.size, terrainOffset);
 
-            p += new Vector3(terrainData.size.x / 2, 0, terrainData.size.z / 2);
-            return new Vector2(p.x / terrainData.size.x, p.z / terrainData.size.z);
+            return new Vector2(nPos.x, nPos.z);
 
         }
 
@@ -499,6 +548,8 @@ namespace WrenUtils
             {
                 Shader.SetGlobalTexture("_HeightMap", terrainData.heightmapTexture);
                 Shader.SetGlobalVector("_MapSize", terrainData.size);
+                Shader.SetGlobalVector("_MapOffset", terrainOffset);
+                Shader.SetGlobalInt("_HasIslandData", hasIslandData ? 1 : 0);
                 Shader.SetGlobalTexture("_FullColorMap", fullColorMap);
             }
 

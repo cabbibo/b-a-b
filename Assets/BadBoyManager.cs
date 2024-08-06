@@ -5,7 +5,7 @@ using UnityEngine;
 public class BadBoyManager : MonoBehaviour
 {
 
-    public Biome biome;
+    public Quest quest;
 
     public List<BadBoy> badBoys;
 
@@ -13,7 +13,7 @@ public class BadBoyManager : MonoBehaviour
     // Make it so all the objects are reset!
     public void OnEnable()
     {
-        if (biome.completed == false)
+        if (quest.completed == false)
         {
             for (int i = 0; i < badBoys.Count; i++)
             {
@@ -45,6 +45,6 @@ public class BadBoyManager : MonoBehaviour
 
         print(totalComplete);
 
-        biome.SetCompletion((float)totalComplete / (float)badBoys.Count);
+        quest.SetCompletion((float)totalComplete / (float)badBoys.Count);
     }
 }

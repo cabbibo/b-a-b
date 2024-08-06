@@ -13,31 +13,33 @@ public class BiomeController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
 
-        if( God.wren ){
+        if (God.wren)
+        {
             Vector3 p = God.wren.transform.position;
-            float x = (p.x +2048)/4096;
-            float y = (p.z +2048)/4096;
+            float x = (p.x + 2048) / 4096;
+            float y = (p.z + 2048) / 4096;
 
-            Color c = biomeMap.GetPixelBilinear( x, y,0);
+            //            Color c = biomeMap.GetPixelBilinear(x, y, 0);
 
-//            print( c.a);
+            //            print( c.a);
 
 
-            float h,s,v;
+            float h, s, v;
 
-            Color.RGBToHSV(c, out h,out s,out v);
+            //  Color.RGBToHSV(c, out h, out s, out v);
 
 
 
 
         }
-        
+
     }
+
 }
