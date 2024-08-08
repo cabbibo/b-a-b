@@ -201,5 +201,12 @@ public class Quest : MonoBehaviour
         God.state.OnQuestCompleted(id);
     }
 
+    public void Reset()
+    {
+        discovered = false;
+        started = false;
+        completed = false;
+        God.state.ResetQuest(id);
+    }
 
 }

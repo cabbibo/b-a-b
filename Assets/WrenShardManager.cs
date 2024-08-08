@@ -135,8 +135,8 @@ public class WrenShardManager : MonoBehaviour
         if (wren.physics.distToGround < 3 && wren.physics.onGround == false)
         {
             int id = Random.Range(-1, 7);
-            if (wren.inEther == false) { id = God.islandData.maxBiomeID; }
-            CollectShards((int)gainedWhileClose, God.islandData.maxBiomeID, wren.transform.position);
+            if (wren.inEther == false) { id = God.islandData.maxBiomeID; } else { id = -1; }
+            CollectShards((int)gainedWhileClose, id, wren.transform.position);
         }
 
         if (oNumShards == numShards)

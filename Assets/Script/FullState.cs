@@ -237,6 +237,9 @@ public class FullState : MonoBehaviour
         UpdateState();
     }
 
+
+
+
     public void OnBiomeCompleted(int i)
     {
         biomesCompleted[i] = true;
@@ -294,6 +297,14 @@ public class FullState : MonoBehaviour
         UpdateState();
     }
 
+
+    public void ResetQuest(int i)
+    {
+        questsDiscovered[i] = false;
+        questsStarted[i] = false;
+        questsCompleted[i] = false;
+        UpdateState();
+    }
 
     public void OnGameStart()
     {

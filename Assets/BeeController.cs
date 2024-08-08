@@ -37,6 +37,8 @@ public class BeeController : MonoBehaviour
 
     public Transform toFollow;
 
+    public bool resetQuest;
+
     // TODO: load based on quest
     // TODO: 
     public void OnEnable()
@@ -46,6 +48,10 @@ public class BeeController : MonoBehaviour
 
         if (reset)
         {
+
+            // RESETING THE QUEST TO 0 SO WE CAN RESET THE BEEEES
+            if (resetQuest) { quest.Reset(); }
+
 
             while (beeHolder.childCount > 0)
             {
@@ -64,8 +70,10 @@ public class BeeController : MonoBehaviour
             for (int i = 0; i < totalBees; i++)
             {
 
+
+
                 whichTemple.Add(Random.Range(0, temples.Length));
-                //                print(whichTemple[i]);
+                print(whichTemple[i]);
                 bees.Add(Instantiate(beePrefab, temples[whichTemple[i]].position + Random.insideUnitSphere, Quaternion.identity).transform);
                 bees[i].parent = beeHolder;
 
