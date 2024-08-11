@@ -11,6 +11,8 @@ public class WrenShardManager : MonoBehaviour
     public int numShards = 0;
     public int maxShards = 100000;
 
+    public int numExtraShards = 0;
+
     public Wren wren;
 
     public FullBird fullBird;
@@ -47,9 +49,13 @@ public class WrenShardManager : MonoBehaviour
 
 
         int id = Random.Range(-1, 7);
-        if (wren.inEther == false)
+        if (God.islandData != null)
         {
             id = God.islandData.maxBiomeID;
+        }
+        else
+        {
+            id = -1;
         }
         CollectShards((int)gainedPerSkim, id, location);
     }
@@ -135,7 +141,15 @@ public class WrenShardManager : MonoBehaviour
         if (wren.physics.distToGround < 3 && wren.physics.onGround == false)
         {
             int id = Random.Range(-1, 7);
-            if (wren.inEther == false) { id = God.islandData.maxBiomeID; } else { id = -1; }
+
+            if (God.islandData != null)
+            {
+                id = God.islandData.maxBiomeID;
+            }
+            else
+            {
+                id = -1;
+            }
             CollectShards((int)gainedWhileClose, id, wren.transform.position);
         }
 

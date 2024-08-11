@@ -13,6 +13,9 @@ public static class Helpers
   [System.Serializable]
   public class FloatEvent : UnityEvent<float> { }
 
+  [System.Serializable]
+  public class IntEvent : UnityEvent<int> { }
+
 
   [System.Serializable]
   public class DoubleIntEvent : UnityEvent<int, int> { }

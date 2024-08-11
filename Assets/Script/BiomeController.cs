@@ -44,27 +44,34 @@ public class BiomeController : MonoBehaviour
         maxBiomeID = -1;
         oSecondMaxBiomeID = -1;
 
-        for (int i = 0; i < God.islandData.currentBiomeValues.Length; i++)
+        if (God.islandData != null)
         {
-            if (God.islandData.currentBiomeValues[i] > maxBiomeValue)
+
+            for (int i = 0; i < God.islandData.currentBiomeValues.Length; i++)
             {
-                secondMaxBiomeValue = maxBiomeValue;
-                secondMaxBiomeID = maxBiomeID;
-                if (secondMaxBiomeValue == 0)
+                if (God.islandData.currentBiomeValues[i] > maxBiomeValue)
                 {
-                    secondMaxBiomeValue = God.islandData.currentBiomeValues[i];
-                    secondMaxBiomeID = i;
+                    secondMaxBiomeValue = maxBiomeValue;
+                    secondMaxBiomeID = maxBiomeID;
+                    if (secondMaxBiomeValue == 0)
+                    {
+                        secondMaxBiomeValue = God.islandData.currentBiomeValues[i];
+                        secondMaxBiomeID = i;
+                    }
+                    maxBiomeValue = God.islandData.currentBiomeValues[i];
+                    maxBiomeID = i;
                 }
-                maxBiomeValue = God.islandData.currentBiomeValues[i];
-                maxBiomeID = i;
             }
-        }
 
 
 
-        if (maxBiomeID != oMaxBiomeID)
-        {
-            OnBiomeChange(oMaxBiomeID, maxBiomeID);
+
+
+            if (maxBiomeID != oMaxBiomeID)
+            {
+                OnBiomeChange(oMaxBiomeID, maxBiomeID);
+            }
+
         }
 
     }

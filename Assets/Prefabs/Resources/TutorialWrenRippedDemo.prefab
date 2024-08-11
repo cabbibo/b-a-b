@@ -28567,6 +28567,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   numShards: 0
   maxShards: 100000
+  numExtraShards: 0
   wren: {fileID: 0}
   fullBird: {fileID: 0}
   numShardsInBody: 0

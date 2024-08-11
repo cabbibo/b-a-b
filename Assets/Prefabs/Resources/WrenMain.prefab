@@ -25695,6 +25695,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   numShards: 4110
   maxShards: 10000
+  numExtraShards: 0
   wren: {fileID: 6951865465235407638}
   fullBird: {fileID: 3880365654864790025}
   numShardsInBody: 4471
