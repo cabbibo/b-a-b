@@ -49,6 +49,8 @@ namespace WrenUtils
 
 
 
+
+
         public ParticleSystems _particleSystems;
         public FeedbackSystems _feedbackSystems;
 
@@ -69,6 +71,8 @@ namespace WrenUtils
         public bool inCutScene;
 
         public Texture fullColorMap;
+
+        public BiomeController _biomeController;
 
 
 
@@ -93,6 +97,7 @@ namespace WrenUtils
             }
 
         }
+
 
 
         void Awake()
@@ -274,6 +279,8 @@ namespace WrenUtils
 
         }
 
+
+
         public static void UnsetIslandData()
         {
             instance._hasIslandData = false;
@@ -353,6 +360,13 @@ namespace WrenUtils
             }
         }
 
+        public static BiomeController biomeController
+        {
+            get
+            {
+                return instance._biomeController;
+            }
+        }
 
         public void SetTerrainCompute(int kernel, ComputeShader shader)
         {

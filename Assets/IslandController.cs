@@ -149,6 +149,7 @@ public class IslandController : MonoBehaviour
     {
 
 
+
         currentIslandID = islandIndex;
         currentBiomeMap1 = islands[islandIndex].biomeMap1;
         currentBiomeMap2 = islands[islandIndex].biomeMap2;

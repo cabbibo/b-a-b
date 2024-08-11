@@ -120,6 +120,7 @@ Material:
     - _CityStriationColorSteps: 6
     - _CityStriationVerticalCutoff: 1
     - _Cutoff: 0.5
+    - _Debug: 0
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _Fade: 1

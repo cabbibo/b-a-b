@@ -1,6 +1,8 @@
 Shader "Unlit/quillTerrain"{
   Properties {
 
+    _Debug("_Debug",int) = 0
+
 
     _MeadowColor("_MeadowColor", Color) = (1,1,1,1)
     _MossColor1("_MossColor1", Color) = (1,1,1,1)
@@ -224,11 +226,13 @@ Shader "Unlit/quillTerrain"{
 
       float _NoiseTextureStrength;
       float _NoiseTextureBase;
+
+      int _Debug;
       /*struct Input
       {
         float4 tc;
         #ifndef TERRAIN_BASE_PASS
-          UNITY_FOG_COORDS(0) // needed because finalcolor oppresses fog code generation.
+        UNITY_FOG_COORDS(0) // needed because finalcolor oppresses fog code generation.
         #endif
       };*/
 
@@ -951,6 +955,9 @@ Shader "Unlit/quillTerrain"{
 
       float _BiomeMapWeight;
 
+      sampler2D _BiomeMap1;
+      sampler2D _BiomeMap2;
+
 
       float3 _WrenPos;
       //Pixel function returns a solid color for each point.
@@ -985,12 +992,6 @@ Shader "Unlit/quillTerrain"{
         if( control.b < .1 ){ color3 = 0;  }else{ color3 = DoMeadowColor(v.worldPos,v.nor,fNor,eye,shadow); }
         if( control.a < .1 ){ color4 = 0;  }else{ color4 = DoForestColor(v.worldPos,v.nor,fNor,eye,shadow); }
 
-
-
-        //float max = 
-
-        //control = pow(control,30);
-
         control = normalize( control);
 
         col = 0;
@@ -999,6 +1000,89 @@ Shader "Unlit/quillTerrain"{
         col += color3 * control.b;
         col += color4 * control.a;
 
+
+
+
+        float4 biomeValues1 = tex2D(_BiomeMap1, v.uv);
+        float4 biomeValues2 = tex2D(_BiomeMap2, v.uv);
+
+
+        float biomeWeights[8]= {biomeValues1.x,biomeValues1.y,biomeValues1.z,biomeValues1.w,biomeValues2.x,biomeValues2.y,biomeValues2.z,biomeValues2.w};
+
+
+        // defaults to 7th biome id...
+        float2 maxBiomeWeights = float2(.0001,.0001);
+        float2 maxBiomeWeightsID = float2(7,7);
+
+        for( int i = 0; i < 8; i++ ){
+
+          if( biomeWeights[i] > maxBiomeWeights.x ){
+            maxBiomeWeights.y = maxBiomeWeights.x;
+            maxBiomeWeightsID.y = maxBiomeWeightsID.x;
+
+            maxBiomeWeights.x = biomeWeights[i];
+            maxBiomeWeightsID.x = i;
+            }else if( biomeWeights[i] > maxBiomeWeights.y ){
+            maxBiomeWeights.y = biomeWeights[i];
+            maxBiomeWeightsID.y = i;
+          }
+
+        } 
+
+
+        float2 normalizedBiomeWeights = normalize(maxBiomeWeights);
+
+        if( maxBiomeWeightsID.x == 0 || maxBiomeWeightsID.x == 5 || maxBiomeWeightsID.x == 6 ){
+          color1 = DoRockColor( v.worldPos, v.nor,fNor,eye,shadow);
+        }
+
+        if( maxBiomeWeightsID.x == 1 || maxBiomeWeightsID.x == 2 ){
+          color1 = DoSandColor( v.worldPos, v.nor,fNor,eye,shadow);
+        }
+
+        if( maxBiomeWeightsID.x == 3  ){
+          color1 = DoForestColor( v.worldPos, v.nor,fNor,eye,shadow);
+        }
+
+        if( maxBiomeWeightsID.x == 4  ){
+          color1 = DoRockColor( v.worldPos, v.nor,fNor,eye,shadow);
+        }
+
+        if(  maxBiomeWeightsID.x == 7 ){
+          color1 = DoMeadowColor( v.worldPos, v.nor,fNor,eye,shadow);
+        }
+        
+
+        
+        if( maxBiomeWeightsID.y == 0 || maxBiomeWeightsID.y == 5 || maxBiomeWeightsID.y == 6 ){
+          color2 = DoRockColor( v.worldPos, v.nor,fNor,eye,shadow);
+        }
+
+        if( maxBiomeWeightsID.y == 1 || maxBiomeWeightsID.y == 2 ){
+          color2 = DoSandColor( v.worldPos, v.nor,fNor,eye,shadow);
+        }
+
+        if( maxBiomeWeightsID.y == 3  ){
+          color2 = DoForestColor( v.worldPos, v.nor,fNor,eye,shadow);
+        }
+
+        if( maxBiomeWeightsID.y == 4  ){
+          color2 = DoRockColor( v.worldPos, v.nor,fNor,eye,shadow);
+        }
+
+        if(  maxBiomeWeightsID.y == 7 ){
+          color2 = DoMeadowColor( v.worldPos, v.nor,fNor,eye,shadow);
+        }
+        
+
+
+        col = lerp( color1, color2, normalizedBiomeWeights.x);
+
+        col = color1;
+        
+        // col = float3( normalizedBiomeWeights.x, normalizedBiomeWeights.y, .2);
+
+        //col = hsv(maxBiomeWeightsID.x / 7, 1, 1);
 
         float lVal = 1/(.2*pow(length(v.worldPos - _WrenPos) * .3,4)+1);
         col += (col * .8 )* lVal;
@@ -1039,14 +1123,14 @@ Shader "Unlit/quillTerrain"{
           //col = float3(1,0,0);
         }
 
-        float4 bMap = tex2D(_BiomeMap, (v.worldPos.xz+4096) / 8192);
+        //  float4 bMap = tex2D(_BiomeMap, (v.worldPos.xz+4096) / 8192);
         //col *= lerp( 1, bMap.xyz * _BiomeMapWeight + (1-_BiomeMapWeight) , bMap.a);
 
-        float cityDot = dot( normalize(bMap.xyz) , normalize(float3(1,0,.5)));
+        /* float cityDot = dot( normalize(bMap.xyz) , normalize(float3(1,0,.5)));
 
         float cityValue = saturate((pow( cityDot,30)-.3) * 10) * bMap.a;
         float3 cityColor = DoCityColor( v.worldPos, v.nor,fNor,eye,shadow);
-        col = lerp(col ,cityColor,cityValue); 
+        col = lerp(col ,cityColor,cityValue); */
 
         //col = bMap.xyz * bMap.a;
 
@@ -1110,6 +1194,9 @@ Shader "Unlit/quillTerrain"{
         col *= noiseVal2 * _NoiseTextureStrength * (1/(1+ .1*fogZ)) + _NoiseTextureBase;
 
 
+        
+
+
 
         //col = shadow;
         
@@ -1123,6 +1210,12 @@ Shader "Unlit/quillTerrain"{
             col *= saturate(capDistance * 10);
           }
         }
+
+        if( _Debug == 1 ){
+          col = (v.nor * .5 + .5) * (sin( v.worldPos.x  * .1)  + sin( v.worldPos.z  * .1) );
+        }
+
+        //col = tex2D(_BiomeMap1, v.uv) ;
         
         return float4(col,1);
       }

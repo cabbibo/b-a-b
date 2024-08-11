@@ -19,7 +19,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: {x: 8.961, y: 50.299, z: 0.141}
+        value: {x: 18.658, y: 89.088, z: 0.023}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -27,17 +27,8 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 5.733333
-        value: {x: 5.523, y: 75.386, z: 0.14}
-        inSlope: {x: -0.06656933, y: 0.53489006, z: 0}
-        outSlope: {x: -0.06656933, y: 0.53489006, z: 0}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 6.85
-        value: {x: 5.409, y: 76.302, z: 0.14}
+        time: 4.0333333
+        value: {x: 14.258, y: 122.915, z: 0.028}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -45,80 +36,17 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 6.866667
-        value: {x: 17.326, y: 12.391, z: 0.147}
-        inSlope: {x: 6.0978575, y: -44.01965, z: 0.0042857127}
-        outSlope: {x: 6.0978575, y: -44.01965, z: 0.0042857127}
+        time: 6.983333
+        value: {x: 26.084, y: 91.147, z: 0.009}
+        inSlope: {x: 0, y: -12.346948, z: 0}
+        outSlope: {x: 0, y: -12.346948, z: 0}
         tangentMode: 0
         weightedMode: 0
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 9.65
-        value: {x: 22.483, y: -46.953, z: 0.152}
-        inSlope: {x: 0, y: 0, z: 0}
-        outSlope: {x: 0, y: 0, z: 0}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 9.666667
-        value: {x: 15.034, y: -10.075, z: 0.146}
-        inSlope: {x: -5.7498236, y: 0, z: -0.003508768}
-        outSlope: {x: -5.7498236, y: 0, z: -0.003508768}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 12.5
-        value: {x: 6.096, y: -17.431, z: 0.142}
-        inSlope: {x: -5.226668, y: -10.324212, z: 0}
-        outSlope: {x: -5.226668, y: -10.324212, z: 0}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 12.516666
-        value: {x: 0.138, y: -129.402, z: 0.147}
-        inSlope: {x: 0, y: 0, z: 0}
-        outSlope: {x: 0, y: 0, z: 0}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 14.666667
-        value: {x: 7.128, y: -129.155, z: 0.147}
-        inSlope: {x: 5.1446886, y: 0, z: 0}
-        outSlope: {x: 5.1446886, y: 0, z: 0}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 17.35
-        value: {x: 25.004, y: -145.722, z: 0.159}
-        inSlope: {x: 0, y: 0, z: 0}
-        outSlope: {x: 0, y: 0, z: 0}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 17.366667
-        value: {x: 16.181, y: 95.034, z: -0.118}
-        inSlope: {x: -2.7246466, y: 0, z: 0}
-        outSlope: {x: -2.7246466, y: 0, z: 0}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 27.25
-        value: {x: -1.97, y: 84.345, z: -0.116}
+        time: 8.4
+        value: {x: -4.581, y: 69, z: 0.055}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -128,14 +56,14 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: ISLAND/Desert/Animations/LocalCameraAnimator
+    path: Desert Island/Quests/Grab Water Quest/Animations/LocalCameraAnimator
   m_PositionCurves:
   - curve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: {x: -145.71265, y: 131.51915, z: 1464.6326}
+        value: {x: -569.4912, y: 640.4584, z: 1361.3325}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -143,98 +71,26 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 5.733333
-        value: {x: 19.919678, y: 120.51158, z: 1567.8176}
-        inSlope: {x: 10.151689, y: -1.001529, z: 2.5782678}
-        outSlope: {x: 10.151689, y: -1.001529, z: 2.5782678}
+        time: 4.0333333
+        value: {x: 312.8086, y: 352.12097, z: 1968.7422}
+        inSlope: {x: 225.58937, y: 0, z: 0}
+        outSlope: {x: 225.58937, y: 0, z: 0}
         tangentMode: 0
         weightedMode: 0
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 6.85
-        value: {x: 37.304443, y: 118.79646, z: 1572.2329}
-        inSlope: {x: 61.35798, y: 0, z: 15.583347}
-        outSlope: {x: 61.35798, y: 0, z: 15.583347}
+        time: 6.983333
+        value: {x: 1005.8745, y: 365.45215, z: 1669.199}
+        inSlope: {x: 180.79662, y: 0, z: -8.404179}
+        outSlope: {x: 180.79662, y: 0, z: -8.404179}
         tangentMode: 0
         weightedMode: 0
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 6.866667
-        value: {x: 491.427, y: 185.10255, z: 1862.7346}
-        inSlope: {x: 168.52019, y: 2.680795, z: 54.50893}
-        outSlope: {x: 168.52019, y: 2.680795, z: 54.50893}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 9.65
-        value: {x: 609.3911, y: 186.97911, z: 1900.8909}
-        inSlope: {x: 0, y: 0, z: 54.508926}
-        outSlope: {x: 0, y: 0, z: 54.508926}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 9.666667
-        value: {x: 219.84766, y: 173.83714, z: 2192.3567}
-        inSlope: {x: 0, y: -7.2263474, z: 61.93598}
-        outSlope: {x: 0, y: -7.2263474, z: 61.93598}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 12.5
-        value: {x: 222.30615, y: 166.38402, z: 2236.486}
-        inSlope: {x: 3.4505215, y: 0, z: 61.936005}
-        outSlope: {x: 3.4505215, y: 0, z: 61.936005}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 12.516666
-        value: {x: 495.36353, y: 339.67902, z: 3273.174}
-        inSlope: {x: 31.465292, y: 6.8447714, z: 25.812786}
-        outSlope: {x: 31.465292, y: 6.8447714, z: 25.812786}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 14.666667
-        value: {x: 512.4072, y: 343.3866, z: 3287.156}
-        inSlope: {x: 14.10513, y: 3.0683422, z: 11.571254}
-        outSlope: {x: 14.10513, y: 3.0683422, z: 11.571254}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 17.35
-        value: {x: 589.9502, y: 432.30463, z: 3347.8904}
-        inSlope: {x: 0, y: 0, z: 0}
-        outSlope: {x: 0, y: 0, z: 0}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 17.366667
-        value: {x: 470.281, y: 189.5421, z: 2500.513}
-        inSlope: {x: 0, y: -7.8539486, z: -5.390625}
-        outSlope: {x: 0, y: -7.8539486, z: -5.390625}
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-        outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
-      - serializedVersion: 3
-        time: 27.25
-        value: {x: 510.8628, y: 170.10356, z: 2487.1711}
+        time: 8.4
+        value: {x: 1203.2441, y: 292.1122, z: 1660.0244}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -244,66 +100,9 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: ISLAND/Desert/Animations/LocalCameraAnimator
+    path: Desert Island/Quests/Grab Water Quest/Animations/LocalCameraAnimator
   m_ScaleCurves: []
-  m_FloatCurves:
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 20.183332
-        value: 0
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 21.116667
-        value: 1
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 26.266666
-        value: 0
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 27.25
-        value: 0
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_IsActive
-    path: ISLAND/Desert/Animations/Desert Discovered/help
-    classID: 1
-    script: {fileID: 0}
-    flags: 0
+  m_FloatCurves: []
   m_PPtrCurves: []
   m_SampleRate: 60
   m_WrapMode: 0
@@ -313,7 +112,7 @@ AnimationClip:
   m_ClipBindingConstant:
     genericBindings:
     - serializedVersion: 2
-      path: 3658298463
+      path: 2856402882
       attribute: 1
       script: {fileID: 0}
       typeID: 4
@@ -322,20 +121,11 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
-      path: 3658298463
+      path: 2856402882
       attribute: 4
       script: {fileID: 0}
       typeID: 4
       customType: 4
-      isPPtrCurve: 0
-      isIntCurve: 0
-      isSerializeReferenceCurve: 0
-    - serializedVersion: 2
-      path: 2203424267
-      attribute: 2086281974
-      script: {fileID: 0}
-      typeID: 1
-      customType: 0
       isPPtrCurve: 0
       isIntCurve: 0
       isSerializeReferenceCurve: 0
@@ -345,7 +135,7 @@ AnimationClip:
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 27.25
+    m_StopTime: 8.4
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -367,7 +157,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 8.961
+        value: 18.658
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -375,17 +165,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 5.733333
-        value: 5.523
-        inSlope: -0.06656933
-        outSlope: -0.06656933
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 6.85
-        value: 5.409
+        time: 4.0333333
+        value: 14.258
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -393,17 +174,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 6.866667
-        value: 17.326
-        inSlope: 6.0978575
-        outSlope: 6.0978575
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 9.65
-        value: 22.483
+        time: 6.983333
+        value: 26.084
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -411,62 +183,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 9.666667
-        value: 15.034
-        inSlope: -5.7498236
-        outSlope: -5.7498236
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.5
-        value: 6.096
-        inSlope: -5.226668
-        outSlope: -5.226668
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.516666
-        value: 0.138
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 14.666667
-        value: 7.128
-        inSlope: 5.1446886
-        outSlope: 5.1446886
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 17.35
-        value: 25.004
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 17.366667
-        value: 16.181
-        inSlope: -2.7246466
-        outSlope: -2.7246466
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 27.25
-        value: -1.97
+        time: 8.4
+        value: -4.581
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -477,7 +195,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.x
-    path: ISLAND/Desert/Animations/LocalCameraAnimator
+    path: Desert Island/Quests/Grab Water Quest/Animations/LocalCameraAnimator
     classID: 4
     script: {fileID: 0}
     flags: 16
@@ -487,7 +205,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 50.299
+        value: 89.088
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -495,17 +213,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 5.733333
-        value: 75.386
-        inSlope: 0.53489006
-        outSlope: 0.53489006
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 6.85
-        value: 76.302
+        time: 4.0333333
+        value: 122.915
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -513,80 +222,17 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 6.866667
-        value: 12.391
-        inSlope: -44.01965
-        outSlope: -44.01965
+        time: 6.983333
+        value: 91.147
+        inSlope: -12.346948
+        outSlope: -12.346948
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 9.65
-        value: -46.953
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 9.666667
-        value: -10.075
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.5
-        value: -17.431
-        inSlope: -10.324212
-        outSlope: -10.324212
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.516666
-        value: -129.402
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 14.666667
-        value: -129.155
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 17.35
-        value: -145.722
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 17.366667
-        value: 95.034
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 27.25
-        value: 84.345
+        time: 8.4
+        value: 69
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -597,7 +243,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.y
-    path: ISLAND/Desert/Animations/LocalCameraAnimator
+    path: Desert Island/Quests/Grab Water Quest/Animations/LocalCameraAnimator
     classID: 4
     script: {fileID: 0}
     flags: 16
@@ -607,7 +253,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.141
+        value: 0.023
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -615,8 +261,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 5.733333
-        value: 0.14
+        time: 4.0333333
+        value: 0.028
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -624,8 +270,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 6.85
-        value: 0.14
+        time: 6.983333
+        value: 0.009
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -633,80 +279,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 6.866667
-        value: 0.147
-        inSlope: 0.0042857127
-        outSlope: 0.0042857127
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 9.65
-        value: 0.152
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 9.666667
-        value: 0.146
-        inSlope: -0.003508768
-        outSlope: -0.003508768
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.5
-        value: 0.142
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.516666
-        value: 0.147
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 14.666667
-        value: 0.147
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 17.35
-        value: 0.159
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 17.366667
-        value: -0.118
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 27.25
-        value: -0.116
+        time: 8.4
+        value: 0.055
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -717,7 +291,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.z
-    path: ISLAND/Desert/Animations/LocalCameraAnimator
+    path: Desert Island/Quests/Grab Water Quest/Animations/LocalCameraAnimator
     classID: 4
     script: {fileID: 0}
     flags: 16
@@ -727,7 +301,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: -145.71265
+        value: -569.4912
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -735,98 +309,26 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 5.733333
-        value: 19.919678
-        inSlope: 10.151689
-        outSlope: 10.151689
+        time: 4.0333333
+        value: 312.8086
+        inSlope: 225.58937
+        outSlope: 225.58937
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 6.85
-        value: 37.304443
-        inSlope: 61.35798
-        outSlope: 61.35798
+        time: 6.983333
+        value: 1005.8745
+        inSlope: 180.79662
+        outSlope: 180.79662
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 6.866667
-        value: 491.427
-        inSlope: 168.52019
-        outSlope: 168.52019
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 9.65
-        value: 609.3911
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 9.666667
-        value: 219.84766
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.5
-        value: 222.30615
-        inSlope: 3.4505215
-        outSlope: 3.4505215
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.516666
-        value: 495.36353
-        inSlope: 31.465292
-        outSlope: 31.465292
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 14.666667
-        value: 512.4072
-        inSlope: 14.10513
-        outSlope: 14.10513
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 17.35
-        value: 589.9502
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 17.366667
-        value: 470.281
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 27.25
-        value: 510.8628
+        time: 8.4
+        value: 1203.2441
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -837,7 +339,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.x
-    path: ISLAND/Desert/Animations/LocalCameraAnimator
+    path: Desert Island/Quests/Grab Water Quest/Animations/LocalCameraAnimator
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -847,7 +349,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 131.51915
+        value: 640.4584
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -855,17 +357,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 5.733333
-        value: 120.51158
-        inSlope: -1.001529
-        outSlope: -1.001529
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 6.85
-        value: 118.79646
+        time: 4.0333333
+        value: 352.12097
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -873,17 +366,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 6.866667
-        value: 185.10255
-        inSlope: 2.680795
-        outSlope: 2.680795
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 9.65
-        value: 186.97911
+        time: 6.983333
+        value: 365.45215
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -891,62 +375,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 9.666667
-        value: 173.83714
-        inSlope: -7.2263474
-        outSlope: -7.2263474
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.5
-        value: 166.38402
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.516666
-        value: 339.67902
-        inSlope: 6.8447714
-        outSlope: 6.8447714
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 14.666667
-        value: 343.3866
-        inSlope: 3.0683422
-        outSlope: 3.0683422
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 17.35
-        value: 432.30463
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 17.366667
-        value: 189.5421
-        inSlope: -7.8539486
-        outSlope: -7.8539486
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 27.25
-        value: 170.10356
+        time: 8.4
+        value: 292.1122
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -957,7 +387,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.y
-    path: ISLAND/Desert/Animations/LocalCameraAnimator
+    path: Desert Island/Quests/Grab Water Quest/Animations/LocalCameraAnimator
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -967,7 +397,7 @@ AnimationClip:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1464.6326
+        value: 1361.3325
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -975,80 +405,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 5.733333
-        value: 1567.8176
-        inSlope: 2.5782678
-        outSlope: 2.5782678
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 6.85
-        value: 1572.2329
-        inSlope: 15.583347
-        outSlope: 15.583347
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 6.866667
-        value: 1862.7346
-        inSlope: 54.50893
-        outSlope: 54.50893
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 9.65
-        value: 1900.8909
-        inSlope: 54.508926
-        outSlope: 54.508926
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 9.666667
-        value: 2192.3567
-        inSlope: 61.93598
-        outSlope: 61.93598
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.5
-        value: 2236.486
-        inSlope: 61.936005
-        outSlope: 61.936005
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 12.516666
-        value: 3273.174
-        inSlope: 25.812786
-        outSlope: 25.812786
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 14.666667
-        value: 3287.156
-        inSlope: 11.571254
-        outSlope: 11.571254
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 17.35
-        value: 3347.8904
+        time: 4.0333333
+        value: 1968.7422
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -1056,17 +414,17 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 17.366667
-        value: 2500.513
-        inSlope: -5.390625
-        outSlope: -5.390625
+        time: 6.983333
+        value: 1669.199
+        inSlope: -8.404179
+        outSlope: -8.404179
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 27.25
-        value: 2487.1711
+        time: 8.4
+        value: 1660.0244
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -1077,65 +435,8 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.z
-    path: ISLAND/Desert/Animations/LocalCameraAnimator
+    path: Desert Island/Quests/Grab Water Quest/Animations/LocalCameraAnimator
     classID: 4
-    script: {fileID: 0}
-    flags: 0
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 20.183332
-        value: 0
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 21.116667
-        value: 1
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 26.266666
-        value: 0
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 27.25
-        value: 0
-        inSlope: Infinity
-        outSlope: Infinity
-        tangentMode: 103
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_IsActive
-    path: ISLAND/Desert/Animations/Desert Discovered/help
-    classID: 1
     script: {fileID: 0}
     flags: 0
   m_EulerEditorCurves:
@@ -1147,7 +448,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: ISLAND/Desert/Animations/LocalCameraAnimator
+    path: Desert Island/Quests/Grab Water Quest/Animations/LocalCameraAnimator
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -1159,7 +460,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: ISLAND/Desert/Animations/LocalCameraAnimator
+    path: Desert Island/Quests/Grab Water Quest/Animations/LocalCameraAnimator
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -1171,7 +472,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: ISLAND/Desert/Animations/LocalCameraAnimator
+    path: Desert Island/Quests/Grab Water Quest/Animations/LocalCameraAnimator
     classID: 4
     script: {fileID: 0}
     flags: 0
