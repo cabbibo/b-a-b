@@ -7,39 +7,119 @@ public class BiomeController : MonoBehaviour
 {
 
 
+    public Biome[] biomes;
 
-    public Color[] biomeColors;
-    public Texture2D biomeMap;
-    // Start is called before the first frame update
-    void Start()
-    {
+    public BiomeMusic biomeMusic;
 
-    }
+
+    public float maxBiomeValue;
+    public float secondMaxBiomeValue;
+
+    public float oMaxBiomeValue;
+    public float oSecondMaxBiomeValue;
+
+
+    public int maxBiomeID;
+    public int secondMaxBiomeID;
+
+
+
+    public int oMaxBiomeID;
+    public int oSecondMaxBiomeID;
+
 
     // Update is called once per frame
     void Update()
     {
 
-        if (God.wren)
+        oSecondMaxBiomeValue = secondMaxBiomeValue;
+        oMaxBiomeID = maxBiomeID;
+
+        oMaxBiomeValue = maxBiomeValue;
+        oSecondMaxBiomeValue = secondMaxBiomeValue;
+
+        maxBiomeValue = 0;
+        secondMaxBiomeValue = 0;
+
+        maxBiomeID = -1;
+        oSecondMaxBiomeID = -1;
+
+        for (int i = 0; i < God.islandData.currentBiomeValues.Length; i++)
         {
-            Vector3 p = God.wren.transform.position;
-            float x = (p.x + 2048) / 4096;
-            float y = (p.z + 2048) / 4096;
+            if (God.islandData.currentBiomeValues[i] > maxBiomeValue)
+            {
+                secondMaxBiomeValue = maxBiomeValue;
+                secondMaxBiomeID = maxBiomeID;
+                if (secondMaxBiomeValue == 0)
+                {
+                    secondMaxBiomeValue = God.islandData.currentBiomeValues[i];
+                    secondMaxBiomeID = i;
+                }
+                maxBiomeValue = God.islandData.currentBiomeValues[i];
+                maxBiomeID = i;
+            }
+        }
 
-            //            Color c = biomeMap.GetPixelBilinear(x, y, 0);
-
-            //            print( c.a);
 
 
-            float h, s, v;
-
-            //  Color.RGBToHSV(c, out h, out s, out v);
-
-
-
-
+        if (maxBiomeID != oMaxBiomeID)
+        {
+            OnBiomeChange(oMaxBiomeID, maxBiomeID);
         }
 
     }
+
+
+
+    public Helpers.DoubleIntEvent BiomeChangeEvent;
+    public void OnBiomeChange(int oldBiome, int newBiome)
+    {
+        OnExitBiome(oldBiome);
+        OnEnterBiome(newBiome);
+
+        BiomeChangeEvent.Invoke(oldBiome, newBiome);
+
+    }
+
+
+    public void OnExitBiome(int oldBiome)
+    {
+
+        //print("old Biome : " + oldBiome);
+        if (oldBiome == -1 || oldBiome == 7)
+        {
+            LeaveNeutralZone();
+        }
+        else
+        {
+
+            //biomes[oldBiome].OnExitBiome();
+        }
+
+    }
+
+    public void OnEnterBiome(int newBiome)
+    {
+        //        print(" new Biome : " + newBiome);
+        if (newBiome == -1 || newBiome == 7)
+        {
+            EnterNeutralZone();
+        }
+        else
+        {
+            //biomes[newBiome].OnEnterBiome();
+        }
+    }
+
+    public void EnterNeutralZone()
+    {
+
+    }
+
+    public void LeaveNeutralZone()
+    {
+
+    }
+
 
 }

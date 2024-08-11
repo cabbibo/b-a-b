@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
+using UnityEngine.Events;
 
 public class CrystalCollector : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class CrystalCollector : MonoBehaviour
     public Rigidbody[] possibleCrystalsRB;
     public Collider[] possibleCrystalsColliders;
     public bool[] isCollected;
+
+    public UnityEvent OnAllCollectedEvent;
 
 
 
@@ -106,6 +109,7 @@ public class CrystalCollector : MonoBehaviour
 
         God.audio.Play(God.sounds.largeSuccessSound);
         print("something big");
+        OnAllCollectedEvent.Invoke();
     }
 
 }

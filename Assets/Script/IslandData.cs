@@ -18,13 +18,6 @@ public class IslandData : MonoBehaviour
 
     public Terrain terrain;
 
-    public TerrainPainter windPainter;
-    public TerrainPainter foodPainter;
-    public TerrainPainter weatherPainter;
-
-    public TerrainPainter biomePainter1;
-    public TerrainPainter biomePainter2;
-
 
     public Quest[] quests;
 
@@ -143,6 +136,8 @@ public class IslandData : MonoBehaviour
     public Vector2 oWrenUVPosition;
 
 
+
+
     // Check to see if we are in our island or not
     void WhileHibernate()
     {
@@ -182,6 +177,16 @@ public class IslandData : MonoBehaviour
         oWrenUVPosition = wrenUVPosition;
         wrenUVPosition = God.UVInMap(positionToCheck);
 
+        MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+        terrain.GetSplatMaterialPropertyBlock(mpb);
+        mpb.SetTexture("_BiomeMap1", biomeMap1);
+        mpb.SetTexture("_BiomeMap2", biomeMap2);
+        //mpb.SetVector("_BiomeIDs1", new Vector4(biomeIDs[0], biomeIDs[1], biomeIDs[2], biomeIDs[3]));
+        //mpb.SetVector("_BiomeIDs2", new Vector4(biomeIDs[4], biomeIDs[5], biomeIDs[6], biomeIDs[7]));
+
+
+        terrain.SetSplatMaterialPropertyBlock(mpb);
+
 
         if (!onIsland)
         {
@@ -194,41 +199,6 @@ public class IslandData : MonoBehaviour
             currentWindDirection = GetWind(wrenUVPosition);
             currentBiomeValues = GetBiomeValues(wrenUVPosition);
             currentFoodValues = GetFood(wrenUVPosition);
-
-            oSecondMaxBiomeValue = secondMaxBiomeValue;
-            oMaxBiomeID = maxBiomeID;
-
-            oMaxBiomeValue = maxBiomeValue;
-            oSecondMaxBiomeValue = secondMaxBiomeValue;
-
-            maxBiomeValue = 0;
-            secondMaxBiomeValue = 0;
-
-            maxBiomeID = -1;
-            oSecondMaxBiomeID = -1;
-
-            for (int i = 0; i < currentBiomeValues.Length; i++)
-            {
-                if (currentBiomeValues[i] > maxBiomeValue)
-                {
-                    secondMaxBiomeValue = maxBiomeValue;
-                    secondMaxBiomeID = maxBiomeID;
-                    if (secondMaxBiomeValue == 0)
-                    {
-                        secondMaxBiomeValue = currentBiomeValues[i];
-                        secondMaxBiomeID = i;
-                    }
-                    maxBiomeValue = currentBiomeValues[i];
-                    maxBiomeID = i;
-                }
-            }
-
-
-
-            if (maxBiomeID != oMaxBiomeID)
-            {
-                OnBiomeChange(oMaxBiomeID, maxBiomeID);
-            }
 
         }
 
@@ -289,8 +259,9 @@ public class IslandData : MonoBehaviour
             return new float[] { 0, 0, 0, 0, 0, 0, 0, 0 };
         }
 
-
     }
+
+
 
     public bool onIsland = false;
 
@@ -331,66 +302,7 @@ public class IslandData : MonoBehaviour
         onIsland = false;
     }
 
-    public Helpers.DoubleIntEvent BiomeChangeEvent;
-    public void OnBiomeChange(int oldBiome, int newBiome)
-    {
-        OnExitBiome(oldBiome);
-        OnEnterBiome(newBiome);
 
-        // print("old Biome : " + oldBiome);
-        // print(" new Biome : " + newBiome);
-
-        BiomeChangeEvent.Invoke(oldBiome, newBiome);
-
-
-
-
-    }
-
-
-    public void OnExitBiome(int oldBiome)
-    {
-
-        //print("old Biome : " + oldBiome);
-        if (oldBiome == -1 || oldBiome == 7)
-        {
-            LeaveNeutralZone();
-        }
-        else
-        {
-
-            biomes[oldBiome].OnExitBiome();
-        }
-    }
-
-    public void OnEnterBiome(int newBiome)
-    {
-        //        print(" new Biome : " + newBiome);
-        if (newBiome == -1 || newBiome == 7)
-        {
-            EnterNeutralZone();
-        }
-        else
-        {
-
-            print("ENTERING BIOME");
-            print(newBiome);
-            print(biomes.Length);
-            print(gameObject.name);
-
-            biomes[newBiome].OnEnterBiome();
-        }
-    }
-
-    public void EnterNeutralZone()
-    {
-
-    }
-
-    public void LeaveNeutralZone()
-    {
-
-    }
 
     /*public void OnBiomeCompleted(int i)
     {
