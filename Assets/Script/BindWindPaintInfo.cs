@@ -10,7 +10,7 @@ public class BindWindPaintInfo : Binder
 
     public override void Bind()
     {
-        toBind.BindTexture("_WindTexture", () => islandData.windMap);
+        toBind.BindTexture("_WindTexture", () => WrenUtils.God.islandData.windMap);
     }
 
 
