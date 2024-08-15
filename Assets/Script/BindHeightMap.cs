@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using IMMATERIA;
+using WrenUtils;
 
 public class BindHeightMap : Binder
 {
@@ -10,7 +11,9 @@ public class BindHeightMap : Binder
 
     public override void Bind()
     {
-        toBind.BindTexture("_HeightMap", () => islandData.heightMap);
-        toBind.BindVector3("_MapSize", () => islandData.size);
+
+        print(islandData);
+        toBind.BindTexture("_HeightMap", () => WrenUtils.God.islandData.heightMap);
+        toBind.BindVector3("_MapSize", () => WrenUtils.God.islandData.size);
     }
 }
