@@ -8,24 +8,34 @@ public class StartingPlatform : MonoBehaviour
     public RingSet race;
     public bool start;
 
-    void OnTriggerEnter(Collider c ){
-        if( c.attachedRigidbody.gameObject == God.wren.gameObject){  
-            if( start ){
+    void OnTriggerEnter(Collider c)
+    {
+        if (God.IsOurWren(c))
+        {
+            if (start)
+            {
                 race.StartPlatformHit();
-            }else{
+            }
+            else
+            {
                 race.EndPlatformHit();
             }
 
         }
-    
+
     }
 
-    void OnTriggerExit(Collider c){
-        if( c.attachedRigidbody.gameObject == God.wren.gameObject){
+    void OnTriggerExit(Collider c)
+    {
+        if (God.IsOurWren(c))
+        {
 
-            if( start ){
+            if (start)
+            {
                 race.StartPlatformExit();
-            }else{
+            }
+            else
+            {
                 race.EndPlatformExit();
             }
         }
