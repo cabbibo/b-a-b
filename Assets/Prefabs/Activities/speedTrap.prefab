@@ -431,7 +431,6 @@ GameObject:
   - component: {fileID: 8428897140346356511}
   - component: {fileID: 1842109655300362903}
   - component: {fileID: 437609853177980529}
-  - component: {fileID: 4785295077891828401}
   m_Layer: 0
   m_Name: speedTrap
   m_TagString: Untagged
@@ -447,7 +446,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3420929866006463278}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0016623883, y: -0.4787551, z: -0.025332434, w: 0.8775814}
+  m_LocalRotation: {x: 0.0016611691, y: 0.47875524, z: 0.025331981, w: -0.87758136}
   m_LocalPosition: {x: 31.498447, y: 11.3, z: -22.18895}
   m_LocalScale: {x: 0.38128, y: 0.38128, z: 0.38128}
   m_ConstrainProportionsScale: 0
@@ -503,23 +502,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &4785295077891828401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3420929866006463278}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4e8510a03f76314f965fbdd7dc9c44c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cardType: 5
-  followTransform: {fileID: 0}
-  radius: 85.1
-  lookAt: 1
-  pause: 0
 --- !u!1 &3987279546684286626
 GameObject:
   m_ObjectHideFlags: 0

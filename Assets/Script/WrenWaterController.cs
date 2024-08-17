@@ -12,7 +12,7 @@ public class WrenWaterController : MonoBehaviour
     public ParticleSystemForceField particleForces;
 
     public ParticleSystem wateringParticles;
-    
+
     public List<ParticleCollisionEvent> collisionEvents;
 
     public float collectingGravity;
@@ -23,9 +23,9 @@ public class WrenWaterController : MonoBehaviour
     public float currentWaterAmount;
     private float oldWaterAmount;
     public bool inWaterArea;
-    
+
     public bool inWaterableArea;
-    
+
     public bool fullDraining;
     public float waterFillAmount;
     public float waterBaseDrainAmount;
@@ -34,41 +34,50 @@ public class WrenWaterController : MonoBehaviour
     public GameObject objectWatering;
 
 
-    
 
 
 
 
-   // private ParticleSystem.EmissionModule emission;
+
+    // private ParticleSystem.EmissionModule emission;
     // Start is called before the first frame update
     void Awake()
     {
 
         collisionEvents = new List<ParticleCollisionEvent>();
         //emission = wateringParticles.emission;
-        
+
     }
 
-    public void TriggerEnter( Collider c ){
-        if( c.tag == "WaterArea" ){
+    public void TriggerEnter(Collider c)
+    {
+
+        print("HELLLO");
+        if (c.tag == "WaterArea")
+        {
             inWaterArea = true;
         }
 
-        
-        if( c.tag == "WaterableArea"){
+
+        if (c.tag == "WaterableArea")
+        {
             objectWatering = c.gameObject;
             inWaterableArea = true;
         }
     }
 
-    public void TriggerExit( Collider c ){
+    public void TriggerExit(Collider c)
+    {
 
-        if( c.tag == "WaterArea" ){
+        print("HELLLO");
+        if (c.tag == "WaterArea")
+        {
             inWaterArea = false;
         }
 
-        if( c.tag == "WaterableArea"){
-            
+        if (c.tag == "WaterableArea")
+        {
+
             objectWatering = null;
             inWaterableArea = false;
         }
@@ -83,40 +92,52 @@ public class WrenWaterController : MonoBehaviour
         ParticleSystem ps = wateringParticles;
         var emission = ps.emission;
         var collision = ps.collision;
-        
+
 
         // Only enable particle collsions when we are watering!
         collision.enabled = false;
-        if(inWaterArea){
+        if (inWaterArea)
+        {
 
             bool collectingWater = false;
 
-            if( autoCollect ){
+            if (autoCollect)
+            {
                 collectingWater = true;
-            }else{
-                if( wren.input.ex > .5f ){
+            }
+            else
+            {
+                if (wren.input.ex > .5f)
+                {
                     collectingWater = true;
                 }
             }
 
-            if( collectingWater ){
-                
-                    currentWaterAmount += waterFillAmount;
-                    particleForces.gravity = collectingGravity;
-                    if( currentWaterAmount < maxWaterAmount ){
-                        WhileCollecting();
-                    }
-            }else{
+            if (collectingWater)
+            {
+
+                currentWaterAmount += waterFillAmount;
+                particleForces.gravity = collectingGravity;
+                if (currentWaterAmount < maxWaterAmount)
+                {
+                    WhileCollecting();
+                }
+            }
+            else
+            {
                 particleForces.gravity = 0;
             }
 
-           
 
-        }else{
-    
-    
-    
-            if( currentWaterAmount > 0 ){
+
+        }
+        else
+        {
+
+
+
+            if (currentWaterAmount > 0)
+            {
 
                 OnWaterDraining();
 
@@ -124,31 +145,38 @@ public class WrenWaterController : MonoBehaviour
                 emission.rateOverTime = 10f;
 
 
-                if( wren.input.ex > .5f ){
+                if (wren.input.ex > .5f)
+                {
                     fullDraining = true;
                     currentWaterAmount -= waterFullDrainAmount;
                     emission.rateOverTime = 50f;
-                    if( inWaterableArea ){
+                    if (inWaterableArea)
+                    {
                         isWatering = true;
                         collision.enabled = true;
                     }
-                }else{
+                }
+                else
+                {
                     fullDraining = false;
                     isWatering = false;
                 }
 
-            }else{
+            }
+            else
+            {
                 emission.rateOverTime = 0f;
             }
-        
-        
-    
+
+
+
         }
 
 
 
-        currentWaterAmount = Mathf.Clamp( currentWaterAmount , 0 , maxWaterAmount );
-        if( currentWaterAmount >= maxWaterAmount && oldWaterAmount < maxWaterAmount ){
+        currentWaterAmount = Mathf.Clamp(currentWaterAmount, 0, maxWaterAmount);
+        if (currentWaterAmount >= maxWaterAmount && oldWaterAmount < maxWaterAmount)
+        {
             OnWaterFilled();
         }
 
@@ -158,28 +186,33 @@ public class WrenWaterController : MonoBehaviour
 
 
 
-    void OnWaterFilled(){
+    void OnWaterFilled()
+    {
 
     }
 
-    void OnWaterDraining(){
+    void OnWaterDraining()
+    {
 
     }
 
-    void OnWaterDropping(){
+    void OnWaterDropping()
+    {
 
     }
 
-    void OnWaterDrained(){
+    void OnWaterDrained()
+    {
 
     }
 
-    void WhileCollecting(){
+    void WhileCollecting()
+    {
 
     }
 
 
-    
+
 
     void OnParticleCollision(GameObject other)
     {
@@ -188,24 +221,25 @@ public class WrenWaterController : MonoBehaviour
         //Rigidbody rb = other.GetComponent<Rigidbody>();
         int i = 0;
 
-        if( numCollisionEvents>= 1){
-            dropHitEvent.Invoke( collisionEvents[0].intersection , objectWatering );
+        if (numCollisionEvents >= 1)
+        {
+            dropHitEvent.Invoke(collisionEvents[0].intersection, objectWatering);
         }
 
         while (i < numCollisionEvents)
         {
 
-           // print("HEEEYY + " + i);
-           /* if (rb)
-            {
-                Vector3 pos = collisionEvents[i].intersection;
-                Vector3 force = collisionEvents[i].velocity * 10;
-               // rb.AddForce(force);
-            }*/
+            // print("HEEEYY + " + i);
+            /* if (rb)
+             {
+                 Vector3 pos = collisionEvents[i].intersection;
+                 Vector3 force = collisionEvents[i].velocity * 10;
+                // rb.AddForce(force);
+             }*/
             i++;
         }
     }
-    
+
 
 
 }
