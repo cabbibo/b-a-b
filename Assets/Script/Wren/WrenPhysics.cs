@@ -486,6 +486,19 @@ public class WrenPhysics : MonoBehaviour
 
     }
 
+    public void TransportToTransform(Transform t, Vector3 vel)
+    {
+        rb.velocity = t.forward * vel.magnitude;
+        rb.position = t.position;
+        rb.rotation = t.rotation;
+
+        // need to set the transform position too so it updates automatically
+        // instead of next rigidbody frame
+        transform.position = t.position;
+        transform.rotation = t.rotation;
+
+    }
+
     public void UpdatePhysics()
     {
 

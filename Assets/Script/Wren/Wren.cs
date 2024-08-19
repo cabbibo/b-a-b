@@ -138,6 +138,23 @@ public class Wren : MonoBehaviour
         physics.TransportToPosition(p, physics.rb.velocity);
 
 
+    }
+
+    public void PhaseShift(Transform t)
+    {
+
+
+        // cameraWork.Offset(t.position - transform.position);
+
+        cameraWork.Offset(transform, t);
+        bird.PhaseShift(t.position - transform.position);
+
+
+        physics.TransportToTransform(t, physics.rb.velocity);
+        // physics.TransportToPosition(t.position, physics.rb.velocity);
+
+        // cameraWork.SetDirection(t);
+        // bird.SetDirection(t);
 
 
     }
@@ -815,8 +832,8 @@ public class Wren : MonoBehaviour
             }
             else if (c.tag == "Boost")
             {
-                Booster b = c.gameObject.GetComponent<Booster>();
-                b.OnBoost(this);
+                // Booster b = c.gameObject.GetComponent<Booster>();
+                // b.OnBoost(this);
 
 
             }

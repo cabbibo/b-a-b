@@ -240,6 +240,12 @@ MonoBehaviour:
   minParticleEmit: 0
   maxParticleEmit: 100
   trails: {fileID: 0}
+  onBoostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  onBoostEvent2:
+    m_PersistentCalls:
+      m_Calls: []
   tv2: {x: 98.0977, y: 98.0977}
   tScore: 0.91697776
 --- !u!1 &4588059179118834959
@@ -335,7 +341,7 @@ MonoBehaviour:
   currentNumCrystals: 0
   maxCrystals: 10000
   filled: 0
-  drainSpeed: 0
+  drainSpeed: 1
   drainedAmount: 0
 --- !u!135 &8392352642433499235
 SphereCollider:

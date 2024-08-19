@@ -14,6 +14,9 @@ public class ParticleSystems : MonoBehaviour
     public ParticleSystem smallBoostParticleSystem;
     public ParticleSystem largeBoostParticleSystem;
 
+    public ParticleSystem smallFailParticleSystem;
+    public ParticleSystem largeFailParticleSystem;
+
     public ParticleSystem eatParticleSystem;
     public ParticleSystem collisionParticleSystem;
 

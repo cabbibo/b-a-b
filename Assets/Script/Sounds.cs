@@ -74,4 +74,10 @@ public class Sounds : MonoBehaviour
     public AudioClip largeSuccessSound;
 
 
+    public AudioClip smallFailSound;
+    public AudioClip largeFailSound;
+
+
+
+
 }

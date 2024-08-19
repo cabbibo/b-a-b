@@ -58,7 +58,7 @@ public class ShowFillDebug : MonoBehaviour
     public void OnPercentageFill(float percentage)
     {
 
-        print("percentage: " + percentage);
+        //        print("percentage: " + percentage);
 
         targetAmountFilled = percentage;
     }

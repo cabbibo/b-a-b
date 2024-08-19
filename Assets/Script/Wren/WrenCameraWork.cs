@@ -82,6 +82,61 @@ public class WrenCameraWork : MonoBehaviour
 
   }
 
+  public void Offset(Transform startingTransform, Transform endingTransform)
+  {
+
+    Vector3 localPos = startingTransform.InverseTransformPoint(camTarget.position);
+    Vector3 localForward = startingTransform.InverseTransformDirection(camTarget.forward);
+    Vector3 localUp = startingTransform.InverseTransformDirection(camTarget.up);
+    Vector3 localRight = startingTransform.InverseTransformDirection(camTarget.right);
+
+    Vector3 endPos = endingTransform.TransformPoint(localPos);
+    Vector3 endForward = endingTransform.TransformDirection(localForward);
+    Vector3 endUp = endingTransform.TransformDirection(localUp);
+    Vector3 endRight = endingTransform.TransformDirection(localRight);
+
+
+    Vector3 delta = endingTransform.position - startingTransform.position;
+
+
+    camTarget.position = endPos;
+    Camera.main.transform.position = endPos;
+
+    transform.forward = endForward;
+    transform.up = endUp;
+    transform.right = endRight;
+
+    transform.position = endingTransform.position;
+
+    lookTarget = endingTransform.position;
+    SnapLookTarget();
+
+
+    CameraWork();
+    //SnapLookTarget();
+    //CameraWork();
+
+  }
+
+
+  public void RotateOffset(Quaternion q)
+  {
+    Quaternion delta = q * Quaternion.Inverse(transform.rotation);
+    // Vector3
+
+
+    transform.rotation = q;
+    CameraWork();
+  }
+
+
+
+  public void Offset(Transform t)
+  {
+
+  }
+
+
 
   public Vector3 tmpUp;
   public Vector3 tmpForward;
@@ -272,6 +327,11 @@ public class WrenCameraWork : MonoBehaviour
     inDeadZone = false;
   }
 
+
+  public void SnapLookTarget()
+  {
+    fLookTarget = lookTarget;
+  }
 
 
 }

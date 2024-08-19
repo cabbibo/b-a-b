@@ -6,6 +6,10 @@ using IMMATERIA;
 using static Unity.Mathematics.math;
 using Unity.Mathematics;
 
+using UnityEngine.Events;
+
+
+
 [ExecuteAlways]
 public class Booster : MonoBehaviour
 {
@@ -34,12 +38,28 @@ public class Booster : MonoBehaviour
     public float maxParticleEmit = 100;
 
     public TurnOnWrenTrails trails;
+
+
+    public UnityEvent onBoostEvent;
+    public Helpers.BoostEvent onBoostEvent2;
     //
+
+
+    public void OnTriggerEnter(Collider c)
+    {
+        if (WrenUtils.God.IsOurWren(c))
+        {
+            OnBoost(WrenUtils.God.wren);
+        }
+    }
+
 
     public void OnBoost(Wren w)
     {
 
 
+        print("BOOSTING");
+        print(w);
         float velMatch = Vector3.Dot(w.physics.vel, transform.forward);
         Vector3 fVel = transform.forward;
 
@@ -90,6 +110,9 @@ public class Booster : MonoBehaviour
         {
             trails.AddToTrail();
         }
+
+        onBoostEvent.Invoke();
+        onBoostEvent2.Invoke(this);
 
     }
 

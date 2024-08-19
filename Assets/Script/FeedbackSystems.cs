@@ -36,4 +36,56 @@ public class FeedbackSystems : MonoBehaviour
         }
     }
 
+
+    public void DoSmallSuccess()
+    {
+        God.particleSystems.Emit(God.particleSystems.smallSuccessParticleSystem, God.wren.transform.position, 50);
+        God.audio.Play(God.sounds.smallSuccessSound);
+    }
+
+    public void DoSmallSuccess(Vector3 position)
+    {
+        God.particleSystems.Emit(God.particleSystems.smallSuccessParticleSystem, position, 50);
+        God.audio.Play(God.sounds.smallSuccessSound);
+    }
+
+
+    public void DoLargeSuccess()
+    {
+        God.particleSystems.Emit(God.particleSystems.largeSuccessParticleSystem, God.wren.transform.position, 50);
+        God.audio.Play(God.sounds.largeSuccessSound);
+    }
+
+    public void DoLargeSuccess(Vector3 position)
+    {
+        God.particleSystems.Emit(God.particleSystems.largeSuccessParticleSystem, position, 50);
+        God.audio.Play(God.sounds.largeSuccessSound);
+    }
+
+
+    public void DoSmallFail()
+    {
+        God.particleSystems.Emit(God.particleSystems.smallFailParticleSystem, God.wren.transform.position, 50);
+        God.audio.Play(God.sounds.smallFailSound);
+    }
+
+    public void DoSmallFail(Vector3 position)
+    {
+        God.particleSystems.Emit(God.particleSystems.smallFailParticleSystem, position, 50);
+        God.audio.Play(God.sounds.smallFailSound);
+    }
+
+    public void DoLargeFail()
+    {
+        God.particleSystems.Emit(God.particleSystems.largeFailParticleSystem, God.wren.transform.position, 50);
+        God.audio.Play(God.sounds.largeFailSound);
+    }
+
+    public void DoLargeFail(Vector3 position)
+    {
+        God.particleSystems.Emit(God.particleSystems.largeFailParticleSystem, position, 50);
+        God.audio.Play(God.sounds.largeFailSound);
+    }
+
+
 }
