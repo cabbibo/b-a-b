@@ -20,7 +20,7 @@ public class EmitFromCrystalFiller : MonoBehaviour
     public void EmitFromCrystalCollect(int numShards)
     {
 
-        print(numShards);
+        //        print(numShards);
         particleSystem.transform.position = crystalFiller.transform.position;
         particleSystem.Emit(numShards);
 

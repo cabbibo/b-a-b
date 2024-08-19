@@ -24,6 +24,10 @@ public static class Helpers
   [System.Serializable]
   public class PositionGameObjectEvent : UnityEvent<Vector3, GameObject> { }
 
+
+  [System.Serializable]
+  public class BoostEvent : UnityEvent<Booster> { }
+
   public static T GetOrAddComponent<T>(this GameObject go) where T : Component
   {
     return go.GetComponent<T>() ?? go.AddComponent<T>();

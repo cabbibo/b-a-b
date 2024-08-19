@@ -6,8 +6,11 @@ Shader "Debug/RingFill"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType"="Transparent"  "Queue" ="Transparent"}
         LOD 100
+
+        Blend One One
+        Cull Off
 
         //ZWrite off
         Blend One One
