@@ -27,6 +27,15 @@ public class FullState : MonoBehaviour
     public int numQuests = 7;
 
 
+
+    public bool[] activitiesDiscovered;
+    public bool[] activitiesStarted;
+    public bool[] activitiesCompleted;
+
+
+    public int numActivities = 100;
+
+
     public bool gameFinished;
 
 
@@ -170,6 +179,30 @@ public class FullState : MonoBehaviour
 
 
 
+        activitiesStarted = PlayerPrefsX.GetBoolArray("_ActivitiesStarted");
+        activitiesCompleted = PlayerPrefsX.GetBoolArray("_ActivitiesCompleted");
+        activitiesDiscovered = PlayerPrefsX.GetBoolArray("_ActivitiesDiscovered");
+
+        if (activitiesStarted.Length != numActivities)
+        {
+            activitiesStarted = new bool[numActivities];
+        }
+
+        if (activitiesCompleted.Length != numActivities)
+        {
+            activitiesCompleted = new bool[numActivities];
+        }
+
+        if (activitiesDiscovered.Length != numActivities)
+        {
+            activitiesDiscovered = new bool[numActivities];
+        }
+
+
+
+
+
+
 
     }
 
@@ -199,6 +232,10 @@ public class FullState : MonoBehaviour
         questsDiscovered = new bool[numQuests];
         questsStarted = new bool[numQuests];
         questsCompleted = new bool[numQuests];
+
+        activitiesDiscovered = new bool[numQuests];
+        activitiesStarted = new bool[numQuests];
+        activitiesCompleted = new bool[numQuests];
 
 
 
@@ -303,6 +340,50 @@ public class FullState : MonoBehaviour
         questsDiscovered[i] = false;
         questsStarted[i] = false;
         questsCompleted[i] = false;
+        UpdateState();
+    }
+
+
+    public void OnActivityDiscovered(int i)
+    {
+        activitiesDiscovered[i] = true;
+        UpdateState();
+    }
+
+    public void OnActivityStarted(int i)
+    {
+        activitiesStarted[i] = true;
+        UpdateState();
+    }
+
+    public void OnActivityCompleted(int i)
+    {
+        activitiesCompleted[i] = true;
+
+
+        bool allCompleted = true;
+        for (int j = 0; j < activitiesCompleted.Length; j++)
+        {
+            if (!activitiesCompleted[j])
+            {
+                allCompleted = false;
+            }
+        }
+
+        if (allCompleted)
+        {
+            OnGameFinish();
+        }
+
+        UpdateState();
+    }
+
+
+    public void ResetActivity(int i)
+    {
+        activitiesDiscovered[i] = false;
+        activitiesStarted[i] = false;
+        activitiesCompleted[i] = false;
         UpdateState();
     }
 

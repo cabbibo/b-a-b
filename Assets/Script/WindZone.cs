@@ -8,39 +8,36 @@ namespace WrenUtils
 
         public float windPower;
 
-        public List<Wren> currentWrens;
 
 
         // Start is called before the first frame update
         void OnEnable()
         {
 
-            currentWrens = new List<Wren>();
+
 
         }
+        public bool wrenInside;
 
         // Update is called once per frame
         void Update()
         {
 
-
-            foreach (Wren w in currentWrens)
+            if (wrenInside)
             {
-
-                if (!w.state.onGround)
+                if (!God.wren.state.onGround)
                 {
-                    w.physics.rb.AddForce(transform.forward * windPower);
+                    God.wren.physics.AddForce(transform.forward * windPower, God.wren.transform.position);
                 }
             }
         }
-
 
         void OnTriggerEnter(Collider c)
         {
 
             if (God.IsOurWren(c))
             {
-                currentWrens.Add(c.attachedRigidbody.GetComponent<Wren>());
+                wrenInside = true;
             }
 
 
@@ -50,9 +47,7 @@ namespace WrenUtils
         {
             if (God.IsOurWren(c))
             {
-
-                currentWrens.Remove(c.attachedRigidbody.GetComponent<Wren>());
-
+                wrenInside = false;
             }
         }
 
