@@ -1,12 +1,13 @@
 ﻿#pragma kernel Flow
+#pragma kernel Flow2
 
 struct Vert{
-  float3 pos;
-  float3 vel;
-  float3 nor;
-  float3 tangent;
-  float3 axis;
-  float life;
+    float3 pos;
+    float3 vel;
+    float3 nor;
+    float3 tangent;
+    float3 axis;
+    float life;
 };
 
 float4x4 _Transform;
@@ -28,25 +29,40 @@ SamplerState sampler_HeightMap;
 Texture2D<float4> _WindMap;
 SamplerState sampler_WindMap;
 float3 _MapSize;
+float3 _MapOffset;
+
+
+float2 getUV( float3 pos ){
+    return (pos.xz + _MapOffset.xz) / _MapSize.xz;
+}
 
 float3 terrainPos( float3 pos ){
-  return float3( pos.x , _HeightMap.SampleLevel(sampler_HeightMap, (((pos.xz+_MapSize.xz/2)) / _MapSize.xz) , 1).x * _MapSize.y*2 , pos.z);
+
+    float2 uv = getUV(pos);
+    return float3( pos.x , _HeightMap.SampleLevel(sampler_HeightMap, uv , 1).x * _MapSize.y*2 , pos.z);
 }
 
 
 float terrainHeight( float3 pos ){
-   float h =  _HeightMap.SampleLevel(sampler_HeightMap, (((pos.xz+_MapSize.xz/2)) / _MapSize.xz) , 1).x * _MapSize.y * 2;
-   return pos.y - h;
+
+    float2 uv = getUV(pos);
+    float h =  _HeightMap.SampleLevel(sampler_HeightMap, uv  , 1).x * _MapSize.y * 2;
+    return pos.y - h;
 }
 
 
 
 float3 getWindPower(float3 pos ){
-float2 uv = (pos.xz+_MapSize.xz/2) / _MapSize.xz;
+    float2 uv =  getUV(pos);
 
-float4 windVal = _WindMap.SampleLevel(sampler_HeightMap, uv , 1);
 
-return windVal.xyz;
+    if( uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1 ){
+        return 0;
+    }
+
+    float4 windVal = _WindMap.SampleLevel(sampler_WindMap, uv , 1);
+
+    return windVal.xyz;
 }
 
 
@@ -56,19 +72,19 @@ void DoInit( inout Vert vert , float pID ){
 }
 
 float3 DoRemitPosition(int id){
-float3 emitPos = float3(hash(float(id)*20)-.5,hash(float(id)*11)-.5, hash(float(id)*231));
+    float3 emitPos = float3(hash(float(id)*20)-.5,hash(float(id)*11)-.5, hash(float(id)*231));
 
-emitPos *= 100;
-float3 p = mul( _Transform, float4( emitPos,1)).xyz;;
 
-float d = terrainHeight(p);
+    emitPos *= 100;
+    float3 p = mul( _Transform, float4( emitPos,1)).xyz;;
 
-if( d < 0){
-   return  terrainPos(p);
+    float d = terrainHeight(p);
 
-}
+    if( d < 0){
+        return  terrainPos(p);
+    }
 
-return p;
+    return p;
 }
 
 float3 DoRemitVelocity(int p){return 0;}
@@ -76,8 +92,8 @@ float3 DoRemitVelocity(int p){return 0;}
 
 float3 DoForce( inout Vert vert , int pID){
     float3 force = 0;
-  //  force += 1.4*curlNoise(vert.pos * .4);
-   // force +=  mul( _Transform, float4( 0,1 ,0,0)).xyz;
+    //  force += 1.4*curlNoise(vert.pos * .4);
+    // force +=  mul( _Transform, float4( 0,1 ,0,0)).xyz;
     force += getWindPower(vert.pos) * 1;
     force *= .001 * (1+hash(pID*1021.))/2;
 
@@ -107,4 +123,58 @@ float DoDampening( Vert v , int pID){
 [numthreads(NR_THREADS,1,1)]
 void Flow(uint3 id : SV_DispatchThreadID) {
     #include "../../Chunks/SimplifiedSimulation.cginc"
+}
+
+float3 randomPosition(int pID){
+    return float3(hash(float(pID)*20) + hash(float(pID)*23.1) -1,hash(float(pID)*11) + hash(float(pID)*33.1)-1, hash(float(pID)*231) +   hash(float(pID)*331) ) * .5;
+}
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Flow2(uint3 id : SV_DispatchThreadID) {
+
+    int pID = id.x;
+    pID = safeID(pID,_VertBuffer_COUNT);
+    Vert vert = _VertBuffer[pID];
+
+
+    if( vert.pos.x == 0  && vert.pos.y == 0 && vert.pos.z == 0 ){
+        DoInit(vert, float(pID));
+
+        vert.pos = mul( _Transform , float4( 1000 *randomPosition(pID),1));
+    }
+    
+
+    if( vert.life < 0 ){
+
+        vert.pos = mul( _Transform , float4( 1000 * randomPosition(pID),1));
+
+        vert.vel = DoRemitVelocity(pID);
+        vert.life = 1;//
+        
+        }else{
+
+        float3 force = 0;// DoForce( vert , pID); //float3(0,0,0);
+        force += getWindPower(vert.pos) * 1;
+
+        float d = terrainHeight(vert.pos);
+        if( d < 1 ){
+            force += float3(0,1,0) * (1-d) * 1;
+        }
+
+
+        vert.vel += force * .1;/// * .00004 * (1+hash(pID*1021.))/2;
+
+        vert.life -=  .001 * (3+sin(float(pID)));
+        vert.pos += vert.vel;
+
+        vert.vel *= .5;//DoDampening( vert , pID );
+
+    }
+
+
+    
+    _VertBuffer[pID] = vert;
+
+    
 }

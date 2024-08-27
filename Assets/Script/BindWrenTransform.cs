@@ -23,10 +23,13 @@ public class BindWrenTransform : Binder
 
         if (WrenUtils.God.wren != null)
         {
+            //  print("hmmm");
             transformMatrix = WrenUtils.God.wren.transform.localToWorldMatrix;
         }
         else
         {
+
+            // print("hmmmm");
             transformMatrix = transformToBind.localToWorldMatrix;
         }
     }
