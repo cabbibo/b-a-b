@@ -1,12 +1,12 @@
 ﻿#pragma kernel Flow
 
 struct Vert{
-  float3 pos;
-  float3 vel;
-  float3 nor;
-  float3 tangent;
-  float3 axis;
-  float life;
+    float3 pos;
+    float3 vel;
+    float3 nor;
+    float3 tangent;
+    float3 axis;
+    float life;
 };
 
 float4x4 _Transform;
@@ -52,7 +52,7 @@ void DoInit( inout Vert vert , float pID ){
 float _Time;
 
 float3 DoRemitPosition(int p){
-   return worldPos( float3( hash(float(p)*20)-.5,0 , hash(float(p)*231)-.5) * _PaintSize * _PaintSpawnMultiplier + _PaintPosition ) + float3(0,hash(float(p) * 12+ _Time) * 50,0);
+    return worldPos( float3( hash(float(p)*20)-.5,0 , hash(float(p)*231)-.5) * _PaintSize * _PaintSpawnMultiplier + _PaintPosition ) + float3(0,hash(float(p) * 12+ _Time) * 50,0);
 }
 
 float3 DoRemitVelocity(int p){return 0;}
@@ -64,6 +64,8 @@ float3 DoForce( inout Vert vert , int pID){
     //force +=  float3(0,1,0);
     force += windDir(vert.pos) * 10;
     force *= .0004 * (1+hash(pID*1021.))/2;
+
+    force *= 100;
 
 
 
@@ -79,7 +81,7 @@ float DoLife( Vert v , int pID ){
 }
 
 float DoDampening( Vert v , int pID){
-    return .98;
+    return .1;
 }
 
 #define NR_THREADS 128

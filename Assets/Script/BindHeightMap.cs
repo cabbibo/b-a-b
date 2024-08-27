@@ -15,5 +15,6 @@ public class BindHeightMap : Binder
         print(islandData);
         toBind.BindTexture("_HeightMap", () => WrenUtils.God.islandData.heightMap);
         toBind.BindVector3("_MapSize", () => WrenUtils.God.islandData.size);
+        toBind.BindVector3("_MapOffset", () => WrenUtils.God.islandData.offset);
     }
 }
