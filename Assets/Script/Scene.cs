@@ -37,7 +37,7 @@ namespace WrenUtils
             God.wren.airInterface.Toggle(false);
             God.wren.fullInterface.Toggle(false);
 
-            if (newScene == 1)
+            if (newScene == 0)
             {
                 God.wren.inEther = true;
                 Camera.main.GetComponent<UnderwaterRenderer>().enabled = false;
