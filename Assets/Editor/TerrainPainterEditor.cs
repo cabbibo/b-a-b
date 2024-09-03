@@ -154,7 +154,7 @@ public class TerrainPainterEditor : Editor
     EditorGUILayout.Space();
 
     GUILayout.Label("PaintSize : " + painter.paintSize);
-    painter.paintSize = GUILayout.HorizontalSlider(painter.paintSize, 0.0F, 500.0F);
+    painter.paintSize = GUILayout.HorizontalSlider(painter.paintSize, 0.0F, 1000.0F);
 
     EditorGUILayout.Space();
     GUILayout.Label("Paint Opacity: " + painter.paintOpacity);

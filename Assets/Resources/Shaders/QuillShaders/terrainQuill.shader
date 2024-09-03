@@ -1212,7 +1212,35 @@ Shader "Unlit/quillTerrain"{
         }
 
         if( _Debug == 1 ){
-          col = (v.nor * .5 + .5) * (sin( v.worldPos.x  * .1)  + sin( v.worldPos.z  * .1) );
+
+
+          float isOnVal = sin(v.worldPos.x *.1);
+
+          isOnVal += sin(v.worldPos.z *.1);
+
+          if( isOnVal < 0 ){
+            isOnVal = 0;
+            }else{
+            isOnVal = 1;
+          }
+
+          col = isOnVal * .5 + .5;//(v.nor * .5 + .5) * (((sin( v.worldPos.x  * .1)  + sin( v.worldPos.z  * .1) )) * .25 + .5);
+
+          col *= hsv( v.worldPos.y /2048 ,1 ,1);
+
+          float terrainLine = sin( v.worldPos.y * .1);
+
+          if( terrainLine < -.9){
+            terrainLine = 0;
+            }else{
+            terrainLine = 1;
+          }
+
+          col *= terrainLine;
+
+          if( v.nor.y > .999){
+            col = float3(.2,.6,.8) * .5;
+          }
         }
 
         //col = tex2D(_BiomeMap1, v.uv) ;
