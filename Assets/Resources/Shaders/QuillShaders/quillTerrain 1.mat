@@ -1,0 +1,195 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: quillTerrain 1
+  m_Shader: {fileID: 4800000, guid: 00f34b5cae013b743a721b3bfe08a708, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BiomeMap:
+        m_Texture: {fileID: 2800000, guid: aa80bf1c05bb5c047bb8729459a0b53e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Control:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 0b59c495bf285c442b1b799c94a9f8aa, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TerrainTexture1:
+        m_Texture: {fileID: 2800000, guid: 7e719ab96e426b34dadf4018c63af044, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TriplanarMap:
+        m_Texture: {fileID: 2800000, guid: a366a386d5147ee47b6111652608c240, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TriplanarNormalMap:
+        m_Texture: {fileID: 2800000, guid: cd89448be863f6843aae6ea92abafd0c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BiomeMapWeight: 0
+    - _BumpScale: 1
+    - _CityBrightness: 1
+    - _CityMatchMultiplier: 1
+    - _CitySaturation: 1
+    - _CityShadowBase: 0
+    - _CitySpecularPower1: 11
+    - _CitySpecularPower2: 11
+    - _CityStriationColorSteps: 6
+    - _CityStriationVerticalCutoff: 1
+    - _Cutoff: 0.5
+    - _Debug: 0
+    - _DetailNormalMapScale: 1
+    - _DstBlend: 0
+    - _Fade: 1
+    - _FogAmount: 0
+    - _FogEnd: 1000
+    - _FogNoiseAmount: 0
+    - _FogNoiseScale: 1
+    - _FogStart: 100
+    - _GlossMapScale: 1
+    - _Glossiness: 0.5
+    - _GlossyReflections: 1
+    - _HeightFogAmount: 0
+    - _HeightFogEnd: 1000
+    - _HeightFogMaxDistance: 1000
+    - _HeightFogMinDistance: 0
+    - _HeightFogNoiseAmount: 0
+    - _HeightFogNoiseScale: 1
+    - _HeightFogStart: 100
+    - _Metallic: 0
+    - _Mode: 0
+    - _NoiseTextureBase: 1
+    - _NoiseTextureStrength: 0.2
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
+    - _SandBrightness: 0.6
+    - _SandMatchMultiplier: 3
+    - _SandSaturation: 1
+    - _SandShadowBase: 0.28
+    - _SandSpecularPower1: 0.93
+    - _SandSpecularPower2: 3
+    - _SandStriationColorSteps: 6
+    - _SandStriationVerticalCutoff: 0.5
+    - _Size: 0.01
+    - _SmoothnessTextureChannel: 0
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _TriplanarSharpness: 1
+    - _UVSec: 0
+    - _WrenShadowRadius: 1
+    - _WrenShadowThickness: 0.2
+    - _ZWrite: 1
+    m_Colors:
+    - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CityBaseColor: {r: 0.81501424, g: 0.9339623, b: 0.862127, a: 1}
+    - _CityFresnelColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CitySpecularColor1: {r: 0.87058514, g: 0.7390531, b: 0.9056604, a: 1}
+    - _CitySpecularColor2: {r: 1, g: 0.5613208, b: 0.83047664, a: 1}
+    - _CityStriationColorDark: {r: 0.6740388, g: 0.764151, b: 0.7235986, a: 1}
+    - _CityStriationColorLight: {r: 1, g: 1, b: 1, a: 1}
+    - _CityStriationSize: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
+    - _FogColor: {r: 1, g: 1, b: 1, a: 1}
+    - _HeightFogColor: {r: 1, g: 1, b: 1, a: 1}
+    - _MeadowColor: {r: 0.8651153, g: 0.9528302, b: 0.7056337, a: 1}
+    - _MossColor1: {r: 0.43835524, g: 0.6509434, b: 0.40837488, a: 1}
+    - _MossColor2: {r: 0, g: 1, b: 0.70425534, a: 1}
+    - _SandBaseColor: {r: 0.46226418, g: 0.36647293, b: 0.26383945, a: 1}
+    - _SandFresnelColor: {r: 0.8867924, g: 0.6384693, b: 0.53123885, a: 1}
+    - _SandSpecularColor1: {r: 0.7830189, g: 0.55913746, b: 0.44691172, a: 1}
+    - _SandSpecularColor2: {r: 1, g: 0.6339623, b: 0.5424528, a: 1}
+    - _SandStriationColorDark: {r: 0.26415092, g: 0.24072622, b: 0.1704521, a: 1}
+    - _SandStriationColorLight: {r: 0.7960785, g: 0.7294118, b: 0.52156866, a: 1}
+    - _SandStriationSize: {r: 0.1, g: 6, b: 0.1, a: 1}
+    - _TriplanarMultiplier: {r: 0.1, g: 0.1, b: 0.1, a: 100}
+    - _WrenShadowColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
