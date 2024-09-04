@@ -1246,7 +1246,7 @@ Shader "Unlit/quillTerrainWithTexture"{
           }
         }
 
-        col = length(col) * 2* tex2D(_TerrainTexture1, float2(0,1) + float2(1,-1)*v.uv).rgb;
+        //col = length(col) * 2* tex2D(_TerrainTexture1, float2(0,1) + float2(1,-1)*v.uv).rgb;
 
         //col = tex2D(_BiomeMap1, v.uv) ;
         
