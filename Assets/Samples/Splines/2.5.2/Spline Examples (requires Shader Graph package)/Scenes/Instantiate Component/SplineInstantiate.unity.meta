@@ -1,6 +1,11 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Samples/Splines/2.5.2/Spline Examples (requires Shader Graph package)/Scenes/Instantiate Component/SplineInstantiate.unity.meta
 guid: 2f00e854192fee6449ea2b7cc15eb62b
 DefaultImporter:
+========
+guid: 07aaf9a2355634e449979c5612219fdd
+PrefabImporter:
+>>>>>>>> 6a7d109d (Made "Chase Me" script and set up in Miller Island):Assets/MillerStuff/ChaseMe Holder.prefab.meta
   externalObjects: {}
   userData: 
   assetBundleName: 

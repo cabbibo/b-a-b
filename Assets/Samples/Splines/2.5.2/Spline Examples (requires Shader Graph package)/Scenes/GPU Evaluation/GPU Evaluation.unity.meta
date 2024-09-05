@@ -1,5 +1,10 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Samples/Splines/2.5.2/Spline Examples (requires Shader Graph package)/Scenes/GPU Evaluation/GPU Evaluation.unity.meta
 guid: bb0ae21117d5875aeaef92fcbfc97f23
+========
+guid: 529e631288deabf4a9f01f9c4060e82d
+folderAsset: yes
+>>>>>>>> 6a7d109d (Made "Chase Me" script and set up in Miller Island):Assets/MillerStuff.meta
 DefaultImporter:
   externalObjects: {}
   userData: 
