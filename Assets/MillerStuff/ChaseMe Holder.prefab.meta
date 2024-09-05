@@ -1,11 +1,11 @@
 fileFormatVersion: 2
-<<<<<<<< HEAD:Assets/Samples/Splines/2.5.2/Spline Examples (requires Shader Graph package)/Scenes/Extrude Spline and Nearest Point/Extrude Spline and Nearest Point.unity.meta
-guid: 4134079321633f1dea3792890f3c651a
+<<<<<<<< HEAD:Assets/Samples/Splines/2.5.2/Spline Examples (requires Shader Graph package)/Scenes/Instantiate Component/SplineInstantiate.unity.meta
+guid: 2c909baab5575fc4ea19f74efc59f2ab
 DefaultImporter:
 ========
 guid: 07aaf9a2355634e449979c5612219fdd
 PrefabImporter:
->>>>>>>> origin/millerWork:Assets/MillerStuff/ChaseMe Holder.prefab.meta
+>>>>>>>> 6a7d109d (Made "Chase Me" script and set up in Miller Island):Assets/MillerStuff/ChaseMe Holder.prefab.meta
   externalObjects: {}
   userData: 
   assetBundleName: 

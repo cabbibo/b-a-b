@@ -18,6 +18,8 @@ public class PreyManager : MonoBehaviour
     [Header("Spawn Settings")]
     public float spawnTime;
 
+    public float spawnDistance;
+
 
     public GameObject preyPrefab;
 
@@ -151,6 +153,31 @@ public class PreyManager : MonoBehaviour
 
     }
 
+
+    public int bugsPerCluster = 1;
+    public float clusterRadius = 0;
+
+
+    public enum SpawnType
+    {
+        RandomNearCenter,
+        RandomWithinBounds,
+        InFrontOfWren,
+        BehindWren,
+        Clustered
+    }
+
+    public enum AltitudeType
+    {
+        RandomRange,
+        DesiredAltitude,
+        OnGround
+
+    }
+
+    public SpawnType spawnType;
+    public AltitudeType altitudeType;
+
     public virtual void SpawnNewBug()
     {
 
@@ -163,24 +190,110 @@ public class PreyManager : MonoBehaviour
         }
 
 
+
+        Vector3 spawnPos = transform.position;
+
+
+        if (spawnType == SpawnType.RandomNearCenter)
+        {
+            spawnPos = SpawnRandomNearCenter();
+        }
+        else if (spawnType == SpawnType.RandomWithinBounds)
+        {
+            spawnPos = SpawnRandomWithinBounds();
+        }
+        else if (spawnType == SpawnType.InFrontOfWren)
+        {
+            spawnPos = SpawnInFrontOfWren();
+        }
+
+        Vector3 groundPos = spawnPos;
+        groundPos.y = 10000;
+        RaycastHit hit;
+        if (Physics.Raycast(spawnPos, Vector3.down, out hit, 20000))
+        {
+            groundPos = hit.point + Vector3.up * spawnRadius * 2;
+        }
+
+        if (altitudeType == AltitudeType.RandomRange)
+        {
+            spawnPos.y = groundPos.y + preyConfig.minAltitude + Random.Range(0, preyConfig.maxAltitude - preyConfig.minAltitude);
+        }
+        else if (altitudeType == AltitudeType.DesiredAltitude)
+        {
+            spawnPos.y = groundPos.y + preyConfig.desiredAltitude;
+        }
+        else if (altitudeType == AltitudeType.OnGround)
+        {
+            spawnPos.y = groundPos.y;
+        }
+
+        for (int i = 0; i < bugsPerCluster; i++)
+        {
+
+            Vector3 extraOffset = Random.insideUnitSphere * clusterRadius;
+            spawnPos += extraOffset;
+
+            PreyController newPrey = Instantiate(preyPrefab, spawnPos, Quaternion.identity).GetComponent<PreyController>();
+
+            newPrey.Initialize(preyConfig, this);
+
+
+            newPrey.transform.parent = preyHolder;
+
+
+            lastSpawnTime = Time.time;
+        }
+
+        // }
+    }
+
+
+    public Vector3 SpawnRandomNearCenter()
+    {
         Vector3 spawnPos = transform.position;
 
         Vector3 offset = Random.insideUnitSphere * spawnRadius;
 
         spawnPos += offset;
 
-        PreyController newPrey = Instantiate(preyPrefab, spawnPos, Quaternion.identity).GetComponent<PreyController>();
-
-        newPrey.Initialize(preyConfig, this);
-
-
-        newPrey.transform.parent = preyHolder;
-
-
-        lastSpawnTime = Time.time;
-
-        // }
+        return spawnPos;
     }
+
+
+    public Vector3 rangeBoundsForSpawnMin;
+    public Vector3 rangeBoundsForSpawnMax;
+    public Vector3 SpawnRandomWithinBounds()
+    {
+
+        Vector3 spawnPos = new Vector3(Random.Range(rangeBoundsForSpawnMin.x, rangeBoundsForSpawnMax.x), Random.Range(rangeBoundsForSpawnMin.y, rangeBoundsForSpawnMax.y), Random.Range(rangeBoundsForSpawnMin.z, rangeBoundsForSpawnMax.z));
+
+        return spawnPos;
+
+    }
+
+    public Vector3 SpawnInFrontOfWren()
+    {
+        Vector3 spawnPos = God.wren.transform.position + God.wren.transform.forward * spawnDistance;
+
+        spawnPos.y = 10000;
+
+        RaycastHit hit;
+        if (Physics.Raycast(spawnPos, Vector3.down, out hit, 20000))
+        {
+            spawnPos = hit.point + Vector3.up * spawnRadius * 2;
+        }
+
+
+        Vector3 offset = Random.insideUnitSphere * spawnRadius;
+
+        spawnPos += offset;
+
+        return spawnPos;
+
+    }
+
+
 
 
     public virtual void PreyGotAte(PreyController b)
