@@ -21,4 +21,6 @@ public class PreyConfigSO : ScriptableObject
     public float runForce;
     public float runRadius;
 
+    public float crystalsOnCollect;
+
 }

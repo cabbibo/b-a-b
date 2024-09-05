@@ -9,9 +9,10 @@ public class FoodSpawner : MonoBehaviour
 {
 
 
-    public IslandData data;
+    public IslandController data;
 
     public int foodDataIndex;
+    public int biomeDataIndex;
 
     public Transform[] foods;
 
@@ -21,9 +22,11 @@ public class FoodSpawner : MonoBehaviour
 
     public int currentActiveFood = 0;
 
-    public GameObject foodPrefab;
+    public GameObject[] foodPrefabs;
 
     public int numFoodToSpawnPerBurst = 1;
+
+
 
 
 
@@ -43,7 +46,7 @@ public class FoodSpawner : MonoBehaviour
         foodComponents = new Food[maxFood];
         for (int i = 0; i < maxFood; i++)
         {
-            foods[i] = Instantiate(foodPrefab).transform;
+            foods[i] = Instantiate(foodPrefabs[Random.Range(0, foodPrefabs.Length)]).transform;
             foods[i].parent = transform;
 
             foods[i].gameObject.SetActive(false);
@@ -76,12 +79,13 @@ public class FoodSpawner : MonoBehaviour
     {
 
 
-        float v = data.currentFoodValues[foodDataIndex];
+        float v = data.currentIsland.currentFoodValues[foodDataIndex];
+        float v2 = data.currentIsland.currentBiomeValues[biomeDataIndex];
 
         // print(v);
 
 
-        if (Time.time - lastFoodSpawnTime > foodSpawnTimeMultiplier / v)
+        if (Time.time - lastFoodSpawnTime > foodSpawnTimeMultiplier / v && v2 > 0)
         {
 
             //            print("helllo");
@@ -93,6 +97,8 @@ public class FoodSpawner : MonoBehaviour
 
 
     public float foodSpawnTimeMultiplier;
+    public float foodForwardDistance;
+    public float foodRadiusSpawn;
     public void SpawnFood()
     {
 
@@ -100,11 +106,11 @@ public class FoodSpawner : MonoBehaviour
 
         if (God.wren == null)
         {
-            spawnPosition = data.debugValueTransform.position;
+            spawnPosition = data.currentIsland.debugValueTransform.position;
         }
         else
         {
-            spawnPosition = God.wren.transform.position + God.wren.transform.forward * 10;
+            spawnPosition = God.wren.transform.position + God.wren.transform.forward * foodForwardDistance;
         }
 
         for (int i = 0; i < numFoodToSpawnPerBurst; i++)
@@ -143,6 +149,8 @@ public class FoodSpawner : MonoBehaviour
     public float bugFullnessAdd;
     public float bugStaminaAdd;
 
+    public int numCrystalsOnEat;
+
     public void GotAte(Food f)
     {
 
@@ -158,6 +166,8 @@ public class FoodSpawner : MonoBehaviour
 
         WrenUtils.God.wren.stats.FullnessAdd(bugFullnessAdd);
         WrenUtils.God.wren.stats.StaminaAdd(bugStaminaAdd);
+
+        WrenUtils.God.wren.shards.CollectShards(numCrystalsOnEat, (float)biomeDataIndex, f.transform.position);
 
 
     }
