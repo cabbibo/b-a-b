@@ -1,0 +1,280 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: terrainQuill_8Biome
+  m_Shader: {fileID: 4800000, guid: b0000c5c72dd21d45ae3473e8e7fdb89, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BiomeMap:
+        m_Texture: {fileID: 2800000, guid: 9e893f52fd80e5a498d1c46ea465a77c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CanyonTexture:
+        m_Texture: {fileID: 2800000, guid: d45bac380e89d1d4799c689b14a28430, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CaveTexture:
+        m_Texture: {fileID: 2800000, guid: 9e893f52fd80e5a498d1c46ea465a77c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Control:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DataTexture:
+        m_Texture: {fileID: 2800000, guid: 60069576096b7ef4cb66841755381748, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DesertTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ForestTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _IslandTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MountainTexture:
+        m_Texture: {fileID: 2800000, guid: 9e893f52fd80e5a498d1c46ea465a77c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TerrainTexture1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ValleyTexture:
+        m_Texture: {fileID: 2800000, guid: 135843dc04274e14393b54d16cf9c709, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BiomeMapWeight: 0.01
+    - _BumpScale: 1
+    - _CanyonBrightness: 1
+    - _CanyonMatchMultiplier: 1
+    - _CanyonSaturation: 1
+    - _CanyonShadowBase: 1
+    - _CanyonSpecularPower1: 1
+    - _CanyonSpecularPower2: 1
+    - _CanyonStriationColorSteps: 4
+    - _CanyonStriationVerticalCutoff: 0.5
+    - _CityBrightness: 1
+    - _CityMatchMultiplier: 1
+    - _CitySaturation: 1
+    - _CityShadowBase: 1
+    - _CitySpecularPower1: 1
+    - _CitySpecularPower2: 1
+    - _CityStriationColorSteps: 4
+    - _CityStriationVerticalCutoff: 0.5
+    - _Cutoff: 0.5
+    - _Debug: 0
+    - _DesertBrightness: 1
+    - _DesertMatchMultiplier: 1
+    - _DesertSaturation: 1
+    - _DesertShadowBase: 0.8
+    - _DesertSpecularPower1: 2222
+    - _DesertSpecularPower2: 222
+    - _DesertStriationColorSteps: 8
+    - _DesertStriationVerticalCutoff: 0.42
+    - _DetailNormalMapScale: 1
+    - _DstBlend: 0
+    - _FogAmount: 0
+    - _FogEnd: 1000
+    - _FogNoiseAmount: 0
+    - _FogNoiseScale: 1
+    - _FogStart: 100
+    - _GlossMapScale: 1
+    - _Glossiness: 0.5
+    - _GlossyReflections: 1
+    - _HeightFogAmount: 0
+    - _HeightFogEnd: 1000
+    - _HeightFogMaxDistance: 1000
+    - _HeightFogMinDistance: 0
+    - _HeightFogNoiseAmount: 0
+    - _HeightFogNoiseScale: 1
+    - _HeightFogStart: 100
+    - _Metallic: 0
+    - _Mode: 0
+    - _NoiseTextureBase: 1
+    - _NoiseTextureStrength: 0.2
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
+    - _SmoothnessTextureChannel: 0
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _UVSec: 0
+    - _WrenShadowRadius: 1
+    - _WrenShadowThickness: 0.2
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseFlatColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseLowHigh: {r: 700, g: 1000, b: 0, a: 1}
+    - _BaseSpecialColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CanyonBaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CanyonColor: {r: 1, g: 0.6136042, b: 0, a: 1}
+    - _CanyonFlatColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CanyonFresnelColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CanyonHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CanyonLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CanyonLowHigh: {r: 700, g: 1000, b: 0, a: 1}
+    - _CanyonSpecialColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CanyonSpecularColor1: {r: 1, g: 1, b: 1, a: 1}
+    - _CanyonSpecularColor2: {r: 1, g: 1, b: 1, a: 1}
+    - _CanyonStriationColorDark: {r: 1, g: 1, b: 1, a: 1}
+    - _CanyonStriationColorLight: {r: 1, g: 1, b: 1, a: 1}
+    - _CanyonStriationSize: {r: 1, g: 1, b: 1, a: 1}
+    - _CaveColor: {r: 0.6933962, g: 1, b: 0.8926078, a: 1}
+    - _CaveFlatColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CaveHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CaveLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CaveLowHigh: {r: 700, g: 1000, b: 0, a: 1}
+    - _CaveSpecialColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CityBaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CityFresnelColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CitySpecularColor1: {r: 1, g: 1, b: 1, a: 1}
+    - _CitySpecularColor2: {r: 1, g: 1, b: 1, a: 1}
+    - _CityStriationColorDark: {r: 1, g: 1, b: 1, a: 1}
+    - _CityStriationColorLight: {r: 1, g: 1, b: 1, a: 1}
+    - _CityStriationSize: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _DesertBaseColor: {r: 1, g: 0.86860615, b: 0.3820755, a: 1}
+    - _DesertColor: {r: 1, g: 0.46418828, b: 0.042452812, a: 1}
+    - _DesertFlatColor: {r: 1, g: 0.5721077, b: 0.042452812, a: 1}
+    - _DesertFresnelColor: {r: 1, g: 0.7511028, b: 0.15566039, a: 1}
+    - _DesertHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _DesertLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _DesertLowHigh: {r: 700, g: 1000, b: 0, a: 1}
+    - _DesertSpecialColor: {r: 1, g: 1, b: 1, a: 1}
+    - _DesertSpecularColor1: {r: 1, g: 0.42313176, b: 0, a: 1}
+    - _DesertSpecularColor2: {r: 1, g: 0.42313176, b: 0, a: 1}
+    - _DesertStriationColorDark: {r: 0.3584906, g: 0.20807086, b: 0, a: 1}
+    - _DesertStriationColorLight: {r: 1, g: 0.601208, b: 0, a: 1}
+    - _DesertStriationSize: {r: 0, g: 1, b: 0.01, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FogColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ForestColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ForestFlatColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ForestHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ForestLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ForestLowHigh: {r: 700, g: 1000, b: 0, a: 1}
+    - _ForestSpecialColor: {r: 1, g: 1, b: 1, a: 1}
+    - _HeightFogColor: {r: 1, g: 1, b: 1, a: 1}
+    - _IslandColor: {r: 1, g: 1, b: 1, a: 1}
+    - _IslandFlatColor: {r: 1, g: 1, b: 1, a: 1}
+    - _IslandHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _IslandLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _IslandLowHigh: {r: 700, g: 1000, b: 0, a: 1}
+    - _IslandSpecialColor: {r: 1, g: 1, b: 1, a: 1}
+    - _MeadowColor: {r: 0.8869682, g: 1, b: 0.504717, a: 1}
+    - _MossColor1: {r: 0.6462264, g: 1, b: 0.67502093, a: 1}
+    - _MossColor2: {r: 0.73576695, g: 1, b: 0.13679248, a: 1}
+    - _MountainColor: {r: 1, g: 0.07075471, b: 0.07075471, a: 1}
+    - _MountainFlatColor: {r: 1, g: 1, b: 1, a: 1}
+    - _MountainHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _MountainLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _MountainLowHigh: {r: 700, g: 1000, b: 0, a: 1}
+    - _MountainSpecialColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ValleyColor: {r: 0.89106715, g: 1, b: 0, a: 1}
+    - _ValleyFlatColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ValleyHighAltitudeColor: {r: 0.7202296, g: 0.7830189, b: 0.7437756, a: 1}
+    - _ValleyLowAltitudeColor: {r: 0.57750636, g: 0.7924528, b: 0.40744036, a: 1}
+    - _ValleyLowHigh: {r: 90, g: 400, b: 0, a: 1}
+    - _ValleySpecialColor: {r: 1, g: 1, b: 1, a: 1}
+    - _WrenShadowColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []

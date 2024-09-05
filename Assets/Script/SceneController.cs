@@ -249,6 +249,9 @@ public class SceneController : MonoBehaviour
             wrenScene.SceneLoaded(newScene, loadedFromPortal);
         }
 
+        print(God.state);
+        print(wrenScene.portals);
+
         // Only animate in if we have animation!
         if (God.state.currentBiomeID >= 0 && God.state.currentBiomeID < wrenScene.portals.Length && God.wren != null)
         {

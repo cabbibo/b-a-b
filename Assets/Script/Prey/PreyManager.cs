@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using WrenUtils;
 
-
+[ExecuteAlways]
 public class PreyManager : MonoBehaviour
 {
 
@@ -54,6 +54,8 @@ public class PreyManager : MonoBehaviour
 
     public Transform cage;
 
+    public int maxPray = 100;
+
 
 
 
@@ -85,8 +87,12 @@ public class PreyManager : MonoBehaviour
         }
     }
 
+
+    public int currentNumberOfPrey;
     void Update()
     {
+
+        currentNumberOfPrey = preyHolder.childCount;
         if (Time.time - lastSpawnTime > spawnTime && wrenInside)
         {
             SpawnNewBug();
@@ -132,6 +138,15 @@ public class PreyManager : MonoBehaviour
          else
          {
  */
+
+
+        // destroy any over max
+        while (preyHolder.childCount >= maxPray)
+        {
+            DestroyImmediate(preyHolder.GetChild(0).gameObject);
+        }
+
+
         Vector3 spawnPos = transform.position;
 
         Vector3 offset = Random.insideUnitSphere * spawnRadius;

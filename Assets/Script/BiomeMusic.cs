@@ -18,7 +18,7 @@ public class BiomeMusic : MonoBehaviour
 
 
     public AudioClip neutralClip;
-    public IslandData islandData;
+    public IslandController data;
 
 
     public float fadeOutSpeed = .04f;
@@ -42,7 +42,7 @@ public class BiomeMusic : MonoBehaviour
             else
             {
                 // if we are the current source, make it pop!
-                sources[i].volume = Mathf.Lerp(sources[i].volume, islandData.maxBiomeValue, fadeInSpeed);
+                sources[i].volume = Mathf.Lerp(sources[i].volume, data.currentIsland.maxBiomeValue, fadeInSpeed);
             }
 
 

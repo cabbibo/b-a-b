@@ -647,6 +647,7 @@ public class TerrainPainter : Simulation
     byte[] _bytes = _texture.EncodeToJPG(1000);
     System.IO.File.WriteAllBytes(_fullPath + ".jpg", _bytes);
     Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullPath + ".jpg");
+    AssetDatabase.Refresh();
   }
 
 
@@ -656,6 +657,7 @@ public class TerrainPainter : Simulation
     byte[] _bytes = ImageConversion.EncodeToEXR(_texture, Texture2D.EXRFlags.OutputAsFloat);
     System.IO.File.WriteAllBytes(_fullPath + ".exr", _bytes);
     Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullPath + ".exr");
+    AssetDatabase.Refresh();
   }
 
 
