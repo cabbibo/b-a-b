@@ -90,7 +90,7 @@ public class OceanInfoManager : MonoBehaviour
         }
     }
     // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
 
         if (God.wren && OceanRenderer.Instance != null)
