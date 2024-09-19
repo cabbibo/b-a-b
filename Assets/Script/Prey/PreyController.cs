@@ -10,10 +10,18 @@ public class PreyController : MonoBehaviour
 
 
     public PreyManager manager;
+
+    [Header("Prey Settings")]
     public float dieRate;
 
-    public float life;
     public float maxScale;
+
+    public float maxScaleEndLife = 0;
+    public float maxScaleStartLife = 1;
+
+
+    public float maxAngleTurnBetweenFrames = 4f;
+
     public float speed;
     public float runForce;
     public float runRadius;
@@ -49,12 +57,6 @@ public class PreyController : MonoBehaviour
     public float forceInwardsAtMaxDistanceEnd;
 
 
-
-
-
-
-
-
     // tween 'current altitude' slowly so it can stay in valleys etc
     // cast down ray and cast forward ray
 
@@ -70,10 +72,6 @@ public class PreyController : MonoBehaviour
     public float forwardBounceOffset;
 
 
-
-
-
-
     public float alwaysCenterForce;
 
     public float noiseSize;
@@ -82,11 +80,60 @@ public class PreyController : MonoBehaviour
 
     public float alwaysTowardsSpawnPointForce;
 
+    public float maxForwardDistance = 100;
+    public float maxDownDistance = 100;
+
+
+
+    public float groundTurnForce = 1;
+    public float forwardTurnForce = 1;
+
+
+
+    // should be able to reduce this as we move forward between frames
+
+
+    public float distanceForStartTurn;
+    public float distanceForHardTurn;
+
+
+    public float distanceToStartRun;
+    public float distanceToFullRun;
+
+    // Turn Away fRom the normal
+
+
+
+
+    // DATA 
+    [Header("Data")]
+    public float life;
+    public float distanceToGround;
+
+    public float rawDistanceToGround;
+
+
+    public float distanceToForward;
+    public float rawDistanceToForward;
+
+
+    public Vector3 groundNormal;
+    public Vector3 rawGroundNormal;
+
+    public Vector3 forwardNormal;
+    public Vector3 rawForwardNormal;
+    public Vector3 vectorToWren; // DATA POINT
+
+    public float forwardTurnNormalizedValue;
+    public float downTurnNormalizedValue;
 
 
 
     // DATA POINT
     public float positionInFlapCycle;
+
+    public Vector3 flapValue;
+    public float climbRate;
 
 
     /*
@@ -95,29 +142,38 @@ public class PreyController : MonoBehaviour
 
         vultures circling
         butterflies hanging close to center;
+        birds flying around a lake
+        birds flying in a flock
+
+        //flap when rising up
+        //glide when going down
+
+        fade in on spawn ( spawn in front of player )
+        fade out if far enough away, ideally when player is looking away
+
+        flying across the landscape ( migrating birds )
+
+        circle around a specific lake
+        circle around a specific point
+
+
+
+
+
+
 
     */
 
 
-    Vector3 projectPointOnLine(Vector3 linePoint, Vector3 lineVec, Vector3 point)
-    {
-        //get vector from point on line to point in space
-        Vector3 linePointToPoint = point - linePoint;
-
-        float t = Vector3.Dot(linePointToPoint, lineVec);
-
-        return linePoint + lineVec * t;
-
-    }
 
 
-    Vector3 force;
-    Vector3 velocity;
-    Vector3 position;
+    public Vector3 force;
+    public Vector3 velocity;
+    public Vector3 position;
 
+    public Vector3 oldVelocity;
     Vector3 startPosition;
 
-    Vector3 oldVelocity;
 
     public void OnEnable()
     {
@@ -125,44 +181,50 @@ public class PreyController : MonoBehaviour
         position = startPosition;
         velocity = Random.insideUnitSphere.normalized * speed;
         oldVelocity = velocity;
+
+        SetHeight();
+
         force = Vector3.zero;
         frame = 0;
     }
 
 
-    // Chatgpt
-    public Vector3 AdjustVelocity(Vector3 velocity, Vector3 oldVelocity)
+
+    public Vector3 GetNewVelocity(Vector3 newDesiredVelocity, Vector3 currentVelocity)
     {
-        // Normalize the velocities
-        Vector3 normalizedVelocity = velocity.normalized;
-        Vector3 normalizedOldVelocity = oldVelocity.normalized;
 
-        // Calculate the current dot product
-        float dotProduct = Vector3.Dot(normalizedVelocity, normalizedOldVelocity);
+        // Get Angle Between the two vectors
+        float angle = Vector3.Angle(currentVelocity, newDesiredVelocity);
 
-        // Check if the dot product is already >= 0.8
-        if (dotProduct >= minimumDotProductMatchForTurn)
+        // if the angle is less than the max angle, return the new desired velocity
+        // as we arent turning too much!
+        if (angle < maxAngleTurnBetweenFrames)
         {
-            return normalizedVelocity; // No need to adjust
+            return newDesiredVelocity;
         }
 
-        // Calculate the rotation axis
-        Vector3 rotationAxis = Vector3.Cross(normalizedOldVelocity, normalizedVelocity).normalized;
 
-        // Calculate the target angle (in radians) for a dot product of 0.8
-        float targetAngle = Mathf.Acos(minimumDotProductMatchForTurn);
 
-        // Rotate the old velocity towards the desired direction
-        Quaternion rotation = Quaternion.AngleAxis(Mathf.Rad2Deg * targetAngle, rotationAxis);
-        Vector3 newVel = rotation * normalizedOldVelocity;
+        // Get the axis of rotation
+        Vector3 axis = Vector3.Cross(currentVelocity, newDesiredVelocity).normalized;
 
-        return newVel;
+        if (axis == Vector3.zero)
+        {
+            axis = Vector3.Cross(Random.insideUnitSphere.normalized, currentVelocity).normalized;
+        }
+
+        // Get the rotation
+        Quaternion rotation = Quaternion.AngleAxis(maxAngleTurnBetweenFrames, axis);
+
+
+        // Apply the rotation to the old velocity
+        return rotation * currentVelocity;
+
 
     }
 
 
-    public float maxForwardDistance = 100;
-    public float maxDownDistance = 100;
+
 
     public Vector4 RaycastDown()
     {
@@ -193,48 +255,132 @@ public class PreyController : MonoBehaviour
     }
 
 
-    public float groundTurnForce = 1;
-    public float forwardTurnForce = 1;
-
-
-    public float distanceToGround;
-
-    public float rawDistanceToGround;
-
-    public Vector3 groundNormal;
-    public Vector3 rawGroundNormal;
-
-
-    // should be able to reduce this as we move forward between frames
-
-    public float distanceToForward;
-    public float rawDistanceToForward;
-
-    public Vector3 forwardNormal;
-    public Vector3 rawForwardNormal;
-
-    public float distanceForStartTurn;
-    public float distanceForHardTurn;
-
-
-    public float distanceToStartRun;
-    public float distanceToFullRun;
-
-    // Turn Away fRom the normal
-
-
-    public Vector3 vectorToWren; // DATA POINT
 
     Vector4 rayCastData;
 
     int frame = 0;
+
+
+
+
     void Update()
     {
 
-        frame++;
+
+
+        UpdateData();
+        DoPhysics();
+
+        Quaternion targetRotation = Quaternion.LookRotation(velocity.normalized, transform.up);
+        transform.LookAt(position + flapValue + velocity.normalized * 10);
+
+
+        // if life is greatedr than maxScaleStartLife, scale in
+        // if life is less than maxScaleEndLife, scale out
+
+        float scale = Mathf.Clamp(1 - (life - maxScaleStartLife), 0, 1);
+        scale = Mathf.Min(Mathf.Clamp(1 - (maxScaleEndLife - life), 0, 1), scale);
+
+        transform.localScale = Vector3.one * maxScale * scale;
+
+        life -= dieRate;
+        if (life < 0)
+        {
+            DestroyImmediate(gameObject);
+        }
+
+
+    }
+
+
+
+    public virtual void DoPhysics()
+    {
 
         force = Vector3.zero;
 
+        // if we are above our desired altitude, we should be turning down
+        force -= Vector3.down * (desiredAltitude - distanceToGround) * strengthTowardsDesiredAltitude;
+
+        // if we are close to the ground, we should be turning away from it
+        force += groundNormal * downTurnNormalizedValue * groundTurnForce;
+        if (downTurnNormalizedValue > .99f)
+        {
+            force = Vector3.up;
+        }
+
+        // if we are close to the front we shoudl start turning away from it
+        force += forwardNormal * forwardTurnNormalizedValue * forwardTurnForce;
+        if (forwardTurnNormalizedValue > .99f)
+        {
+            force = forwardNormal - velocity.normalized;
+        }
+
+
+
+
+        if (God.wren != null)
+        {
+            vectorToWren = God.wren.transform.position - transform.position;
+        }
+        else
+        {
+            vectorToWren = manager.debugWren.transform.position - transform.position;
+        }
+
+
+
+        // run forces
+        oldVelocity = velocity;
+        velocity += force;
+
+
+        velocity = velocity.normalized * speed;
+
+        velocity = GetNewVelocity(velocity, oldVelocity);
+        velocity = velocity.normalized * speed;
+
+
+        position += velocity;
+
+
+
+        // if we are even or going down, move towards position in flap cycle to Mathf.PI / 2;
+        // if we are going up, increase by flap speed ( more the sharper up)
+
+        climbRate = Mathf.Clamp(velocity.normalized.y, 0, 1);
+
+
+        if (climbRate > 0)
+        {
+
+            positionInFlapCycle += flapSpeed * climbRate * climbRate;
+        }
+        else
+        {
+
+
+            float currentCycle = Mathf.Floor(positionInFlapCycle / (Mathf.PI * 2));
+
+            float mid = currentCycle * Mathf.PI * 2 + Mathf.PI;
+
+            positionInFlapCycle = Mathf.Lerp(positionInFlapCycle, mid, .1f);
+
+
+
+        }
+
+
+        // Jiggle it properly ( fast for butterflies slow for vultures etc.)
+        flapValue = transform.up * Mathf.Sin(positionInFlapCycle) * upBounceSize + transform.forward * Mathf.Sin(positionInFlapCycle + forwardBounceOffset) * forwardBounceSize;
+
+        transform.position = position + flapValue;
+
+    }
+
+    public void UpdateData()
+    {
+        frame++;
 
         if (frame % physicsResolution == 0)
         {
@@ -255,6 +401,8 @@ public class PreyController : MonoBehaviour
         forwardNormal = Vector3.Lerp(forwardNormal, rawForwardNormal, physicsInfoLerpSpeed);
 
 
+
+
         /*
 
             Turning away from the ground and from in front of us!
@@ -263,65 +411,8 @@ public class PreyController : MonoBehaviour
         */
 
 
-        float forwardTurnNormalizedValue = Mathf.Clamp((distanceForStartTurn - distanceToForward) / (distanceForStartTurn - distanceForHardTurn), 0, 1);
-        float downTurnNormalizedValue = Mathf.Clamp((distanceToGround - distanceForStartTurn) / (distanceForStartTurn - distanceForHardTurn), 0, 1);
-
-        // if we are close to the ground, we should be turning away from it
-        force += groundNormal * downTurnNormalizedValue * groundTurnForce;
-        if (downTurnNormalizedValue > .99f)
-        {
-            force = Vector3.up;
-        }
-
-        // if we are close to the front we shoudl start turning away from it
-        force += forwardNormal * forwardTurnNormalizedValue * forwardTurnForce;
-        if (forwardTurnNormalizedValue > .99f)
-        {
-            force = forwardNormal - velocity.normalized;
-        }
-
-
-
-        if (God.wren != null)
-        {
-            vectorToWren = God.wren.transform.position - transform.position;
-        }
-        else
-        {
-            vectorToWren = manager.debugWren.transform.position - transform.position;
-        }
-
-
-
-        // run forces
-        oldVelocity = velocity;
-        velocity += force;
-
-        velocity = velocity.normalized * speed;
-
-        velocity = AdjustVelocity(velocity, oldVelocity);
-        velocity = velocity.normalized * speed;
-
-
-        position += velocity;
-
-        // Jiggle it properly ( fast for butterflies slow for vultures etc.)
-        Vector3 flapValue = transform.up * Mathf.Sin(positionInFlapCycle * Mathf.PI) * upBounceSize + transform.forward * Mathf.Sin(positionInFlapCycle * Mathf.PI + forwardBounceOffset) * forwardBounceSize;
-        transform.position = position + flapValue;
-
-
-        Quaternion targetRotation = Quaternion.LookRotation(velocity.normalized, transform.up);
-        transform.LookAt(position + flapValue + velocity.normalized * 10);
-
-
-        transform.localScale = Vector3.one * maxScale * Mathf.Clamp(Mathf.Min((1 - life) * 4, life), 0, 1);
-
-        life -= dieRate;
-        if (life < 0)
-        {
-            DestroyImmediate(gameObject);
-        }
-
+        forwardTurnNormalizedValue = Mathf.Clamp((distanceForStartTurn - distanceToForward) / (distanceForStartTurn - distanceForHardTurn), 0, 1);
+        downTurnNormalizedValue = Mathf.Clamp((distanceForStartTurn - distanceToGround) / (distanceForStartTurn - distanceForHardTurn), 0, 1);
 
     }
 
@@ -348,16 +439,63 @@ public class PreyController : MonoBehaviour
         enabled = true;
         this.manager = manager;
 
-        speed = config.speed;
-        life = config.life;
-
+        life = 1;
         dieRate = config.dieRate;
 
         maxScale = config.maxScale;
+        speed = config.speed;
 
+        maxAngleTurnBetweenFrames = config.maxAngleTurnBetweenFrames;
+        maxScaleStartLife = config.maxScaleStartLife;
+        maxScaleEndLife = config.maxScaleEndLife;
 
         runForce = config.runForce;
         runRadius = config.runRadius;
 
+        physicsResolution = config.physicsResolution;
+
+        physicsInfoLerpSpeed = config.physicsInfoLerpSpeed;
+        desiredAltitude = config.desiredAltitude;
+        minAltitude = config.minAltitude;
+        maxAltitude = config.maxAltitude;
+        strengthTowardsDesiredAltitude = config.strengthTowardsDesiredAltitude;
+        circleForce = config.circleForce;
+        circleRadius = config.circleRadius;
+        updraft = config.updraft;
+        maxDistanceStart = config.maxDistanceStart;
+        maxDistanceEnd = config.maxDistanceEnd;
+        forceInwardsAtMaxDistanceEnd = config.forceInwardsAtMaxDistanceEnd;
+        minimumDotProductMatchForTurn = config.minimumDotProductMatchForTurn;
+        forwardSpeed = config.forwardSpeed;
+        flapSpeed = config.flapSpeed;
+        upBounceSize = config.upBounceSize;
+        forwardBounceSize = config.forwardBounceSize;
+        forwardBounceOffset = config.forwardBounceOffset;
+        alwaysCenterForce = config.alwaysCenterForce;
+        noiseSize = config.noiseSize;
+        noiseSpeed = config.noiseSpeed;
+        noiseForce = config.noiseForce;
+        maxForwardDistance = config.maxForwardDistance;
+        maxDownDistance = config.maxDownDistance;
+        groundTurnForce = config.groundTurnForce;
+        forwardTurnForce = config.forwardTurnForce;
+        distanceForStartTurn = config.distanceForStartTurn;
+        distanceForHardTurn = config.distanceForHardTurn;
+        distanceToStartRun = config.distanceToStartRun;
+        distanceToFullRun = config.distanceToFullRun;
+
+    }
+
+
+    public void SetHeight()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, -transform.up, out hit, 100000))
+        {
+            float distance = hit.distance;
+
+            transform.position = hit.point + transform.up * Mathf.Lerp(minAltitude, maxAltitude, Random.value);
+            position = transform.position;
+        }
     }
 }
