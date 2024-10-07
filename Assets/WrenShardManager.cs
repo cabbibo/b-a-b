@@ -47,6 +47,7 @@ public class WrenShardManager : MonoBehaviour
     public void DoSkim(Vector3 location)
     {
 
+        print(location);
 
         int id = Random.Range(-1, 7);
         if (God.islandData != null)
@@ -70,10 +71,11 @@ public class WrenShardManager : MonoBehaviour
         SpendExtraShards();
     }
 
-    public void DoReverse()
+    public void DoReverse(Vector3 delta)
     {
 
         SpendShards((int)reverseNumLost);
+        PhaseShift(delta);
 
     }
 
@@ -173,6 +175,7 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShard()
     {
+        print("collected1");
         numShards++;
         collectType = -1;
         collectPosition = wren.transform.position;
@@ -182,6 +185,7 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShard(float type)
     {
+        print("collected2");
         numShards++;
         collectType = type;
         collectPosition = wren.transform.position;
@@ -190,7 +194,7 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShards(int amount, float type)
     {
-        //print("collected");
+        print("collected3");
         numShards += amount;
         collectType = type;
         collectPosition = wren.transform.position;
@@ -199,7 +203,8 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShards(int amount, float type, Vector3 position)
     {
-        //        print("collected");
+        //       print("collected custom");
+        //  print(position);
         numShards += amount;
         collectType = type;
         collectPosition = position;
@@ -275,6 +280,12 @@ public class WrenShardManager : MonoBehaviour
 
     }
 
+    public ShardTrail shardTrail;
+
+    public void PhaseShift(Vector3 position)
+    {
+        shardTrail.PhaseShift(position);
+    }
 
 
     public void SpendAllShards()

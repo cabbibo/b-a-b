@@ -28584,6 +28584,7 @@ MonoBehaviour:
   bodyPercentage: 0
   shardPercentage: 0
   shardTrailPercentage: 0
+  shardTrail: {fileID: 0}
 --- !u!1 &9160943688594033059
 GameObject:
   m_ObjectHideFlags: 0

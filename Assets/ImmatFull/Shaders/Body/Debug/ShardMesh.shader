@@ -33,7 +33,20 @@ Shader "IMMAT/Debug/ShardMesh" {
         float3 nor;
         float2 uv;
       };
-      
+
+   /*   
+struct Vert{
+    float3 pos;
+    float3 vel;
+    float3 nor;
+    float3 ogPos;
+    float life;
+    float type;
+    float2 debug;
+};*/
+
+    
+
       
       StructuredBuffer<Vert> _ShardBuffer;
       StructuredBuffer<MeshVert> _VertBuffer;
@@ -56,6 +69,7 @@ Shader "IMMAT/Debug/ShardMesh" {
         float2 uv2       : TEXCOORD6;
         float id        : TEXCOORD5;
         float life        : TEXCOORD7;
+        float type : TEXCOORD8;
       };
 
 
@@ -90,26 +104,30 @@ Shader "IMMAT/Debug/ShardMesh" {
 
           MeshVert vert = _VertBuffer[ _TriBuffer[ alternate] ];
 
+          float type = v.uv.y;
+          float life = v.uv.x;
+
 
           
           float4x4 t = translationMatrix(v.pos);
-          float4x4 r = look_at_matrix(normalize(v.vel) ,normalize(cross(normalize(v.vel),float3(0,0,1))));
+          float4x4 r = look_at_matrix(normalize(v.vel) ,normalize(cross(normalize(v.vel),float3(1,0,0))));
           float4x4 s = scaleMatrix(1);
 
           float4x4 rts =mul(t,mul(r,s));
 
-          float3 fwd = normalize(v.vel);
+          float3 fwd = normalize(v.vel *1000);
           float3 up = normalize(cross(fwd, float3(1,0,0)));
           float3 right = normalize(cross(up,fwd));
           // o.worldPos =   v.pos + vert.pos * _Size;//
-          o.worldPos = mul( rts, float4(vert.pos * _Size, 1)).xyz;
-          o.nor = vert.nor;// normalize(mul( rts, float4(vert.nor, 0)).xyz);
+          o.worldPos = mul( rts, float4(vert.pos.xzy * _Size * pow( life ,.5), 1)).xyz;
+          o.nor =  normalize(mul( rts, float4(vert.nor.xzy, 0)).xyz);
           o.eye = _WorldSpaceCameraPos - o.worldPos;
-          o.nor =v.nor;
+        //  o.nor =;
           o.uv = v.uv;
           o.uv2 = uv;
           o.id = base;
-          o.life = v.debug.y;
+          o.life = life;
+          o.type = type;
           o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
 
         }
@@ -130,15 +148,15 @@ Shader "IMMAT/Debug/ShardMesh" {
         //if( length( v.uv2 -.5) > .5 ){ discard;}
 
 
-
+          //col = v.normal * .5  + .5;
         
         float3 col = float4(_Color.xyz,1);// v.debug.x * 10;
 
         //color.xyz = hsv(v.life / _LifeDivider,1,1).xyz;
 
-        col = v.nor * .5  + .5;
+        col = v.nor;// * .5  + .5;
 
-        col = flatNormal;
+       // col = flatNormal;
         return float4(col,1 );
       }
 
