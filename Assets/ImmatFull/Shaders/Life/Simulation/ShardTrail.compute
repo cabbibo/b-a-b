@@ -5,8 +5,9 @@ struct Vert{
     float3 vel;
     float3 nor;
     float3 ogPos;
-    float3 axis;
     float life;
+    float type;
+    float2 debug;
 };
 
 
@@ -116,7 +117,38 @@ float _CollectionType;
 
 float3 _WrenVel;
 float3 _WrenPos;
+    
 
+float3 VecToRay( float3 ro , float3 rd, float3 pos ){
+  
+  float3 p2 = ro - rd * 200;
+  float3 pa = pos - ro;
+  float3 ba = ro - p2;
+  float h =  dot(pa,ba)/dot(ba,ba);
+  float3 pOnLine = h * rd* 200 +ro;
+
+  float3 inLine = pos - pOnLine;
+
+  return  inLine;//normalize(inLine) * force *  (1 - clamp( length(inLine) / radius , 0 , 1));
+}
+
+
+float3 CurlAroundBirdForce( float3 pos , float3 wpos , float3 wvel){
+
+      float3 outVec = VecToRay( wpos , normalize(wvel) , pos);
+
+      float3 f = -normalize(outVec) * 30.3;
+      f += 1.05* length(wvel)* normalize(cross(wvel , outVec))  / length(outVec);//saturate((1-vert.debug)* 10) *1000 * normalize(delta) / length(delta);
+
+      return f * pow(length( wvel)  * .05,2) / (.4 + length(wpos - pos));
+    
+
+
+    
+}
+
+float _Time;
+float3 _PhaseShiftDelta;
 
 #define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
@@ -129,6 +161,50 @@ void Flow(uint3 id : SV_DispatchThreadID) {
     int trailShardID = _NumShards - _TotalShardsInBody;
     int tTrailShardID = _TmpNumShards - _TotalShardsInBody;
 
+            float3 offset = (hash(float(pID) * 0.1)-.5)* float3(1,0,0) *2
+            + (hash(float(pID) * 11)-.5) * float3(0,1,0) *2
+            + (hash(float(pID) * 3)-.5) * float3(0,0,1) *2;
+                    offset = (normalize(offset)) * 1;
+
+                    
+        float3 pos = vert.pos;
+
+        float3 force = 0;
+        
+        if( pID > trailShardID){
+    // this means we lost shards
+    if( tTrailShardID > trailShardID){
+
+
+
+            float3 upPos;
+            float3 doPos;
+
+            float3 cubicPos = cubicFromValue( float(pID)/float(_VertBuffer_COUNT), upPos , doPos );
+
+            vert.pos = _WrenPos+ _WrenVel*0 + offset * length( _WrenVel ) * .01;
+            vert.vel = _WrenVel * .05 + offset * length( _WrenVel ) * .005;
+
+            vert.vel += curlNoise( vert.pos * .1 + float(pID) * .001 )* .1;
+
+
+            
+
+          //  vert.vel = -_WrenVel * 10.3;
+
+            //force += CurlAroundBirdForce( vert.pos , _WrenPos , _WrenVel );
+
+    // just a normal floating shard 
+    }else{
+
+        vert.life -= .0003 * ( hash(2*float(pID)) * 2 + 2);
+        vert.life = max( vert.life , 0 );// slowly fade out!
+
+        force += CurlAroundBirdForce( vert.pos , _WrenPos , _WrenVel );
+    }
+
+}
+
     if( pID < trailShardID ){
 
 
@@ -140,29 +216,33 @@ void Flow(uint3 id : SV_DispatchThreadID) {
 
         float3 cubicPos = cubicFromValue( float(pID)/float(_VertBuffer_COUNT), upPos , doPos );
 
-        if( pID > tTrailShardID){
+        if( pID >= tTrailShardID){
 
-            float3 offset = hash(float(pID) * 0.1) * float3(1,0,0) *2
-            + hash(float(pID) * 11) * float3(0,1,0) *2
-            + hash(float(pID) * 3) * float3(0,0,1) *2;
+
             
 
-            offset = (normalize(offset) -.5) * 2;
+    
+           // offset = 0;
             vert.pos = _CollectionPosition + offset;
 
             vert.vel  = offset * 4 * .01 + _WrenVel * .03;
             
-            vert.life = _CollectionType;
+            vert.type = _CollectionType;
+            
         }
 
-        if( _Reset > .5 ){
+        if( _Reset > .5 && _Reset < 1.5 ){
 
             vert.pos = _WrenPos;
         }
 
+        if( _Reset > 1.5 && _Reset < 2.5 ){
 
-        float3 force = 0;
-        float3 pos = vert.pos;
+            vert.pos -= _PhaseShiftDelta;
+        
+        }
+
+vert.life = 1;
 
         float3 diff = cubicPos - pos;
 
@@ -181,12 +261,20 @@ void Flow(uint3 id : SV_DispatchThreadID) {
 
         
 
-        force += curlNoise(pos * .1 + float(pID) * .001 )* 1;
+        //force += curlNoise(pos * .1 + float(pID) * .001 )* 1;
 
         if( length( vert.pos - _Chest ) > 3){
             //vert.pos = _Chest + hash(float(pID) * 0.1) * float3(0,1,0);
             
         }
+
+    }
+
+    
+        force += curlNoise(pos * .1 + float3(0,_Time * .3,0)  )* 1;
+
+
+        
 
         
         vert.vel += force * .001;
@@ -198,7 +286,7 @@ void Flow(uint3 id : SV_DispatchThreadID) {
 
         //      vert.pos = cubicPos;
 
-    }
+    
 
     
     

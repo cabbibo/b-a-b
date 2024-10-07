@@ -8903,7 +8903,7 @@ MonoBehaviour:
   wren: {fileID: 6951865465235407638}
   particleForces: {fileID: 373790970968463532}
   wateringParticles: {fileID: 4058797380833635232}
-  collectingGravity: 1
+  collectingGravity: 11
   autoCollect: 1
   maxWaterAmount: 100
   currentWaterAmount: 0
@@ -25712,6 +25712,7 @@ MonoBehaviour:
   bodyPercentage: 0.91925746
   shardPercentage: 0.411
   shardTrailPercentage: -0.0652921
+  shardTrail: {fileID: 8095474312806863968}
 --- !u!114 &2035757486640604507
 MonoBehaviour:
   m_ObjectHideFlags: 0

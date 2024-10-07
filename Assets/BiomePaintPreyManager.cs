@@ -18,7 +18,7 @@ public class BiomePaintPreyManager : PreyManager
 
         if (value != 0)
         {
-            print(value);
+            // print(value);
 
             if (Time.time - lastSpawnTime > spawnTime)
             {

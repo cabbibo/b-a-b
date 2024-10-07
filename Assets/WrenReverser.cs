@@ -27,9 +27,10 @@ public class WrenReverser : MonoBehaviour
             previousPositions.RemoveAt(0);
             //previousPositions.Clear();
             // previousPositions.Insert(0, previousPosition);
+
+            wren.shards.DoReverse(wren.transform.position - previousPosition);
             wren.PhaseShift(previousPosition);
             wren.physics.vel = Vector3.zero;
-            wren.shards.DoReverse();
             lastPosition = previousPosition;
         }
 
