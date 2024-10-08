@@ -115,11 +115,17 @@ struct Vert{
 
           float4x4 rts =mul(t,mul(r,s));
 
-          float3 fwd = normalize(v.vel *1000);
+
+          float3 fwd = float3(0,1,0);
+          if( length(v.vel) > .001 ){
+            fwd = normalize(v.vel);
+          }
           float3 up = normalize(cross(fwd, float3(1,0,0)));
           float3 right = normalize(cross(up,fwd));
           // o.worldPos =   v.pos + vert.pos * _Size;//
-          o.worldPos = mul( rts, float4(vert.pos.xzy * _Size * pow( life ,.5), 1)).xyz;
+
+          //
+          o.worldPos = mul( rts, float4(vert.pos.xzy * _Size* pow( life ,.5) , 1)).xyz;
           o.nor =  normalize(mul( rts, float4(vert.nor.xzy, 0)).xyz);
           o.eye = _WorldSpaceCameraPos - o.worldPos;
         //  o.nor =;

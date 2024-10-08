@@ -205,7 +205,7 @@ public class BadBoy : MonoBehaviour
         trailsAte[id] = true;
         God.audio.Play(God.sounds.eatClip, Random.Range(.5f, 1));
         God.particleSystems.Emit(God.particleSystems.eatParticleSystem, trailTransforms[id].position, 100);
-        God.wren.shards.CollectShards(numShardsOnEat, type);
+        God.wren.shards.CollectShards(numShardsOnEat, type, trailTransforms[id].position);
 
 
         bool allAte = true;
@@ -251,7 +251,7 @@ public class BadBoy : MonoBehaviour
 
         God.audio.Play(God.sounds.largeSuccessSound, 1);
         God.particleSystems.Emit(God.particleSystems.largeSuccessParticleSystem, transform.position, 1000);
-        God.wren.shards.CollectShards(numShardsOnAllAte, type);
+        God.wren.shards.CollectShards(numShardsOnAllAte, type, transform.position);
 
 
         manager.OnBadBoyComplete(this);
