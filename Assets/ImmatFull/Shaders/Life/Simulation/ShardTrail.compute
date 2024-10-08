@@ -274,12 +274,19 @@ vert.life = 1;
         force += curlNoise(pos * .1 + float3(0,_Time * .3,0)  )* 1;
 
 
-        
+        if( isnan(force.x) || isnan(force.y) || isnan(force.z) ){
+            force = float3(0,0,0);
+        }
 
         
         vert.vel += force * .001;
         vert.pos += vert.vel;
         vert.vel *= .95;
+
+
+       // vert.pos = _WrenPos + offset * .1;
+      //  vert.vel = float3(0,1,0);
+
 
 
         //        vert.pos = getTrailPos( pID % _TrailBuffer_COUNT );

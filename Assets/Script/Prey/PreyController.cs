@@ -103,7 +103,8 @@ public class PreyController : MonoBehaviour
     // Turn Away fRom the normal
 
 
-
+    public int numCrystals;
+    public float crystalType;
 
     // DATA 
     [Header("Data")]
@@ -483,6 +484,8 @@ public class PreyController : MonoBehaviour
         distanceForHardTurn = config.distanceForHardTurn;
         distanceToStartRun = config.distanceToStartRun;
         distanceToFullRun = config.distanceToFullRun;
+        numCrystals = config.numCrystals;
+        crystalType = config.crystalType;
 
     }
 

@@ -304,7 +304,9 @@ public class PreyManager : MonoBehaviour
         God.audio.Play(gotAteClip);
 
         God.wren.stats.FullnessAdd(preyFullnessIncrease);
-        God.wren.stats.StaminaAdd(preyStaminaIncrease);
+
+        God.wren.shards.CollectShards(b.numCrystals, b.crystalType, b.transform.position);
+        // God.wren.stats.StaminaAdd(preyStaminaIncrease);
 
     }
 

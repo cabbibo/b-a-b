@@ -87,5 +87,8 @@ public class PreyConfigSO : ScriptableObject
     public float distanceToStartRun = 10;
     public float distanceToFullRun = 5;
 
+    public int numCrystals = 50;
+    public float crystalType = .5f;
+
 
 }
