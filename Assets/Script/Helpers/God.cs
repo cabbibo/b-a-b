@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 
 namespace WrenUtils
@@ -51,6 +52,8 @@ namespace WrenUtils
 
 
 
+
+
         public ParticleSystems _particleSystems;
         public FeedbackSystems _feedbackSystems;
 
@@ -73,6 +76,12 @@ namespace WrenUtils
         public Texture fullColorMap;
 
         public BiomeController _biomeController;
+
+        public OverallCameraManager _cameraManager;
+
+        public TextManager _text;
+
+
 
 
 
@@ -211,6 +220,14 @@ namespace WrenUtils
             get
             {
                 return instance._camera;
+            }
+        }
+
+        public static OverallCameraManager cameraManager
+        {
+            get
+            {
+                return instance._cameraManager;
             }
         }
 
@@ -365,6 +382,15 @@ namespace WrenUtils
             get
             {
                 return instance._biomeController;
+            }
+        }
+
+
+        public static TextManager text
+        {
+            get
+            {
+                return instance._text;
             }
         }
 

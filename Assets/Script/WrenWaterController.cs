@@ -52,7 +52,6 @@ public class WrenWaterController : MonoBehaviour
     public void TriggerEnter(Collider c)
     {
 
-        print("HELLLO");
         if (c.tag == "WaterArea")
         {
             inWaterArea = true;
@@ -69,7 +68,6 @@ public class WrenWaterController : MonoBehaviour
     public void TriggerExit(Collider c)
     {
 
-        print("HELLLO");
         if (c.tag == "WaterArea")
         {
             inWaterArea = false;

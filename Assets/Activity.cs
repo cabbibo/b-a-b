@@ -4,6 +4,9 @@ using UnityEngine;
 using WrenUtils;
 using UnityEngine.Events;
 
+// Activities are small things to do across that map
+// They can be redone over and over again, and you get crystals for doing them
+// Each one has a trigger that you fly through to enter it
 public class Activity : MonoBehaviour
 {
 
@@ -13,210 +16,199 @@ public class Activity : MonoBehaviour
     public bool started;
     public bool completed;
 
+    public string activityName;
 
-    public UnityEvent onActivityEnter;
-    public UnityEvent onActivityExit;
+    public Slide[] discoverSlides;
+    public Slide[] startSlides;
+    public Slide[] completeSlides;
 
-    public UnityEvent onDiscoverEvent;
-    public UnityEvent onStartEvent;
-    public UnityEvent onCompleteEvent;
-    public Helpers.FloatEvent onAddToCompletionEvent;
+    public Slide currentSlide;
 
+    public bool inSlide;
 
-    public float radiusToDiscover = 10;
-    public float radiusToStart = 10;
-
-    public float amountComplete;
+    public Transform wrenPosition;
 
 
-    public PlayCutScene discoveredAnimation;
-    public PlayCutScene startedAnimation;
-    public PlayCutScene completedAnimation;
-
-    public List<GameObject> localObjects;
-
-
-    public void AddToCompletion(float amount)
+    public void Update()
     {
-        amountComplete += amount;
-
-        if (amountComplete >= 1)
+        if (inSlide)
         {
-
-            print("Quest complete");
-            amountComplete = 1;
-            CompleteActivity();
-        }
-    }
-
-    public void SetCompletion(float amount)
-    {
-        amountComplete = amount;
-        if (amountComplete >= 1)
-        {
-            amountComplete = 1;
-            CompleteActivity();
-        }
-
-    }
-
-
-
-    public void DiscoverActivity()
-    {
-
-
-        if (discovered == false)
-        {
-            discovered = true;
-            God.state.OnActivityDiscovered(id);
-            if (discoveredAnimation)
+            if (God.input.x)
             {
-                discoveredAnimation.Play();
+                NextSlide();
             }
         }
 
     }
-    public void CompleteActivity()
+
+    public bool insideActivity;
+    // Different Cameras for explaining the task
+    // public Slide[] slides;
+
+    public float releaseTime;
+
+    public void OnTriggerEnter(Collider c)
     {
+        //print("triggerEnter");
+        //print(c.gameObject.name);
 
-        if (completed == false)
+        if (!God.IsOurWren(c))
         {
-            completed = true;
-            God.state.OnActivityCompleted(id);
-            if (completedAnimation != null)
-            {
-                completedAnimation.Play();
-            }
+            return;
         }
-        else
-        {
-            print("already completed");
 
+        if (insideActivity)
+        {
+            return;
+        }
+        print("triggerEnter2");
+        print(c.gameObject.name);
+        print(Time.time - releaseTime);
+
+        // Cant accidently retrigger immediately
+        if (Time.time - releaseTime > 3)
+        {
+
+            if (!started && !completed)
+            {
+                insideActivity = true;
+                DoDiscover();
+            }
         }
 
     }
 
-    public void StartQuest()
+
+
+
+    public void OnTriggerExit(Collider c)
     {
+        //print("triggerExit");
+        //print(c.gameObject.name);
 
-        if (started == false)
+        if (!God.IsOurWren(c))
         {
-            started = true;
-            God.state.OnActivityStarted(id);
-            if (startedAnimation != null)
-            {
-                startedAnimation.Play();
-            }
-        }
-        else
-        {
-            print("already started");
-        }
-    }
-
-
-    public void Initialize()
-    {
-
-
-        discovered = God.state.activitiesDiscovered[id];
-        started = God.state.activitiesStarted[id];
-        completed = God.state.activitiesCompleted[id];
-
-
-
-
-        if (discoveredAnimation)
-        {
-            if (!discovered)
-            {
-                discoveredAnimation.SetStartValues();
-            }
-            else
-            {
-                discoveredAnimation.SetEndValues();
-            }
-
+            return;
         }
 
 
-        if (startedAnimation)
-        {
-            if (!started)
-            {
-                startedAnimation.SetStartValues();
-            }
-            else
-            {
-                startedAnimation.SetEndValues();
-            }
-        }
+        print("triggerExit2");
+        print(c.gameObject.name);
 
-        if (completedAnimation)
-        {
-            if (!completed)
-            {
-                completedAnimation.SetStartValues();
-            }
-            else
-            {
-                completedAnimation.SetEndValues();
-            }
-        }
-
-
-        // print("HELLO I AM ENABLED");
-        //print(gameObject.name);
-        //print(discovered);
-        //print(started);
-        //print(completed);
+        insideActivity = false;
+        /*   if (discovered && !started && !completed)
+           {
+               discovered = false;
+           }*/
 
 
     }
 
-    public void OnEnterActivity()
+    public void DoDiscover()
     {
 
-        //print("HELLO I AM ENTERED");
+        print("DO DISCOVER");
 
-        for (int i = 0; i < localObjects.Count; i++)
+        discovered = true;
+
+        SetSlide(discoverSlides[0]);
+
+        God.wren.Crash(wrenPosition.position);
+
+        God.wren.physics.rb.isKinematic = true;
+        //  God.wren.physics.rb.velocity = Vector3.zero;
+        God.wren.physics.rb.position = wrenPosition.position;
+        God.wren.physics.rb.rotation = wrenPosition.rotation;
+
+    }
+
+    public void SetSlide(Slide s)
+    {
+        currentSlide = s;
+        inSlide = true;
+        s.Set();
+    }
+
+    public void EndSlide(Slide s)
+    {
+        inSlide = false;
+        s.Release();
+        Release();
+    }
+
+    public void Release()
+    {
+        print("RELEASE");
+
+        releaseTime = Time.time;
+        God.wren.physics.rb.isKinematic = false;
+
+    }
+
+
+
+    public void NextSlide()
+    {
+        if (currentSlide == null)
         {
-            localObjects[i].SetActive(true);
+            Debug.LogError("No current slide");
+            return;
         }
 
-        if (!discovered)
+        for (int i = 0; i < discoverSlides.Length; i++)
         {
-            DiscoverActivity();
+            if (discoverSlides[i] == currentSlide)
+            {
+                if (i < discoverSlides.Length - 1)
+                {
+                    SetSlide(discoverSlides[i + 1]);
+                    return;
+                }
+                else
+                {
+                    EndSlide(currentSlide);
+                }
+            }
         }
 
 
-    }
-
-    public void OnExitActivity()
-    {
-        //print("HELLO I AM EXITED");
-
-        for (int i = 0; i < localObjects.Count; i++)
+        for (int i = 0; i < startSlides.Length; i++)
         {
-            localObjects[i].SetActive(false);
+            if (startSlides[i] == currentSlide)
+            {
+                if (i < startSlides.Length - 1)
+                {
+                    SetSlide(startSlides[i + 1]);
+                    return;
+                }
+                else
+                {
+                    EndSlide(currentSlide);
+                }
+            }
+        }
+
+        for (int i = 0; i < completeSlides.Length; i++)
+        {
+            if (completeSlides[i] == currentSlide)
+            {
+                if (i < completeSlides.Length - 1)
+                {
+                    SetSlide(completeSlides[i + 1]);
+                    return;
+                }
+                else
+                {
+                    EndSlide(currentSlide);
+                }
+            }
         }
 
     }
 
-    public void OnCompletedAnimationFinished()
-    {
-        completed = true;
-        God.state.OnActivityCompleted(id);
-    }
 
-    public void Reset()
-    {
-        discovered = false;
-        started = false;
-        completed = false;
-        God.state.ResetActivity(id);
 
-    }
+
+
 
 }

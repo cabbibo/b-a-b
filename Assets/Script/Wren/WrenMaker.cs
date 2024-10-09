@@ -159,7 +159,7 @@ using System;
 
                 w.SetLocal( connected );
                 
-                Camera.main.GetComponent<LerpTo>().target = w.cameraWork.camTarget;
+                God.lerpTo.target = w.cameraWork.camTarget;
 
                 localWren = w;
 

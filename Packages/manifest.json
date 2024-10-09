@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.normalvr.normcore": "2.11.1",
+    "com.normalvr.normcore": "2.12.0",
     "com.nullkal.unisense": "https://github.com/nullkal/UniSense.git",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.2d.tilemap": "1.0.0",
