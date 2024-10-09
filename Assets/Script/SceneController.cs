@@ -239,7 +239,7 @@ public class SceneController : MonoBehaviour
         God.state.SetCurrentScene(newScene);
 
 
-        LerpTo lt = Camera.main.GetComponent<LerpTo>();
+        LerpTo lt = God.cameraManager.lerpManager;
         lt.enabled = true;
 
 

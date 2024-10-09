@@ -67,9 +67,13 @@ public class PlayCutScene : MonoBehaviour
             director.playableAsset = timeline;
         }
 
-        lerpTo = Camera.main.gameObject.GetComponent<LerpTo>();
+        lerpTo = God.cameraManager.lerpManager;
         glitch = Camera.main.gameObject.GetComponent<GlitchHit>();
 
+
+        print(lerpTo);
+        print(God.cameraManager);
+        //print(God.cameraManager.lerpTo);
         // print(lerpTo);
 
         //        print("AWAKE");

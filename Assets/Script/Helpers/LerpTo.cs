@@ -19,6 +19,9 @@ public class LerpTo : MonoBehaviour
 
     public Transform resetTarget;
 
+
+    public float weight;
+
     // Start is called before the first frame update
     void OnEnable()
     {

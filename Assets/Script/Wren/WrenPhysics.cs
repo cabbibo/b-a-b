@@ -629,7 +629,10 @@ public class WrenPhysics : MonoBehaviour
 
         speed = vel.magnitude;
 
-        rb.velocity = vel;
+        if (rb.isKinematic == false)
+        {
+            rb.velocity = vel;
+        }
 
         if (vel.magnitude == 0)
         {
@@ -1747,8 +1750,11 @@ public class WrenPhysics : MonoBehaviour
                 rb.AddTorque(v1 * rotateTowardsTargetOnGround);
             }
 
-            rb.velocity *= groundDampening;
 
+            if (rb.isKinematic == false)
+            {
+                rb.velocity *= groundDampening;
+            }
 
             //print( Vector3.Dot(groundDirection.normalized,Vector3.up));
 
