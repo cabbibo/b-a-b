@@ -12,21 +12,58 @@ public class Activity : MonoBehaviour
 
     public int id;
 
+
+    public float amountToComplete = 1;
+    public float currentAmountComplete = 0;
+    public float percentangeComplete = 0;
+
     public bool discovered;
     public bool started;
     public bool completed;
+
+
+
+    public int numCrystalsAward;
+    public float crystalType;
+
+    public Transform mainPointOfInterest;
 
     public string activityName;
 
     public Slide[] discoverSlides;
     public Slide[] startSlides;
+    public Slide[] startAgainSlides;
     public Slide[] completeSlides;
+
+    public Slide[] redoSlides;
 
     public Slide currentSlide;
 
     public bool inSlide;
 
     public Transform wrenPosition;
+
+    public float AmountComplete;
+
+    public float slideChangeTime;
+
+
+
+
+    public void AddToComplete(float v)
+    {
+        currentAmountComplete += v;
+        percentangeComplete = currentAmountComplete / amountToComplete;
+        if (currentAmountComplete >= amountToComplete)
+        {
+            OnComplete();
+        }
+    }
+
+
+
+
+
 
 
     public void Update()
@@ -35,7 +72,16 @@ public class Activity : MonoBehaviour
         {
             if (God.input.x)
             {
-                NextSlide();
+                print("NEXT SLIDE");
+                if (Time.time - slideChangeTime > .3f)
+                {
+                    NextSlide();
+                }
+            }
+
+            if (God.input.circle)
+            {
+                EndSlide(currentSlide);
             }
         }
 
@@ -47,62 +93,41 @@ public class Activity : MonoBehaviour
 
     public float releaseTime;
 
-    public void OnTriggerEnter(Collider c)
+
+    public void OnActivityInfoAreaEntered()
     {
-        //print("triggerEnter");
-        //print(c.gameObject.name);
-
-        if (!God.IsOurWren(c))
+        if (!insideActivity) // need to be able to jump into the slides and not reactivate!
         {
-            return;
-        }
-
-        if (insideActivity)
-        {
-            return;
-        }
-        print("triggerEnter2");
-        print(c.gameObject.name);
-        print(Time.time - releaseTime);
-
-        // Cant accidently retrigger immediately
-        if (Time.time - releaseTime > 3)
-        {
-
+            insideActivity = true;
             if (!started && !completed)
             {
-                insideActivity = true;
                 DoDiscover();
+            }
+
+            if (started && !completed)
+            {
+                OnStartAgain();
+            }
+
+            if (completed)
+            {
+                OnRedo();
             }
         }
 
+
     }
 
-
-
-
-    public void OnTriggerExit(Collider c)
+    public void OnActivityInfoAreaExited()
     {
-        //print("triggerExit");
-        //print(c.gameObject.name);
-
-        if (!God.IsOurWren(c))
-        {
-            return;
-        }
-
-
-        print("triggerExit2");
-        print(c.gameObject.name);
 
         insideActivity = false;
-        /*   if (discovered && !started && !completed)
-           {
-               discovered = false;
-           }*/
-
-
     }
+
+
+
+
+
 
     public void DoDiscover()
     {
@@ -111,28 +136,36 @@ public class Activity : MonoBehaviour
 
         discovered = true;
 
+
+
         SetSlide(discoverSlides[0]);
 
-        God.wren.Crash(wrenPosition.position);
-
-        God.wren.physics.rb.isKinematic = true;
-        //  God.wren.physics.rb.velocity = Vector3.zero;
-        God.wren.physics.rb.position = wrenPosition.position;
-        God.wren.physics.rb.rotation = wrenPosition.rotation;
 
     }
 
     public void SetSlide(Slide s)
     {
+
+        God.wren.Crash(wrenPosition.position);
+        God.wren.physics.rb.isKinematic = true;
+        God.wren.physics.rb.position = wrenPosition.position;
+        God.wren.physics.rb.rotation = wrenPosition.rotation;
+        God.wren.state.canTakeOff = false;
+
+        slideChangeTime = Time.time;
         currentSlide = s;
         inSlide = true;
         s.Set();
+
+
+
     }
 
     public void EndSlide(Slide s)
     {
         inSlide = false;
         s.Release();
+        God.wren.state.canTakeOff = true;
         Release();
     }
 
@@ -147,8 +180,63 @@ public class Activity : MonoBehaviour
 
 
 
+    public void Reset()
+    {
+        currentAmountComplete = 0;
+        percentangeComplete = 0;
+    }
+
+    public void DiscoverEnd()
+    {
+        SetSlide(startSlides[0]);
+    }
+
+    public void StartEnd()
+    {
+
+        started = true;
+        EndSlide(currentSlide);
+    }
+
+
+    public void OnComplete()
+    {
+        insideActivity = true;
+        SetSlide(completeSlides[0]);
+    }
+
+    public void OnCompleteEnd()
+    {
+        GiveReward();
+        completed = true;
+        EndSlide(currentSlide);
+    }
+
+    public void GiveReward()
+    {
+        God.wren.shards.CollectShards(numCrystalsAward, crystalType, mainPointOfInterest.position);
+    }
+
+
+    public void OnStartAgain()
+    {
+        SetSlide(startAgainSlides[0]);
+    }
+
+
+    public void OnRedo()
+    {
+        Reset();
+        completed = false;// reshow the information!
+        SetSlide(redoSlides[0]);
+    }
+
+
+
     public void NextSlide()
     {
+
+        slideChangeTime = Time.time;
         if (currentSlide == null)
         {
             Debug.LogError("No current slide");
@@ -166,7 +254,8 @@ public class Activity : MonoBehaviour
                 }
                 else
                 {
-                    EndSlide(currentSlide);
+                    DiscoverEnd();
+                    //EndSlide(currentSlide);
                 }
             }
         }
@@ -183,10 +272,30 @@ public class Activity : MonoBehaviour
                 }
                 else
                 {
-                    EndSlide(currentSlide);
+                    StartEnd();
+                    //EndSlide(currentSlide);
                 }
             }
         }
+
+
+        for (int i = 0; i < startAgainSlides.Length; i++)
+        {
+            if (startAgainSlides[i] == currentSlide)
+            {
+                if (i < startAgainSlides.Length - 1)
+                {
+                    SetSlide(startAgainSlides[i + 1]);
+                    return;
+                }
+                else
+                {
+                    StartEnd();
+                    //EndSlide(currentSlide);
+                }
+            }
+        }
+
 
         for (int i = 0; i < completeSlides.Length; i++)
         {
@@ -199,7 +308,26 @@ public class Activity : MonoBehaviour
                 }
                 else
                 {
-                    EndSlide(currentSlide);
+
+                    OnCompleteEnd();
+                }
+            }
+        }
+
+
+        for (int i = 0; i < redoSlides.Length; i++)
+        {
+            if (redoSlides[i] == currentSlide)
+            {
+                if (i < redoSlides.Length - 1)
+                {
+                    SetSlide(redoSlides[i + 1]);
+                    return;
+                }
+                else
+                {
+
+                    StartEnd();
                 }
             }
         }
