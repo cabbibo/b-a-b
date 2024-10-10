@@ -13,6 +13,14 @@ public class TextManager : MonoBehaviour
 
     public Transform tmpTextTransform;
 
+    public void OnEnable()
+    {
+        SetLargeText("");
+        SetSmallText("");
+        SetInfoText("");
+
+    }
+
     public void SetLargeText(string text)
     {
         CalculateTextPosition(God.camera.transform, 1.5f);

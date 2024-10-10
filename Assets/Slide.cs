@@ -34,6 +34,7 @@ public class Slide : MonoBehaviour
 
         God.cameraManager.slideManager.SetSlide(this);
         God.text.SetInfoText(text, transform);
+        God.text.SetLargeText(" X : Continue || O : Exit", transform);
 
     }
 
@@ -41,6 +42,7 @@ public class Slide : MonoBehaviour
     {
         God.cameraManager.slideManager.ReleaseSlide();
         God.text.SetInfoText("");
+        God.text.SetLargeText("");
     }
 
 
