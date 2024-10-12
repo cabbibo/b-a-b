@@ -48,6 +48,9 @@ public class FullState : MonoBehaviour
 
     public Vector3 lastPosition;
 
+
+    public float totalTimeInGame;
+
     public void OnEnable()
     {
         //   print("full state enabled");
@@ -55,8 +58,20 @@ public class FullState : MonoBehaviour
     }
 
     public int framesBetweenSaves = 2000;
+
+    public void OnDestroy()
+    {
+        UpdateLastPosition();
+        UpdateState();
+
+
+    }
     public void Update()
     {
+
+        totalTimeInGame += Time.deltaTime;
+        PlayerPrefs.SetInt("_TotalSecondsInGame", (int)totalTimeInGame);
+
         if (Time.frameCount % framesBetweenSaves == framesBetweenSaves - 1)
         {
             UpdateLastPosition();
@@ -90,6 +105,8 @@ public class FullState : MonoBehaviour
         PlayerPrefs.SetInt("_CurrentScene", currentSceneID);
         PlayerPrefs.SetInt("_CurrentBiome", currentBiomeID);
         PlayerPrefs.SetInt("_CurrentQuest", currentQuestID);
+
+        PlayerPrefs.SetInt("_TotalSecondsInGame", (int)totalTimeInGame);
 
 
 
@@ -200,6 +217,7 @@ public class FullState : MonoBehaviour
 
 
 
+        totalTimeInGame = (float)PlayerPrefs.GetInt("_TotalSecondsInGame", 0);
 
 
 
@@ -236,6 +254,8 @@ public class FullState : MonoBehaviour
         activitiesDiscovered = new bool[numQuests];
         activitiesStarted = new bool[numQuests];
         activitiesCompleted = new bool[numQuests];
+
+        totalTimeInGame = 0;
 
 
 

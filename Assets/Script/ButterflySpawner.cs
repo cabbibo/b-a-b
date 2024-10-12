@@ -386,6 +386,9 @@ public class ButterflySpawner : MonoBehaviour
 
     public Helpers.FloatEvent OnEat;
 
+    public int crystalsPerBug = 100;
+    public float crystalType = .1f;
+
     public void GotAte(Butterfly b)
     {
         float d = length(b.transform.position - WrenUtils.God.wren.transform.position);
@@ -402,6 +405,7 @@ public class ButterflySpawner : MonoBehaviour
 
 
         WrenUtils.God.audio.Play(gotAteClips, 1, pitch);
+        WrenUtils.God.wren.shards.CollectShards(crystalsPerBug, crystalType, b.transform.position);
 
         if (destroyOnEat)
         {
