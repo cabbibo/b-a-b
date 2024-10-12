@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
+using UnityEngine.Events;
 
 
 // Has some text!
@@ -16,6 +17,10 @@ public class Slide : MonoBehaviour
 
 
     public bool orbit;
+    public bool canCancel;
+
+    public UnityEvent onSet;
+    public UnityEvent onRelease;
 
     // Start is called before the first frame update
     void Start()
@@ -34,7 +39,18 @@ public class Slide : MonoBehaviour
 
         God.cameraManager.slideManager.SetSlide(this);
         God.text.SetInfoText(text, transform);
-        God.text.SetLargeText(" X : Continue || O : Exit", transform);
+
+        if (canCancel)
+        {
+            God.text.SetLargeText(" X : Continue || O : Exit", transform);
+        }
+        else
+        {
+            God.text.SetLargeText(" X : Continue", transform);
+        }
+
+
+        onSet.Invoke();
 
     }
 
@@ -43,6 +59,7 @@ public class Slide : MonoBehaviour
         God.cameraManager.slideManager.ReleaseSlide();
         God.text.SetInfoText("");
         God.text.SetLargeText("");
+        onRelease.Invoke();
     }
 
 
