@@ -31,13 +31,25 @@ public class Activity : MonoBehaviour
     public bool completed;
 
 
+    public bool canStartMidActivityOnLoad = false;
+
 
     public int numCrystalsAward;
     public float crystalType;
 
 
     public bool timedActivity;
-    public bool failOnTimeUp;
+    public bool stopOnTimeUp;
+
+    public bool restartOnFailure;
+
+    public bool restartOnComplete;
+
+    public bool tieredActivity; // if we have multiple levels of completion
+
+    public int[] crystalRewards; // how many crystals you get for each tier of completion
+    public float[] tierValues; // how much you need to get to each tier of completion
+    public string[] tierCompleteText; // what you get for each tier of completion
 
     public float timeAllowedToCompleteActivity;
 
@@ -117,6 +129,15 @@ public class Activity : MonoBehaviour
     public float totalTimeAllowedToBeInActivityArea = 1000;
 
 
+    // Save them for the future!
+    public float bestTime = 10000000;
+    public float bestAmountComplete = 0;
+
+    public float timeToFinishActivity;
+
+
+
+
 
     public void OnEnable()
     {
@@ -164,9 +185,11 @@ public class Activity : MonoBehaviour
         // we are currently doing the activity!
         if (started && !completed && doingActivity)
         {
-            if (failOnTimeUp && Time.time - activityStartTime > timeAllowedToCompleteActivity)
+
+            if (stopOnTimeUp && Time.time - activityStartTime > timeAllowedToCompleteActivity)
             {
-                OnFailure();
+                timeToFinishActivity = Time.time - activityStartTime;
+                OnTimeUp();
             }
 
         }
@@ -185,7 +208,12 @@ public class Activity : MonoBehaviour
 
             if (God.input.circle)
             {
-                EndSlide(currentSlide);
+
+                // only cancel if the slide lets us
+                if (currentSlide.canCancel)
+                {
+                    EndSlide(currentSlide);
+                }
             }
         }
 
@@ -197,6 +225,95 @@ public class Activity : MonoBehaviour
 
 
 
+    // Do Time Up tiers 
+    public void OnTimeUp()
+    {
+
+
+        print("ON TIME UP");
+
+        // if its a timed activity, we use the amount complete to determine tier rewards
+        if (tieredActivity)
+        {
+
+            // we didnt get anything!
+            if (currentAmountComplete < tierValues[0])
+            {
+                OnFailure();
+                return;
+            }
+
+            // see if we got to a tier or not
+            for (int i = 0; i < tierValues.Length - 1; i++)
+            {
+
+                if (currentAmountComplete >= tierValues[i] && currentAmountComplete < tierValues[i + 1])
+                {
+
+                    DoAmountCompleteBasedTier(i);
+                    return;
+
+                }
+
+
+
+            }
+
+            if (currentAmountComplete >= tierValues[tierValues.Length - 1])
+            {
+                DoAmountCompleteBasedTier(tierValues.Length - 1);
+                return;
+            }
+
+
+        }
+        else
+        {
+            OnFailure();
+        }
+    }
+
+
+    public void DoAmountCompleteBasedTier(int tier)
+    {
+
+        print("Amount Complete Based Tier : " + tier);
+
+        // we got to this tier!
+        completeSlides[0].text = tierCompleteText[tier];
+        numCrystalsAward = crystalRewards[tier];
+
+
+        if (currentAmountComplete > bestAmountComplete)
+        {
+            bestAmountComplete = currentAmountComplete;
+            SaveState();
+        }
+
+        OnComplete();
+
+    }
+
+
+
+
+    public void DoTimeBasedTier(int tier)
+    {
+
+        print("Time Based Tier : " + tier);
+        // we got to this tier!
+        completeSlides[0].text = tierCompleteText[tier];
+        numCrystalsAward = crystalRewards[tier];
+
+        if (timeToFinishActivity < bestTime)
+        {
+            bestTime = timeToFinishActivity;
+            SaveState();
+        }
+
+        OnComplete();
+
+    }
 
     public void OnFailure()
     {
@@ -353,6 +470,7 @@ public class Activity : MonoBehaviour
 
         discovered = true;
         onDiscoverEvent.Invoke();
+        Reset();
 
         SaveState();
         SetSlide(discoverSlides[0]);
@@ -363,6 +481,7 @@ public class Activity : MonoBehaviour
     public void DiscoverEnd()
     {
         print("DISCOVER END");
+        Reset();
         DoDoingActivityStart(); // we chose to do the activity!
         SetSlide(startSlides[0]);
     }
@@ -373,6 +492,7 @@ public class Activity : MonoBehaviour
 
         started = true;
         doingActivity = true; // now we are actuallly doing the activity!
+        //currentAmountComplete = 0; // reset the amount complete
         activityStartTime = Time.time;
         onStartEvent.Invoke();
         SaveState();
@@ -385,17 +505,32 @@ public class Activity : MonoBehaviour
     {
         print("ON COMPLETE");
         insideActivityInfoArea = true;
+
         SetSlide(completeSlides[0]);
     }
 
     public void OnCompleteEnd()
     {
+
         print("ON COMPLETE END");
-        onCompleteEvent.Invoke();
-        completed = true;
-        timeCompleted = God.state.totalTimeInGame;
-        SaveState();
-        EndSlide(currentSlide);
+        if (restartOnComplete)
+        {
+            OnStartAgain();
+
+        }
+        else
+        {
+            print("ON COMPLETE END");
+            onCompleteEvent.Invoke();
+            completed = true;
+            timeCompleted = God.state.totalTimeInGame;
+            QuitActivity();// turn off the doing activity stuff
+            SaveState();
+            EndSlide(currentSlide);
+        }
+
+
+
 
 
     }
@@ -436,6 +571,17 @@ public class Activity : MonoBehaviour
         SetSlide(redoSlides[0]);
     }
 
+
+    // not going from discover -> start again, so need to call what we call on discover end
+    public void OnRedoEnd()
+    {
+
+
+        OnStartAgain();
+
+
+    }
+
     public void OnCompletedCantRedoStart()
     {
         print("ON COMPLETED CANT REDO START");
@@ -454,7 +600,16 @@ public class Activity : MonoBehaviour
     public void OnFailureEnd()
     {
         print("ON FAILURE END");
-        EndSlide(currentSlide);
+
+        if (restartOnFailure)
+        {
+            OnStartAgain();
+
+        }
+        else
+        {
+            EndSlide(currentSlide);
+        }
     }
 
 
@@ -532,7 +687,7 @@ public class Activity : MonoBehaviour
                 }
                 else
                 {
-                    StartEnd();
+                    StartEnd();// Dont want to start over here 
                     //EndSlide(currentSlide);
                 }
             }
@@ -569,7 +724,7 @@ public class Activity : MonoBehaviour
                 else
                 {
 
-                    StartEnd();
+                    OnRedoEnd();
                 }
             }
         }
@@ -621,6 +776,8 @@ public class Activity : MonoBehaviour
         PlayerPrefs.SetInt("Activity_" + fullName + "_Discovered", discovered ? 1 : 0);
         PlayerPrefs.SetInt("Activity_" + fullName + "_Started", started ? 1 : 0);
         PlayerPrefs.SetInt("Activity_" + fullName + "_Completed", completed ? 1 : 0);
+        PlayerPrefs.SetFloat("Activity_" + fullName + "_BestTime", bestTime);
+        PlayerPrefs.SetFloat("Activity_" + fullName + "_BestAmountComplete", bestAmountComplete);
 
 
     }
@@ -631,8 +788,23 @@ public class Activity : MonoBehaviour
         currentAmountComplete = PlayerPrefs.GetFloat("Activity_" + fullName + "_AmountComplete", 0);
         timeCompleted = PlayerPrefs.GetFloat("Activity_" + fullName + "_TimeCompleted", 0);
         discovered = PlayerPrefs.GetInt("Activity_" + fullName + "_Discovered", 0) == 1;
-        started = PlayerPrefs.GetInt("Activity_" + fullName + "_Started", 0) == 1;
+
+        // started should always be false here? we dont want to be starting mid activity, except for really big ones???? 
+        if (canStartMidActivityOnLoad)
+        {
+            started = PlayerPrefs.GetInt("Activity_" + fullName + "_Started", 0) == 1;
+        }
+        else
+        {
+            started = false;
+        }
         completed = PlayerPrefs.GetInt("Activity_" + fullName + "_Completed", 0) == 1;
+
+
+
+
+        bestTime = PlayerPrefs.GetFloat("Activity_" + fullName + "_BestTime", 10000000);
+        bestAmountComplete = PlayerPrefs.GetFloat("Activity_" + fullName + "_BestAmountComplete", 0);
 
 
     }
@@ -648,25 +820,71 @@ public class Activity : MonoBehaviour
             percentangeComplete = currentAmountComplete / amountToComplete;
             if (currentAmountComplete >= amountToComplete)
             {
-                if (timedActivity)
+
+                print("Amount over amount to complete");
+
+                timeToFinishActivity = Time.time - activityStartTime;
+
+
+                // if its a tiered activity, we use the time to determine tier rewards    
+                if (tieredActivity)
                 {
 
-                    // see if we finished it in time or not                    
-                    if (Time.time - activityStartTime > timeAllowedToCompleteActivity)
+                    print("Tiered");
+                    if (timeToFinishActivity > tierValues[0])
                     {
+                        print("Time over tier 0");
                         OnFailure();
                     }
                     else
                     {
-                        OnComplete();
+                        print("Time under tier 0");
+                        for (int i = 0; i < tierValues.Length - 1; i++)
+                        {
+
+                            print("Checking tier " + i);
+                            if (timeToFinishActivity > tierValues[i + 1] && timeToFinishActivity <= tierValues[i])
+                            {
+                                print("is tier " + i);
+                                DoTimeBasedTier(i);
+                            }
+                        }
+
+                        if (timeToFinishActivity < tierValues[tierValues.Length - 1])
+                        {
+                            print("is tier " + (tierValues.Length - 1));
+                            DoTimeBasedTier(tierValues.Length - 1);
+                        }
+
                     }
 
                 }
                 else
                 {
 
-                    OnComplete();
+                    if (timedActivity)
+                    {
+                        print("Timed");
+                        // see if we finished it in time or not                    
+                        if (timeToFinishActivity > timeAllowedToCompleteActivity)
+                        {
+                            OnFailure();
+                        }
+                        else
+                        {
+                            OnComplete();
+                        }
+
+
+                    }
+                    else
+                    {
+                        print("Basic");
+                        OnComplete();
+                    }
+
                 }
+
             }
         }
     }
