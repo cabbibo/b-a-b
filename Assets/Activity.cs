@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 using UnityEngine.Events;
+using System.Linq;
 
 // Activities are small things to do across that map
 // They can be redone over and over again, and you get crystals for doing them
@@ -28,8 +29,9 @@ public class Activity : MonoBehaviour
 
     public bool discovered;
     public bool started;
-    public bool completed;
+    public bool currentlyComplete;
 
+    public int numTimesCompleted;
 
     public bool canStartMidActivityOnLoad = false;
 
@@ -61,16 +63,40 @@ public class Activity : MonoBehaviour
     public Transform mainPointOfInterest; // place where we will be looking / focusing ( usually the shade position? )
 
 
+
+
+    /*
+
+
+        SLIDES
+
+    */
+
+
     public Slide[] discoverSlides;
-    public Slide[] startSlides;
-    public Slide[] startAgainSlides;
-    public Slide[] completeSlides;
+    public Slide[] firstStartSlides; // first time you start
 
-    public Slide[] redoSlides;
 
-    public Slide[] completedCantRedoSlides;
+    public Slide[] reenterInfoAreaSlides; // re enter the activity info area while in activity
 
-    public Slide[] onFailureSlides;
+
+    public Slide[] completeSlides; // its finished! and some sort of succeess!
+
+    public Slide[] failureSlides; // its finished! and you failed!
+
+
+
+    public Slide[] restartSlides; // any time you restart the activity
+
+
+
+    public Slide[] completedCantRedoSlides; // came back cant restart yet
+
+    public Slide[] completedCanRedoSlides; // came back can restart!  ( after completion ) ( leads to start again slides )
+
+
+
+
     //public Slide[] onSuccessSlides; // dont need these bc they are just the complete slides
 
 
@@ -81,6 +107,8 @@ public class Activity : MonoBehaviour
     public Transform wrenPosition; // place to move the wren to when starting and finishing the activity
 
 
+
+    // are these necessary? maybe can add as needed?
 
     public UnityEvent onDiscoverEvent;
     public UnityEvent onStartEvent;
@@ -182,10 +210,11 @@ public class Activity : MonoBehaviour
 
         }
 
-        // we are currently doing the activity!
-        if (started && !completed && doingActivity)
-        {
 
+        // we are currently doing the activity!
+        if (started && !currentlyComplete && doingActivity)
+        {
+            // we need to stop if time is up!
             if (stopOnTimeUp && Time.time - activityStartTime > timeAllowedToCompleteActivity)
             {
                 timeToFinishActivity = Time.time - activityStartTime;
@@ -195,31 +224,140 @@ public class Activity : MonoBehaviour
         }
 
 
+        // input for slides
         if (inSlide)
         {
             if (God.input.x)
             {
-                // print("NEXT SLIDE");
-                if (Time.time - slideChangeTime > .3f)
-                {
-                    NextSlide();
-                }
+                DoX();
             }
 
             if (God.input.circle)
             {
+                DoCircle();
+            }
 
-                // only cancel if the slide lets us
-                if (currentSlide.canCancel)
-                {
-                    EndSlide(currentSlide);
-                }
+            if (God.input.triangle)
+            {
+                DoTriangle();
             }
         }
 
     }
 
 
+
+
+
+    /*
+
+        Input Responses
+
+    */
+
+    public void DoX()
+    {
+        print("X Called");
+        print(Time.time - slideChangeTime);
+        if (Time.time - slideChangeTime > .3f) // this is just to make it from going through them too fast!
+        {
+            NextSlide();
+        }
+    }
+
+    public void DoCircle()
+    {
+        OnCancelButtonPressed();
+    }
+
+
+    //We will need to restart the activity if it is allowed on current slide
+    public void DoTriangle()
+    {
+
+
+    }
+
+
+
+
+
+
+    /*
+
+
+        ENDING / FINISHING THE ACTIVITY
+
+
+    */
+
+
+    public void OnAmountCompleteReached()
+    {
+        print("Amount over amount to complete");
+
+        timeToFinishActivity = Time.time - activityStartTime;
+
+
+        // if its a tiered activity, we use the time to determine tier rewards    
+        if (tieredActivity)
+        {
+
+            print("Tiered");
+            if (timeToFinishActivity > tierValues[0])
+            {
+                print("Time over tier 0");
+                OnFailureBegin();
+            }
+            else
+            {
+                print("Time under tier 0");
+                for (int i = 0; i < tierValues.Length - 1; i++)
+                {
+
+                    print("Checking tier " + i);
+                    if (timeToFinishActivity > tierValues[i + 1] && timeToFinishActivity <= tierValues[i])
+                    {
+                        print("is tier " + i);
+                        DoTimeBasedTier(i);
+                    }
+                }
+
+                if (timeToFinishActivity < tierValues[tierValues.Length - 1])
+                {
+                    print("is tier " + (tierValues.Length - 1));
+                    DoTimeBasedTier(tierValues.Length - 1);
+                }
+
+            }
+
+        }
+        else
+        {
+
+            if (timedActivity)
+            {
+                print("Timed");
+                // see if we finished it in time or not                    
+                if (timeToFinishActivity > timeAllowedToCompleteActivity)
+                {
+                    OnFailureBegin();
+                }
+                else
+                {
+                    OnCompleteBegin();
+                }
+
+
+            }
+            else
+            {
+                print("Basic");
+                OnCompleteBegin();
+            }
+
+        }
+    }
 
 
 
@@ -239,7 +377,7 @@ public class Activity : MonoBehaviour
             // we didnt get anything!
             if (currentAmountComplete < tierValues[0])
             {
-                OnFailure();
+                OnFailureBegin();
                 return;
             }
 
@@ -267,11 +405,31 @@ public class Activity : MonoBehaviour
 
 
         }
-        else
+        else // if its not a tiered activity, we just fail if we dont finish in time
         {
-            OnFailure();
+            OnFailureBegin();
         }
+
+
+
     }
+
+
+
+
+
+
+
+
+
+    /*
+    
+    
+    TIERS 
+    
+    
+    
+    */
 
 
     public void DoAmountCompleteBasedTier(int tier)
@@ -280,17 +438,16 @@ public class Activity : MonoBehaviour
         print("Amount Complete Based Tier : " + tier);
 
         // we got to this tier!
-        completeSlides[0].text = tierCompleteText[tier];
-        numCrystalsAward = crystalRewards[tier];
+        SetTierInfo(tier);
 
-
+        // Save the current best state
         if (currentAmountComplete > bestAmountComplete)
         {
             bestAmountComplete = currentAmountComplete;
             SaveState();
         }
 
-        OnComplete();
+        OnCompleteBegin();
 
     }
 
@@ -301,9 +458,8 @@ public class Activity : MonoBehaviour
     {
 
         print("Time Based Tier : " + tier);
-        // we got to this tier!
-        completeSlides[0].text = tierCompleteText[tier];
-        numCrystalsAward = crystalRewards[tier];
+
+        SetTierInfo(tier);
 
         if (timeToFinishActivity < bestTime)
         {
@@ -311,23 +467,27 @@ public class Activity : MonoBehaviour
             SaveState();
         }
 
-        OnComplete();
+        OnCompleteBegin();
 
     }
 
-    public void OnFailure()
-    {
-
-        print("ON FAILURE");
-        doingActivity = false;
 
 
-        // hack to make sure entering info area doesn get retriggered!
-        insideActivityInfoArea = true;
 
-        QuitActivity();
-        SetSlide(onFailureSlides[0]); // set the wren position here! 
-    }
+
+
+
+
+
+
+
+
+    /*
+
+        Activity area exiting and entering;
+
+    */
+
 
 
 
@@ -338,7 +498,7 @@ public class Activity : MonoBehaviour
         inActivityArea = true;
 
 
-        // re entering after exiting!
+        // re entering after exiting! we never actuall quit the activity so thats all good to go :)
         if (exitingActivityArea)
         {
             exitingActivityArea = false;
@@ -381,26 +541,20 @@ public class Activity : MonoBehaviour
     }
 
 
-    public void QuitActivity()
-    {
-        print("QUIT ACTIVITY");
-
-        doingActivity = false;
-        started = false; // get introduced to it again
-        for (int i = 0; i < doingActivityObjects.Length; i++)
-        {
-            doingActivityObjects[i].SetActive(false);
-        }
-        // Turn off the doingActivity stuff
-    }
-
-
     public void WhileExitingActivityArea(float nTime)
     {
         // do stuff while exiting the activity area to warn you you are leaving!
         print("ALERT LEAVIGN : " + nTime);
 
     }
+
+
+
+    /*
+
+    Activity INFO area entering and exiting
+
+    */
 
 
     // get close enough to shade to be starting the activity
@@ -410,33 +564,37 @@ public class Activity : MonoBehaviour
         if (!insideActivityInfoArea) // need to be able to jump into the slides and not reactivate!
         {
             insideActivityInfoArea = true;
-            if (!discovered && !started && !completed)
+            if (!discovered && !started && numTimesCompleted == 0)
             {
-                DoDiscover();
+                OnDiscoverBegin();
             }
 
-            if (discovered && !started && !completed)
+            if (discovered && !started && numTimesCompleted == 0)
             {
 
                 // this means we have quit or failed the activity or just said we didn't want to do it again
-                DoDiscover(); // TODO a different slide set for this?
+                OnDiscoverBegin(); // TODO a different slide set for this?
 
             }
 
-            if (started && !completed) // we are in the middle of doing the activity
+            if (started && !currentlyComplete) // we are in the middle of doing the activity
             {
-                OnStartAgain();
+                OnReenterInfoAreaBegin();
+
+                //OnRestartBegin();
             }
 
-            if (completed)
+
+
+            if (currentlyComplete && numTimesCompleted > 0)
             {
                 if (God.state.totalTimeInGame - timeCompleted > activityCooldownTime)
                 {
-                    OnRedo();
+                    OnCompletedCanRedoBegin();
                 }
                 else
                 {
-                    OnCompletedCantRedoStart();
+                    OnCompletedCantRedoBegin();
                 }
             }
         }
@@ -454,46 +612,105 @@ public class Activity : MonoBehaviour
 
 
 
-    public void Reset()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
+
+
+        THE STATE FUNCTION CALLS
+
+
+
+        
+    //discoverSlides;
+    //firstStartSlides; 
+    //reenterInfoAreaSlides
+   // completeSlides
+   // failureSlides
+   // restartSlides
+    //completedCantRedoSlides
+    //completedCanRedoSlides
+
+    */
+
+
+    public void OnDiscoverBegin()
     {
-        print("RESET");
-        currentAmountComplete = 0;
-        percentangeComplete = 0;
-    }
 
 
-
-    public void DoDiscover()
-    {
-
-        print("DO DISCOVER");
-
+        print("DISCOVER BEGIN");
         discovered = true;
         onDiscoverEvent.Invoke();
-        Reset();
+
+        // ResetPercentages(); // shouldnt need to reset?
 
         SaveState();
+
         SetSlide(discoverSlides[0]);
 
     }
 
+    // We can cancel these types of slides!
 
-    public void DiscoverEnd()
+
+    public void OnDiscoverEnd()
     {
+
         print("DISCOVER END");
-        Reset();
-        DoDoingActivityStart(); // we chose to do the activity!
-        SetSlide(startSlides[0]);
+        EndSlide(currentSlide); // end slide before we begin the next slide
+        OnFirstStartBegin();
     }
 
-    public void StartEnd()
+
+    // nothing special
+    public void OnDiscoverCancel()
     {
-        print("START END");
+
+        print("DISCOVER CANCEL");
+        EndSlide(currentSlide);
+
+    }
+
+
+
+
+    public void OnFirstStartBegin()
+    {
+        print("first START BEGIN");
+
+        SetSlide(firstStartSlides[0]);
+        TurnOnActivityObjects(); // we chose to do the activity! show the objects!
+
+    }
+
+    public void OnFirstStartEnd()
+    {
+
+        print("First start end");
 
         started = true;
-        doingActivity = true; // now we are actuallly doing the activity!
-        //currentAmountComplete = 0; // reset the amount complete
-        activityStartTime = Time.time;
+
+        BeginTheActualTask();
+
         onStartEvent.Invoke();
         SaveState();
         EndSlide(currentSlide);
@@ -501,7 +718,60 @@ public class Activity : MonoBehaviour
     }
 
 
-    public void OnComplete()
+    public void OnFirstBeginCancel()
+    {
+
+        print("first start cancel");
+        // turn off activity objects
+        TurnOffActivityObjects();
+        EndSlide(currentSlide);
+    }
+
+
+
+
+    public void OnReenterInfoAreaBegin()
+    {
+
+        print("REENTER INFO AREA");
+        PauseTimer();
+        SetSlide(reenterInfoAreaSlides[0]);
+    }
+
+    // can just cancel doing the activity using circle here
+
+    // OR restart the activity if we want to start over
+
+
+    // meant we chose to continue the activity
+    public void OnReenterInfoAreaEnd()
+    {
+        print("REENTER INFO AREA END");
+
+        UnpauseTimer();
+        EndSlide(currentSlide);
+
+    }
+
+
+    // Quit activity
+    public void OnReenterInfoAreaCancel()
+    {
+
+        print("REENTER INFO AREA CANCEL");
+
+        // quit the activity completly
+        QuitActivity();
+        EndSlide(currentSlide);
+    }
+
+
+
+
+
+
+
+    public void OnCompleteBegin()
     {
         print("ON COMPLETE");
         insideActivityInfoArea = true;
@@ -515,74 +785,155 @@ public class Activity : MonoBehaviour
         print("ON COMPLETE END");
         if (restartOnComplete)
         {
-            OnStartAgain();
+            OnRestartBegin();
 
         }
         else
         {
             print("ON COMPLETE END");
+
             onCompleteEvent.Invoke();
-            completed = true;
+            currentlyComplete = true;
+            numTimesCompleted++;
             timeCompleted = God.state.totalTimeInGame;
             QuitActivity();// turn off the doing activity stuff
             SaveState();
             EndSlide(currentSlide);
         }
 
+    }
 
+    // this will happen if we want to make it so they can restart on complete!
+    public void OnCompleteCancel()
+    {
+        print("ON COMPLETE END");
 
-
+        onCompleteEvent.Invoke();
+        currentlyComplete = true;
+        numTimesCompleted++;
+        timeCompleted = God.state.totalTimeInGame;
+        QuitActivity();// turn off the doing activity stuff
+        SaveState();
+        EndSlide(currentSlide);
 
     }
 
-    public void GiveReward()
+
+
+
+    public void OnFailureBegin()
     {
-        print("GIVE REWARD");
-        God.wren.shards.CollectShards(numCrystalsAward, crystalType, mainPointOfInterest.position);
+
+        print("ON FAILURE");
+        doingActivity = false;
+
+        // hack to make sure entering info area doesn get retriggered!
+        insideActivityInfoArea = true;
+
+        QuitActivity();
+        SetSlide(failureSlides[0]); // set the wren position here! 
     }
 
 
-    public void OnStartAgain()
-    {
-        print("ON START AGAIN");
-        onStartAgainEvent.Invoke();
-        DoDoingActivityStart();
-        SetSlide(startAgainSlides[0]);
-    }
 
 
-    public void DoDoingActivityStart()
+
+
+    public void OnFailureEnd()
     {
-        for (int i = 0; i < doingActivityObjects.Length; i++)
+        print("ON FAILURE END");
+
+        if (restartOnFailure)
         {
-            doingActivityObjects[i].SetActive(true);
+            OnRestartBegin();
+
+        }
+        else
+        {
+            EndSlide(currentSlide);
         }
     }
 
 
-
-    public void OnRedo()
+    // will this ever be possible?
+    public void OnFailureCancel()
     {
-        print("ON REDO");
-        Reset();
-        onRedoEvent.Invoke();
-        completed = false;// reshow the information!
+        print("ON FAILURE CANCEL : SHOULDNT HAPPEN");
+
+        EndSlide(currentSlide);
+
+    }
+
+
+
+
+
+    public void OnRestartBegin()
+    {
+        print("ON Restart");
+        // onStartAgainEvent.Invoke();
+        TurnOnActivityObjects();
+        SetSlide(restartSlides[0]);
+
+    }
+
+    public void OnRestartEnd()
+    {
+
+
+        print("on restart end");
+        started = true;
+
+        BeginTheActualTask();
+
+        onStartEvent.Invoke();
         SaveState();
-        SetSlide(redoSlides[0]);
+        EndSlide(currentSlide);
+
+
+    }
+
+    public void OnRestartCancel()
+    {
+
+        print("ON RESTART CANCEL");
+
+        // turn off activity objects
+        TurnOffActivityObjects();
+        EndSlide(currentSlide);
+
+
+    }
+
+
+
+
+    public void OnCompletedCanRedoBegin()
+    {
+        print("On Completed Can Redo Begin");
+        ResetPercentages();
+        onRedoEvent.Invoke();
+        currentlyComplete = false;// reshow the information!
+        SaveState();
+        SetSlide(completedCanRedoSlides[0]);
     }
 
 
     // not going from discover -> start again, so need to call what we call on discover end
-    public void OnRedoEnd()
+    public void OnCompletedCanRedoEnd()
     {
-
-
-        OnStartAgain();
-
-
+        print("ON COMPLETED CAN REDO END");
+        OnRestartBegin();
     }
 
-    public void OnCompletedCantRedoStart()
+    public void OnCompletedCanRedoCancel() // can cancel it!!!
+    {
+        print("ON COMPLETED CAN REDO CANCEL");
+        EndSlide(currentSlide);
+    }
+
+
+    public void OnCompletedCantRedoBegin()
     {
         print("ON COMPLETED CANT REDO START");
         SetSlide(completedCantRedoSlides[0]);
@@ -596,21 +947,13 @@ public class Activity : MonoBehaviour
     }
 
 
-
-    public void OnFailureEnd()
+    // will this ever be possible?
+    public void OnCompletedCantRedoCancel()
     {
-        print("ON FAILURE END");
-
-        if (restartOnFailure)
-        {
-            OnStartAgain();
-
-        }
-        else
-        {
-            EndSlide(currentSlide);
-        }
+        print("ON COMPLETED CANT REDO CANCEL : SHOULDNT HAPPEN");
+        EndSlide(currentSlide);
     }
+
 
 
 
@@ -630,15 +973,177 @@ public class Activity : MonoBehaviour
         HELPER FUNCTIONS
 
     */
+
+
+    public float pauseTimeStart;
+    public bool paused;
+    public void PauseTimer()
+    {
+        paused = true;
+        pauseTimeStart = Time.time;
+    }
+
+
+    // Add our amount of paused time to the activity start time so it doesnt mess up the time calculations
+    public void UnpauseTimer()
+    {
+        paused = false;
+        float timePaused = Time.time - pauseTimeStart;
+        activityStartTime += timePaused;
+    }
+
+
+
+
+    // This is what we do when we *END* the activity
+    public void QuitActivity()
+    {
+        print("QUIT ACTIVITY");
+
+        doingActivity = false;
+        started = false; // get introduced to it again
+
+        TurnOffActivityObjects();
+        // Turn off the doingActivity stuff
+    }
+
+
+    public void BeginTheActualTask()
+    {
+
+        ResetPercentages();
+        doingActivity = true;
+
+        activityStartTime = Time.time;
+    }
+
+
+
+
+    // We are choosing to do the activity! we are not actually *in* it yet, just want to turn on the components so we can show them!
+    public void TurnOnActivityObjects()
+    {
+        for (int i = 0; i < doingActivityObjects.Length; i++)
+        {
+            doingActivityObjects[i].SetActive(true);
+        }
+    }
+
+
+    public void TurnOffActivityObjects()
+    {
+        for (int i = 0; i < doingActivityObjects.Length; i++)
+        {
+            doingActivityObjects[i].SetActive(false);
+        }
+    }
+
+
+
+    public void GiveReward()
+    {
+        print("GIVE REWARD");
+        God.wren.shards.CollectShards(numCrystalsAward, crystalType, mainPointOfInterest.position);
+    }
+
+
+
+
+    public void ResetPercentages()
+    {
+        print("RESET");
+        currentAmountComplete = 0;
+        percentangeComplete = 0;
+    }
+
+
+
+
+    public void OnCancelButtonPressed()
+    {
+
+        print("CANCEL BUTTON PRESSED");
+
+        if (inSlide && currentSlide.canCancel)
+        {
+
+
+            if (discoverSlides.Contains(currentSlide))
+            {
+                OnDiscoverCancel();
+            }
+
+            if (firstStartSlides.Contains(currentSlide))
+            {
+                OnFirstBeginCancel();
+            }
+
+            if (reenterInfoAreaSlides.Contains(currentSlide))
+            {
+                OnReenterInfoAreaCancel();
+            }
+
+            if (completeSlides.Contains(currentSlide))
+            {
+                OnCompleteCancel();
+            }
+
+            if (failureSlides.Contains(currentSlide))
+            {
+                OnFailureCancel();
+            }
+
+            if (restartSlides.Contains(currentSlide))
+            {
+                OnRestartCancel();
+            }
+
+            if (completedCanRedoSlides.Contains(currentSlide))
+            {
+                OnCompletedCanRedoCancel();
+            }
+
+            if (completedCantRedoSlides.Contains(currentSlide))
+            {
+                OnCompletedCantRedoCancel();
+            }
+
+        }
+
+
+    }
+
+
+
     public void NextSlide()
     {
 
+
+        print("NEXT SLIDE");
         slideChangeTime = Time.time;
         if (currentSlide == null)
         {
             Debug.LogError("No current slide");
             return;
         }
+
+
+        /*
+
+
+        
+    //discoverSlides;
+    //firstStartSlides; 
+    reenterInfoAreaSlides
+   // completeSlides
+   // failureSlides
+   // restartSlides
+    //completedCantRedoSlides
+    //completedCanRedoSlides
+
+
+
+*/
 
         for (int i = 0; i < discoverSlides.Length; i++)
         {
@@ -651,47 +1156,46 @@ public class Activity : MonoBehaviour
                 }
                 else
                 {
-                    DiscoverEnd();
-                    //EndSlide(currentSlide);
+                    OnDiscoverEnd();
                 }
             }
         }
 
 
-        for (int i = 0; i < startSlides.Length; i++)
+        for (int i = 0; i < firstStartSlides.Length; i++)
         {
-            if (startSlides[i] == currentSlide)
+            if (firstStartSlides[i] == currentSlide)
             {
-                if (i < startSlides.Length - 1)
+                if (i < firstStartSlides.Length - 1)
                 {
-                    SetSlide(startSlides[i + 1]);
+                    SetSlide(firstStartSlides[i + 1]);
                     return;
                 }
                 else
                 {
-                    StartEnd();
-                    //EndSlide(currentSlide);
+                    OnFirstStartEnd();
                 }
             }
         }
 
-
-        for (int i = 0; i < startAgainSlides.Length; i++)
+        for (int i = 0; i < reenterInfoAreaSlides.Length; i++)
         {
-            if (startAgainSlides[i] == currentSlide)
+            if (reenterInfoAreaSlides[i] == currentSlide)
             {
-                if (i < startAgainSlides.Length - 1)
+                if (i < reenterInfoAreaSlides.Length - 1)
                 {
-                    SetSlide(startAgainSlides[i + 1]);
+                    SetSlide(reenterInfoAreaSlides[i + 1]);
                     return;
                 }
                 else
                 {
-                    StartEnd();// Dont want to start over here 
-                    //EndSlide(currentSlide);
+                    OnReenterInfoAreaEnd();
                 }
             }
         }
+
+
+
 
 
         for (int i = 0; i < completeSlides.Length; i++)
@@ -712,19 +1216,56 @@ public class Activity : MonoBehaviour
         }
 
 
-        for (int i = 0; i < redoSlides.Length; i++)
+        for (int i = 0; i < failureSlides.Length; i++)
         {
-            if (redoSlides[i] == currentSlide)
+            if (failureSlides[i] == currentSlide)
             {
-                if (i < redoSlides.Length - 1)
+                if (i < failureSlides.Length - 1)
                 {
-                    SetSlide(redoSlides[i + 1]);
+                    SetSlide(failureSlides[i + 1]);
                     return;
                 }
                 else
                 {
 
-                    OnRedoEnd();
+                    OnFailureEnd();
+                }
+            }
+        }
+
+
+
+        for (int i = 0; i < restartSlides.Length; i++)
+        {
+            if (restartSlides[i] == currentSlide)
+            {
+                if (i < restartSlides.Length - 1)
+                {
+                    SetSlide(restartSlides[i + 1]);
+                    return;
+                }
+                else
+                {
+                    OnRestartEnd();// Dont want to start over here 
+                    //EndSlide(currentSlide);
+                }
+            }
+        }
+
+
+
+        for (int i = 0; i < completedCanRedoSlides.Length; i++)
+        {
+            if (completedCanRedoSlides[i] == currentSlide)
+            {
+                if (i < completedCanRedoSlides.Length - 1)
+                {
+                    SetSlide(completedCanRedoSlides[i + 1]);
+                    return;
+                }
+                else
+                {
+                    OnCompletedCanRedoEnd();
                 }
             }
         }
@@ -747,22 +1288,7 @@ public class Activity : MonoBehaviour
             }
         }
 
-        for (int i = 0; i < onFailureSlides.Length; i++)
-        {
-            if (onFailureSlides[i] == currentSlide)
-            {
-                if (i < onFailureSlides.Length - 1)
-                {
-                    SetSlide(onFailureSlides[i + 1]);
-                    return;
-                }
-                else
-                {
 
-                    OnFailureEnd();
-                }
-            }
-        }
 
     }
 
@@ -773,9 +1299,10 @@ public class Activity : MonoBehaviour
     {
         PlayerPrefs.SetFloat("Activity_" + fullName + "_AmountComplete", currentAmountComplete);
         PlayerPrefs.SetFloat("Activity_" + fullName + "_TimeCompleted", timeCompleted);
+        PlayerPrefs.SetInt("Activity_" + fullName + "_NumTimesCompleted", numTimesCompleted);
         PlayerPrefs.SetInt("Activity_" + fullName + "_Discovered", discovered ? 1 : 0);
         PlayerPrefs.SetInt("Activity_" + fullName + "_Started", started ? 1 : 0);
-        PlayerPrefs.SetInt("Activity_" + fullName + "_Completed", completed ? 1 : 0);
+        PlayerPrefs.SetInt("Activity_" + fullName + "_CurrentlyComplete", currentlyComplete ? 1 : 0);
         PlayerPrefs.SetFloat("Activity_" + fullName + "_BestTime", bestTime);
         PlayerPrefs.SetFloat("Activity_" + fullName + "_BestAmountComplete", bestAmountComplete);
 
@@ -789,6 +1316,9 @@ public class Activity : MonoBehaviour
         timeCompleted = PlayerPrefs.GetFloat("Activity_" + fullName + "_TimeCompleted", 0);
         discovered = PlayerPrefs.GetInt("Activity_" + fullName + "_Discovered", 0) == 1;
 
+        numTimesCompleted = PlayerPrefs.GetInt("Activity_" + fullName + "_NumTimesCompleted", 0);
+
+
         // started should always be false here? we dont want to be starting mid activity, except for really big ones???? 
         if (canStartMidActivityOnLoad)
         {
@@ -798,10 +1328,7 @@ public class Activity : MonoBehaviour
         {
             started = false;
         }
-        completed = PlayerPrefs.GetInt("Activity_" + fullName + "_Completed", 0) == 1;
-
-
-
+        currentlyComplete = PlayerPrefs.GetInt("Activity_" + fullName + "_CurrentlyComplete", 0) == 1;
 
         bestTime = PlayerPrefs.GetFloat("Activity_" + fullName + "_BestTime", 10000000);
         bestAmountComplete = PlayerPrefs.GetFloat("Activity_" + fullName + "_BestAmountComplete", 0);
@@ -814,76 +1341,14 @@ public class Activity : MonoBehaviour
     public void AddToComplete(float v)
     {
 
-        if (!completed)
+        if (!currentlyComplete)
         {
             currentAmountComplete += v;
             percentangeComplete = currentAmountComplete / amountToComplete;
             if (currentAmountComplete >= amountToComplete)
             {
 
-                print("Amount over amount to complete");
-
-                timeToFinishActivity = Time.time - activityStartTime;
-
-
-                // if its a tiered activity, we use the time to determine tier rewards    
-                if (tieredActivity)
-                {
-
-                    print("Tiered");
-                    if (timeToFinishActivity > tierValues[0])
-                    {
-                        print("Time over tier 0");
-                        OnFailure();
-                    }
-                    else
-                    {
-                        print("Time under tier 0");
-                        for (int i = 0; i < tierValues.Length - 1; i++)
-                        {
-
-                            print("Checking tier " + i);
-                            if (timeToFinishActivity > tierValues[i + 1] && timeToFinishActivity <= tierValues[i])
-                            {
-                                print("is tier " + i);
-                                DoTimeBasedTier(i);
-                            }
-                        }
-
-                        if (timeToFinishActivity < tierValues[tierValues.Length - 1])
-                        {
-                            print("is tier " + (tierValues.Length - 1));
-                            DoTimeBasedTier(tierValues.Length - 1);
-                        }
-
-                    }
-
-                }
-                else
-                {
-
-                    if (timedActivity)
-                    {
-                        print("Timed");
-                        // see if we finished it in time or not                    
-                        if (timeToFinishActivity > timeAllowedToCompleteActivity)
-                        {
-                            OnFailure();
-                        }
-                        else
-                        {
-                            OnComplete();
-                        }
-
-
-                    }
-                    else
-                    {
-                        print("Basic");
-                        OnComplete();
-                    }
-
-                }
+                OnAmountCompleteReached();
 
             }
         }
@@ -893,14 +1358,15 @@ public class Activity : MonoBehaviour
 
     public void SetSlide(Slide s)
     {
-
+        print("SET SLIDE");
+        slideChangeTime = Time.time;
+        print(s.gameObject.name);
         God.wren.Crash(wrenPosition.position);
         God.wren.physics.rb.isKinematic = true;
         God.wren.physics.rb.position = wrenPosition.position;
         God.wren.physics.rb.rotation = wrenPosition.rotation;
         God.wren.state.canTakeOff = false;
 
-        slideChangeTime = Time.time;
         currentSlide = s;
         inSlide = true;
         s.Set();
@@ -909,6 +1375,7 @@ public class Activity : MonoBehaviour
 
     public void EndSlide(Slide s)
     {
+        slideChangeTime = Time.time;
         inSlide = false;
         s.Release();
         God.wren.state.canTakeOff = true;
@@ -921,6 +1388,13 @@ public class Activity : MonoBehaviour
         releaseTime = Time.time;
         God.wren.physics.rb.isKinematic = false;
 
+    }
+
+
+    public void SetTierInfo(int tier)
+    {
+        completeSlides[0].text = tierCompleteText[tier]; // TODO will this set shit wrong for the future?
+        numCrystalsAward = crystalRewards[tier];
     }
 
 
