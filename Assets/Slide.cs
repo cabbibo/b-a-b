@@ -12,15 +12,25 @@ public class Slide : MonoBehaviour
 
     public string text;
 
+    public string tmpText;
+
     public Transform lookTarget;
     public Transform textTarget;
 
 
     public bool orbit;
     public bool canCancel;
+    public bool canReset;
 
     public UnityEvent onSet;
     public UnityEvent onRelease;
+
+    public string continueText = "X : Continue";
+    public string cancelText = "O : Cancel";
+
+    public string resetText = "Triangle : Reset";
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -37,16 +47,46 @@ public class Slide : MonoBehaviour
     public void Set()
     {
 
+        print(text);
+        print(tmpText);
+
+        if (tmpText == "" || tmpText == null)
+        {
+            tmpText = text;
+        }
+
+
+        tmpText = tmpText.Replace("\\n", "\n");
+        print("Setting slide");
+        print(text);
+        print(tmpText);
+
         God.cameraManager.slideManager.SetSlide(this);
-        God.text.SetInfoText(text, transform);
+        God.text.SetInfoText(tmpText, transform);
 
         if (canCancel)
         {
-            God.text.SetLargeText(" X : Continue || O : Exit", transform);
+            if (canReset)
+            {
+
+                God.text.SetLargeText(continueText + " || " + cancelText + " || " + resetText, transform);
+            }
+            else
+            {
+                God.text.SetLargeText(continueText + " || " + cancelText, transform);
+            }
         }
         else
         {
-            God.text.SetLargeText(" X : Continue", transform);
+
+            if (canReset)
+            {
+                God.text.SetLargeText(continueText + " || " + resetText, transform);
+            }
+            else
+            {
+                God.text.SetLargeText(continueText, transform);
+            }
         }
 
 
@@ -61,6 +101,10 @@ public class Slide : MonoBehaviour
         God.text.SetLargeText("");
         onRelease.Invoke();
     }
+
+
+
+
 
 
 }
