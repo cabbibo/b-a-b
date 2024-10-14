@@ -23,6 +23,8 @@ public class Activity : MonoBehaviour
     public float currentAmountComplete = 0;
     public float percentangeComplete = 0;
 
+    public float[] amountToCompleteTimesVisited;
+
     public bool doingActivity;
 
 
@@ -239,6 +241,7 @@ public class Activity : MonoBehaviour
 
             if (God.input.triangle)
             {
+                print("tri pressssss");
                 DoTriangle();
             }
         }
@@ -275,7 +278,8 @@ public class Activity : MonoBehaviour
     public void DoTriangle()
     {
 
-
+        print("do tri press");
+        OnResetButtonPressed();
     }
 
 
@@ -563,10 +567,13 @@ public class Activity : MonoBehaviour
         print("Activity Info Area Entered");
         if (!insideActivityInfoArea) // need to be able to jump into the slides and not reactivate!
         {
+
+            print("entering into activityArea");
             insideActivityInfoArea = true;
             if (!discovered && !started && numTimesCompleted == 0)
             {
                 OnDiscoverBegin();
+                return;
             }
 
             if (discovered && !started && numTimesCompleted == 0)
@@ -574,19 +581,21 @@ public class Activity : MonoBehaviour
 
                 // this means we have quit or failed the activity or just said we didn't want to do it again
                 OnDiscoverBegin(); // TODO a different slide set for this?
+                return;
 
             }
 
             if (started && !currentlyComplete) // we are in the middle of doing the activity
             {
                 OnReenterInfoAreaBegin();
+                return;
 
                 //OnRestartBegin();
             }
 
 
 
-            if (currentlyComplete && numTimesCompleted > 0)
+            if (numTimesCompleted > 0)
             {
                 if (God.state.totalTimeInGame - timeCompleted > activityCooldownTime)
                 {
@@ -596,7 +605,11 @@ public class Activity : MonoBehaviour
                 {
                     OnCompletedCantRedoBegin();
                 }
+
+                return;
             }
+
+
         }
 
 
@@ -1011,6 +1024,14 @@ public class Activity : MonoBehaviour
     public void BeginTheActualTask()
     {
 
+        if (amountToCompleteTimesVisited != null)
+        {
+            if (numTimesCompleted < amountToCompleteTimesVisited.Length)
+            {
+                amountToComplete = amountToCompleteTimesVisited[numTimesCompleted];
+            }
+        }
+
         ResetPercentages();
         doingActivity = true;
 
@@ -1057,6 +1078,15 @@ public class Activity : MonoBehaviour
     }
 
 
+
+    public void OnResetButtonPressed()
+    {
+        print("presssed");
+        if (inSlide && currentSlide.canReset)
+        {
+            OnRestartBegin();
+        }
+    }
 
 
     public void OnCancelButtonPressed()
@@ -1359,6 +1389,13 @@ public class Activity : MonoBehaviour
     public void SetSlide(Slide s)
     {
         print("SET SLIDE");
+        print("slide text pre replace");
+        print(s.text);
+        s.tmpText = ReplaceSlideText(s.text);
+        print("slide text post replace");
+        print(s.text);
+
+
         slideChangeTime = Time.time;
         print(s.gameObject.name);
         God.wren.Crash(wrenPosition.position);
@@ -1397,6 +1434,77 @@ public class Activity : MonoBehaviour
         numCrystalsAward = crystalRewards[tier];
     }
 
+
+
+
+    /*
+
+        PARSING TEXT
+
+    */
+
+    public string ReplaceSlideText(string fullString)
+    {
+
+        // look for {} in the fullString
+        string[] splitArray = fullString.Split('{');
+
+        print("splitARRRAY");
+
+        if (splitArray.Length == 0)
+        {
+            print("0 length");
+            return fullString;
+        }
+
+        if (splitArray.Length == 1)
+        {
+            print("no split needed");
+            return fullString;
+
+        }
+
+        if (splitArray.Length > 1)
+        {
+
+            print("splitArray0" + splitArray[0]);
+            print("splitArray1" + splitArray[1]);
+
+            string totalString = splitArray[0];
+
+            for (int i = 0; i < splitArray.Length - 1; i++)
+            {
+                string[] subString = splitArray[i + 1].Split('}'); // get what we need
+                print(subString);
+                print(subString[0]);
+                totalString += DoReplace(subString[0]);
+                totalString += subString[1];
+            }
+
+            //totalString += splitArray[splitArray.Length - 1];
+
+            print("TOTAL STRING : " + totalString);
+
+            return totalString;
+
+        }
+
+        return fullString;
+
+
+
+    }
+
+    /*
+
+        TODOOOOOOOOOOOOO BIG TIME
+
+
+    */
+    public string DoReplace(string subString)
+    {
+        return "REPALACS";
+    }
 
 
 
