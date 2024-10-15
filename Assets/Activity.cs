@@ -567,7 +567,7 @@ public class Activity : MonoBehaviour
 
 
 
-        if (inActivity)
+        if (doingActivity)
         { // only need buffer for exiting if we are already in the activity
 
             // TODO this should be a loop that is a bit more controlable?
@@ -796,16 +796,20 @@ public class Activity : MonoBehaviour
     }
 
 
+    public void AlwaysStartBegin()
+    {
+
+        God.audio.Play(God.sounds.activityStartClip, 1, 1);
+        TurnOnActivityObjects(); // we chose to do the activity! show the objects!
+    }
 
 
     public void OnFirstStartBegin()
     {
         print("first START BEGIN");
 
-        God.audio.Play(God.sounds.activityStartClip, 1, 1);
-
         SetSlide(firstStartSlides[0]);
-        TurnOnActivityObjects(); // we chose to do the activity! show the objects!
+
 
     }
 
