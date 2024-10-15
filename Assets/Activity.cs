@@ -166,7 +166,15 @@ public class Activity : MonoBehaviour
     public float timeToFinishActivity;
 
 
+    public AudioSource leavingAudioSource;
+    public AudioSource whileInLoopAudioSource;
 
+    public float inActivityLoopVolume = 1;
+    public float inActivityLoopPitch = 1;
+
+
+    public float pitchChangeAmountOverTime = 1;
+    public float pitchChangeAmountOverCompletenessAmount = 1;
 
 
     public void OnEnable()
@@ -188,6 +196,11 @@ public class Activity : MonoBehaviour
 
         }
 
+        leavingAudioSource.clip = God.sounds.leavingActivityWhileInActivityLoop;
+        whileInLoopAudioSource.clip = God.sounds.whileInActivityLoop;
+
+
+
 
 
     }
@@ -200,13 +213,17 @@ public class Activity : MonoBehaviour
         if (exitingActivityArea)
         {
 
+            print("exitingActivityArea");
             float timeSinceExit = Time.time - timeExitedActivityArea;
             float nTime = timeSinceExit / timeAllowedWhileExitedActivityArea;
 
+            print(nTime);
             WhileExitingActivityArea(nTime);
 
             if (nTime > 1)
             {
+
+                God.audio.Play(God.sounds.inActivityFullExitedClip, 1, 1);
                 FullExitActivityArea();
             }
 
@@ -229,7 +246,7 @@ public class Activity : MonoBehaviour
         // input for slides
         if (inSlide)
         {
-            if (God.input.x)
+            if (God.input.xPressed)
             {
                 DoX();
             }
@@ -258,12 +275,19 @@ public class Activity : MonoBehaviour
 
     */
 
+    public int xCount = 0;
+    public int nextSlideCount = 0;
+
     public void DoX()
     {
         print("X Called");
         print(Time.time - slideChangeTime);
+        xCount++;
+        print(xCount);
         if (Time.time - slideChangeTime > .3f) // this is just to make it from going through them too fast!
         {
+            nextSlideCount++;
+            print("next slide count : " + nextSlideCount);
             NextSlide();
         }
     }
@@ -514,20 +538,68 @@ public class Activity : MonoBehaviour
             inActivityAreaObjects[i].SetActive(true);
         }
 
+
+
+        if (doingActivity)
+        {
+
+            God.wren.interfaceUtils.ClearPointers();
+
+            God.audio.Play(God.sounds.activityReEnterClip, 1, 1);
+        }
+        else
+        {
+
+            God.audio.Play(God.sounds.activityEnterClip, 1, 1);
+
+            God.wren.interfaceUtils.AddPointer(mainPointOfInterest);
+            God.wren.interfaceUtils.PingPointer(mainPointOfInterest); // just ping it once!
+
+        }
+        //God.wren.interfaceUtils.PingAll();
+
+
         // turn on inActivityArea stuff 
     }
 
     public void OnActivityAreaExited()
     {
 
-        print("Activity Area Exited");
-        // turn off inActivityArea stuff    
-        exitingActivityArea = true;
-        timeExitedActivityArea = Time.time;
+
+
+        if (inActivity)
+        { // only need buffer for exiting if we are already in the activity
+
+            // TODO this should be a loop that is a bit more controlable?
+            God.audio.Play(God.sounds.inActivityExitBeginClip, 1, 1);
+
+            print("Activity Area Exited");
+            // turn off inActivityArea stuff    
+            exitingActivityArea = true;
+            timeExitedActivityArea = Time.time;
+
+            leavingAudioSource.Play();
+            leavingAudioSource.loop = true;
+            leavingAudioSource.volume = 0;
+            leavingAudioSource.pitch = 0;
+
+
+
+        }
+        else
+        {
+
+            God.audio.Play(God.sounds.activityAreaExitedClip, 1, 1);
+            FullExitActivityArea();
+        }
     }
 
     public void FullExitActivityArea()
     {
+        God.wren.interfaceUtils.RemovePointer(mainPointOfInterest);
+
+        leavingAudioSource.Stop();
+
         print("FULL EXIT ACTIVITY AREA");
         // Turn stuff off, end being in activity
         inActivityArea = false;
@@ -548,7 +620,21 @@ public class Activity : MonoBehaviour
     public void WhileExitingActivityArea(float nTime)
     {
         // do stuff while exiting the activity area to warn you you are leaving!
-        print("ALERT LEAVIGN : " + nTime);
+        //  print("ALERT LEAVIGN : " + nTime);
+
+
+        if (doingActivity)
+        {
+
+
+            leavingAudioSource.volume = nTime * nTime;
+            leavingAudioSource.pitch = nTime;
+
+            //print("should be setting");
+            print((Mathf.Sin(nTime * nTime * 10000) + 1) / 3);
+            God.wren.interfaceUtils.AddPointer(mainPointOfInterest); // can call a bunch but shouldnt re add!
+            God.wren.interfaceUtils.SetPointerFade(mainPointOfInterest, (Mathf.Sin(nTime * nTime * 10000) + 1) / 3);
+        }
 
     }
 
@@ -563,10 +649,14 @@ public class Activity : MonoBehaviour
 
     // get close enough to shade to be starting the activity
     public void OnActivityInfoAreaEntered()
+
     {
         print("Activity Info Area Entered");
         if (!insideActivityInfoArea) // need to be able to jump into the slides and not reactivate!
         {
+
+
+            God.wren.interfaceUtils.ClearPointers();// Get rid of all pointers
 
             print("entering into activityArea");
             insideActivityInfoArea = true;
@@ -670,6 +760,8 @@ public class Activity : MonoBehaviour
     {
 
 
+        God.audio.Play(God.sounds.activityDiscoverClip, 1, 1);
+
         print("DISCOVER BEGIN");
         discovered = true;
         onDiscoverEvent.Invoke();
@@ -709,6 +801,8 @@ public class Activity : MonoBehaviour
     public void OnFirstStartBegin()
     {
         print("first START BEGIN");
+
+        God.audio.Play(God.sounds.activityStartClip, 1, 1);
 
         SetSlide(firstStartSlides[0]);
         TurnOnActivityObjects(); // we chose to do the activity! show the objects!
@@ -788,6 +882,11 @@ public class Activity : MonoBehaviour
     {
         print("ON COMPLETE");
         insideActivityInfoArea = true;
+        currentlyComplete = true;
+        onCompleteEvent.Invoke();
+        currentlyComplete = true;
+        numTimesCompleted++;
+        timeCompleted = God.state.totalTimeInGame;
 
         SetSlide(completeSlides[0]);
     }
@@ -805,10 +904,6 @@ public class Activity : MonoBehaviour
         {
             print("ON COMPLETE END");
 
-            onCompleteEvent.Invoke();
-            currentlyComplete = true;
-            numTimesCompleted++;
-            timeCompleted = God.state.totalTimeInGame;
             QuitActivity();// turn off the doing activity stuff
             SaveState();
             EndSlide(currentSlide);
@@ -926,7 +1021,6 @@ public class Activity : MonoBehaviour
         print("On Completed Can Redo Begin");
         ResetPercentages();
         onRedoEvent.Invoke();
-        currentlyComplete = false;// reshow the information!
         SaveState();
         SetSlide(completedCanRedoSlides[0]);
     }
@@ -1024,6 +1118,8 @@ public class Activity : MonoBehaviour
     public void BeginTheActualTask()
     {
 
+
+        print("Restarting the actual task");
         if (amountToCompleteTimesVisited != null)
         {
             if (numTimesCompleted < amountToCompleteTimesVisited.Length)
@@ -1073,6 +1169,7 @@ public class Activity : MonoBehaviour
     public void ResetPercentages()
     {
         print("RESET");
+        currentlyComplete = false;
         currentAmountComplete = 0;
         percentangeComplete = 0;
     }
@@ -1186,7 +1283,10 @@ public class Activity : MonoBehaviour
                 }
                 else
                 {
+
+                    print("discover end called");
                     OnDiscoverEnd();
+                    return;
                 }
             }
         }
@@ -1204,6 +1304,7 @@ public class Activity : MonoBehaviour
                 else
                 {
                     OnFirstStartEnd();
+                    return;
                 }
             }
         }
@@ -1220,6 +1321,7 @@ public class Activity : MonoBehaviour
                 else
                 {
                     OnReenterInfoAreaEnd();
+                    return;
                 }
             }
         }
@@ -1241,6 +1343,7 @@ public class Activity : MonoBehaviour
                 {
 
                     OnCompleteEnd();
+                    return;
                 }
             }
         }
@@ -1259,6 +1362,7 @@ public class Activity : MonoBehaviour
                 {
 
                     OnFailureEnd();
+                    return;
                 }
             }
         }
@@ -1276,7 +1380,9 @@ public class Activity : MonoBehaviour
                 }
                 else
                 {
-                    OnRestartEnd();// Dont want to start over here 
+                    OnRestartEnd();
+
+                    return;// Dont want to start over here 
                     //EndSlide(currentSlide);
                 }
             }
@@ -1296,6 +1402,7 @@ public class Activity : MonoBehaviour
                 else
                 {
                     OnCompletedCanRedoEnd();
+                    return;
                 }
             }
         }
@@ -1314,6 +1421,7 @@ public class Activity : MonoBehaviour
                 {
 
                     OnCompletedCantRedoEnd();
+                    return;
                 }
             }
         }
@@ -1366,6 +1474,21 @@ public class Activity : MonoBehaviour
 
     }
 
+    public void FullStateReset()
+    {
+
+        currentAmountComplete = 0;
+        timeCompleted = 0;
+        discovered = false;
+        started = false;
+        currentlyComplete = false;
+        numTimesCompleted = 0;
+        bestTime = 10000000;
+        bestAmountComplete = 0;
+
+        SaveState();
+    }
+
 
     // Called from outside this function!
     public void AddToComplete(float v)
@@ -1375,6 +1498,10 @@ public class Activity : MonoBehaviour
         {
             currentAmountComplete += v;
             percentangeComplete = currentAmountComplete / amountToComplete;
+
+            God.wren.interfaceUtils.SetRingValue(0, percentangeComplete);
+            God.wren.interfaceUtils.PingRing(0);
+
             if (currentAmountComplete >= amountToComplete)
             {
 
@@ -1388,21 +1515,15 @@ public class Activity : MonoBehaviour
 
     public void SetSlide(Slide s)
     {
-        print("SET SLIDE");
-        print("slide text pre replace");
-        print(s.text);
+        //        print("SET SLIDE");
+        //       print("slide text pre replace");
+        //      print(s.text);
         s.tmpText = ReplaceSlideText(s.text);
-        print("slide text post replace");
-        print(s.text);
+        //    print("slide text post replace");
+        //  print(s.text);
 
 
         slideChangeTime = Time.time;
-        print(s.gameObject.name);
-        God.wren.Crash(wrenPosition.position);
-        God.wren.physics.rb.isKinematic = true;
-        God.wren.physics.rb.position = wrenPosition.position;
-        God.wren.physics.rb.rotation = wrenPosition.rotation;
-        God.wren.state.canTakeOff = false;
 
         currentSlide = s;
         inSlide = true;
@@ -1415,7 +1536,6 @@ public class Activity : MonoBehaviour
         slideChangeTime = Time.time;
         inSlide = false;
         s.Release();
-        God.wren.state.canTakeOff = true;
         Release();
     }
 
@@ -1423,7 +1543,6 @@ public class Activity : MonoBehaviour
     {
 
         releaseTime = Time.time;
-        God.wren.physics.rb.isKinematic = false;
 
     }
 
@@ -1449,17 +1568,17 @@ public class Activity : MonoBehaviour
         // look for {} in the fullString
         string[] splitArray = fullString.Split('{');
 
-        print("splitARRRAY");
+        //print("splitARRRAY");
 
         if (splitArray.Length == 0)
         {
-            print("0 length");
+            //print("0 length");
             return fullString;
         }
 
         if (splitArray.Length == 1)
         {
-            print("no split needed");
+            //print("no split needed");
             return fullString;
 
         }
@@ -1467,23 +1586,23 @@ public class Activity : MonoBehaviour
         if (splitArray.Length > 1)
         {
 
-            print("splitArray0" + splitArray[0]);
-            print("splitArray1" + splitArray[1]);
+            //("splitArray0" + splitArray[0]);
+            //print("splitArray1" + splitArray[1]);
 
             string totalString = splitArray[0];
 
             for (int i = 0; i < splitArray.Length - 1; i++)
             {
                 string[] subString = splitArray[i + 1].Split('}'); // get what we need
-                print(subString);
-                print(subString[0]);
+                //print(subString);
+                //print(subString[0]);
                 totalString += DoReplace(subString[0]);
                 totalString += subString[1];
             }
 
             //totalString += splitArray[splitArray.Length - 1];
 
-            print("TOTAL STRING : " + totalString);
+            //print("TOTAL STRING : " + totalString);
 
             return totalString;
 
@@ -1503,6 +1622,77 @@ public class Activity : MonoBehaviour
     */
     public string DoReplace(string subString)
     {
+
+        print("do replace" + subString);
+
+        if (subString == "PC") // percentage complete
+        {
+            return percentangeComplete.ToString("P0");
+        }
+        else if (subString == "PL") // percentage left
+        {
+            return (1 - percentangeComplete).ToString("P0");
+        }
+        else if (subString == "AC") // amount complete
+        {
+            return currentAmountComplete.ToString();
+        }
+        else if (subString == "ATC") // amount to complete
+        {
+            return amountToComplete.ToString();
+        }
+        else if (subString == "AL") // amount left
+        {
+            return (amountToComplete - currentAmountComplete).ToString();
+        }
+        else if (subString == "BT") // best time
+        {
+            return bestTime.ToString("F2");
+        }
+        else if (subString == "BAC") // best amount complete
+        {
+            return bestAmountComplete.ToString();
+        }
+        else if (subString == "CT") // current time
+        {
+            return (pauseTimeStart - activityStartTime).ToString("F2");
+        }
+        else if (subString == "TTF") // time to finish
+        {
+            return timeToFinishActivity.ToString("F2");
+        }
+        else if (subString == "TAC") // time allowed to complete
+        {
+            return timeAllowedToCompleteActivity.ToString("F2");
+        }
+        else if (subString == "NTC") // numtimes completed
+        {
+            return numTimesCompleted.ToString();
+        }
+        else if (subString == "NCA") // num crystals award
+        {
+            return numCrystalsAward.ToString();
+        }
+        else if (subString == "CT") // crystal type
+        {
+            return crystalType.ToString();
+        }
+        else if (subString == "AN") // activity name
+        {
+            return fullName;
+        }
+        else if (subString == "NL") // number left
+        {
+            return amountToComplete - currentAmountComplete + "";
+        }
+        else if (subString == "TTR") // time til can redo TODO MIGHT BE WRONG
+        {
+            return (timeCompleted + activityCooldownTime - God.state.totalTimeInGame).ToString("F2");
+
+        }
+
+
+
         return "REPALACS";
     }
 

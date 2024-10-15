@@ -207,16 +207,15 @@ Shader "Unlit/quillTerrain_8Biome"{
 
     Pass{
 
-      Tags { "RenderType"="Opaque" }
+      Tags { "RenderType"="Opaque" "LightMode" = "ForwardBase"}
       LOD 100 
       Cull Off
-      Tags{ "LightMode" = "ForwardBase" "TerrainCompatible" = "True"}
       CGPROGRAM
       #pragma vertex vert
       #pragma fragment frag
       #pragma target 4.5
       // make fog work
-      #pragma multi_compile_fogV
+      //#pragma multi_compile_fogV
       #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
       
       

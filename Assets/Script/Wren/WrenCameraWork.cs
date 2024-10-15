@@ -145,11 +145,15 @@ public class WrenCameraWork : MonoBehaviour
 
 
   float oLook;
+
+  public float FOV;
+
+
   public void CameraWork()
   {
 
 
-    float fov;
+    float tmpFOV;
     Vector3 lookTarget;
 
     /*
@@ -185,7 +189,7 @@ public class WrenCameraWork : MonoBehaviour
     if (wren.physics.onGround)
     {
 
-      fov = groundFOV;
+      tmpFOV = groundFOV;
       if (objectTargeted == null)
       {
 
@@ -234,7 +238,7 @@ public class WrenCameraWork : MonoBehaviour
       Tweens out FOV
       if we are going fast enough
       */
-      fov = Mathf.Clamp(wren.physics.vel.magnitude * .7f, slowFOV, fastFOV);
+      tmpFOV = Mathf.Clamp(wren.physics.vel.magnitude * .7f, slowFOV, fastFOV);
       if (objectTargeted == null)
       {
 
@@ -294,7 +298,7 @@ public class WrenCameraWork : MonoBehaviour
 
 
     // Makes any change of FOV faster
-    God.camera.fieldOfView = Mathf.Lerp(God.camera.fieldOfView, fov, .1f);
+    FOV = Mathf.Lerp(FOV, tmpFOV, .1f);
 
 
 

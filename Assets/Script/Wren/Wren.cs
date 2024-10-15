@@ -48,11 +48,15 @@ public class Wren : MonoBehaviour
 
     public WrenWaterController waterController;
 
+    public WrenInterfaceUtils interfaceUtils;
+
 
     public Caller caller;
     public Reseter reseter;
     public Collection collection;
 
+
+    // TODO remove?
     public FullInterface fullInterface;
     public AirInterface airInterface;
 

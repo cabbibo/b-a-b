@@ -19,6 +19,7 @@ public class LerpTo : MonoBehaviour
 
     public Transform resetTarget;
 
+    public float FOV;
 
     public float weight;
 
@@ -56,13 +57,17 @@ public class LerpTo : MonoBehaviour
     {
 
 
+
+
         if (God.wren != null)
         {
+            FOV = God.wren.cameraWork.FOV;
             resetTarget = God.wren.cameraWork.camTarget;
         }
         else
         {
             resetTarget = God.instance.transform;
+            FOV = 60;
         }
 
 

@@ -59,6 +59,8 @@ public class ButterflySpawner : MonoBehaviour
     public float bugFullnessAdd;
     public float bugStaminaAdd;
 
+    public float amountToAddToComplete;
+
     public bool destroyOnEat;
 
 
@@ -420,7 +422,7 @@ public class ButterflySpawner : MonoBehaviour
         }
 
 
-        OnEat.Invoke(bugFullnessAdd);
+        OnEat.Invoke(amountToAddToComplete);
         WrenUtils.God.wren.stats.FullnessAdd(bugFullnessAdd);
         WrenUtils.God.wren.stats.StaminaAdd(bugStaminaAdd);
 

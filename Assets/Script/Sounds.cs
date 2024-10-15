@@ -78,6 +78,28 @@ public class Sounds : MonoBehaviour
     public AudioClip largeFailSound;
 
 
+    [Header("ACTIVITY FEEDBACK SOUNDS")]
+
+    public AudioClip inActivityFullExitedClip;
+
+    public AudioClip activityReEnterClip;
+    public AudioClip activityEnterClip;
+    public AudioClip inActivityExitBeginClip;
+    public AudioClip activityAreaExitedClip;
+
+    public AudioClip leavingActivityWhileInActivityLoop;
+
+
+    public AudioClip activitySuccessClip;
+    public AudioClip activityFailClip;
+
+    public AudioClip activityDiscoverClip;
+    public AudioClip activityStartClip;
+    public AudioClip whileInActivityLoop;
+
+
+
+
 
 
 }
