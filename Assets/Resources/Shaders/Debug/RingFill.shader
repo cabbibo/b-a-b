@@ -10,10 +10,10 @@ Shader "Debug/RingFill"
         LOD 100
 
         Blend One One
-        Cull Off
+        Cull off
+        ZWrite off
 
-        //ZWrite off
-        Blend One One
+        
         Pass
         {
             CGPROGRAM

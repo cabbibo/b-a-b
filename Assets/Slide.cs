@@ -22,6 +22,9 @@ public class Slide : MonoBehaviour
     public bool canCancel;
     public bool canReset;
 
+    public bool setWrenPosition;
+    public Transform wrenPosition;
+
     public UnityEvent onSet;
     public UnityEvent onRelease;
 
@@ -29,6 +32,8 @@ public class Slide : MonoBehaviour
     public string cancelText = "O : Cancel";
 
     public string resetText = "Triangle : Reset";
+
+    public float FOV = 80;
 
 
 
@@ -47,8 +52,24 @@ public class Slide : MonoBehaviour
     public void Set()
     {
 
-        print(text);
-        print(tmpText);
+        if (setWrenPosition)
+        {
+
+            God.wren.Crash(wrenPosition.position);
+            God.wren.physics.rb.isKinematic = true;
+            God.wren.physics.rb.position = wrenPosition.position;
+            God.wren.physics.rb.rotation = wrenPosition.rotation;
+            God.wren.state.canTakeOff = false;
+
+        }
+        else
+        {
+            God.wren.physics.rb.isKinematic = true;
+        }
+
+
+        //        print(text);
+        //        print(tmpText);
 
         if (tmpText == "" || tmpText == null)
         {
@@ -57,9 +78,9 @@ public class Slide : MonoBehaviour
 
 
         tmpText = tmpText.Replace("\\n", "\n");
-        print("Setting slide");
-        print(text);
-        print(tmpText);
+        //print("Setting slide");
+        //print(text);
+        //print(tmpText);
 
         God.cameraManager.slideManager.SetSlide(this);
         God.text.SetInfoText(tmpText, transform);
@@ -100,6 +121,10 @@ public class Slide : MonoBehaviour
         God.text.SetInfoText("");
         God.text.SetLargeText("");
         onRelease.Invoke();
+
+        God.wren.state.canTakeOff = true;
+        God.wren.physics.rb.isKinematic = false;
+
     }
 
 

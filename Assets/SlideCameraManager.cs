@@ -14,6 +14,8 @@ public class SlideCameraManager : MonoBehaviour
     // The importances of this thing
     public float weight;
 
+    public float FOV;
+
 
     // Update is called once per frame
     void Update()
@@ -33,6 +35,7 @@ public class SlideCameraManager : MonoBehaviour
         transform.position = slide.transform.position;
         transform.rotation = slide.transform.rotation;
         weight = 100000;
+        FOV = slide.FOV;
         // Time.timeScale = TIMESCALE_LOW;
 
 
