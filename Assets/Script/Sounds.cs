@@ -31,7 +31,7 @@ public class Sounds : MonoBehaviour
 
     public AudioClip eatClip;
 
-    public AudioClip boostClip;
+
     public AudioClip hurtClip;
     public AudioClip hitGroundClip;
     public AudioClip takeoffClip;
@@ -97,6 +97,13 @@ public class Sounds : MonoBehaviour
     public AudioClip activityStartClip;
     public AudioClip whileInActivityLoop;
 
+
+    // barrel roll sound?
+
+    [Header("Button Press Sounds")]
+
+    public AudioClip interfacePingClip;
+    public AudioClip boostClip;
 
 
 

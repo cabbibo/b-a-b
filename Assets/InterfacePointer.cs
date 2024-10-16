@@ -7,10 +7,11 @@ using WrenUtils;
 public class InterfacePointer : MonoBehaviour
 {
 
-    public float size;
+    //public float size;
 
 
-    public Material material;
+    public Material pointerMaterial;
+    public Material skyColumnMaterial;
 
     public MaterialPropertyBlock mpb;
 
@@ -39,6 +40,31 @@ public class InterfacePointer : MonoBehaviour
     public Vector3[] pointerPositions;
     public int oPointerCount;
 
+
+    public int updateRate;
+    public int updateCounter;
+
+
+    /*
+
+
+    TYPES
+    0 = Quest
+    1 = Activity
+    2 = other wren
+    3 = birds ( 3.0 = butterflies , 2.25 = small birds, 2.5 = medium birds, 2.75 = large birds)
+    4 = mana pools
+    5 = windRings
+    6 = windTunnels
+    7 = updrafts
+    9 = tunnels
+
+
+    */
+
+
+
+
     public void RemakeBuffer()
     {
 
@@ -64,6 +90,14 @@ public class InterfacePointer : MonoBehaviour
         oPointerCount = pointerList.Count;
 
     }
+
+
+    public void OnEnable()
+    {
+        updateCounter = 0;
+
+    }
+
 
     public void OnDisable()
     {
@@ -96,6 +130,13 @@ public class InterfacePointer : MonoBehaviour
     public void LateUpdate()
     {
 
+        updateCounter++;
+        if (updateCounter % updateRate == 0)
+        {
+            updateCounter = 0;
+            UpdateAllPointers();
+        }
+
         if (pointerList.Count != oPointerCount)
         {
             RemakeBuffer();
@@ -120,7 +161,11 @@ public class InterfacePointer : MonoBehaviour
         if (pointerList.Count > 0 && !noneOn)
         {
 
-            //            print("drawing");
+            /*
+
+            Should we only update buffer when we remake it? can pointers change location?
+
+            */
 
             for (int i = 0; i < pointerList.Count; i++)
             {
@@ -139,7 +184,7 @@ public class InterfacePointer : MonoBehaviour
             }
 
             mpb.SetInt("_Count", pointerList.Count);
-            mpb.SetFloat("_Size", size);
+            //mpb.SetFloat("_Size", size);
 
 
             mpb.SetBuffer("_PositionBuffer", _buffer);
@@ -150,7 +195,8 @@ public class InterfacePointer : MonoBehaviour
             mpb.SetVector("_WrenPos", God.wren.bird.head.position);
 
 
-            Graphics.DrawProcedural(material, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, pointerList.Count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+            Graphics.DrawProcedural(pointerMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, pointerList.Count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+            Graphics.DrawProcedural(skyColumnMaterial, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, pointerList.Count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
 
         }
 
@@ -268,6 +314,51 @@ public class InterfacePointer : MonoBehaviour
         ReleaseBuffers();
 
     }
+    public GameObject[] getAllOfTag(string tag)
+    {
+        return GameObject.FindGameObjectsWithTag(tag);
+    }
+
+
+
+    public void UpdateAllPointers()
+    {
+        AddAllQuests();
+        AddAllActivities();
+
+    }
+
+
+    public void AddAllQuests()
+    {
+        GameObject[] allQuests = getAllOfTag("Quest");
+        foreach (GameObject quest in allQuests)
+        {
+            AddPointer(quest.GetComponent<Quest>().portal.transform, 0);
+        }
+    }
+
+
+    public void AddAllActivities()
+    {
+        GameObject[] allActivities = getAllOfTag("Activity");
+        foreach (GameObject activity in allActivities)
+        {
+            AddPointer(activity.GetComponent<Activity>().mainPointOfInterest, 1);
+        }
+    }
+
+    // This one will update Dynamically?
+
+    public void AddAllBirds()
+    {
+
+    }
+
+
+
+
+    // Addd all pointers to all of them?
 
 
 }

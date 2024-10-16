@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using WrenUtils;
 
 public class WrenInterfaceUtils : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class WrenInterfaceUtils : MonoBehaviour
     public InterfacePointer interfacePointer;
 
     public WrenCompass wrenCompass;
+
+    public int crystalsSpentPerPing = 10;
 
 
 
@@ -30,6 +33,9 @@ public class WrenInterfaceUtils : MonoBehaviour
 
     public void PingAll()
     {
+
+        God.audio.Play(God.sounds.interfacePingClip, 1, 1);
+        God.wren.shards.SpendShards(crystalsSpentPerPing);
         for (int i = 0; i < interfaceRings.Length; i++)
         {
             PingRing(i);

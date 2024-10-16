@@ -36,6 +36,12 @@ public class Slide : MonoBehaviour
     public float FOV = 80;
 
 
+    public float waitTime = 0;
+
+    public bool lerp;
+    public float lerpSpeed = 3;
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -50,6 +56,26 @@ public class Slide : MonoBehaviour
     }
 
     public void Set()
+    {
+
+        StartCoroutine(WaitToSet());
+
+
+
+
+    }
+
+
+    public IEnumerator WaitToSet()
+    {
+
+        yield return new WaitForSeconds(waitTime);
+        ActuallySet();
+
+    }
+
+
+    public void ActuallySet()
     {
 
         if (setWrenPosition)
