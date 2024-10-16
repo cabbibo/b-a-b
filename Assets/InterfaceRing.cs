@@ -36,6 +36,12 @@ public class InterfaceRing : MonoBehaviour
     [Header("Debug")]
     public float fadeValue;
 
+    public void OnEnable()
+    {
+        value = 0;
+        fadeValue = 0;
+    }
+
 
     public void LateUpdate()
     {
@@ -46,7 +52,7 @@ public class InterfaceRing : MonoBehaviour
         //}
 
         // dont need to update if 0 alpha
-        // if (fadeValue > 0.01f)
+        if (fadeValue > 0.01f || value <= 0)
         {
 
             if (mpb == null)

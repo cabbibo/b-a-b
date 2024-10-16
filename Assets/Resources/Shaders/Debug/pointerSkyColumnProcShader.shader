@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
-Shader "Debug/PointerInterfaceProcShader1" {
+Shader "Debug/PointerSkyColumnProcShader1" {
     Properties {
 
       _Size("_Size", Float) = 1
@@ -88,30 +88,8 @@ varyings vert (uint id : SV_VertexID){
 
     float3 center = _PositionBuffer[base];
 
-      float3 pos = _WrenPos;
-      float3 fwd = pos - _WorldSpaceCameraPos;
-
-
-      //centerDir = (center - pos);
-    //up = float3(0,1,0);
-
-      float midPointerValue = .3;
-
-     // float size= 10;
-    float3 centerDif = center - pos;
-      float3 centerDir = normalize(centerDif);
-      float centerDist = length(centerDif);
-      
-      float3 up = normalize(cross(centerDir, fwd));
-
-      float3 basePos = pos +  centerDir * 1;
-
-
-      float sizeMultiplier = _TypeBuffer[base] + 1;
-
-
-      // if we are close to the place we are going, connect completely ( longer )
-      // otherwise make it shorter and fatter ( depending on the type )
+    float3 left = UNITY_MATRIX_V[0].xyz; // left direciton
+    float3 up = float3(0,1,0); // up direction
 
 
 
@@ -119,12 +97,10 @@ varyings vert (uint id : SV_VertexID){
 
 
 
-      float3 p1 = basePos;
-      float3 p2 = basePos+ centerDir * (_Size *midPointerValue ) - up * (_Size * .1);
-      float3 p3 = basePos+ centerDir * (_Size *midPointerValue ) + up * (_Size * .1);
-      float3 p4 = basePos+ centerDir * (_Size );
-
-    
+      float3 p1 = center - left * (_Size );
+      float3 p2 =  center + left * (_Size );
+      float3 p3 = center - left * (_Size) + up * (_Size * 100);
+      float3 p4 = center + left * (_Size) + up * (_Size * 100);
 
       /*float3 p1 = center - up *_Size;
       float3 p2 =  pos  - up *_Size;
@@ -138,11 +114,11 @@ varyings vert (uint id : SV_VertexID){
       float value = 0;
 
       if( alternate == 0 ){ extra = p1; uv = float2(0,0); value = 0; }
-      if( alternate == 1 ){ extra = p2; uv = float2(1,0); value = midPointerValue;}
+      if( alternate == 1 ){ extra = p2; uv = float2(1,0); value = 0; }
       if( alternate == 2 ){ extra = p4; uv = float2(1,1); value = 1;}
       if( alternate == 3 ){ extra = p1; uv = float2(0,0); value = 0;}
       if( alternate == 4 ){ extra = p4; uv = float2(1,1); value = 1;}
-      if( alternate == 5 ){ extra = p3; uv = float2(0,1); value = midPointerValue;}
+      if( alternate == 5 ){ extra = p3; uv = float2(0,1); value = 0;}
 
       o.worldPos = extra;
       

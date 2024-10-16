@@ -294,7 +294,14 @@ public class Wren : MonoBehaviour
             // state.inInterface = God.menu.menuOn;
 
 
-
+            // Only drop items in air ( is that correct? )
+            if (input.o_triangle < .5 && input.triangle > .5)
+            {
+                if (interfaceUtils != null)
+                {
+                    interfaceUtils.PingAll();
+                }
+            }
 
             if (doInterface)
             {

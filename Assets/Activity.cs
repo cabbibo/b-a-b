@@ -197,12 +197,41 @@ public class Activity : MonoBehaviour
         }
 
         leavingAudioSource.clip = God.sounds.leavingActivityWhileInActivityLoop;
+        leavingAudioSource.volume = 0;
         whileInLoopAudioSource.clip = God.sounds.whileInActivityLoop;
+        whileInLoopAudioSource.volume = 0;
+
+        // Set state Correctly depending on whats going on
+
+        if (doingActivity)
+        {
+            TurnOnActivityObjects();
+        }
+        else
+        {
+            TurnOffActivityObjects();
+        }
+
+        if (inActivityArea)
+        {
 
 
+            for (int i = 0; i < inActivityAreaObjects.Length; i++)
+            {
+                inActivityAreaObjects[i].SetActive(true);
+            }
 
 
+        }
+        else
+        {
+            for (int i = 0; i < inActivityAreaObjects.Length; i++)
+            {
+                inActivityAreaObjects[i].SetActive(false);
+            }
 
+
+        }
     }
 
 
@@ -261,6 +290,23 @@ public class Activity : MonoBehaviour
                 print("tri pressssss");
                 DoTriangle();
             }
+        }
+
+        if (inActivityArea && doingActivity)
+        {
+            whileInLoopAudioSource.volume = Mathf.Lerp(whileInLoopAudioSource.volume, inActivityLoopVolume, .05f);
+        }
+
+        if (!doingActivity)
+        {
+            whileInLoopAudioSource.volume = Mathf.Lerp(whileInLoopAudioSource.volume, 0, .05f);
+        }
+
+
+        if (inActivityArea)
+        {
+            leavingAudioSource.volume = Mathf.Lerp(leavingAudioSource.volume, 0, .1f);
+            leavingAudioSource.pitch = Mathf.Lerp(leavingAudioSource.pitch, 0, .1f);
         }
 
     }
@@ -326,6 +372,7 @@ public class Activity : MonoBehaviour
 
         timeToFinishActivity = Time.time - activityStartTime;
 
+        God.audio.Play(God.sounds.largeSuccessSound, 1, 1);
 
         // if its a tiered activity, we use the time to determine tier rewards    
         if (tieredActivity)
@@ -543,7 +590,7 @@ public class Activity : MonoBehaviour
         if (doingActivity)
         {
 
-            God.wren.interfaceUtils.ClearPointers();
+            //God.wren.interfaceUtils.ClearPointers();
 
             God.audio.Play(God.sounds.activityReEnterClip, 1, 1);
         }
@@ -552,7 +599,7 @@ public class Activity : MonoBehaviour
 
             God.audio.Play(God.sounds.activityEnterClip, 1, 1);
 
-            God.wren.interfaceUtils.AddPointer(mainPointOfInterest);
+            // God.wren.interfaceUtils.AddPointer(mainPointOfInterest);
             God.wren.interfaceUtils.PingPointer(mainPointOfInterest); // just ping it once!
 
         }
@@ -596,7 +643,7 @@ public class Activity : MonoBehaviour
 
     public void FullExitActivityArea()
     {
-        God.wren.interfaceUtils.RemovePointer(mainPointOfInterest);
+        //God.wren.interfaceUtils.RemovePointer(mainPointOfInterest);
 
         leavingAudioSource.Stop();
 
@@ -627,12 +674,12 @@ public class Activity : MonoBehaviour
         {
 
 
-            leavingAudioSource.volume = nTime * nTime;
-            leavingAudioSource.pitch = nTime;
+            leavingAudioSource.volume = Mathf.Lerp(leavingAudioSource.volume, nTime * nTime, .1f);
+            leavingAudioSource.pitch = Mathf.Lerp(leavingAudioSource.pitch, nTime * 3, .1f);
 
             //print("should be setting");
             print((Mathf.Sin(nTime * nTime * 10000) + 1) / 3);
-            God.wren.interfaceUtils.AddPointer(mainPointOfInterest); // can call a bunch but shouldnt re add!
+            //God.wren.interfaceUtils.AddPointer(mainPointOfInterest); // can call a bunch but shouldnt re add!
             God.wren.interfaceUtils.SetPointerFade(mainPointOfInterest, (Mathf.Sin(nTime * nTime * 10000) + 1) / 3);
         }
 
@@ -656,7 +703,7 @@ public class Activity : MonoBehaviour
         {
 
 
-            God.wren.interfaceUtils.ClearPointers();// Get rid of all pointers
+            //God.wren.interfaceUtils.ClearPointers();// Get rid of all pointers
 
             print("entering into activityArea");
             insideActivityInfoArea = true;
@@ -1508,6 +1555,7 @@ public class Activity : MonoBehaviour
 
             if (currentAmountComplete >= amountToComplete)
             {
+
 
                 OnAmountCompleteReached();
 
