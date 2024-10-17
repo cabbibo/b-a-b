@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using WrenUtils;
 
 public class OverallCameraManager : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class OverallCameraManager : MonoBehaviour
     public Transform cameraTransform;
 
     public Camera camera;
+    public float totalWeight;
 
     // Use the weights of each value to decide where our camera goes!
     public void LateUpdate()
@@ -57,9 +59,27 @@ public class OverallCameraManager : MonoBehaviour
             fov = fov3;
         }
 
+        totalWeight = w1 + w2 + w3;
+
+        pos = (t1.position * w1 + t2.position * w2 + t3.position * w3) / totalWeight;
+        fov = (fov1 * w1 + fov2 * w2 + fov3 * w3) / totalWeight;
+
+
+        Vector3 forward = (t1.forward * w1 + t2.forward * w2 + t3.forward * w3) / totalWeight;
+        Vector3 up = (t1.up * w1 + t2.up * w2 + t3.up * w3) / totalWeight;
+
+        rot = Quaternion.LookRotation(forward, up);
+
+
+        // TODO something to make sure that the bird is always in view?
+
+
 
         cameraTransform.position = pos;
         cameraTransform.rotation = rot;
+        //cameraTransform.LookAt(God.wren.transform.position);
+
+        //cameraTransform.rotation = rot;
         camera.fieldOfView = fov;
 
 

@@ -586,6 +586,7 @@ public class FullBird : MonoBehaviour
    }
 
 
+
    public void Teleport()
    {
 
@@ -691,6 +692,29 @@ public class FullBird : MonoBehaviour
       _ExplosionVector = Vector3.zero;
 
       _LockStartTime = Time.time;
+
+   }
+
+
+
+   public void Disintegrate()
+   {
+      _LockedValue = 0;
+      _ExplosionValue = 1;
+      _ExplosionVector = wren.physics.vel;
+
+
+   }
+
+   public void Reintegrate()
+   {
+
+      _LockedValue = 1;
+      _ExplosionValue = 0;
+      _ExplosionVector = Vector3.zero;
+
+      _LockStartTime = Time.time;
+
 
    }
 

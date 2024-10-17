@@ -9247,6 +9247,55 @@ Transform:
   - {fileID: 291124749569043794}
   m_Father: {fileID: 3067082078432561070}
   m_LocalEulerAnglesHint: {x: -13.995001, y: 137.31001, z: -4.46}
+--- !u!1 &2432164517638331137
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5016218635963417305}
+  - component: {fileID: 2299624543501309177}
+  m_Layer: 10
+  m_Name: WrenDisintegrationManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5016218635963417305
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2432164517638331137}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8120365990806255992}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2299624543501309177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2432164517638331137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae8d0c3d647d0524b858e814d0f98001, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  layerWhole: Wren
+  layerDisintegrated: WrenDisintegrated
+  wren: {fileID: 6951865465235407638}
+  disintegrationTime: 0
+  reintegrationDistance: 10
 --- !u!1 &2451232681174442750
 GameObject:
   m_ObjectHideFlags: 0
@@ -25178,6 +25227,7 @@ Transform:
   - {fileID: 1434841373474430301}
   - {fileID: 1397332212570672566}
   - {fileID: 4034569367408608108}
+  - {fileID: 5016218635963417305}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6951865465235407638
@@ -25210,6 +25260,7 @@ MonoBehaviour:
   colors: {fileID: 742813609323488648}
   waterController: {fileID: 3932682049689603813}
   interfaceUtils: {fileID: 3913189785022593543}
+  disintegration: {fileID: 2299624543501309177}
   caller: {fileID: 6790189303771903960}
   reseter: {fileID: 1037597485291775203}
   collection: {fileID: 0}
@@ -25371,6 +25422,7 @@ MonoBehaviour:
   furthestHeight: 40
   closestForce: 2
   furthestForce: 0
+  closestTag: 
   tuckReduceUpdraftVal: 0.8
   windAmountToTheSide: 2
   groundForceTweenVal: 0.2

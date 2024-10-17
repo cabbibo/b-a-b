@@ -187,8 +187,13 @@ public class PreyController : MonoBehaviour
 
         force = Vector3.zero;
         frame = 0;
+        // God.cameraManager.targetingManager.AddTarget(transform, new Vector2(1, 30));
     }
 
+    public void OnDisable()
+    {
+        // God.cameraManager.targetingManager.RemoveTarget(transform);
+    }
 
 
     public Vector3 GetNewVelocity(Vector3 newDesiredVelocity, Vector3 currentVelocity)
