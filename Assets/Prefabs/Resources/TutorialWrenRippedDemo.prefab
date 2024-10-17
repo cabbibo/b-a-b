@@ -28020,17 +28020,6 @@ MonoBehaviour:
   bumperForce: 0
   bumperTorqueForce: 0
   oceanForceMultiplier: 10
-  carryingForceMultiplier: 0
-  carryingDragMultiplier: 0
-  groundPower: 6
-  groundOut: 0.3
-  groundDampening: 0.9
-  rotateTowardsTargetOnGround: 1
-  groundUpForce: 4
-  groundUpVal: 3
-  takeOffForwardForce: 40
-  takeOffUpForce: 40
-  paintedWindForceMultiplier: 0
   oceanVelocityForceMaxHeight: 0
   oceanVelocityForceMultiplier: 0
   oceanMomentumForceMaxHeight: 0
@@ -28042,6 +28031,25 @@ MonoBehaviour:
   oceanBoyancyForceMultiplier: 0
   waveLiftForceMaxHeight: 10
   waveLiftForceMultiplier: 10
+  oceanToFlatOnExit: 0.3
+  velocityReductionOnEnterWater: 0.3
+  carryingForceMultiplier: 0
+  carryingDragMultiplier: 0
+  groundPower: 6
+  groundOut: 0.3
+  groundDampening: 0.9
+  rotateTowardsTargetOnGround: 1
+  groundUpForce: 4
+  groundUpVal: 3
+  takeOffForwardForce: 40
+  takeOffUpForce: 40
+  paintedWindForceMultiplier: 0
+  skimForceUp: 50
+  skimForceForward: 50
+  skimImpulseMulitplier: 1
+  boostMultiplier: 0
+  closestTag: 
+  closestObject: {fileID: 0}
   showDebugForces: 0
   reset: 0
   distToGround: 0
@@ -28136,12 +28144,6 @@ MonoBehaviour:
   bumperApplicationPositionR: {x: 0, y: 0, z: 0}
   oLeft1: 0
   oRight1: 0
-  oceanToFlatOnExit: 0.3
-  velocityReductionOnEnterWater: 0.3
-  skimForceUp: 50
-  skimForceForward: 50
-  skimImpulseMulitplier: 1
-  boostMultiplier: 0
   doBasicGroundControls: 0
   basicGroundLookControls_lookSpeed: 3
   basicGroundLookControls_moveSpeed: 0
@@ -28351,7 +28353,6 @@ MonoBehaviour:
   - Superflight1
   - Tutorial1
   - TutorialWrenRippedDemo(Clone)
-  paramID: 2
   paramSetName: FerController1
 --- !u!114 &3856516255870990745
 MonoBehaviour:
