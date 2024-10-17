@@ -51,6 +51,9 @@ public class Wren : MonoBehaviour
     public WrenInterfaceUtils interfaceUtils;
 
 
+    public WrenDisintegrationManager disintegration;
+
+
     public Caller caller;
     public Reseter reseter;
     public Collection collection;
@@ -80,6 +83,8 @@ public class Wren : MonoBehaviour
     public bool autoTakeOff;
 
     public bool doInterface;
+
+
 
 
 
@@ -293,14 +298,19 @@ public class Wren : MonoBehaviour
 
             // state.inInterface = God.menu.menuOn;
 
-
-            // Only drop items in air ( is that correct? )
+            // ALWAYS PING
             if (input.o_triangle < .5 && input.triangle > .5)
             {
                 if (interfaceUtils != null)
                 {
                     interfaceUtils.PingAll();
                 }
+            }
+
+            // ALWAYS DISINTEGRATE
+            if (input.o_square < .5 && input.square > .5)
+            {
+                disintegration.Disintegrate();
             }
 
             if (doInterface)
@@ -499,6 +509,8 @@ public class Wren : MonoBehaviour
                         }
 
                     }
+
+
                 }
                 else
                 {

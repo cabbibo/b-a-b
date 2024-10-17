@@ -113,6 +113,9 @@ public class WrenPhysics : MonoBehaviour
     public float closestForce;
     public float furthestForce;
 
+    public string closestTag;
+    public GameObject closestObject;
+
     public float tuckReduceUpdraftVal;
     public float windAmountToTheSide;
 
@@ -925,12 +928,18 @@ public class WrenPhysics : MonoBehaviour
         Vector3 tmpDir;
         Vector3 tmpNorm;
         Vector3 tmpPos;
+        string tmpTag;
+        GameObject tmpGO;
 
         Vector3 closestDirection;
 
         tmpNorm = Vector3.up;
         tmpDir = -Vector3.up;
         tmpPos = Vector3.one * -1000;
+        tmpTag = "Untagged";
+        tmpGO = this.gameObject;
+
+
         RaycastHit hit;
 
         tmpDist = 1000000;
@@ -983,6 +992,8 @@ public class WrenPhysics : MonoBehaviour
                         tmpNorm = hit.normal;
                         tmpDir = dir;
                         tmpPos = hit.point;
+                        tmpTag = hit.transform.tag;
+                        tmpGO = hit.transform.gameObject;
                     }
 
 
@@ -1004,11 +1015,19 @@ public class WrenPhysics : MonoBehaviour
             tmpNorm = Vector3.up;
             tmpDir = -Vector3.up;
             tmpPos = Vector3.one * -1000;
+            tmpTag = "Untagged";
+            tmpGO = this.gameObject;
         }
 
 
         rawDistToGround = tmpDist;
         rawGroundPoint = tmpPos;
+
+
+        closestTag = tmpTag;
+        closestObject = tmpGO;
+
+
         // we smooth our values to make the transition between areas less jarring
         distToGround = Mathf.Lerp(distToGround, tmpDist, groundForceTweenVal);
         groundNormal = Vector3.Lerp(groundNormal, tmpNorm, groundForceTweenVal);
