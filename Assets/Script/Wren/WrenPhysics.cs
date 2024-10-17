@@ -113,8 +113,7 @@ public class WrenPhysics : MonoBehaviour
     public float closestForce;
     public float furthestForce;
 
-    public string closestTag;
-    public GameObject closestObject;
+
 
     public float tuckReduceUpdraftVal;
     public float windAmountToTheSide;
@@ -148,6 +147,29 @@ public class WrenPhysics : MonoBehaviour
     // 10 meters under will feel 10 force up;
     public float oceanForceMultiplier = 10; // add above water force too
 
+    public float oceanVelocityForceMaxHeight; // max height, multiplication at 0 when wren at max height
+    public float oceanVelocityForceMultiplier; // overall multiplier
+
+    public float oceanMomentumForceMaxHeight; // max height, multiplication at 0 when wren at max height
+    public float oceanMomentumForceMultiplier; // overall multiplier
+
+
+
+    public float oceanNormalForceMaxHeight; // max height, multiplication at 0 when wren at max height
+    public float oceanNormalForceMultiplier; // overall multiplier
+
+    public float oceanNormalFlattener; // flattens normalForce so we move along the surface more
+
+    public float oceanBoyancyForceMaxHeight; // max height, multiplication at full when wren at max height ( negative )
+    public float oceanBoyancyForceMultiplier; // overall multiplier
+
+    public float waveLiftForceMaxHeight = 10;
+    public float waveLiftForceMultiplier = 10;
+
+
+    public float oceanToFlatOnExit = .3f;
+
+    public float velocityReductionOnEnterWater = .3f;
 
     /*
 
@@ -191,31 +213,28 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+    /*
+    SKIM
+    */
+    public float skimForceUp = 50;
+    public float skimForceForward = 50;
+    public float skimImpulseMulitplier = 1;
 
-    public float oceanVelocityForceMaxHeight; // max height, multiplication at 0 when wren at max height
-    public float oceanVelocityForceMultiplier; // overall multiplier
 
-    public float oceanMomentumForceMaxHeight; // max height, multiplication at 0 when wren at max height
-    public float oceanMomentumForceMultiplier; // overall multiplier
-
-
-
-    public float oceanNormalForceMaxHeight; // max height, multiplication at 0 when wren at max height
-    public float oceanNormalForceMultiplier; // overall multiplier
-
-    public float oceanNormalFlattener; // flattens normalForce so we move along the surface more
-
-    public float oceanBoyancyForceMaxHeight; // max height, multiplication at full when wren at max height ( negative )
-    public float oceanBoyancyForceMultiplier; // overall multiplier
-
-    public float waveLiftForceMaxHeight = 10;
-    public float waveLiftForceMultiplier = 10;
+    /*Boost*/
+    public float boostMultiplier = 100;
 
 
 
 
 
 
+
+
+
+    // DATA
+    public string closestTag;
+    public GameObject closestObject;
 
 
     /*
@@ -1399,10 +1418,6 @@ public class WrenPhysics : MonoBehaviour
 
 
 
-    public float oceanToFlatOnExit = .3f;
-    public float velocityReductionOnEnterWater = .3f;
-
-
     public void OceanForces()
     {
 
@@ -1596,9 +1611,7 @@ public class WrenPhysics : MonoBehaviour
 
 
 
-    public float skimForceUp = 50;
-    public float skimForceForward = 50;
-    public float skimImpulseMulitplier = 1;
+
     public void Skim(Collision c)
     {
 
@@ -1609,7 +1622,6 @@ public class WrenPhysics : MonoBehaviour
     }
 
 
-    public float boostMultiplier;
     public void Boost()
     {
         AddForce(transform.forward * boostMultiplier);
