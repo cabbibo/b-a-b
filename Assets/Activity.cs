@@ -42,6 +42,8 @@ public class Activity : MonoBehaviour
     public float crystalType;
 
 
+
+
     public bool timedActivity;
     public bool stopOnTimeUp;
 
@@ -117,6 +119,10 @@ public class Activity : MonoBehaviour
     public UnityEvent onCompleteEvent;
     public UnityEvent onRedoEvent;
     public UnityEvent onStartAgainEvent;
+
+
+    public UnityEvent TurnOnActivityEvent;
+    public UnityEvent TurnOffActivityEvent;
 
     public float activityCooldownTime; // TIME BEFORE WE CAN REDO THE ACTIVITY AGAIN
 
@@ -436,7 +442,15 @@ public class Activity : MonoBehaviour
 
 
 
+    public void StraightFail()
+    {
 
+        if (doingActivity)
+        {
+            OnFailureBegin();
+        }
+
+    }
 
     // Do Time Up tiers 
     public void OnTimeUp()
@@ -845,7 +859,6 @@ public class Activity : MonoBehaviour
 
     public void AlwaysStartBegin()
     {
-
         God.audio.Play(God.sounds.activityStartClip, 1, 1);
         TurnOnActivityObjects(); // we chose to do the activity! show the objects!
     }
@@ -854,6 +867,7 @@ public class Activity : MonoBehaviour
     public void OnFirstStartBegin()
     {
         print("first START BEGIN");
+        AlwaysStartBegin();
 
         SetSlide(firstStartSlides[0]);
 
@@ -1031,7 +1045,7 @@ public class Activity : MonoBehaviour
     {
         print("ON Restart");
         // onStartAgainEvent.Invoke();
-        TurnOnActivityObjects();
+        AlwaysStartBegin();
         SetSlide(restartSlides[0]);
 
     }
@@ -1191,10 +1205,16 @@ public class Activity : MonoBehaviour
     // We are choosing to do the activity! we are not actually *in* it yet, just want to turn on the components so we can show them!
     public void TurnOnActivityObjects()
     {
+
+
         for (int i = 0; i < doingActivityObjects.Length; i++)
         {
             doingActivityObjects[i].SetActive(true);
         }
+
+        print("TURN ON ACTIVITY OBJECTS");
+
+        TurnOnActivityEvent.Invoke();
     }
 
 
@@ -1204,6 +1224,8 @@ public class Activity : MonoBehaviour
         {
             doingActivityObjects[i].SetActive(false);
         }
+
+        TurnOffActivityEvent.Invoke();
     }
 
 

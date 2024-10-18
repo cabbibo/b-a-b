@@ -38,7 +38,8 @@ public class SlideCameraManager : MonoBehaviour
             if (currentSlide.lerp)
             {
 
-                print("Lerping");
+                //print("Lerping");
+                // print("rr");
                 float t = (Time.time - slideStartTime) / lerpSpeed;
 
                 t = Mathf.Clamp01(t);
@@ -48,6 +49,7 @@ public class SlideCameraManager : MonoBehaviour
                 transform.rotation = Quaternion.Slerp(slideStartRotation, currentSlide.transform.rotation, t);
 
                 weight = Mathf.Lerp(weight, 10, .1f); // weight hits faster because we are lerping
+
             }
 
             weight = Mathf.Lerp(weight, 10, .01f);

@@ -12,7 +12,15 @@ public class ActivityArea : MonoBehaviour
 
         if (WrenUtils.God.IsOurWren(other))
         {
-            activity.OnActivityAreaEntered();
+
+            print("ACTIVITYAREAENTERED CALLLLLLLLLLLLLLLLLLLLLLLLLEd");
+            print(activity.inSlide);
+            print(activity.insideActivityInfoArea);
+            if (activity.inSlide == false)
+            {
+                print("ACTIVITYAREAENTERED");
+                activity.OnActivityAreaEntered();
+            }
         }
     }
 
@@ -20,7 +28,13 @@ public class ActivityArea : MonoBehaviour
     {
         if (WrenUtils.God.IsOurWren(other))
         {
-            activity.OnActivityAreaExited();
+
+
+            if (activity.inSlide == false)
+            {
+                print("ACTIVITYAREAEXITED");
+                activity.OnActivityAreaExited();
+            }
         }
     }
 
