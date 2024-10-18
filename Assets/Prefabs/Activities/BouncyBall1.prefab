@@ -218,6 +218,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80ad636a3d4059b4e894302d90012208, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onPickup:
+    m_PersistentCalls:
+      m_Calls: []
+  onDrop:
+    m_PersistentCalls:
+      m_Calls: []
   carryForce: 10
   carryBackDistance: 0.4
   carryUpDistance: 0
@@ -226,6 +232,7 @@ MonoBehaviour:
   carryingDrag: 3
   releasedDrag: 0.2
   gravityOnDrop: 1
+  whileCarryingScaleMultiplier: 0.3
 --- !u!82 &3212415886939033967
 AudioSource:
   m_ObjectHideFlags: 0

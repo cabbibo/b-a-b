@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using Normal.Realtime;
 using Normal.Realtime.Serialization;
+using UnityEngine.Events;
 
 public class Carryable : RealtimeComponent<CarryableModel>
 {
+
+    public UnityEvent OnPickup;
+    public UnityEvent OnDrop;
+
     public class DropSettings
     {
         public Vector3? ExplosiveDirection;
@@ -148,8 +153,34 @@ public class Carryable : RealtimeComponent<CarryableModel>
         model.lastCarrierId = carrier.GetNormalClientId();
         _carrier = carrier;
 
+        OnPickup.Invoke();
+
         return true;
     }
+
+
+
+    public bool TryToResetPosition(WrenCarrying carrier, Vector3 targetPosition)
+    {
+        print("TRying to reset position here");
+        if (!CheckAvailableToCarry(carrier))
+        {
+            return false;
+        }
+
+        print("able to reset");
+
+
+        _realtimeView.RequestOwnership();
+        _realtimeTransform.RequestOwnership();
+        _rigidbody.position = targetPosition;
+        _rigidbody.velocity = Vector3.zero;
+
+        model.beingCarried = false;
+
+        return true;
+    }
+
 
     public void UpdateCarriedPosition(WrenCarrying carrier, Vector3 targetPosition)
     {
@@ -170,6 +201,8 @@ public class Carryable : RealtimeComponent<CarryableModel>
 
         GetComponent<Collider>().enabled = true;
         transform.localScale /= whileCarryingScaleMultiplier;
+
+
         if (dropSettings != null)
         {
             if (dropSettings.ExplosiveDirection.HasValue)
@@ -183,6 +216,8 @@ public class Carryable : RealtimeComponent<CarryableModel>
         {
             print("no drop settings lol");
         }
+
+        OnDrop.Invoke();
 
         return true;
     }
