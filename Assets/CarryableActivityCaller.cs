@@ -11,6 +11,11 @@ public class CarryableActivityCaller : MonoBehaviour
 
     public Transform carryableStartPosition;
 
+    public Transform carryableDropPosition;
+    public float carryableDropRadius;
+
+
+
 
     public void OnEnable()
     {
@@ -61,7 +66,49 @@ public class CarryableActivityCaller : MonoBehaviour
         print("unsetting");
         //carryable.gameObject.SetActive(false);
 
+        carryable.TryToResetPosition(God.wren.carrying, carryableStartPosition.position);
+
     }
+
+    public void AreaEntered()
+    {
+
+        print("area entered");
+
+
+        // Dont reset if we are already in it
+        if (activity.doingActivity == false)
+        {
+
+            carryable.TryToResetPosition(God.wren.carrying, carryableStartPosition.position);
+        }
+    }
+
+    public void AreaExited()
+    {
+
+        print("area exited");
+        carryable.TryToResetPosition(God.wren.carrying, carryableStartPosition.position);
+    }
+
+    public void Update()
+    {
+        if (activity.doingActivity == true)
+        {
+
+
+            float dist = Vector3.Distance(carryable.transform.position, carryableDropPosition.position);
+
+            if (dist < carryableDropRadius) // you win and are close enough
+
+            {
+                activity.AddToComplete(10000);//FINISH
+            }
+
+
+        }
+    }
+
 
 
 
