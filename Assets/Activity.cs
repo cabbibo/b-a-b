@@ -42,6 +42,9 @@ public class Activity : MonoBehaviour
     public float crystalType;
 
 
+    public bool canRenterActivityInfoArea = true;
+
+
 
 
     public bool timedActivity;
@@ -123,6 +126,9 @@ public class Activity : MonoBehaviour
 
     public UnityEvent TurnOnActivityEvent;
     public UnityEvent TurnOffActivityEvent;
+
+    public UnityEvent OnActivityAreaEnteredEvent;
+    public UnityEvent OnActivityFullExitedEvent;
 
     public float activityCooldownTime; // TIME BEFORE WE CAN REDO THE ACTIVITY AGAIN
 
@@ -621,7 +627,11 @@ public class Activity : MonoBehaviour
 
 
         // turn on inActivityArea stuff 
+
+        OnActivityAreaEnteredEvent.Invoke();
+
     }
+
 
     public void OnActivityAreaExited()
     {
@@ -673,8 +683,10 @@ public class Activity : MonoBehaviour
         if (doingActivity)
         {
             QuitActivity();
-
         }
+
+        God.wren.interfaceUtils.SetPointerFade(mainPointOfInterest, 0);
+        OnActivityFullExitedEvent.Invoke();
     }
 
 
@@ -738,7 +750,12 @@ public class Activity : MonoBehaviour
 
             if (started && !currentlyComplete) // we are in the middle of doing the activity
             {
-                OnReenterInfoAreaBegin();
+
+                if (canRenterActivityInfoArea)
+                {
+                    OnReenterInfoAreaBegin();
+                }
+
                 return;
 
                 //OnRestartBegin();
@@ -1146,6 +1163,10 @@ public class Activity : MonoBehaviour
 
     */
 
+    public void SetNewPointOfInterest(Transform t)
+    {
+        mainPointOfInterest = t;
+    }
 
     public float pauseTimeStart;
     public bool paused;
