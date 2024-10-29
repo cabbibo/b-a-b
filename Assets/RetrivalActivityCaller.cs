@@ -15,6 +15,48 @@ public class RetrivalActivityCaller : MonoBehaviour
     // main point of interests switches back to start location
     // activity is complete when we have returned to start location with thing to retrieve
 
+    public Activity activity;
+    public Transform retrivalPoint;
+    public Transform startLocation;
 
+    public float dotMatchForLeaving = 0.5f;
+
+
+    public void OnActivityStart()
+    {
+        // switch main point of interest to thing to retrive
+
+        activity.mainPointOfInterest = retrivalPoint;
+
+
+    }
+
+    public void Update()
+    {
+
+
+        if (activity.doingActivity)
+        {
+
+            // check if we are flying in the wrong direction
+
+
+        }
+
+
+    }
+
+    public Carryable carryable;
+
+    public void OnCarryablePickUp()
+    {
+        // set back to original location
+        activity.mainPointOfInterest = startLocation;
+
+        // now we check to see if we are close enough to the crystal to decide if we need to leave the activity
+
+
+
+    }
 
 }

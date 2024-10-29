@@ -687,6 +687,8 @@ public class Activity : MonoBehaviour
 
         God.wren.interfaceUtils.SetPointerFade(mainPointOfInterest, 0);
         OnActivityFullExitedEvent.Invoke();
+
+
     }
 
 

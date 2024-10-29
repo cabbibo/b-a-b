@@ -15,6 +15,9 @@ public class WrenInterfaceUtils : MonoBehaviour
     public int crystalsSpentPerPing = 10;
 
 
+    public WrenUIText warningText;
+
+
 
 
     // start with nothing on 

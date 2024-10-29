@@ -186,7 +186,7 @@ public class PreyController : MonoBehaviour
         SetHeight();
 
         force = Vector3.zero;
-        frame = 0;
+        frame = Random.Range(0, physicsResolution);
         // God.cameraManager.targetingManager.AddTarget(transform, new Vector2(1, 30));
     }
 
