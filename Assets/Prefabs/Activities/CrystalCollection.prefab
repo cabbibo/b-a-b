@@ -14995,10 +14995,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80ad636a3d4059b4e894302d90012208, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onPickup:
+  OnPickup:
     m_PersistentCalls:
       m_Calls: []
-  onDrop:
+  OnDrop:
     m_PersistentCalls:
       m_Calls: []
   carryForce: 10
@@ -20289,10 +20289,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80ad636a3d4059b4e894302d90012208, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onPickup:
+  OnPickup:
     m_PersistentCalls:
       m_Calls: []
-  onDrop:
+  OnDrop:
     m_PersistentCalls:
       m_Calls: []
   carryForce: 10
@@ -20640,10 +20640,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80ad636a3d4059b4e894302d90012208, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onPickup:
+  OnPickup:
     m_PersistentCalls:
       m_Calls: []
-  onDrop:
+  OnDrop:
     m_PersistentCalls:
       m_Calls: []
   carryForce: 10

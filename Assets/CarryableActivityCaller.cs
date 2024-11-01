@@ -52,7 +52,7 @@ public class CarryableActivityCaller : MonoBehaviour
     {
 
 
-        print("setting");
+        //print("setting");
         //carryable.gameObject.SetActive(true);
 
         carryable.TryToResetPosition(God.wren.carrying, carryableStartPosition.position);
@@ -63,7 +63,7 @@ public class CarryableActivityCaller : MonoBehaviour
     public void TurnOffActivityEvent()
     {
 
-        print("unsetting");
+        //  print("unsetting");
         //carryable.gameObject.SetActive(false);
 
         carryable.TryToResetPosition(God.wren.carrying, carryableStartPosition.position);
@@ -75,6 +75,7 @@ public class CarryableActivityCaller : MonoBehaviour
 
         print("area entered");
 
+        God.wren.interfaceUtils.warningText.SetFade(0);
 
         // Dont reset if we are already in it
         if (activity.doingActivity == false)
@@ -89,6 +90,7 @@ public class CarryableActivityCaller : MonoBehaviour
 
         print("area exited");
         carryable.TryToResetPosition(God.wren.carrying, carryableStartPosition.position);
+        God.wren.interfaceUtils.warningText.SetFade(0);
     }
 
     public void Update()
@@ -107,6 +109,16 @@ public class CarryableActivityCaller : MonoBehaviour
 
 
         }
+    }
+
+
+    public void WhileLeaving(float v)
+    {
+        print("while leaving");
+        print(v);
+
+        God.wren.interfaceUtils.warningText.text.text = "LEAVING ACTIVITY IN " + Mathf.Floor(((1 - v) * activity.timeAllowedWhileExitedActivityArea) * 100) / 100 + " SECONDS";
+        God.wren.interfaceUtils.warningText.SetFade((Mathf.Sin(v * 50) + 1) / 2);
     }
 
 

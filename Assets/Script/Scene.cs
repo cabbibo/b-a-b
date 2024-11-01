@@ -94,7 +94,7 @@ namespace WrenUtils
             // Otherwise we use the portal!
             if (loadedFromPortal == false)
             {
-                print("loaded from portal false");
+                //                print("loaded from portal false");
                 // loading from last position
                 startPos = God.state.lastPosition;
             }
@@ -126,7 +126,7 @@ namespace WrenUtils
 
             }
 
-            print(startPos);
+            // print(startPos);
 
             God.wren.SetFullPosition(startPos);
 

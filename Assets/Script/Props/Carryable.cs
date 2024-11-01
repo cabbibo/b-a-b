@@ -92,7 +92,19 @@ public class Carryable : RealtimeComponent<CarryableModel>
 
     public bool CheckAvailableToCarry(WrenCarrying carrier)
     {
-        return !BeingCarried && (IdOfLastCarrier != carrier.GetNormalClientId() || TimeSinceLastCarried >= CarryCooldown);
+        print(carrier);
+        print(carrier.GetNormalClientId());
+        print(IdOfLastCarrier);
+        print(CarryCooldown);
+        print(TimeSinceLastCarried);
+        if (carrier.GetNormalClientId() != null)
+        {
+            return !BeingCarried && (IdOfLastCarrier != carrier.GetNormalClientId() || TimeSinceLastCarried >= CarryCooldown);
+        }
+        else
+        {
+            return false;
+        }
     }
 
     protected override void OnRealtimeModelReplaced(CarryableModel previousModel, CarryableModel currentModel)

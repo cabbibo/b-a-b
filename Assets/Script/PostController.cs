@@ -49,6 +49,8 @@ public class PostController : MonoBehaviour
             CartToPolar(God.wren.transform.position);
         }
 
+
+        //        print(post);
         post._Hue.value = _Hue;
         post._Saturation.value = _Saturation;
         post._Lightness.value = _Lightness;

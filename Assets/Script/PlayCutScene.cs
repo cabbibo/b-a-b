@@ -71,8 +71,8 @@ public class PlayCutScene : MonoBehaviour
         glitch = Camera.main.gameObject.GetComponent<GlitchHit>();
 
 
-        print(lerpTo);
-        print(God.cameraManager);
+        //print(lerpTo);
+        //print(God.cameraManager);
         //print(God.cameraManager.lerpTo);
         // print(lerpTo);
 

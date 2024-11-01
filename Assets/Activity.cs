@@ -128,7 +128,10 @@ public class Activity : MonoBehaviour
     public UnityEvent TurnOffActivityEvent;
 
     public UnityEvent OnActivityAreaEnteredEvent;
+    public UnityEvent OnActivityAreaExitedEvent;
     public UnityEvent OnActivityFullExitedEvent;
+
+    public Helpers.FloatEvent WhileLeavingEvent;
 
     public float activityCooldownTime; // TIME BEFORE WE CAN REDO THE ACTIVITY AGAIN
 
@@ -217,30 +220,27 @@ public class Activity : MonoBehaviour
 
         if (doingActivity)
         {
+            TurnOnInActivityAreaObjects();
             TurnOnActivityObjects();
         }
         else
         {
             TurnOffActivityObjects();
+            TurnOffInActivityAreaObjects();
         }
 
         if (inActivityArea)
         {
 
 
-            for (int i = 0; i < inActivityAreaObjects.Length; i++)
-            {
-                inActivityAreaObjects[i].SetActive(true);
-            }
+            TurnOnInActivityAreaObjects();
 
 
         }
         else
         {
-            for (int i = 0; i < inActivityAreaObjects.Length; i++)
-            {
-                inActivityAreaObjects[i].SetActive(false);
-            }
+
+            TurnOffInActivityAreaObjects();
 
 
         }
@@ -638,6 +638,7 @@ public class Activity : MonoBehaviour
 
 
 
+
         if (doingActivity)
         { // only need buffer for exiting if we are already in the activity
 
@@ -653,6 +654,7 @@ public class Activity : MonoBehaviour
             leavingAudioSource.loop = true;
             leavingAudioSource.volume = 0;
             leavingAudioSource.pitch = 0;
+            OnActivityAreaExitedEvent.Invoke();
 
 
 
@@ -661,9 +663,12 @@ public class Activity : MonoBehaviour
         {
 
             God.audio.Play(God.sounds.activityAreaExitedClip, 1, 1);
+            OnActivityAreaExitedEvent.Invoke();
             FullExitActivityArea();
         }
     }
+
+
 
     public void FullExitActivityArea()
     {
@@ -671,7 +676,7 @@ public class Activity : MonoBehaviour
 
         leavingAudioSource.Stop();
 
-        print("FULL EXIT ACTIVITY AREA");
+        // print("FULL EXIT ACTIVITY AREA");
         // Turn stuff off, end being in activity
         inActivityArea = false;
         exitingActivityArea = false;// we are not exiting anymore
@@ -685,8 +690,10 @@ public class Activity : MonoBehaviour
             QuitActivity();
         }
 
-        God.wren.interfaceUtils.SetPointerFade(mainPointOfInterest, 0);
+        //God.wren.interfaceUtils.SetPointerFade(mainPointOfInterest, 0);
         OnActivityFullExitedEvent.Invoke();
+
+        AlwaysEnd();
 
 
     }
@@ -705,10 +712,8 @@ public class Activity : MonoBehaviour
             leavingAudioSource.volume = Mathf.Lerp(leavingAudioSource.volume, nTime * nTime, .1f);
             leavingAudioSource.pitch = Mathf.Lerp(leavingAudioSource.pitch, nTime * 3, .1f);
 
-            //print("should be setting");
-            print((Mathf.Sin(nTime * nTime * 10000) + 1) / 3);
-            //God.wren.interfaceUtils.AddPointer(mainPointOfInterest); // can call a bunch but shouldnt re add!
-            God.wren.interfaceUtils.SetPointerFade(mainPointOfInterest, (Mathf.Sin(nTime * nTime * 10000) + 1) / 3);
+
+            WhileLeavingEvent.Invoke(nTime);
         }
 
     }
@@ -872,12 +877,37 @@ public class Activity : MonoBehaviour
 
         print("DISCOVER CANCEL");
         EndSlide(currentSlide);
+        AlwaysEnd();
 
     }
 
+    public void AlwaysEnd()
+    {
 
+        if (God.state.currentlyActiveActivity == this)
+        {
+            God.state.currentlyActiveActivity = null;
+        }
+        else
+        {
+
+            if (God.state.currentlyActiveActivity != null)
+            {
+                print("ERROR: GOD STATE CURRENTLY ACTIVE ACTIVITY NOT SET CORRECTLY");
+                print("GOD STATE CURRENTLY ACTIVE ACTIVITY : " + God.state.currentlyActiveActivity.gameObject.name);
+            }
+            else
+            {
+                print("NO ACTIVE ACTIVITY TO SET");
+            }
+        }
+
+
+    }
     public void AlwaysStartBegin()
     {
+        print("ALWAYS START BEGIN");
+        God.state.currentlyActiveActivity = this;
         God.audio.Play(God.sounds.activityStartClip, 1, 1);
         TurnOnActivityObjects(); // we chose to do the activity! show the objects!
     }
@@ -1199,6 +1229,8 @@ public class Activity : MonoBehaviour
         started = false; // get introduced to it again
 
         TurnOffActivityObjects();
+
+        AlwaysEnd();
         // Turn off the doingActivity stuff
     }
 
@@ -1219,11 +1251,26 @@ public class Activity : MonoBehaviour
         ResetPercentages();
         doingActivity = true;
 
+        God.state.currentlyActiveActivity = this;
+
         activityStartTime = Time.time;
     }
 
 
-
+    public void TurnOnInActivityAreaObjects()
+    {
+        for (int i = 0; i < inActivityAreaObjects.Length; i++)
+        {
+            inActivityAreaObjects[i].SetActive(true);
+        }
+    }
+    public void TurnOffInActivityAreaObjects()
+    {
+        for (int i = 0; i < inActivityAreaObjects.Length; i++)
+        {
+            inActivityAreaObjects[i].SetActive(false);
+        }
+    }
 
     // We are choosing to do the activity! we are not actually *in* it yet, just want to turn on the components so we can show them!
     public void TurnOnActivityObjects()

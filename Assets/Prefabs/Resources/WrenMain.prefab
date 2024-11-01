@@ -680,9 +680,9 @@ MonoBehaviour:
   fullOn: 0
   doFade: 0
   pulse: 0
-  pulseSpeed: 0
-  fadeOutSpeed: 0
-  fadeInSpeed: 0
+  pulseSpeed: 11
+  fadeOutSpeed: 0.1
+  fadeInSpeed: 0.1
   fadeValue: 0
 --- !u!1 &429473815545154252
 GameObject:

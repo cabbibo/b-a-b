@@ -59,6 +59,10 @@ public class FullState : MonoBehaviour
 
     public int framesBetweenSaves = 2000;
 
+    public Activity currentlyActiveActivity;
+
+
+
     public void OnDestroy()
     {
         UpdateLastPosition();

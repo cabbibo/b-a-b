@@ -568,7 +568,7 @@ public class TerrainPainter : Simulation
   public void Load()
   {
     string path = "StreamingAssets/Terrain/" + safeName;
-    print(path);
+    // print(path);
     Saveable.Load(verts, path);
   }
 

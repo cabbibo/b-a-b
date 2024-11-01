@@ -19,6 +19,7 @@ public class ActivityRadialStarter : MonoBehaviour
     void Update()
     {
 
+        //print(gameObject.name);
         if (God.wren != null)
         {
             oDist = dist;

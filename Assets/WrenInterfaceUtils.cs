@@ -33,7 +33,21 @@ public class WrenInterfaceUtils : MonoBehaviour
 
     }
 
-
+    // ping the current activity if in activity
+    // otherwise ping everything!
+    public void OnPing()
+    {
+        if (God.state.currentlyActiveActivity != null)
+        {
+            print("PINGING CURRENT ACTIVITY");
+            print(God.state.currentlyActiveActivity);
+            PingPointer(God.state.currentlyActiveActivity.transform);
+        }
+        else
+        {
+            PingAll();
+        }
+    }
     public void PingAll()
     {
 
@@ -116,6 +130,7 @@ public class WrenInterfaceUtils : MonoBehaviour
 
     public void PingPointer(Transform t)
     {
+        print("PINGING POINTER");
         interfacePointer.Ping(t);
     }
 

@@ -21,7 +21,7 @@ public class WrenParams : MonoBehaviour
 
     public void OnEnable()
     {
-        print("enabled");
+        //print("enabled");
         paramFiles = allNames();
         for (int i = 0; i < paramFiles.Length; i++)
         {
@@ -290,8 +290,8 @@ public class WrenParams : MonoBehaviour
     {
 
 
-        print("settintg");
-        print(PamPam.skimForceUp);
+        //   print("settintg");
+        //  print(PamPam.skimForceUp);
 
 
         wren.physics.swapLR = PamPam.swapLR;
@@ -471,7 +471,7 @@ public class WrenParams : MonoBehaviour
             }
         }
 
-        print(paramNames.Count);
+        //        print(paramNames.Count);
 
         return paramNames.ToArray();//new string[ info.Length ];
 

@@ -55,7 +55,7 @@ public class IslandData : MonoBehaviour
 
     public void Initialize()
     {
-        print("Enabling");
+        //    print("Enabling");
 
         //biomeMap = painter.biomeMap;
         heightMap = terrain.terrainData.heightmapTexture;

@@ -146,7 +146,7 @@ public class WrenDisintegrationManager : MonoBehaviour
 
     public void SetLayer(string layer)
     {
-        print("set layer " + layer);
+        //  print("set layer " + layer);
         wren.gameObject.layer = LayerMask.NameToLayer(layer);
 
         SetGameLayerRecursive(wren.gameObject, LayerMask.NameToLayer(layer));

@@ -4,6 +4,8 @@
 
     #include "Packages/com.unity.postprocessing/PostProcessing/Shaders/StdLib.hlsl"
 
+#include "Assets/Resources/Shaders/Chunks/snoise.cginc"
+
     TEXTURE2D_SAMPLER2D(_MainTex, sampler_MainTex);
     TEXTURE2D_SAMPLER2D(_DepthTex, sampler_DepthTex);
     TEXTURE2D_SAMPLER2D(_CameraDepthTexture, sampler_CameraDepthTexture);
@@ -145,8 +147,11 @@
                 break;
             }
 
+            //float n = snoise(p * .1);
+
             float fogValue = clamp( 1/(pow( d, _FogHeightPower) * _FogHeightMultiplier),0,1000) * lerp(_FogDensityAtNear, _FogDensityAtFar, ni);
 
+           // fogValue *= n * .5 + .5;
             totalFog += fogValue;
             
             totalFogColor += lerp( _FogColorNear, _FogColorFar,ni ) * fogValue;

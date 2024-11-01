@@ -171,8 +171,8 @@ public class Wren : MonoBehaviour
     public void FullReset()
     {
 
-        print("FULL RESET CALLED");
-        print(startingPosition.position);
+        //        print("FULL RESET CALLED");
+        //        print(startingPosition.position);
 
         physics.Reset();
 
@@ -180,10 +180,10 @@ public class Wren : MonoBehaviour
         Crash(fPos);
         state.LookAt(fPos + startingPosition.forward);
 
-        print(fPos);
+        //        print(fPos);
         bird.ResetAtLocation(fPos);//Values();
 
-        print(startingPosition.position);
+        //print(startingPosition.position);
         cameraWork.Reset();
 
     }
@@ -303,7 +303,7 @@ public class Wren : MonoBehaviour
             {
                 if (interfaceUtils != null)
                 {
-                    interfaceUtils.PingAll();
+                    interfaceUtils.OnPing();
                 }
             }
 
@@ -879,9 +879,9 @@ public class Wren : MonoBehaviour
 
     public void SetFullPosition(Vector3 position)
     {
-        print("SET FULL POSITION  CALLED");
+        //print("SET FULL POSITION  CALLED");
 
-        print(position);
+        //        print(position);
 
         God.state.SetLastPosition(position);
         startingPosition.position = position;

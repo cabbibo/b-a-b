@@ -413,8 +413,8 @@ public class WrenPhysics : MonoBehaviour
          else
          {*/
 
-        print("physics reset");
-        print(wren.startingPosition.position);
+        //print("physics reset");
+        //print(wren.startingPosition.position);
         rb.position = wren.startingPosition.position;
         transform.position = wren.startingPosition.position;
         //}
