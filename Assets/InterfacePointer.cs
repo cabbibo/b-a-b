@@ -235,9 +235,14 @@ public class InterfacePointer : MonoBehaviour
 
         if (pointerList.Contains(pointer))
         {
+            print("HAS POINTER");
 
             fades[pointerList.IndexOf(pointer)] = 1;
             targetFades[pointerList.IndexOf(pointer)] = 0;
+        }
+        else
+        {
+            print("NO POINTER");
         }
 
     }

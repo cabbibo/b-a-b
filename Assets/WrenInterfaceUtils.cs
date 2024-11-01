@@ -37,22 +37,29 @@ public class WrenInterfaceUtils : MonoBehaviour
     // otherwise ping everything!
     public void OnPing()
     {
+
+        God.audio.Play(God.sounds.interfacePingClip, 1, 1);
+        God.wren.shards.SpendShards(crystalsSpentPerPing);
         if (God.state.currentlyActiveActivity != null)
         {
-            print("PINGING CURRENT ACTIVITY");
-            print(God.state.currentlyActiveActivity);
-            PingPointer(God.state.currentlyActiveActivity.transform);
+            PingCurrentActiveActivity();
         }
         else
         {
             PingAll();
         }
     }
+
+
+    public void PingCurrentActiveActivity()
+    {
+        PingPointer(God.state.currentlyActiveActivity.mainPointOfInterest.transform);
+    }
+
+
     public void PingAll()
     {
 
-        God.audio.Play(God.sounds.interfacePingClip, 1, 1);
-        God.wren.shards.SpendShards(crystalsSpentPerPing);
         for (int i = 0; i < interfaceRings.Length; i++)
         {
             PingRing(i);

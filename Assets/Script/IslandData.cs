@@ -280,7 +280,7 @@ public class IslandData : MonoBehaviour
         if (God.state.islandDiscovered == false)
         {
 
-            print("here we are");
+
             print(tutorialStateManager.islandReached);
             if (tutorialStateManager.islandReached == false)
             {
