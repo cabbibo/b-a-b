@@ -26,13 +26,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5147281829721725851}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.000000081460335, y: 0, z: -0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4750752846565191349}
-  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8183573881096090136
 MeshFilter:
@@ -131,13 +131,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5572537562996996542}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.000000081460335, y: 0, z: -0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4750752846565191349}
-  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8939996987477828474
 MeshFilter:
@@ -213,15 +213,15 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6966097467777037238}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_LocalScale: {x: 3.4062333, y: 3.4062333, z: 3.4062333}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1079459370768705743}
   - {fileID: 94658501896562389}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!205 &5063850957787378828
 LODGroup:
@@ -231,17 +231,17 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6966097467777037238}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: -0.15729035, y: 0.7492767, z: -0.17285468}
-  m_Size: 1.5694414
+  m_LocalReferencePoint: {x: -0.15729035, y: 0.74927676, z: -0.17285472}
+  m_Size: 1.5694416
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.77139467
+  - screenRelativeHeight: 0.53238124
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 2778324921229706819}
-  - screenRelativeHeight: 0.32398129
+  - screenRelativeHeight: 0.03756057
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 1431003712189795479}

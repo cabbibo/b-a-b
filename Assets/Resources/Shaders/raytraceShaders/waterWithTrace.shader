@@ -255,15 +255,31 @@ Shader "Volumetric/traceWithWater"
 
       }
 
+sampler2D _HeightMap;
+float3 _MapSize;
+float3 _MapOffset;
 
-      sampler2D _HeightMap;
+float3 worldPos( float3 pos ){
+  float4 c = tex2D(_HeightMap , (pos.xz) / _MapSize.xz + .5 /1024);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
+  pos.y = _MapSize.y * c.x;//* sin(.1 *length(pos.xz)) ;//c.x * 1000;//_MapHeight;
+  return pos;
+}
 
-      float3 _MapSize;
-      float terrainHeight( float3 pos ){
-        float height = tex2Dlod( _HeightMap , float4(((pos.xz)) / _MapSize.xz + .5, 0 ,0)).x;// , 1).x * 4000
-        return height * _MapSize.y;//float3( pos.x ,height * 4000 , pos.z);
-        //return float3( pos.x ,pos.y, pos.z);
-      }
+
+float3 worldPosTexture( float3 pos ){
+
+  float2 fPos = pos.xz - _MapOffset.xz;
+  fPos -= _MapSize.xz;
+
+  float4 c = tex2D(_HeightMap , (pos.xz) / _MapSize.xz  );//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
+  pos.y = _MapSize.y * c.x *2;//* sin(.1 *length(pos.xz)) ;//c.x * 1000;//_MapHeight;
+  return pos;
+}
+
+
+float terrainHeight( float3 pos ){
+  return worldPosTexture(pos).y;
+}
 
       sampler2D _BackgroundTexture;
       #include "../Chunks/hsv.cginc"
@@ -287,8 +303,14 @@ Shader "Volumetric/traceWithWater"
 
         float3 nor = nT3D( p * _NoiseSize  );
         float vertness = dot( rd , float3(0,1,0));
+
+
+        float3 fNor = normalize(nor * .5 + float3(0,1,0));
+
+        rd = normalize(refract(rd , -fNor, .9));
+        vertness = dot( rd , float3(0,1,0));
         float depthVal= 0;
-        for(int i =0 ; i < _NumSteps; i++ ){
+        for(int i =0 ; i < 10; i++ ){
           // t+=dt*exp(-2.*c);
           depthVal = v.ro.y - p.y;///rd.y * t * 2;
 
@@ -300,7 +322,7 @@ Shader "Volumetric/traceWithWater"
 
 
           if( !broken ){
-            float3 smoke = nT3D( p * _NoiseSize  );
+          /*  float3 smoke = nT3D( p * _NoiseSize  );
             float3 nor = normalize(smoke);
 
             float noiseDensity = saturate(length(smoke) - _NoiseSubtractor);
@@ -313,12 +335,12 @@ Shader "Volumetric/traceWithWater"
             c= saturate(noiseDensity);//saturate(centerOrbDensity +noiseDensity);   
             totalSmoke += c;
 
-            // col -= .1;
+            // col -= .1;*/
 
             //rd = normalize(rd * (1-c*_StepRefractionMultiplier) + nor *  c*_StepRefractionMultiplier);
             //col -= _NoiseColor * noiseDensity  + _NoiseColor;// + float3(1,1,0) * depthVal * .01;//+lerp( lerp(_BaseColor,_CenterOrbColor , saturate(centerOrbDensity)), _NoiseColor , saturate(noiseDensity));// saturate(dot(v.lightDir , nor)) * .1 *c;//hsv(c,.4, dT3D(p*3,float3(0,-1,0))) * c;//hsv(c * .8 + .3,1,1)*c;;// hsv(smoke,1,1) * saturate(smoke);
             
-            if( p.y < height +6+ noiseDensity ){
+            if( height > p.y + t3D(p) * 10 ){
               broken = true;
               stepBroken = float(i);;
               break;
@@ -326,20 +348,21 @@ Shader "Volumetric/traceWithWater"
           }
 
           
-          p -= rd * (dt/vertness);
+         // p -= rd * 100*(dt/vertness);
+          p -= rd * 5/vertness;//*(dt/vertness);
 
           
           
         }
 
 
-        if( !broken ){stepBroken = _NumSteps;}
+        if( !broken ){stepBroken = 10;}
 
         float3 localEye = mul(unity_WorldToObject,float4(_WorldSpaceCameraPos,1)).xyz - v.localPos;
 
         float3 refr = refract( normalize(localEye) , normalize(v.localNor + nor * 3), .8);
         // float4 refractedPos = UnityObjectToClipPos( float4(o.ro + o.rd * 1.5,1));
-        float4 refractedPos = ComputeGrabScreenPos(UnityObjectToClipPos(float4(v.localPos + refr * .0003,1)));
+        float4 refractedPos = ComputeGrabScreenPos(UnityObjectToClipPos(float4(v.localPos + refr * 1,1)));
         float4 backgroundCol = tex2Dproj(_BackgroundTexture, refractedPos);
         //float4 backgroundCol = tex2Dproj(_BackgroundTexture, v.grabPos);
 
@@ -379,7 +402,9 @@ Shader "Volumetric/traceWithWater"
         //col += pow((1-m),_ReflectionSharpness) * _ReflectionMultiplier * _ReflectionColor;
 
 
-        float3 reflection=-v.eye;//normalize(reflect( normalize(-v.eye) , -v.worldNor));
+        float3 reflection=normalize(reflect( normalize(-v.eye) , fNor));
+
+        float reflMatch = dot( normalize(v.eye) , normalize(fNor)) ;
         half4 skyData = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflection,0); //UNITY_SAMPLE_TEXCUBE_LOD('cubemap', 'sample coordinate', 'map-map level')
         half3 skyColor = DecodeHDR (skyData, unity_SpecCube0_HDR); // This is done because the cubemap is stored HDR
         //col = skyColor;
@@ -393,11 +418,23 @@ Shader "Volumetric/traceWithWater"
         float4 depthSample = SAMPLE_DEPTH_TEXTURE_PROJ(_CameraDepthTexture, v.screenPos);
         float depth = LinearEyeDepth(depthSample).r;
         float foamLine = 1 - saturate(.1 * (depth - v.screenPos.w));
-        col *= foamLine;
+       // col *= foamLine;
+
+      // col = nBroken;
 
 
         float height = terrainHeight( v.ro );
         float delta = v.worldPos.y - height;
+
+col = .001 *abs(delta);
+
+col =.001* v.worldPos.y;
+col = .01*abs(height-v.worldPos.y);
+
+col = hsv(float(stepBroken) *.02 + .5,1,1/float(1*stepBroken*stepBroken));
+col = (backgroundCol * .7 +.3) *hsv(float(stepBroken) *.01 + .7,1,1/float(1*stepBroken*stepBroken));
+col +=hsv(float(stepBroken) *.02 + .5,1,1/float(1*stepBroken*stepBroken)) * .3;
+col += skyColor *pow( 1-reflMatch,20) * 10;
 
         //col = rd.xyz;
         //col = height * 1000;
