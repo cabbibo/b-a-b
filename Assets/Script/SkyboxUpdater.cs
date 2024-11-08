@@ -15,7 +15,19 @@ public class SkyboxUpdater : MonoBehaviour
 
     public float fade;
 
+    public int framesPerUpdate = 10;
+
+
     private void OnEnable()
+    {
+
+        RenderSkybox();
+
+
+    }
+
+
+    public void RenderSkybox()
     {
         // Initialize cubemap/render texture
         RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
@@ -58,19 +70,22 @@ public class SkyboxUpdater : MonoBehaviour
         Graphics.ExecuteCommandBuffer(commandBuffer);
 
         RenderSettings.skybox = material;
-
-
     }
 
 
     Material mat;
 
-    void Update()
+    int frame = 0;
+
+    void LateUpdate()
     {
-        // mat = RenderSettings.skybox;
 
-        // mat.SetFloat("_Fade", fade);
-
+        frame++;
+        if (frame == framesPerUpdate)
+        {
+            frame = 0;
+            RenderSkybox();
+        }
 
     }
 

@@ -226,6 +226,7 @@ Shader "Unlit/quillTerrain_8Biome"{
 
       #include "UnityCG.cginc"
       #include "AutoLight.cginc"
+      #include "UnityLightingCommon.cginc"
       
 
       #include "../Chunks/hsv.cginc"
@@ -1764,6 +1765,11 @@ Shader "Unlit/quillTerrain_8Biome"{
             col = float3(.2,.6,.8) * .5;
           }
         }
+
+
+        col *= shadow;
+
+        col *=  _LightColor0;
 
         //col = length(col) * 2* tex2D(_TerrainTexture1, float2(0,1) + float2(1,-1)*v.uv).rgb;
 

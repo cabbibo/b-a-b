@@ -234,6 +234,7 @@ Shader "Quill/quillMainIslandShader" {
     
     #include "UnityCG.cginc"
     #include "AutoLight.cginc"
+    #include "UnityLightingCommon.cginc"
     
     
     struct inputData {
@@ -458,13 +459,36 @@ Shader "Quill/quillMainIslandShader" {
                 );
             }
 
-            float2 GetXYInLightSpace(float3 worldPos ){
+            /*float2 GetXYInLightSpace(float3 worldPos ){
 
                 // this is our x value
                 float distTowardLight = dot( worldPos  , normalize(_WorldSpaceLightPos0));
 
                 
                 float distTowardUp = dot( worldPos  , normalize(cross( cross(_WorldSpaceLightPos0, float3(0,1,0)), _WorldSpaceLightPos0)));
+
+
+
+                //float
+
+
+                // get a perpentdicular value
+                float3 perp = cross( worldPos , _WorldSpaceLightPos0);
+                float distTowardCamera = dot( perp , float3(0,1,0));
+
+
+
+                return float2( distTowardLight , distTowardUp);
+            }*/
+
+            float2 GetXYInLightSpace(float3 worldPos ){
+
+                // this is our x value
+                float distTowardLight = dot( worldPos  ,normalize(float3(1,1,0)));
+
+                
+             //   float distTowardUp = dot( worldPos  , normalize(cross( cross(_WorldSpaceLightPos0, float3(0,1,0)), _WorldSpaceLightPos0)));
+                float distTowardUp = dot( worldPos  , float3(0,1,0));
 
 
 
@@ -562,6 +586,8 @@ Shader "Quill/quillMainIslandShader" {
 
                 //                col.xy = sin(GetXYInLightSpace(v.worldPos));
                 col *= lerp(float3(.1,.1,.2),float3(1,.9,.9),shadow * (.4+floor(lightMatch*5)/5));
+
+                col *= _LightColor0;
                 //DoEdgeDiscard(lightingData,v.worldPos,v.eye);
                 DoWrenDiscard(v.worldPos);
 

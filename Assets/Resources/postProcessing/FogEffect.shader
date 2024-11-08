@@ -5,6 +5,7 @@
     #include "Packages/com.unity.postprocessing/PostProcessing/Shaders/StdLib.hlsl"
 
 #include "Assets/Resources/Shaders/Chunks/snoise.cginc"
+//#include "UnityLightingCommon.cginc"
 
     TEXTURE2D_SAMPLER2D(_MainTex, sampler_MainTex);
     TEXTURE2D_SAMPLER2D(_DepthTex, sampler_DepthTex);
@@ -21,6 +22,8 @@
     float4x4 _InverseView;
 
     float4x4 _InverseViewProjection;
+
+    float4 _LightColor0;
 
     /* transform uv -> NDC
 
@@ -196,7 +199,8 @@
 
         // color.rgb = lerp( color.rgb , color.rgb * _FogColor.xyz,totalFog/_MaxFogTotal);//float3(1,.1,.5);//getTerrainHeight( float3(v.texcoord.x,0,v.texcoord.y) * 4096);
 
-        color.rgb = totalFogColor.rgb + color.rgb ;;
+        color.rgb = totalFogColor.rgb * _LightColor0.xyz + color.rgb ;;
+        //color.rgb *= _LightColor0.xyz;
 
 
         return color;

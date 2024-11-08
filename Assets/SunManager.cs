@@ -1,0 +1,107 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+
+[ExecuteAlways]
+public class SunManager : MonoBehaviour
+{
+
+    public Light sun;
+    public Material sky;
+
+    public Light moon;
+
+    public float daySpeed = 30;
+
+    public float nightSpeed = 10;
+
+    public float totalCycleLength;
+
+
+    public float timeInDay;
+    public float dayNess;
+
+    public float timeInNight;
+    public float nightNess;
+
+
+    public float sunRadius;
+
+    public Transform sunRotator;
+
+    public float moonRadius;
+    public Transform moonRotator;
+
+
+    public float rawTimeInCycle;
+    public float normalizedTimeInCycle;
+
+
+    public Gradient dayColor;
+    public Gradient nightColor;
+
+
+    public void OnEnable()
+    {
+        sky = RenderSettings.skybox;
+
+        totalCycleLength = daySpeed + nightSpeed;
+
+    }
+
+
+    public void Update()
+    {
+        totalCycleLength = daySpeed + nightSpeed;
+
+        float rawTimeInCycle = Time.time % totalCycleLength;
+        float normalizedTimeInCycle = rawTimeInCycle / totalCycleLength;
+
+        timeInDay = Mathf.Clamp01(rawTimeInCycle / daySpeed);
+
+        dayNess = 1 - Mathf.Abs(timeInDay - 0.5f) * 2;
+
+        timeInNight = Mathf.Clamp01((rawTimeInCycle - daySpeed) / nightSpeed);
+
+        nightNess = 1 - Mathf.Abs(timeInNight - 0.5f) * 2;
+
+        sunRotator.localRotation = Quaternion.Euler(new Vector3(200 * timeInDay + 170, 0, 0));
+        sun.transform.localPosition = new Vector3(0, 0, sunRadius);
+
+        sun.color = dayColor.Evaluate(timeInDay);
+
+
+
+
+        moonRotator.localRotation = Quaternion.Euler(new Vector3(200 * timeInNight + 170, 0, 0));
+        moon.transform.localPosition = new Vector3(0, 0, moonRadius);
+
+        moon.color = nightColor.Evaluate(timeInNight);
+
+
+        if (timeInDay < .00001f || timeInDay > .99999f)
+        {
+            sun.enabled = false;
+        }
+        else
+        {
+            sun.enabled = true;
+        }
+
+        if (timeInNight < .00001f || timeInNight > .99999f)
+        {
+            moon.enabled = false;
+        }
+        else
+        {
+            moon.enabled = true;
+        }
+
+
+    }
+
+
+
+
+}
