@@ -7,6 +7,8 @@ using UnityEngine;
 public class SunManager : MonoBehaviour
 {
 
+
+    public bool auto;
     public Light sun;
     public Material sky;
 
@@ -42,6 +44,8 @@ public class SunManager : MonoBehaviour
     public Gradient nightColor;
 
 
+
+
     public void OnEnable()
     {
         sky = RenderSettings.skybox;
@@ -55,7 +59,17 @@ public class SunManager : MonoBehaviour
     {
         totalCycleLength = daySpeed + nightSpeed;
 
-        float rawTimeInCycle = Time.time % totalCycleLength;
+
+        if (auto)
+        {
+
+            rawTimeInCycle = Time.time % totalCycleLength;
+        }
+        else
+        {
+            rawTimeInCycle = rawTimeInCycle % totalCycleLength;
+        }
+
         float normalizedTimeInCycle = rawTimeInCycle / totalCycleLength;
 
         timeInDay = Mathf.Clamp01(rawTimeInCycle / daySpeed);
@@ -65,6 +79,14 @@ public class SunManager : MonoBehaviour
         timeInNight = Mathf.Clamp01((rawTimeInCycle - daySpeed) / nightSpeed);
 
         nightNess = 1 - Mathf.Abs(timeInNight - 0.5f) * 2;
+
+
+
+
+
+
+
+
 
         sunRotator.localRotation = Quaternion.Euler(new Vector3(200 * timeInDay + 170, 0, 0));
         sun.transform.localPosition = new Vector3(0, 0, sunRadius);
@@ -97,6 +119,19 @@ public class SunManager : MonoBehaviour
         {
             moon.enabled = true;
         }
+
+        Shader.SetGlobalFloat("_DayNess", dayNess);
+        Shader.SetGlobalFloat("_NightNess", nightNess);
+        Shader.SetGlobalFloat("_TimeInDay", timeInDay);
+        Shader.SetGlobalFloat("_TimeInNight", timeInNight);
+
+        Shader.SetGlobalVector("_SunDirection", -sun.transform.forward);
+        Shader.SetGlobalVector("_MoonDirection", -moon.transform.forward);
+        Shader.SetGlobalVector("_SunColor", sun.color);
+        Shader.SetGlobalVector("_MoonColor", moon.color);
+
+        Shader.SetGlobalVector("_SunPosition", sun.transform.position);
+        Shader.SetGlobalVector("_MoonPosition", moon.transform.position);
 
 
     }

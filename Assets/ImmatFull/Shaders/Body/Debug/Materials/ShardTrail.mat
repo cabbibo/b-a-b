@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PurpleWater
-  m_Shader: {fileID: 4800000, guid: 8d7de474e5ed6ad439913668f8186684, type: 3}
+  m_Name: ShardTrail
+  m_Shader: {fileID: 4800000, guid: d9e6cdab85163e848bfb340143616126, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -16,7 +16,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2005
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -43,20 +43,12 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _FoamMap:
-        m_Texture: {fileID: 2800000, guid: 02e417d5711139342884479f53dbecea, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 800e061692ff7a84e887f439d3364410, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -70,53 +62,29 @@ Material:
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
-    - _CenterOrbFalloff: 6
-    - _CenterOrbFalloffSharpness: 1
-    - _CenterOrbImportance: 0.3
-    - _ColorFalloff: 0.4
-    - _ColorMultiplier: 1
     - _Cutoff: 0.5
-    - _DeltaStepSize: 0.01
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _HueSize: 1.27
-    - _IndexOfRefraction: 1
+    - _LifeDivider: 10
     - _Metallic: 0
     - _Mode: 0
-    - _NoiseImportance: 16
-    - _NoiseSharpness: 1
-    - _NoiseSize: 1
-    - _NoiseSpeed: 11.67
-    - _NoiseSubtractor: 0
-    - _NumSteps: 10
     - _OcclusionStrength: 1
-    - _OffsetMultiplier: 0
-    - _Opaqueness: 1
     - _Parallax: 0.02
-    - _ReflectionMultiplier: 1
-    - _ReflectionSharpness: 1
-    - _RefractionBackgroundSampleExtraStep: 0
-    - _Saturation: 1
+    - _Size: 0.3
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _StartHue: 0.58
-    - _StepRefractionMultiplier: 0
+    - _Struct12: 0
+    - _Struct16: 0
+    - _Struct24: 0
+    - _Struct36: 0
+    - _Struct9: 0
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0, g: 0.33409703, b: 0.6981132, a: 1}
-    - _CenterOrbColor: {r: 0, g: 0, b: 0, a: 1}
-    - _CenterOrbOffset: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FoamSize: {r: 1, g: 1, b: 0, a: 1}
-    - _FoamSpeed: {r: -1, g: 0, b: 0, a: 1}
-    - _NoiseColor: {r: 0, g: 0.2745099, b: 1, a: 1}
-    - _NoiseOffset: {r: 0, g: 0, b: 0, a: 1}
-    - _ReflectionColor: {r: 1, g: 0, b: 0, a: 1}
-    - _SurfaceColor: {r: 1, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

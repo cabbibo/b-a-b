@@ -5,6 +5,8 @@ Shader "Volumetric/traceWithWater"
 
   Properties {
 
+    _NormalMap("NormalMap", 2D) = "white" {}
+
     _BaseColor ("BaseColor", Color) = (1,1,1,1)
     _SurfaceColor ("Surfac_SurfaceColor", Color) = (1,1,1,1)
     
@@ -56,16 +58,20 @@ Shader "Volumetric/traceWithWater"
   SubShader{
 
     // Draw ourselves after all opaque geometry
-    Tags { "Queue" = "Geometry+10" }
 
     // Grab the screen behind the object into _BackgroundTexture
     GrabPass
     {
-      "_BackgroundTexture"
+      "_BackgroundTexture1"
     }
 
-    Cull Back
+    Cull Off
+   // ZWrite Off
+    //Blend SrcAlpha OneMinusSrcAlpha
     Pass{
+
+      Tags { "Type" = "Opaque" "Queue" = "Geometry -1000" }
+      
       CGPROGRAM
       
       #pragma target 4.5
@@ -74,6 +80,7 @@ Shader "Volumetric/traceWithWater"
       #pragma fragment frag
 
       #include "UnityCG.cginc"
+      #include "UnityLightingCommon.cginc"
       
       sampler2D _CameraDepthTexture;
       sampler2D _FoamMap;
@@ -143,6 +150,13 @@ Shader "Volumetric/traceWithWater"
         float4 texcoord : TEXCOORD0;
       };
 
+// Generic algorithm to desaturate images used in most game engines
+float4 generic_desaturate(float3 color, float factor)
+{
+	float3 lum = float3(0.299, 0.587, 0.114);
+	float3 gray = dot(lum, color);
+	return float4(lerp(color, gray, factor), 1.0);
+}
 
 
 
@@ -177,8 +191,9 @@ Shader "Volumetric/traceWithWater"
         o.worldNor = normalize(mul (unity_ObjectToWorld, float4(-n,0.0f)).xyz);
         //o.lightDir = normalize(mul( unity_ObjectToWorld , float4(1,-1,0,0)).xyz);
 
-        float4 refractedPos = UnityObjectToClipPos( float4(o.ro + o.rd * 1.5,1));
-        o.grabPos = ComputeGrabScreenPos(refractedPos);
+       // float4 refractedPos = UnityObjectToClipPos( float4(o.ro + o.rd * 1.5,1));
+        float4 refractedPos = UnityObjectToClipPos(p);
+        o.grabPos = ComputeGrabScreenPos(o.pos);
         
         o.screenPos = ComputeScreenPos(o.pos);
         
@@ -277,13 +292,34 @@ float3 worldPosTexture( float3 pos ){
 }
 
 
+//float3 _WindDir;
+
 float terrainHeight( float3 pos ){
   return worldPosTexture(pos).y;
 }
 
-      sampler2D _BackgroundTexture;
+
+float3 rgb2hsb( in float3 c ){
+  float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+  float4 p = lerp(float4(c.bg, K.wz),
+               float4(c.gb, K.xy),
+               step(c.b, c.g));
+  float4 q = lerp(float4(p.xyw, c.r),
+               float4(c.r, p.yzx),
+               step(p.x, c.r));
+  float d = q.x - min(q.w, q.y);
+  float e = 1.0e-10;
+  return float3(abs(q.z + (q.w - q.y) / (6.0 * d + e)),
+              d / (q.x + e),
+              q.x);
+}
+
+sampler2D _NormalMap;
+
+      sampler2D _BackgroundTexture1;
       #include "../Chunks/hsv.cginc"
       #include "../Chunks/noise.cginc"
+
       //Pixel function returns a solid color for each point.
       float4 frag (varyings v) : COLOR {
         float3 col =1;//hsv( float(v.face) * .3 , 1,1);
@@ -302,10 +338,48 @@ float terrainHeight( float3 pos ){
         rd = normalize(_WorldSpaceCameraPos - v.ro);//normalize(rd);
 
         float3 nor = nT3D( p * _NoiseSize  );
+
+        nor = tex2D(_NormalMap,v.worldPos.xz * .1).xyz * 2 -1;
+
         float vertness = dot( rd , float3(0,1,0));
 
 
-        float3 fNor = normalize(nor * .5 + float3(0,1,0));
+        float3 fNor = normalize(nor * 1 + float3(0,1,0));
+
+        fNor = normalize((tex2D(_NormalMap,v.worldPos.xz * .1)).xzy);
+
+
+        float2 _WindDir = float2(.1,.1);
+
+
+        float2 p1= v.worldPos.xz * .1;
+
+        float3 unPackedNormal = UnpackNormal(tex2D(_NormalMap,p1 * .03 -_Time.y * _WindDir.yx * float2(1,-1)* .3) ) * .5;
+        unPackedNormal += UnpackNormal(tex2D(_NormalMap,p1 * .01 + _Time.y * _WindDir * .2 )) * 2;
+        unPackedNormal += UnpackNormal(tex2D(_NormalMap,p1 * .05 + _Time.y * _WindDir * .1 ))*3;
+
+       // unPackedNormal = pow((unPackedNormal+1)/2,.5);
+        unPackedNormal = normalize(unPackedNormal);
+       // half3 tnormal = UnpackNormal(tex2D(_NormalMap, v.uv));
+        float3 tangentNormal = unPackedNormal;// UnpackNormal(normalize(tex2D(_NormalMap,v.worldPos.xz * .1).xyz * 2 -1));
+
+
+        float3x3 TBN = float3x3( 
+
+          float3(1,0,0),
+          float3(0,0,1),
+          float3(0,1,0)
+
+        );
+
+        TBN = transpose(TBN);
+
+        fNor = mul(TBN, tangentNormal);
+
+      //  UnpackNormal(tex2D(_NormalMap, v.uv))
+
+
+
 
         rd = normalize(refract(rd , -fNor, .9));
         vertness = dot( rd , float3(0,1,0));
@@ -361,10 +435,19 @@ float terrainHeight( float3 pos ){
         float3 localEye = mul(unity_WorldToObject,float4(_WorldSpaceCameraPos,1)).xyz - v.localPos;
 
         float3 refr = refract( normalize(localEye) , normalize(v.localNor + nor * 3), .8);
+
+        float4 depthSample = SAMPLE_DEPTH_TEXTURE_PROJ(_CameraDepthTexture, v.screenPos);
+        float depth = LinearEyeDepth(depthSample).r;
+        float foamLine = 1 - saturate(.1 * (depth - v.screenPos.w));
+
+
         // float4 refractedPos = UnityObjectToClipPos( float4(o.ro + o.rd * 1.5,1));
-        float4 refractedPos = ComputeGrabScreenPos(UnityObjectToClipPos(float4(v.localPos + refr * 1,1)));
-        float4 backgroundCol = tex2Dproj(_BackgroundTexture, refractedPos);
-        //float4 backgroundCol = tex2Dproj(_BackgroundTexture, v.grabPos);
+        float4 refractedPos = ComputeGrabScreenPos(UnityObjectToClipPos(float4(v.localPos + refr * (1-foamLine) * 10,1)));
+      //  float4 backgroundCol = tex2Dproj(_BackgroundTexture, refractedPos);
+       
+      
+      
+      float4 backgroundCol = tex2Dproj(_BackgroundTexture1, refractedPos);
 
         //col /= float(stepBroken+1);
         //col *= _ColorMultiplier;
@@ -415,9 +498,7 @@ float terrainHeight( float3 pos ){
 
 
         // apply depth texture
-        float4 depthSample = SAMPLE_DEPTH_TEXTURE_PROJ(_CameraDepthTexture, v.screenPos);
-        float depth = LinearEyeDepth(depthSample).r;
-        float foamLine = 1 - saturate(.1 * (depth - v.screenPos.w));
+
        // col *= foamLine;
 
       // col = nBroken;
@@ -432,9 +513,32 @@ col =.001* v.worldPos.y;
 col = .01*abs(height-v.worldPos.y);
 
 col = hsv(float(stepBroken) *.02 + .5,1,1/float(1*stepBroken*stepBroken));
-col = (backgroundCol * .7 +.3) *hsv(float(stepBroken) *.01 + .7,1,1/float(1*stepBroken*stepBroken));
-col +=hsv(float(stepBroken) *.02 + .5,1,1/float(1*stepBroken*stepBroken)) * .3;
-col += skyColor *pow( 1-reflMatch,20) * 10;
+
+
+float lightHue = rgb2hsb(_LightColor0.xyz).x;
+col = (backgroundCol *1) *hsv(float(stepBroken) *.03 + lightHue,float(stepBroken)/10,5/float(1*stepBroken*stepBroken));
+//col +=hsv(float(stepBroken) *.01 + lightHue,1,1/float(1*stepBroken*stepBroken)) * .3;
+col += skyColor *pow( 1-reflMatch,20) * 10 * _LightColor0.xyz;
+
+//col = backgroundCol;
+
+col = saturate(col);
+
+col = float(stepBroken)/10;
+col = generic_desaturate(backgroundCol,.8) * hsv(float(stepBroken) *.03 + lightHue,saturate(float(stepBroken)/2) * .6,5/float(1*stepBroken*stepBroken));
+
+if( stepBroken == 1){
+  col = _LightColor0 * 1.5;
+}
+//col = backgroundCol;
+
+//col = foamLine;
+
+
+
+//col = dot( _WorldSpaceLightPos0.xyz , fNor);// * .5 + .5;
+//col = saturate(col);
+//col = fNor;//normalize(nor);
 
         //col = rd.xyz;
         //col = height * 1000;

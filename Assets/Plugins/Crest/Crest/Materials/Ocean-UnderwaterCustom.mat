@@ -146,8 +146,8 @@ Material:
     - _Invert: 1
     - _MipBias: 0
     - _Moving: 0.17
-    - _NormalsScale: 18.6
-    - _NormalsStrength: 1.457
+    - _NormalsScale: 42
+    - _NormalsStrength: 0.365
     - _NormalsStrengthOverall: 1
     - _Offset: 0.00008
     - _OverrideReflectionCubemap: 0

@@ -207,9 +207,10 @@ Shader "Unlit/quillTerrain_8Biome"{
 
     Pass{
 
-      Tags { "RenderType"="Opaque" "LightMode" = "ForwardBase"}
+      Tags { "RenderType"="Opaque" "LightMode" = "ForwardBase" "Queue" = "Geometry-1" }
       LOD 100 
       Cull Off
+      ZWrite On
       CGPROGRAM
       #pragma vertex vert
       #pragma fragment frag

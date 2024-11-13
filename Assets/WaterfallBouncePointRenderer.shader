@@ -11,10 +11,10 @@ Shader "Unlit/WaterfallBouncePointRenderer"
     {
         
     Cull Off 
-     Tags { "RenderType"="Transparent" "Queue"="-1" }
+     Tags { "RenderType"="Transparent" "Queue"="Transparent -1" }
     LOD 100
     //Blend One One // Additive
-    //ZWrite Off
+   // ZWrite Off
     Pass{
 
       CGPROGRAM
@@ -169,15 +169,26 @@ Shader "Unlit/WaterfallBouncePointRenderer"
       float4 frag (varyings v) : COLOR {      
         float4 col = tex2D(_MainTex, v.uv2);
         
-        if( col.a < .01 ){
-            discard;
+        if( col.a < .1 ){
+         //   discard;
         }
 
-        col.xyz = col.xyz * .5 + .2;
+        col = floor( col  * 10)/4;
 
-        col.xyz *= float3(.4,.6,1) * .2;
+       // col.xyz = col.xyz * .5 + .2;
 
-        col =  v.lastCountFade;
+        //col.xyz *= float3(.4,.6,1) * 1;
+
+        col *=  v.lastCountFade;
+
+        col *=   _LightColor0;
+
+
+
+        if( length(col.xyz) < .01 ){
+          discard;
+        }
+        
 
         //col = col.a;
 

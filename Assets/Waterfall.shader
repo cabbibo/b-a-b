@@ -9,12 +9,12 @@ Shader "Unlit/Waterfall"
     }
     SubShader
     {
-        Tags { "RenderType"="Transparent" "Queue"="Transparent" }
+        Tags { "RenderType"="Transparent" "Queue"="Transparent-10" }
         LOD 100
        //Blend One One // Additive
        //ZWrite Off
         Cull Off
-        GrabPass{"_BackgroundTexture"}
+        GrabPass{"_BackgroundTexture1"}
         Pass
         {
             CGPROGRAM
@@ -24,6 +24,7 @@ Shader "Unlit/Waterfall"
             #pragma multi_compile_fog
 
             #include "UnityCG.cginc"
+            #include "UnityLightingCommon.cginc"
 
             struct appdata
             {
@@ -81,7 +82,7 @@ Shader "Unlit/Waterfall"
       sampler2D _CameraDepthTexture;
 
 
-            sampler2D _BackgroundTexture;
+            sampler2D _BackgroundTexture1;
             v2f vert (appdata v)
             {
                 v2f o;
@@ -123,7 +124,7 @@ Shader "Unlit/Waterfall"
                     discard;
                 }
 
-                half4 bgcolor = tex2Dproj(_BackgroundTexture, v.grabPos);
+                half4 bgcolor = tex2Dproj(_BackgroundTexture1, v.grabPos);
                 col = lerp(bgcolor, col, length(col));
                 col = bgcolor *  float4(.1,.4,1,1);
 
@@ -172,12 +173,23 @@ if( abs(v.uv.x-.5) > .44 + tmpCol.x * .1 ){
     }
 }
 
+col = bgcolor * _LightColor0;
 if( tmpCol.x > .3 ){
-    col = 1;
+    col = _LightColor0;
     if( tmpCol.x > .5 ){
         discard;
     }
 }
+
+col = floor(tmpCol.x * 8)/6;
+col *= _LightColor0;
+
+col *= 2;
+//col += tmpCol.x;
+if(length(col) < .01){
+    discard;
+}
+col = saturate(col);
 
 
 //col = v.uv.x;

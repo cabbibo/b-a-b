@@ -18,11 +18,18 @@ Shader "Feathers/FeatherTest1" {
   SubShader{
 
     Tags { "Queue" = "Geometry+8" }
+    GrabPass{
+      "_BackgroundTexture1"
+    }
+    
     Pass{
 
       LOD 100 
       Cull Off
       Tags{ "LightMode" = "ForwardBase" }
+
+ 
+      
       CGPROGRAM
       #pragma vertex vert
       #pragma fragment frag
@@ -33,6 +40,7 @@ Shader "Feathers/FeatherTest1" {
 
       #include "UnityCG.cginc"
       #include "AutoLight.cginc"
+      #include "UnityLightingCommon.cginc"
       
 
       #include "../Chunks/hsv.cginc"
@@ -181,6 +189,11 @@ Shader "Feathers/FeatherTest1" {
 
       sampler2D _FullColorMap;
       #include "../Chunks/snoise.cginc"
+
+      
+      sampler2D _BackgroundTexture1;
+
+
       //Pixel function returns a solid color for each point.
       float4 frag (varyings v) : COLOR {
         fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos);//* .5 + .5;
@@ -256,6 +269,27 @@ Shader "Feathers/FeatherTest1" {
         col = hsv(.5*(v.randID/ _TotalShardsInBody),1,1);
 
         col = hsv(v.collectionType / 7,1,1);
+
+        float3 eye = _WorldSpaceCameraPos - v.worldPos;
+        float3 eyeDir = normalize(eye);
+        float3 refracted = refract(eyeDir, v.nor, 1.0/1.33);
+
+        float3 newPos = v.worldPos + refracted * .3;
+
+        float4 mvpPos = mul(UNITY_MATRIX_VP, float4(newPos,1.0f));
+
+        float4 grabPos = ComputeGrabScreenPos(mvpPos);
+
+        float4 bgCol = tex2Dproj(_BackgroundTexture1, grabPos);
+
+        
+        col = dot(_WorldSpaceLightPos0, v.nor);
+        col *=  _LightColor0;
+
+        col = bgCol.xyz + col*col *col*col * 10;
+
+        col = bgCol;
+
 
         //col = v.nor * .5 +.5;
         return float4(col,1);

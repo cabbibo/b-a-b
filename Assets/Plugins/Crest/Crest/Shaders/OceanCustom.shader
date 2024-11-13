@@ -750,7 +750,8 @@ Shader "Crest/OceanCustom"
                 //}
 
 
-                float lightMatch = dot( normal, lightDir);
+                //float lightMatch = dot( normal, lightDir);
+                float lightMatch = dot( normalize(normal), _WorldSpaceLightPos0.xyz);
 
                 float3 paint = tex2D(_PainterlyMap, uvPosition * .04).rgb;
                 float3 paint2 = tex2D(_PainterlyMap, uvPosition * .05).rgb;
@@ -765,8 +766,14 @@ Shader "Crest/OceanCustom"
 
                 //col = normal * .5 + .5;
 
-                col = normal * .5 + .5;
+               //col = normal;// * .5 + .5;
                 col =lerp(float3(0.2,.3,.6) * length(paint2) * .2, float3(.8,.9,1) *length(paint),1-pow( dot( normal, float3(0,1,0)), 2));
+                
+                col *= _LightColor0.rgb;
+              //  col *= shadow.y;
+                //col *= floor(lightMatch * lightMatch*3+ .5)/2;
+                col += floor(lightMatch * lightMatch*3+ .5)/2 * _LightColor0.rgb;
+              //  col *= shadow.y;
                 
                 ApplyReflectionSky(view, n_pixel, lightDir, shadow.y, screenPos.xyzz, pixelZ, reflAlpha, col);
                 return half4(col, 1.);

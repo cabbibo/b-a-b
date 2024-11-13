@@ -16,16 +16,16 @@ Shader "Terrain/SkyboxFull"
   SubShader{
 
             // Draw ourselves after all opaque geometry
-        Tags { "Queue" = "Geometry+10" }
+            Tags { "RenderType"="Background" "Queue"="Background" }
 
-        // Grab the screen behind the object into _BackgroundTexture
-        GrabPass
-        {
-            "_BackgroundTexture"
-        }
-
-      Cull Off
+       
+      
     Pass{
+
+      
+    //  ZWrite Off
+      Cull Off
+      Fog { Mode Off }
 CGPROGRAM
       
       #pragma target 4.5
@@ -34,7 +34,6 @@ CGPROGRAM
       #pragma fragment frag
 
       #include "UnityCG.cginc"
-      #include "UnityLightingCommon.cginc"
       
     float4 _BaseColor;
     float4 _SampleColor;
@@ -68,6 +67,7 @@ CGPROGRAM
           float3 lightDir : TEXCOORD6;
           float4 grabPos : TEXCOORD7;
           float3 unrefracted : TEXCOORD8;
+          float3 world : TEXCOORD9;
           
           
       };
@@ -98,7 +98,7 @@ varyings vert ( appdata vertex ){
         o.ro = p;//worldPos.xyz;
         o.rd  = mul(unity_ObjectToWorld, vertex.position).xyz - _WorldSpaceCameraPos;
         o.localPos = p.xyz;
-      
+        o.world = worldPos;
 
 
       
@@ -148,6 +148,19 @@ float4x4 rotationMatrix(float3 axis, float angle)
                 0.0,                                0.0,                                0.0,                                1.0);
 }
 
+
+
+float3 _SunPosition;
+
+float3 _SunColor;
+
+float _DayNess;
+float _NightNess;
+float3 _MoonColor;
+float3 _MoonPosition;
+
+float _TimeInNight;
+float _TimeInDay;
 //Pixel function returns a solid color for each point.
 float4 frag (varyings v) : COLOR {
   float3 col =0;//hsv( float(v.face) * .3 , 1,1);
@@ -244,19 +257,108 @@ float4 frag (varyings v) : COLOR {
   col *= length(col) * length(col) * 10;
 
 
-/// SUN
+
+  float3 d = normalize(_WorldSpaceCameraPos - v.world);
+
+  float3 test = 0;
+
+
+
+  for( int i = 0; i < 3; i++ ){
+
+    float3 p = v.world -d * i * 1000.1f;
+
+    float3 lightDir = normalize(_SunPosition - p);
+    
+    float3 polarCoords = float3( atan2(lightDir.z, lightDir.x), acos(lightDir.y), length(lightDir) );
+
+    float3 n3 = float3(
+
+      noise( p  * .001 )-.5,
+      noise( p  * .002  + float3(0,111.11,0))-.5,
+      noise( p  * .001  + float3(0,0,1111))-.5
+    
+    );
+
+    n3 = normalize(n3+.5);
+
   
+
+    //n3 = normalize(n3-.5);
+
+    float3 pVal = noise( float3(GetXYCoordsInPlane(p, _SunPosition, _LightDir), 0) * .00000001);
+
+    float n = .1*noise( p  * .003+ lightDir * 1 );
+    n += noise( p  * .001 + lightDir * 30) * .3;
+    n += noise( p  * .0005 + lightDir * 50) * .5;  
+
+    float nDelta = abs( n - noise( p  * .01 + lightDir * 10));
+
+   // test += nDelta* .1 + n;
+
+    //test = (dot(normalize(n3),-lightDir)+1)/2;// dot(normalize(n3), lightDir) * .1;
+
+
+    float matchVal = (pow(dot(d, -_WorldSpaceLightPos0.xyz),3) + 1)/2;
+
+
+
+//      float matchGood = 
+
+//if( dot( -d, -lightDir) > .1 ){
+
+  if( n > .6 ){
+      test += 3*lerp(  float3(.3,.3,1) * length(_SunColor.xyz) ,_SunColor , matchVal );// *  saturate(dot(_WorldSpaceLightPos0,n3)) ;;
+  }else{
+    test += lerp(  float3(.3,.3,1) * length(_SunColor.xyz) ,_SunColor , matchVal ) + _SunColor * .4;
+  }
+
+
+
+
+   // test = pVal;
+
+
+
+
+  }
+
+  test *= .1;
+
+
+  float verticalNess = abs( dot( float3(0,1,0), normalize(rd)) );
+  test += float3(1,1,1) * .3 *pow( (1-normalize(v.world).y),4);
+
+  test *= _DayNess;
+
+
+
+  float3 newDir = mul( rotationMatrix( float3(1,0,0), -_TimeInNight * 3.14),float4( rd,0)).xyz;
+
+
+  test +=pow( texCUBE( _CubeMap , newDir ) ,1) * 3 * _NightNess  * _MoonColor;
+  test += float3(1,1,1) * .1 *pow( (1-normalize(v.world).y),10);
+
+
+
+
+
+
+/// SUN
+  float3 sunColor = 0;
+
+  float3 fLightDir = -normalize(_WorldSpaceLightPos0.xyz);
   for( int i = 0; i < 3; i++ ){
     float3 fPos = _WorldSpaceCameraPos * .1  + v.ro * 100+ rd * i * 30.1f;
- col += .5*float3(1,float(i) * .2 + .4,.2)* pow( noise(fPos * .1),2)*10*pow(  saturate(dot( _LightDir, -normalize(rd))),101);
- col += .2*float3(1,.6-float(i) * .2,.2)* pow( noise(fPos * .4),2)*10*pow(  saturate(dot( _LightDir, -normalize(rd))),101);
+  sunColor += .5*float3(1,float(i) * .2 + .4,.2)* pow( noise(fPos * .1),2)*10*pow(  saturate(dot( fLightDir, -normalize(rd))),101);
+  sunColor += .2*float3(1,.6-float(i) * .2,.2)* pow( noise(fPos * .4),2)*10*pow(  saturate(dot( fLightDir, -normalize(rd))),101);
 
     
-float2  xy = GetXYCoordsInPlane(_WorldSpaceCameraPos * .1+ v.ro * 400+ rd * i * 100.1f, _LightDir ,float3(0,1,0));
+float2  xy = GetXYCoordsInPlane(_WorldSpaceCameraPos * 1 + v.world + rd * i * 10.1f, fLightDir ,float3(0,1,0));
 
 float ang= atan2(xy.y, xy.x);
 
-col += .2 * float3(1,float(i) * .2 + .4,.2)*noise( ang * 10 + float3(0,_Time.y* (i-1.5) * .4,0)) *  pow( saturate(dot( -_LightDir,rd)) ,10)* 1;//length(xy) * .01;//length(xy) * .1;//1 / length( xy );// * .0001;
+sunColor += .2 * float3(1,float(i) * .2 + .4,.2)*noise( ang * 10 + float3(0,_Time.y* (i-1.5) * .4,0)) *  pow( saturate(dot( -fLightDir,rd)) ,10)* 1;//length(xy) * .01;//length(xy) * .1;//1 / length( xy );// * .0001;
 
 
   }
@@ -270,12 +372,12 @@ col += .2 * float3(1,float(i) * .2 + .4,.2)*noise( ang * 10 + float3(0,_Time.y* 
 //col *= 10;
     col = saturate(col);  
 
+    col = sunColor;
 
-    col = normalize(_WorldSpaceLightPos0.xyz) * .5 + .5;
-    col= _LightColor0 * (dot( _WorldSpaceLightPos0.xyz , rd )+1)/2;
+    col = test;
 
 
-    //if( _)
+    
 
 //col += pow( dot( -_LightDir,rd) ,100)* 10;
 
@@ -284,6 +386,8 @@ col += .2 * float3(1,float(i) * .2 + .4,.2)*noise( ang * 10 + float3(0,_Time.y* 
    // col *= .5;
    // col += .5;
   // = sin(atan2( rd.x , rd.z) * 10) * .1;
+
+  col = saturate(col);
     return float4( col.xyz, 1);//saturate(float4(col,3*length(col) ));
 
 

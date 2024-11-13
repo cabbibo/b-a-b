@@ -47,13 +47,15 @@ public class SkyboxUpdater : MonoBehaviour
         var projectionMatrix = GL.GetGPUProjectionMatrix(Matrix4x4.Perspective(90, 1, 0.1f, 1), true);
         commandBuffer.SetProjectionMatrix(projectionMatrix);
 
+
+        Vector3 position = Vector3.zero;// Camera.main.transform.position;
         // Matrices for rendering the six cubemap faces
-        var matrices = new[] { Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(Vector3.right, Vector3.down), -Vector3.one).inverse,
-        Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(Vector3.left, Vector3.down), -Vector3.one).inverse,
-        Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(Vector3.up, Vector3.forward), -Vector3.one).inverse,
-        Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(Vector3.down, Vector3.back), -Vector3.one).inverse,
-        Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(Vector3.forward, Vector3.down), -Vector3.one).inverse,
-        Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(Vector3.back, Vector3.down), -Vector3.one).inverse };
+        var matrices = new[] { Matrix4x4.TRS(position, Quaternion.LookRotation(Vector3.right, Vector3.down), -Vector3.one).inverse,
+        Matrix4x4.TRS(position, Quaternion.LookRotation(Vector3.left, Vector3.down), -Vector3.one).inverse,
+        Matrix4x4.TRS(position, Quaternion.LookRotation(Vector3.up, Vector3.forward), -Vector3.one).inverse,
+        Matrix4x4.TRS(position, Quaternion.LookRotation(Vector3.down, Vector3.back), -Vector3.one).inverse,
+        Matrix4x4.TRS(position, Quaternion.LookRotation(Vector3.forward, Vector3.down), -Vector3.one).inverse,
+        Matrix4x4.TRS(position, Quaternion.LookRotation(Vector3.back, Vector3.down), -Vector3.one).inverse };
 
         // Set the camera to render each face into a temporary texture, and then copy that texture into the final cubemap
         for (var face = CubemapFace.PositiveX; (int)face < 6; face++)
