@@ -330,14 +330,14 @@ float4 frag (varyings v) : COLOR {
   test += float3(1,1,1) * .3 *pow( (1-normalize(v.world).y),4);
 
   test *= _DayNess;
-
+  test += _SunColor* .1 *pow( (1-normalize(v.world).y),10)*3 * _DayNess;
 
 
   float3 newDir = mul( rotationMatrix( float3(1,0,0), -_TimeInNight * 3.14),float4( rd,0)).xyz;
 
 
   test +=pow( texCUBE( _CubeMap , newDir ) ,1) * 3 * _NightNess  * _MoonColor;
-  test += float3(1,1,1) * .1 *pow( (1-normalize(v.world).y),10);
+  test += _MoonColor* .1 *pow( (1-normalize(v.world).y),10) * _NightNess;
 
 
 

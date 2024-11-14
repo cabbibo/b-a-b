@@ -54,6 +54,8 @@ public class Waterfall : MonoBehaviour
     public float forwardForceOnBounce = 1.0f;
 
     public EmitFromPoints bouncePointEmitter;
+    public EmitFromPoints waterfallTopEmitter;
+    public EmitFromPoints waterfallBottomEmitter;
 
     public bool debug = false;
 
@@ -68,6 +70,16 @@ public class Waterfall : MonoBehaviour
         if (bouncePoints != null)
         {
             bouncePointEmitter.SetPoints(bouncePoints.ToArray(), bounceVels.ToArray());
+        }
+
+        if( waterfallTopEmitter){
+            
+            waterfallTopEmitter.SetPoints(finalTopPoints.ToArray(), finalTopVels.ToArray());
+        }
+
+        if( waterfallBottomEmitter){
+                
+                waterfallBottomEmitter.SetPoints(finalBottomPoints.ToArray(), finalBottomVels.ToArray());
         }
     }
 
@@ -207,6 +219,8 @@ public class Waterfall : MonoBehaviour
 
     Vector3[] points;
     Color[] colors;
+    Vector3[] normals;
+    Vector4[] tangents;
 
     Vector2[] uvs;
 
@@ -457,6 +471,8 @@ public class Waterfall : MonoBehaviour
         points = new Vector3[totalPointCount];
         colors = new Color[totalPointCount];
         uvs = new Vector2[totalPointCount];
+        normals = new Vector3[totalPointCount];
+        tangents = new Vector4[totalPointCount];
 
 
         int totalPoints = 0;
@@ -470,14 +486,35 @@ public class Waterfall : MonoBehaviour
 
                 fWidth = widthCurve.Evaluate((float)j / (float)Paths[i].Count) * widthMultiplier;
 
-                points[totalPoints + j * 2 + 0] = transform.InverseTransformPoint(Paths[i][j] - (transform.right * .5f) * fWidth);
-                points[totalPoints + j * 2 + 1] = transform.InverseTransformPoint(Paths[i][j] + (transform.right * .5f) * fWidth);
+                Vector3 left;
+                
+                // = Vector3.cross((Paths[i][j] - Paths[i][j + 1]).normalized, Vector3.up).normalized;
+                if( j ==  0){
+                    left = Vector3.Cross((Paths[i][j] - Paths[i][j + 1]).normalized, Vector3.up).normalized;
+                }else{
+                    
+                    left  = Vector3.Cross((Paths[i][j-1] - Paths[i][j]).normalized, Vector3.up).normalized;
+                }
+
+                Vector3 localLeft = transform.InverseTransformDirection(left);
+
+                Vector3 up = Vector3.up;
+                Vector3 normal = Vector3.Cross(left, up).normalized;
+
+                points[totalPoints + j * 2 + 0] = transform.InverseTransformPoint(Paths[i][j] - (left * .5f) * fWidth);
+                points[totalPoints + j * 2 + 1] = transform.InverseTransformPoint(Paths[i][j] + (left * .5f) * fWidth);
 
                 uvs[totalPoints + j * 2 + 0] = new Vector2(0, (float)j / (float)Paths[i].Count);
                 uvs[totalPoints + j * 2 + 1] = new Vector2(1, (float)j / (float)Paths[i].Count);
 
                 colors[totalPoints + j * 2 + 0] = new Color((float)i / (float)Paths.Count, (float)j / (float)Paths[i].Count, 0, 1);
                 colors[totalPoints + j * 2 + 1] = new Color((float)i / (float)Paths.Count, (float)j / (float)Paths[i].Count, 0, 1);
+
+                normals[totalPoints + j * 2 + 0] = transform.InverseTransformDirection(normal);
+                normals[totalPoints + j * 2 + 1] = transform.InverseTransformDirection(normal);
+
+                tangents[totalPoints + j * 2 + 0] = new Vector4(localLeft.x,localLeft.y,localLeft.z, 1);
+                tangents[totalPoints + j * 2 + 1] = new Vector4(localLeft.x,localLeft.y,localLeft.z, 1) ;
 
 
 
@@ -524,9 +561,10 @@ public class Waterfall : MonoBehaviour
         mesh.vertices = points;
         mesh.triangles = triangles;
         mesh.colors = colors;
+        mesh.normals = normals;
 
         mesh.uv = uvs;
-        mesh.RecalculateNormals();
+        //mesh.RecalculateNormals();
         mesh.RecalculateTangents();
 
         return mesh;
@@ -553,6 +591,13 @@ public class Waterfall : MonoBehaviour
     public List<Vector4> bouncePoints;
     public List<Vector3> bounceVels;
 
+
+    public List<Vector4> finalTopPoints;
+    public List<Vector3> finalTopVels;
+
+    public List<Vector4> finalBottomPoints;
+    public List<Vector3> finalBottomVels;
+
     void GetPaths(List<Vector3> topPoints)
     {
 
@@ -576,6 +621,9 @@ public class Waterfall : MonoBehaviour
             velocity = towardsCenter.normalized * forwardVelocity;
             bouncePoints.Add(new Vector4(topPoints[i].x, topPoints[i].y, topPoints[i].z, velocity.magnitude));
             bounceVels.Add(velocity);
+
+            finalTopPoints.Add(new Vector4(topPoints[i].x, topPoints[i].y, topPoints[i].z, velocity.magnitude));
+            finalTopVels.Add(velocity);
 
             while (canDo == true && path.Count < maxPathCount)
             {
@@ -643,6 +691,9 @@ public class Waterfall : MonoBehaviour
                 {
                     bouncePoints.Add(new Vector4(nextPoint.x, nextPoint.y, nextPoint.z, velocity.magnitude));
                     bounceVels.Add(velocity);
+
+                    finalBottomPoints.Add(new Vector4(nextPoint.x, nextPoint.y, nextPoint.z, velocity.magnitude));
+                    finalBottomVels.Add(velocity);
                 }
 
 

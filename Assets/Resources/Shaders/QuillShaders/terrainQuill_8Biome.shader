@@ -273,6 +273,7 @@ Shader "Unlit/quillTerrain_8Biome"{
         float id        : TEXCOORD5;
         float4 data1:TEXCOORD9;   
         float4 tc:TEXCOORD12;
+        float4 screenPos : TEXCOORD7;
         //    float3 debug : TEXCOORD13;
         UNITY_VERTEX_INPUT_INSTANCE_ID // use this to access instanced properties in the fragment shader.
         
@@ -402,6 +403,8 @@ Shader "Unlit/quillTerrain_8Biome"{
         o.tc = v.texcoord;
         o.color = v.color;
 
+        o.screenPos = ComputeScreenPos(o.pos);
+
         //o.debug = instanceData.xyz;
         UNITY_TRANSFER_SHADOW(o,o.worldPos);
         UNITY_TRANSFER_FOG(o,o.pos);
@@ -417,6 +420,7 @@ Shader "Unlit/quillTerrain_8Biome"{
       #include "../Chunks/triplanar.cginc"
       #include "../Chunks/snoise3D.cginc"
       #include "../Chunks/triNoise3D.cginc"
+      #include "../Chunks/SunShadows.cginc"
 
       void ClipHoles(float2 uv)
       {
@@ -1110,7 +1114,7 @@ Shader "Unlit/quillTerrain_8Biome"{
         float lMap = dot(nor ,_WorldSpaceLightPos0.xyz);
         float lMapB = dot(baseNor ,_WorldSpaceLightPos0.xyz);
 
-        lMap *= shadow;
+      lMap *= shadow;
 
         //float vertness = 0;//dot( nor , float3(0,1,0));
 
@@ -1126,7 +1130,7 @@ Shader "Unlit/quillTerrain_8Biome"{
 
           float fi = float(i+1);
           
-          float3 fPos = pos - normalize(eye) * fi *5;
+          float3 fPos = pos - normalize(eye) * fi *10;
           float3 lightPos = fPos - _WorldSpaceLightPos0.xyz ;
 
           // float v = triNoise3D( fPos * .01 + fi * 113.3 + vertness*.1, 0 , _Time.y)  * fi/5;
@@ -1213,7 +1217,7 @@ Shader "Unlit/quillTerrain_8Biome"{
 
         col *= (floor(lMap * 4 ) /4  + .3);
 
-        col *= shadow;
+        col *= shadow * .5 + .5;
 
         
         //col *= _ValleyLowAltitudeColor;
@@ -1718,6 +1722,8 @@ Shader "Unlit/quillTerrain_8Biome"{
         col *= noiseVal2 * _NoiseTextureStrength * (1/(1+ .1*fogZ)) + _NoiseTextureBase;
 
 
+
+        col += _LightColor0 *1/(pow(length(_WrenPos- v.worldPos),2) * 1);
         
 
 
@@ -1768,10 +1774,24 @@ Shader "Unlit/quillTerrain_8Biome"{
         }
 
 
-        col *= shadow;
+        //col *= shadow;
 
         col *=  _LightColor0;
 
+
+        // shadowAttenuation = GetSunShadowsAttenuation_PCF5x5(v.worldPos, 0, 0).x;	
+       // col = shadowAttenuation * .5 + .5;
+      // col =  shadowAttenuation;
+
+      /*  half GetSunShadowsAttenuation(float3 worldPositions, float screenDepth)
+        {
+          fixed4 cascadeWeights = GET_CASCADE_WEIGHTS(worldPositions.xyz, screenDepth);
+          return unity_sampleShadowmap(GET_SHADOW_COORDINATES(float4(worldPositions, 1), cascadeWeights));
+        }*/
+        
+
+         // col = shadowAttenuation;//unity_sampleShadowmap(GET_SHADOW_COORDINATES(float4(v.worldPos, 1),fixed4(1,0,0,0)));;//shadowAttenuation;
+        //col = 
         //col = length(col) * 2* tex2D(_TerrainTexture1, float2(0,1) + float2(1,-1)*v.uv).rgb;
 
         //col = tex2D(_BiomeMap1, v.uv) ;

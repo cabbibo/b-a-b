@@ -15,6 +15,9 @@ public sealed class FogEffect : PostProcessEffectSettings
     [Tooltip("The size of the map")]
     public Vector3Parameter mapSize = new Vector3Parameter { value = Vector3.zero };
 
+    
+    [Tooltip("The offset of the map")]
+    public Vector3Parameter mapOffset = new Vector3Parameter { value = Vector3.zero };
 
     [Tooltip("The inverse projection matrix")]
     public Vector4Parameter inverseProjection1 = new Vector4Parameter { value = Vector4.zero };

@@ -47,6 +47,8 @@ namespace WrenUtils
 
         public GlitchHit _glitchHit;
 
+        public Light _sun;
+
 
 
 
@@ -393,6 +395,16 @@ namespace WrenUtils
                 return instance._text;
             }
         }
+
+
+        public static Light sun{
+            get{
+                return instance._sun;
+            }
+        }
+
+        
+
 
         public void SetTerrainCompute(int kernel, ComputeShader shader)
         {

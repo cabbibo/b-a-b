@@ -1,13 +1,13 @@
-Shader "Unlit/WaterfallBouncePointRenderer"
+Shader "Unlit/WaterfallEmitPointRenderer"
 {
     Properties
     {
       _Size("Size", Range(0.01, 10)) = 1
       _MainTex("Texture", 2D) = "white" {}
       _ColorMultiplier("Color Multiplier", Range(0, 3)) = 1
-      _SpriteSize("Sprite Size", Range(1, 10)) = 1
+      _SpriteSize("Sprite Size", Range(1, 10)) = 5
+      _IsBottom("Is Bottom", int) = 0
       _VelocityMultiplier("Velocity Multiplier", Range(0, 10)) = 1
-      _Speed("Speed", Range(0, 10)) = 1
     }
     SubShader
     {
@@ -15,8 +15,8 @@ Shader "Unlit/WaterfallBouncePointRenderer"
     Cull Off 
      Tags { "RenderType"="Transparent" "Queue"="Transparent -1" }
     LOD 100
-    //Blend One One // Additive
-   // ZWrite Off
+ // Blend One One // Additive
+    //ZWrite Off
     Pass{
 
       CGPROGRAM
@@ -29,6 +29,7 @@ Shader "Unlit/WaterfallBouncePointRenderer"
         #include "UnityLightingCommon.cginc"
         #include "Assets/Resources/Shaders/Chunks/hash.cginc"
 
+      #include "Assets/Resources/Shaders/Chunks/SunShadows.cginc"
 
 
 
@@ -38,11 +39,9 @@ Shader "Unlit/WaterfallBouncePointRenderer"
       float _SpriteSize;
 
       float _LastCountFade;
+      int _IsBottom;
+
       float _VelocityMultiplier;
-
-      
-      #include "Assets/Resources/Shaders/Chunks/SunShadows.cginc"
-
       float2 rotateUV(float2 uv, float rotation)
 {
     float mid = 0.5;
@@ -74,8 +73,6 @@ float2 rotateUV(float2 uv, float rotation, float mid)
       StructuredBuffer<float4> _Points;
       StructuredBuffer<float3> _Vels;
 
-      float _Speed;
-
         //A simple input struct for our pixel shader step containing a position.
       struct varyings {
           float4 pos      : SV_POSITION;
@@ -84,8 +81,8 @@ float2 rotateUV(float2 uv, float rotation, float mid)
             float2 uv2 : TEXCOORD2;
             float debug : TEXCOORD1;
             float lastCountFade : TEXCOORD3;
-            float3 world : TEXCOORD4;
-            float4 screenPos : TEXCOORD5;
+            float3 world : TEXCOORD5;
+            float4 screenPos : TEXCOORD4;
       };
 
         varyings vert (uint id : SV_VertexID){
@@ -100,10 +97,11 @@ float2 rotateUV(float2 uv, float rotation, float mid)
         int fullBase = base / _CountMultiplier;
         int countID = base % _CountMultiplier;
 
-        float offset = hash((float)fullBase + countID);
+        float offset = hash((float)fullBase + countID) * 3;
 
 
-        float cycleTime = _Speed + offset;
+
+        float cycleTime = 1.5 + offset;
 
         float timeInCycle = (_Time.y + offset * cycleTime) % cycleTime;
         timeInCycle = timeInCycle / cycleTime;
@@ -130,7 +128,11 @@ float2 rotateUV(float2 uv, float rotation, float mid)
                 float4 p = _Points[fullBase];
                 float3 v = _Vels[fullBase];
 
-                float size =  _Size  * p.w * fadeUpAndDown * lastCountFadeMultiplier;
+
+                if( _IsBottom ){
+                  v = reflect(v, float3(0,1,0));
+                }
+                float size =  _Size  * p.w * fadeUpAndDown * lastCountFadeMultiplier  * (hash((float)base) + sin(p.x)* sin(p.x));
                 float offset = hash((float)base);
 
 
@@ -140,8 +142,13 @@ float2 rotateUV(float2 uv, float rotation, float mid)
                 float3 f = UNITY_MATRIX_V[2].xyz;
 
               //  
-                float3 basePos = p.xyz  +  f * (size+_Size* p.w)+ physicalOffset * size * .3- float3(0,timeInCycle * timeInCycle,0) *5 
-                + _VelocityMultiplier *(v+ 3*physicalOffset) * timeInCycle * timeInCycle* 3;
+                //float3 basePos = p.xyz  +  f * (size+_Size* p.w)+ physicalOffset * size * .3- float3(0,timeInCycle * timeInCycle,0) *5 
+                //+ (v+ 3*physicalOffset) * timeInCycle * timeInCycle* 3;
+
+                float3 basePos = p.xyz  +  f * (size+_Size* p.w) + physicalOffset * size * .3- float3(0,timeInCycle * timeInCycle,0) *5 ;
+
+                basePos += (_VelocityMultiplier*v*3+ 3*physicalOffset + float3(0,-10*offset,0)* timeInCycle) * timeInCycle * timeInCycle* 3 ;
+
                 float3 extra = 0;
 
                 float3 p1 = -l -u;
@@ -179,23 +186,23 @@ float2 rotateUV(float2 uv, float rotation, float mid)
               
                float3 fPos = basePos + extra * size;//*  _VertBuffer[base].debug.y;//saturate(dT * .1);
 
-                
+                float2 fUV = rotateUV(uv,hash((float)base) * 6.28 + fadeUpAndDown, float2(.5,.5));
                 o.uv = uv;
 
                   int spriteSize = int(_SpriteSize);
                 int whichSprite = floor( timeInCycle * spriteSize * spriteSize);
-
+                //whichSprite = 11;
                 float2 spriteUV = float2( whichSprite % spriteSize, floor( whichSprite / spriteSize) ) / spriteSize;
 
-                o.uv2 = spriteUV + uv / spriteSize;
+                o.uv2 = spriteUV + fUV / spriteSize;
                 
                 o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
-
                 o.world = fPos;
+
+
                 o.screenPos = ComputeScreenPos(o.pos);
-
-
             }
+
 
             return o;
 

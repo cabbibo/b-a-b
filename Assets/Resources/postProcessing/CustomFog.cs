@@ -24,6 +24,7 @@ public class CustomFog : MonoBehaviour
 
     public RenderTexture heightMap;
     public Vector3 mapSize;
+    public Vector3 mapOffset;
 
     public Camera cam;
     void OnEnable()
@@ -40,6 +41,7 @@ public class CustomFog : MonoBehaviour
         fog.intensity.value = _Intensity;
         heightMap = God.terrainData.heightmapTexture;
         mapSize = God.terrainData.size;
+        mapOffset = God.terrainOffset;
 
 
         //fog.inverseProjection.value = _InverseProjection;
@@ -48,6 +50,7 @@ public class CustomFog : MonoBehaviour
         //        print(heightMap);
         fog.heightMap.value = heightMap;
         fog.mapSize.value = mapSize;
+        fog.mapOffset.value = mapOffset;
         // glitch.blend.value = blend;
     }
 

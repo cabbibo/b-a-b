@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using WrenUtils;
 
 [ExecuteAlways]
 public class SunManager : MonoBehaviour
@@ -45,12 +45,13 @@ public class SunManager : MonoBehaviour
 
 
 
-
     public void OnEnable()
     {
         sky = RenderSettings.skybox;
 
         totalCycleLength = daySpeed + nightSpeed;
+
+        
 
     }
 
@@ -101,6 +102,11 @@ public class SunManager : MonoBehaviour
 
         moon.color = nightColor.Evaluate(timeInNight);
 
+        sun.enabled = false;
+        moon.enabled = false;
+
+
+
 
         if (timeInDay < .00001f || timeInDay > .99999f)
         {
@@ -108,7 +114,11 @@ public class SunManager : MonoBehaviour
         }
         else
         {
-            sun.enabled = true;
+
+            God.sun.transform.position = sun.transform.position;
+            God.sun.transform.rotation = sun.transform.rotation;
+            God.sun.color = sun.color;
+            God.sun.enabled = true;
         }
 
         if (timeInNight < .00001f || timeInNight > .99999f)
@@ -117,7 +127,10 @@ public class SunManager : MonoBehaviour
         }
         else
         {
-            moon.enabled = true;
+            God.sun.transform.position = moon.transform.position;
+            God.sun.transform.rotation = moon.transform.rotation;
+            God.sun.color = moon.color;
+            God.sun.enabled = true;
         }
 
         Shader.SetGlobalFloat("_DayNess", dayNess);

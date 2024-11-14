@@ -522,7 +522,6 @@ col += skyColor *pow( 1-reflMatch,20) * 10 * _LightColor0.xyz;
 
 //col = backgroundCol;
 
-col = saturate(col);
 
 col = float(stepBroken)/10;
 col = generic_desaturate(backgroundCol,.8) * hsv(float(stepBroken) *.03 + lightHue,saturate(float(stepBroken)/2) * .6,5/float(1*stepBroken*stepBroken));
@@ -535,6 +534,7 @@ if( stepBroken == 1){
 //col = foamLine;
 
 
+col = saturate(col);
 
 //col = dot( _WorldSpaceLightPos0.xyz , fNor);// * .5 + .5;
 //col = saturate(col);
