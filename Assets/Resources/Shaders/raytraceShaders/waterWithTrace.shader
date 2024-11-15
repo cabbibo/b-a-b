@@ -82,6 +82,9 @@ Shader "Volumetric/traceWithWater"
       #include "UnityCG.cginc"
       #include "UnityLightingCommon.cginc"
       
+      #include "Assets/Resources/Shaders/Chunks/SunShadows.cginc"
+
+
       sampler2D _CameraDepthTexture;
       sampler2D _FoamMap;
       float4 _BaseColor;
@@ -298,6 +301,15 @@ float terrainHeight( float3 pos ){
   return worldPosTexture(pos).y;
 }
 
+const float e = 2.7182818284590452353602874713527;
+float staticNoise(float2 texCoord)
+{
+    //float G = e + (_Time.y * 0.00001+1000);
+    float G = e + (  0.00001+10);
+    float2 r = (G * sin(G * texCoord.xy));
+    return (frac(r.x * r.y * (1.0 + texCoord.x)));
+}
+
 
 float3 rgb2hsb( in float3 c ){
   float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -343,10 +355,11 @@ sampler2D _NormalMap;
 
         float vertness = dot( rd , float3(0,1,0));
 
-
         float3 fNor = normalize(nor * 1 + float3(0,1,0));
 
-        fNor = normalize((tex2D(_NormalMap,v.worldPos.xz * .1)).xzy);
+        fNor = normalize((tex2D(_NormalMap,v.worldPos.xz * .1)).xzy-.5);
+        
+        fNor = UnpackNormal(tex2D(_NormalMap,v.worldPos.xz * .1)).xzy;
 
 
         float2 _WindDir = float2(.1,.1);
@@ -374,17 +387,24 @@ sampler2D _NormalMap;
 
         TBN = transpose(TBN);
 
-        fNor = mul(TBN, tangentNormal);
+        fNor = normalize(mul(TBN, tangentNormal));
 
       //  UnpackNormal(tex2D(_NormalMap, v.uv))
 
 
+        
+      
 
-
-        rd = normalize(refract(rd , -fNor, .9));
+       // rd = normalize(refract(rd , -fNor, .1));
+        rd = rd;
         vertness = dot( rd , float3(0,1,0));
         float depthVal= 0;
-        for(int i =0 ; i < 10; i++ ){
+
+        float hitShade = 0;
+        float totalShade = 0;
+
+        float oSVal = 1;
+        for(int i =0 ; i < 30; i++ ){
           // t+=dt*exp(-2.*c);
           depthVal = v.ro.y - p.y;///rd.y * t * 2;
 
@@ -396,6 +416,7 @@ sampler2D _NormalMap;
 
 
           if( !broken ){
+
           /*  float3 smoke = nT3D( p * _NoiseSize  );
             float3 nor = normalize(smoke);
 
@@ -414,35 +435,55 @@ sampler2D _NormalMap;
             //rd = normalize(rd * (1-c*_StepRefractionMultiplier) + nor *  c*_StepRefractionMultiplier);
             //col -= _NoiseColor * noiseDensity  + _NoiseColor;// + float3(1,1,0) * depthVal * .01;//+lerp( lerp(_BaseColor,_CenterOrbColor , saturate(centerOrbDensity)), _NoiseColor , saturate(noiseDensity));// saturate(dot(v.lightDir , nor)) * .1 *c;//hsv(c,.4, dT3D(p*3,float3(0,-1,0))) * c;//hsv(c * .8 + .3,1,1)*c;;// hsv(smoke,1,1) * saturate(smoke);
             
-            if( height > p.y + t3D(p) * 10 ){
+            if( height > p.y  ){
               broken = true;
               stepBroken = float(i);;
               break;
             }
           }
 
+          fixed4 cascadeWeights = GET_CASCADE_WEIGHTS(p.xyz, 0);
+          float sVal = unity_sampleShadowmap(GET_SHADOW_COORDINATES(float4(p.xyz, 1), cascadeWeights));
+
+
+          float sDif = sVal - oSVal;
+
+          totalShade += sVal * .05;
+          totalShade += abs(sDif) * .3;
+
+          oSVal = sVal;
+
           
+
+          float offsetN = staticNoise( v.screenPos.xy + ((floor(_Time.y*5)/5) * .01 %.1) + 100 + float(i) * .1); // different noise each step?
          // p -= rd * 100*(dt/vertness);
-          p -= rd * 5/vertness;//*(dt/vertness);
+          p -= (rd * 5/(3*vertness) ) * offsetN;//*(dt/vertness);
 
           
           
         }
 
 
-        if( !broken ){stepBroken = 10;}
+        if( !broken ){stepBroken = 30;}
 
         float3 localEye = mul(unity_WorldToObject,float4(_WorldSpaceCameraPos,1)).xyz - v.localPos;
 
-        float3 refr = refract( normalize(localEye) , normalize(v.localNor + nor * 3), .8);
+       // float3 refr = normalize(localEye);// refract( normalize(localEye) , normalize(v.localNor ), 1);
+        float3 refr = refract(normalize(-v.eye), fNor,.9);
+
 
         float4 depthSample = SAMPLE_DEPTH_TEXTURE_PROJ(_CameraDepthTexture, v.screenPos);
         float depth = LinearEyeDepth(depthSample).r;
         float foamLine = 1 - saturate(.1 * (depth - v.screenPos.w));
 
-
+        float eyeDist = length(_WorldSpaceCameraPos - v.worldPos);
         // float4 refractedPos = UnityObjectToClipPos( float4(o.ro + o.rd * 1.5,1));
-        float4 refractedPos = ComputeGrabScreenPos(UnityObjectToClipPos(float4(v.localPos + refr * (1-foamLine) * 10,1)));
+        //float4 refractedPos = ComputeGrabScreenPos(mul( UNITY_MATRIX_VP,float4(v.ro + fNor *.1 ,1)) * float4(.9,.9,1,1)-float4(-.05,-.05,0,0) );
+        float4 refractedPos = ComputeGrabScreenPos(mul( UNITY_MATRIX_VP,float4(v.ro + (fNor-.5) *10 * eyeDist * .0001 ,1))  ); 
+        // refract less the closer we are to the camera?
+
+
+
       //  float4 backgroundCol = tex2Dproj(_BackgroundTexture, refractedPos);
        
       
@@ -478,6 +519,7 @@ sampler2D _NormalMap;
 
         float3 baseCol =_BaseColor.xyz;
 
+
         //  col = lerp(col*backgroundCol,col,saturate(totalSmoke * _Opaqueness));
 
         
@@ -496,7 +538,6 @@ sampler2D _NormalMap;
         // col *= pow((1-m),5) * 60;
         // col += (v.nor * .5 + .5 ) * .4;
 
-
         // apply depth texture
 
        // col *= foamLine;
@@ -506,7 +547,11 @@ sampler2D _NormalMap;
 
         float height = terrainHeight( v.ro );
         float delta = v.worldPos.y - height;
+        
+float lightHue = rgb2hsb(_LightColor0.xyz).x;
 
+
+/*
 col = .001 *abs(delta);
 
 col =.001* v.worldPos.y;
@@ -515,8 +560,7 @@ col = .01*abs(height-v.worldPos.y);
 col = hsv(float(stepBroken) *.02 + .5,1,1/float(1*stepBroken*stepBroken));
 
 
-float lightHue = rgb2hsb(_LightColor0.xyz).x;
-col = (backgroundCol *1) *hsv(float(stepBroken) *.03 + lightHue,float(stepBroken)/10,5/float(1*stepBroken*stepBroken));
+col = (backgroundCol *1) *hsv(float(stepBroken) *.01 + lightHue,float(stepBroken)/30,3/float(1*stepBroken*stepBroken));
 //col +=hsv(float(stepBroken) *.01 + lightHue,1,1/float(1*stepBroken*stepBroken)) * .3;
 col += skyColor *pow( 1-reflMatch,20) * 10 * _LightColor0.xyz;
 
@@ -524,8 +568,13 @@ col += skyColor *pow( 1-reflMatch,20) * 10 * _LightColor0.xyz;
 
 
 col = float(stepBroken)/10;
-col = generic_desaturate(backgroundCol,.8) * hsv(float(stepBroken) *.03 + lightHue,saturate(float(stepBroken)/2) * .6,5/float(1*stepBroken*stepBroken));
 
+*/
+
+
+col = generic_desaturate(backgroundCol,.8) * hsv(float(stepBroken) *.01 + lightHue,saturate(float(stepBroken)/6) * .6,5*5/float(1*stepBroken*stepBroken));
+
+col *= totalShade *totalShade* 10;
 if( stepBroken == 1){
   col = _LightColor0 * 1.5;
 }
@@ -536,6 +585,19 @@ if( stepBroken == 1){
 
 col = saturate(col);
 
+fixed4 cascadeWeights = GET_CASCADE_WEIGHTS(v.worldPos, 0);
+float sVal = unity_sampleShadowmap(GET_SHADOW_COORDINATES(float4(p.xyz, 1), cascadeWeights));
+col += skyColor * skyColor * skyColor * skyColor*skyColor * 2 * sVal;
+col += pow(length(skyColor) ,2)*_LightColor0 * .1;
+
+if( dot(v.nor, float3(0,1,0)) < 1 ){
+  col += (1-dot(v.nor, float3(0,1,0))) * skyColor;
+}
+//col *= (totalShade/30) * .5 + .5;
+
+
+//col = depth/10000;
+
 //col = dot( _WorldSpaceLightPos0.xyz , fNor);// * .5 + .5;
 //col = saturate(col);
 //col = fNor;//normalize(nor);
@@ -545,6 +607,10 @@ col = saturate(col);
 
         //col = lerp( col , float3(0,.8,.3), abs(delta) * .05);//  * float3(0,1,0);//  float3(0,1,0) * delta;
         //col = v.nor * .5 + .5;
+
+   // col = backgroundCol;
+
+   // col = fNor;
         return float4( col.xyz , 1);//saturate(float4(col,3*length(col) ));
 
 
@@ -557,7 +623,7 @@ col = saturate(col);
     }
   }
 
-  Fallback Off
+  Fallback  "Diffuse"
 
 
 }

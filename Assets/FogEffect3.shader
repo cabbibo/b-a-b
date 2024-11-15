@@ -80,13 +80,14 @@ float4 _FogColorNear;
 float4 _FogColorFar;
 float4 _FogColorDistant;
 float _OceanHeight;
-#define _FogSamples 100
+#define _FogSamples 40
 
 const float e = 2.7182818284590452353602874713527;
 
 float staticNoise(float2 texCoord)
 {
-    float G = e + (_Time.y * 0.1);
+    //float G = e + (_Time.y * 0.00001+1000);
+    float G = e + (  0.00001+10);
     float2 r = (G * sin(G * texCoord.xy));
     return (frac(r.x * r.y * (1.0 + texCoord.x)));
 }
@@ -188,13 +189,24 @@ float2 TransformTriangleVertexToUV(float2 vertex)
 
         float offset = _FogStepSize * staticNoise( v.texcoord + _Time.y%1 );
 
+     ///   float offsetN = staticNoise( v.texcoord + _Time.y%1 );
+
        //  ro -= _FogStepSize *normalize(viewVector) * offset;
         bool hasBroke = false;
+        float offsetN = staticNoise( v.texcoord + _Time.y%1 );
+        float currentDistance=0;
+        float currentStepSize=0;
+
+        float oSVal = 1;
         for( int i = 0; i < _FogSamples; i++ ){
 
             float ni = float(i)/ float(_FogSamples);
+            offsetN = staticNoise( v.texcoord + ((floor(_Time.y*20)/20) * .01 %.1) + 100 + float(i) * .1); // different noise each step?
 
-            float dist = _FogStepSize * float(i) + offset;
+            currentStepSize = _FogStepSize * (.2 + ni*2);
+            currentDistance += currentStepSize - offsetN * currentStepSize; // alwa
+
+            float dist = currentDistance;
 
             // if its farther than scene depth, break
             if( dist > distance ){
@@ -223,17 +235,27 @@ float2 TransformTriangleVertexToUV(float2 vertex)
             //float n = snoise(p * .1);
 
             fixed4 cascadeWeights = GET_CASCADE_WEIGHTS(p.xyz, 0);
+
             float sVal = unity_sampleShadowmap(GET_SHADOW_COORDINATES(float4(p.xyz, 1), cascadeWeights));
             float fogValue = sVal;//clamp( 1/(pow( d, _FogHeightPower) * _FogHeightMultiplier),0,1000) * lerp(_FogDensityAtNear, _FogDensityAtFar, ni);
 
+
+            float deltaSVal = sVal - oSVal;
+
+            oSVal = sVal;
            // fogValue *= n * .5 + .5;
           //  totalFog += fogValue;
             
           //  totalFogColor += lerp( _FogColorNear, _FogColorFar,ni ) * fogValue;
 
           //totalFog += sVal *(noise(p * .01)+1)* 1/(pow( d+3, _FogHeightPower));// GetSunShadowsAttenuation_PCF5x5(p,1,0);
-          totalFog += sVal* _FogHeightMultiplier/(pow( d+2, _FogHeightPower))* lerp(_FogDensityAtNear, _FogDensityAtFar, ni);;// GetSunShadowsAttenuation_PCF5x5(p,1,0);
-            
+        //  totalFog += ni*sVal * .1;//* _FogHeightMultiplier/(pow( d+2, _FogHeightPower))* lerp(_FogDensityAtNear, _FogDensityAtFar, ni);;// GetSunShadowsAttenuation_PCF5x5(p,1,0);
+           
+          totalFog += clamp(deltaSVal,0,1) * (3/(ni*2+1)) *_FogHeightMultiplier/(pow( d+2, _FogHeightPower));
+          totalFog += ni * sVal  *_FogHeightMultiplier/(pow( d+2, _FogHeightPower));
+          totalFog += .1 * offsetN*_FogHeightMultiplier/(pow( d+2, _FogHeightPower));
+
+
             if( totalFog > _MaxFogTotal){
                 totalFog = _MaxFogTotal;
                 totalFogColor = _FogColorFar;
@@ -245,9 +267,29 @@ float2 TransformTriangleVertexToUV(float2 vertex)
             
         }
 
+        if( hasBroke == false ){
+           // totalFog = _MaxFogTotal;
+        }
 
-        color = lerp(bgCol ,  _LightColor0 ,3*totalFog/10);//
 
+        color = lerp(min(bgCol,_LightColor0) ,  bgCol+_LightColor0 ,3*totalFog/10);//
+       // color = lerp(0, _LightColor0 ,3*totalFog/10);//
+        
+
+        /*if( hasBroke == false ){
+            float height = getTerrainHeight(worldPos.xyz);// SAMPLE_TEXTURE2D(_HeightMap, sampler_HeightMap, uvR).r;1
+
+            height = max(height, _OceanHeight);
+            float d = worldPos.y - height;
+             color =lerp(min(bgCol,_LightColor0) ,  bgCol+_LightColor0 ,clamp(_FogHeightMultiplier/pow( d+2, _FogHeightPower),0,1000));//
+
+             color = 
+        }*/
+
+       // maxStep = 
+
+
+        color = saturate(color);
        // color = shadowAttenuation;
 
         fixed4 cascadeWeights = GET_CASCADE_WEIGHTS(worldPos.xyz, 0);

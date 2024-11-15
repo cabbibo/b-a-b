@@ -17,6 +17,7 @@ public class Waterfall : MonoBehaviour
 
     public float forwardVelocity;
     public float downVelocity;
+    public float towardsCenterVelocity;
 
     public int countWidth;
     public int countHeight;
@@ -67,6 +68,20 @@ public class Waterfall : MonoBehaviour
     {
         //RegenerateMesh();
 
+       
+    }
+
+    public void ResetPoints(){
+
+            bouncePoints = new List<Vector4>();
+            bounceVels = new List<Vector3>();
+            finalTopPoints = new List<Vector4>();
+            finalTopVels = new List<Vector3>();
+            finalBottomPoints = new List<Vector4>();
+            finalBottomVels = new List<Vector3>();
+    }
+
+    public void RegeneratePoints(){
         if (bouncePoints != null)
         {
             bouncePointEmitter.SetPoints(bouncePoints.ToArray(), bounceVels.ToArray());
@@ -79,7 +94,7 @@ public class Waterfall : MonoBehaviour
 
         if( waterfallBottomEmitter){
                 
-                waterfallBottomEmitter.SetPoints(finalBottomPoints.ToArray(), finalBottomVels.ToArray());
+            waterfallBottomEmitter.SetPoints(finalBottomPoints.ToArray(), finalBottomVels.ToArray());
         }
     }
 
@@ -193,20 +208,21 @@ public class Waterfall : MonoBehaviour
 
         Mesh mesh;
 
-        if (individualStrands)
-        {
-
+        //if (individualStrands)
+        //{
+            ResetPoints();
             GetPaths(waterfallTopPoints);
             mesh = GenerateIndividualStrandsMesh();
+            RegeneratePoints();
 
-        }
-        else
-        {
+        //}
+        //else
+        //{
 
+        //    Debug.Log("Generating Extruded Mesh");
+           // mesh = GenerateExtrudedMesh();
 
-            mesh = GenerateExtrudedMesh();
-
-        }
+        //}
 
         MeshFilter meshFilter = GetComponent<MeshFilter>();
 
@@ -227,7 +243,7 @@ public class Waterfall : MonoBehaviour
     // EXTRUDED PLANE
     int[] triangles;
 
-
+/*
     public Mesh GenerateExtrudedMesh()
     {
 
@@ -444,6 +460,8 @@ public class Waterfall : MonoBehaviour
 
 
     }
+*/
+
 
 
 
@@ -618,7 +636,8 @@ public class Waterfall : MonoBehaviour
             Vector3 towardsCenter = transform.position - topPoints[i];
             towardsCenter = new Vector3(towardsCenter.x, 0, towardsCenter.z);
 
-            velocity = towardsCenter.normalized * forwardVelocity;
+            velocity = towardsCenter.normalized * towardsCenterVelocity;
+            velocity += transform.forward * forwardVelocity;
             bouncePoints.Add(new Vector4(topPoints[i].x, topPoints[i].y, topPoints[i].z, velocity.magnitude));
             bounceVels.Add(velocity);
 

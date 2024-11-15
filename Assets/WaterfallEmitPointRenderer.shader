@@ -8,6 +8,9 @@ Shader "Unlit/WaterfallEmitPointRenderer"
       _SpriteSize("Sprite Size", Range(1, 10)) = 5
       _IsBottom("Is Bottom", int) = 0
       _VelocityMultiplier("Velocity Multiplier", Range(0, 10)) = 1
+      _BaseVelocity("Base Velocity", Vector) = (0, 0, 0, 0)
+      _BaseScale("Base Scale", Range(0, 10)) = 1
+      _VelocityRandomness("Velocity Randomness", Range(0, 10)) = 1
     }
     SubShader
     {
@@ -68,7 +71,9 @@ float2 rotateUV(float2 uv, float rotation, float mid)
 }
 
 
-
+  float3 _BaseVelocity;
+  float _BaseScale;
+  float _VelocityRandomness;
 
       StructuredBuffer<float4> _Points;
       StructuredBuffer<float3> _Vels;
@@ -132,8 +137,11 @@ float2 rotateUV(float2 uv, float rotation, float mid)
                 if( _IsBottom ){
                   v = reflect(v, float3(0,1,0));
                 }
-                float size =  _Size  * p.w * fadeUpAndDown * lastCountFadeMultiplier  * (hash((float)base) + sin(p.x)* sin(p.x));
+                float size =  _Size   * fadeUpAndDown * lastCountFadeMultiplier  * (hash((float)base) + sin(p.x)* sin(p.x));
                 float offset = hash((float)base);
+
+
+                float3 finalVelocity = _BaseVelocity + v * _VelocityMultiplier + physicalOffset * _VelocityRandomness;
 
 
                 // Right and up of camera ( view not project ) matrix
@@ -145,9 +153,9 @@ float2 rotateUV(float2 uv, float rotation, float mid)
                 //float3 basePos = p.xyz  +  f * (size+_Size* p.w)+ physicalOffset * size * .3- float3(0,timeInCycle * timeInCycle,0) *5 
                 //+ (v+ 3*physicalOffset) * timeInCycle * timeInCycle* 3;
 
-                float3 basePos = p.xyz  +  f * (size+_Size* p.w) + physicalOffset * size * .3- float3(0,timeInCycle * timeInCycle,0) *5 ;
+                float3 basePos = p.xyz  +  f * (size+_Size) + physicalOffset * size * .3- float3(0,timeInCycle * timeInCycle,0) *5 ;
 
-                basePos += (_VelocityMultiplier*v*3+ 3*physicalOffset + float3(0,-10*offset,0)* timeInCycle) * timeInCycle * timeInCycle* 3 ;
+                basePos += (finalVelocity+ 3*physicalOffset + float3(0,-10*offset,0)* timeInCycle) * timeInCycle * timeInCycle* 3 ;
 
                 float3 extra = 0;
 

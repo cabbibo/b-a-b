@@ -279,18 +279,20 @@ float lightHue = rgb2hsb(_LightColor0.xyz).x;
 //col.xyz = (bgCol *1) *hsv(  lightHue,.2,2);
 col.xyz = generic_desaturate(bgCol,.3) * hsv(.1+lightHue,.5,1);
 
-if( tmpCol.x > .4){
-    col *=1.5;
+if( tmpCol.x > .49){
+    col = _LightColor0 *shadowAttenuation;
 }
 
 if( tmpCol.x > .3){
-    col *=1.5;
+    col *=2;
 }
 
 if( tmpCol.x > .1){
-    col *=1.5;
+    col *=2;
 }
 
+
+col *= shadowAttenuation+1;
 //col = abs(v.uv.x-.5);
 
       //  col = lerp(bgcolor,  float4(.1,.4,1,1) * 0 , 1-foamLine);
