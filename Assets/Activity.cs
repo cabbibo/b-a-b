@@ -884,6 +884,11 @@ public class Activity : MonoBehaviour
     public void AlwaysEnd()
     {
 
+        // reset the ring value
+
+
+        God.wren.interfaceUtils.SetRingValue(0, 0);
+
         if (God.state.currentlyActiveActivity == this)
         {
             God.state.currentlyActiveActivity = null;

@@ -4,6 +4,15 @@ Shader "Debug/PointerInterfaceProcShader1" {
     Properties {
 
       _Size("_Size", Float) = 1
+      _DiscardTexture("Discard Texture", 2D) = "white" {}
+
+
+      _MinSizeMultiplier("_MinSizeMultiplier", Float) = 1
+      _MaxSizeMultiplier("_MaxSizeMultiplier", Float) = 1
+
+      _MinSizeDistance("_MinSizeDistance", Float) = 1
+      _MaxSizeDistance("_MaxSizeDistance", Float) = 1
+      _TypeSizeMultiplier("_TypeSizeMultiplier", vector) = (2,1,1,1)
     }
 
 
@@ -26,11 +35,16 @@ Shader "Debug/PointerInterfaceProcShader1" {
 	//ColorMask RGB
 	Cull Off 
   ZWrite Off 
-  ZTest Always
+ // ZTest Always
 
 
     Pass{
-
+      Tags { "Queue"="Overlay+1000" "IgnoreProjector"="True" "RenderType"="Transparent+100000" }
+      Blend SrcAlpha One
+    //	AlphaTest Greater .01
+      //ColorMask RGB
+      Cull Off 
+      ZWrite Off 
 
       CGPROGRAM
       
@@ -41,6 +55,7 @@ Shader "Debug/PointerInterfaceProcShader1" {
 
       #include "UnityCG.cginc"
     #include "Assets/Resources/Shaders/Chunks/hsv.cginc"
+    #include "Assets/Resources/Shaders/Chunks/noise.cginc"
 
 
 
@@ -52,9 +67,20 @@ Shader "Debug/PointerInterfaceProcShader1" {
       uniform float _Fade;
 
 
+      uniform float _MinSizeMultiplier;
+      uniform float _MaxSizeMultiplier;
+
+      uniform float _MinSizeDistance;
+      uniform float _MaxSizeDistance;
+      uniform float4 _TypeSizeMultiplier;
+
+      uniform sampler2D _DiscardTexture;
+
+
       StructuredBuffer<float3> _PositionBuffer;
       StructuredBuffer<float> _FadeBuffer;
       StructuredBuffer<float> _TypeBuffer;
+      StructuredBuffer<float4> _ExtraDataBuffer;
 
       //uniform float4x4 worldMat;
 
@@ -69,8 +95,11 @@ Shader "Debug/PointerInterfaceProcShader1" {
           float value : TEXCOORD6;
           float fade : TEXCOORD7;
           float type : TEXCOORD8;
+          float4 extra : TEXCOORD9;
+          float3 centerPos : TEXCOORD10;
 
       };
+
 
 
 uniform float4x4 _Transform;
@@ -107,7 +136,7 @@ varyings vert (uint id : SV_VertexID){
       float3 basePos = pos +  centerDir * 1;
 
 
-      float sizeMultiplier = _TypeBuffer[base] + 1;
+      float sizeMultiplier = _TypeSizeMultiplier[int(_TypeBuffer[base])];//+ 1;
 
 
       // if we are close to the place we are going, connect completely ( longer )
@@ -116,13 +145,29 @@ varyings vert (uint id : SV_VertexID){
 
 
 
+      float dist = length(center - pos);
+
+      float distMultiplier = lerp( _MinSizeMultiplier, _MaxSizeMultiplier, saturate( (dist - _MinSizeDistance) /(_MaxSizeDistance-_MinSizeDistance)) );
 
 
+      float fSize = _Size * sizeMultiplier * distMultiplier;
 
+
+      /* diamond
       float3 p1 = basePos;
       float3 p2 = basePos+ centerDir * (_Size *midPointerValue ) - up * (_Size * .1);
       float3 p3 = basePos+ centerDir * (_Size *midPointerValue ) + up * (_Size * .1);
       float3 p4 = basePos+ centerDir * (_Size );
+      */
+      float3 p1 = basePos - up *fSize * .1;
+      float3 p2 = basePos + up * (fSize * .1);
+      float3 p3 = basePos+ centerDir * (fSize) - up * (fSize * .1);
+      float3 p4 = basePos+ centerDir * (fSize )+ up * (fSize * .1);
+
+      
+
+
+      float3 truCenter = basePos+ centerDir * (fSize *midPointerValue );
 
     
 
@@ -137,12 +182,28 @@ varyings vert (uint id : SV_VertexID){
 
       float value = 0;
 
+      /*
+
+      Diamond
+      if( alternate == 0 ){ extra = p1; uv = float2(.5,0); value = 0; }
+      if( alternate == 1 ){ extra = p2; uv = float2(1,midPointerValue); value = midPointerValue;}
+      if( alternate == 2 ){ extra = p4; uv = float2(.5,1); value = 1;}
+      if( alternate == 3 ){ extra = p1; uv = float2(.5,0); value = 0;}
+      if( alternate == 4 ){ extra = p4; uv = float2(.5,1); value = 1;}
+      if( alternate == 5 ){ extra = p3; uv = float2(0,midPointerValue); value = midPointerValue;}
+
+      */
+      
+      
       if( alternate == 0 ){ extra = p1; uv = float2(0,0); value = 0; }
-      if( alternate == 1 ){ extra = p2; uv = float2(1,0); value = midPointerValue;}
+      if( alternate == 1 ){ extra = p2; uv = float2(1,0); value = 0;}
       if( alternate == 2 ){ extra = p4; uv = float2(1,1); value = 1;}
       if( alternate == 3 ){ extra = p1; uv = float2(0,0); value = 0;}
       if( alternate == 4 ){ extra = p4; uv = float2(1,1); value = 1;}
-      if( alternate == 5 ){ extra = p3; uv = float2(0,1); value = midPointerValue;}
+      if( alternate == 5 ){ extra = p3; uv = float2(0,1); value =0;}
+
+
+
 
       o.worldPos = extra;
       
@@ -156,7 +217,9 @@ varyings vert (uint id : SV_VertexID){
       o.id = base;
       o.fade = _FadeBuffer[base];
       o.type = _TypeBuffer[base];
+      o.extra = _ExtraDataBuffer[base];
       o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
+      o.centerPos = truCenter;
 
   }
 
@@ -165,14 +228,93 @@ varyings vert (uint id : SV_VertexID){
 }
 
 
-      
+float sdfDiamond(float2 p, float2 center, float size) {
+  // Translate point relative to the center
+  p -= center;
+
+
+  if(p.y < 0){
+    p.y = 2* p.y;
+  }else{
+    p.y = p.y;
+  }
+  
+  // Scale by size
+  p /= size;
+
+  // Create the diamond shape using an SDF
+  float d = abs(p.x) + abs(p.y) - 1.0;
+
+  // Scale back to the original size
+  return d * size;
+}
+
+
 
 //Pixel function returns a solid color for each point.
 float4 frag (varyings v) : COLOR {
 
-  float3 c1 = hsv(v.uv.x * .1,1,1);
+  float center = length(v.worldPos- v.centerPos) / _Size;
+
+
   
-  float3 fCol = 1 * v.fade;
+  float diamond = sdfDiamond(v.uv, float2(.5,.3), .5); 
+
+  float n = noise( float3(v.uv.x,v.uv.y,_Time.y) * 30);
+  
+  if( diamond > -.1 *n){
+    discard;
+  }
+
+
+  float3 c1 = hsv(v.extra.x * .1,1,1);
+  
+  float3 fCol = 0;
+  
+
+
+  fCol = -diamond *4;// -1 * noise( float3(v.uv.x,v.uv.y,10) * 30);
+ 
+
+  fCol *= hsv( v.type * .1,1,1);
+
+ fCol *= v.fade;
+
+
+
+
+  if( v.extra.x < .5 ){
+    // discard the inside; 
+
+
+    
+
+    if(diamond < -.2 + .1 *n ){
+      discard;
+    }
+    
+
+    /*
+    if( abs(v.uv.y-.5) < .4 && abs(v.uv.x-.5) < .4){
+      //discard;
+    }*/
+    
+  }else{
+
+    for(int i = 0; i < v.extra.x; i++  ){
+
+      if( abs((1-v.uv.y) - abs(v.uv.x-.5) * .1 - (.2+.6*( 1-((float)i/10)))) < .02 + .01 * n  ){
+        fCol *= 3;
+      }
+    }
+  }
+
+
+ 
+
+
+
+  
   return float4( fCol , 1);
 
 }

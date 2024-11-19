@@ -9,25 +9,12 @@ Shader "Debug/PointerSkyColumnProcShader1" {
 
   SubShader{
 
-     // Tags {"Queue"="Transparent+10" "IgnoreProjector"="True" "RenderType"="Transparent"}
- // Tags {"Queue"="Background" "IgnoreProjector"="True" "RenderType"="Background"}
- 
- // Tags { "Queue"="Overlay+1000" "IgnoreProjector"="True" "RenderType"="Transparent+100000" }
-//	Blend SrcAlpha One
-//	AlphaTest Greater .01
-	//ColorMask RGB
-	Cull Off 
-  //ZWrite Off 
- // ZTest Always
-
-  Tags { "Queue"="Overlay+1000" "IgnoreProjector"="True" "RenderType"="Transparent+100000" }
-	Blend SrcAlpha One
-//	AlphaTest Greater .01
-	//ColorMask RGB
-	Cull Off 
-  ZWrite Off 
-  ZTest Always
-
+    Tags { "Queue"="Overlay+1000" "IgnoreProjector"="True" "RenderType"="Transparent+100000" }
+    Blend SrcAlpha One
+  //	AlphaTest Greater .01
+    //ColorMask RGB
+    Cull Off 
+    ZWrite Off 
 
     Pass{
 
@@ -41,6 +28,7 @@ Shader "Debug/PointerSkyColumnProcShader1" {
 
       #include "UnityCG.cginc"
     #include "Assets/Resources/Shaders/Chunks/hsv.cginc"
+    #include "Assets/Resources/Shaders/Chunks/noise.cginc"
 
 
 
@@ -55,6 +43,7 @@ Shader "Debug/PointerSkyColumnProcShader1" {
       StructuredBuffer<float3> _PositionBuffer;
       StructuredBuffer<float> _FadeBuffer;
       StructuredBuffer<float> _TypeBuffer;
+      StructuredBuffer<float4> _ExtraDataBuffer;
 
       //uniform float4x4 worldMat;
 
@@ -69,6 +58,7 @@ Shader "Debug/PointerSkyColumnProcShader1" {
           float value : TEXCOORD6;
           float fade : TEXCOORD7;
           float type : TEXCOORD8;
+          float4 extra : TEXCOORD9;
 
       };
 
@@ -94,13 +84,15 @@ varyings vert (uint id : SV_VertexID){
 
 
 
+    float sizeMultiplier = (200 + length(center - _WrenPos)) / _Size;
+
+float fSize = sizeMultiplier * _Size * .05;
 
 
-
-      float3 p1 = center - left * (_Size );
-      float3 p2 =  center + left * (_Size );
-      float3 p3 = center - left * (_Size) + up * (_Size * 100);
-      float3 p4 = center + left * (_Size) + up * (_Size * 100);
+      float3 p1 = center - left * (fSize) ;
+      float3 p2 =  center + left * (fSize);
+      float3 p3 = center - left * (fSize) + up * (fSize* 40);
+      float3 p4 = center + left * (fSize) + up * (fSize* 40);
 
       /*float3 p1 = center - up *_Size;
       float3 p2 =  pos  - up *_Size;
@@ -133,6 +125,7 @@ varyings vert (uint id : SV_VertexID){
       o.fade = _FadeBuffer[base];
       o.type = _TypeBuffer[base];
       o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
+      o.extra = _ExtraDataBuffer[base];
 
   }
 
@@ -141,6 +134,45 @@ varyings vert (uint id : SV_VertexID){
 }
 
 
+float sdTriangle(float2 p, float2 a, float2 b, float2 c) {
+  // Compute edge floattors
+  float2 ab = b - a;
+  float2 bc = c - b;
+  float2 ca = a - c;
+
+  // Compute floattors from point p to triangle vertices
+  float2 pa = p - a;
+  float2 pb = p - b;
+  float2 pc = p - c;
+
+  // Edge normal directions
+  float2 abNormal = float2(-ab.y, ab.x);
+  float2 bcNormal = float2(-bc.y, bc.x);
+  float2 caNormal = float2(-ca.y, ca.x);
+
+  // Signed distances to the triangle edges
+  float d1 = dot(pa, normalize(abNormal));
+  float d2 = dot(pb, normalize(bcNormal));
+  float d3 = dot(pc, normalize(caNormal));
+
+  // Inside-outside test using cross products
+  float inside = max(max(dot(abNormal, pa), dot(bcNormal, pb)), dot(caNormal, pc));
+
+  // Return the signed distance
+  return max(max(d1, d2), d3) * (inside < 0.0 ? 1.0 : -1.0);
+
+}
+
+float sdEquilateralTriangle( in float2 p, in float r )
+{
+    const float k = sqrt(3.0);
+    p.x = abs(p.x) - r;
+    p.y = p.y + r/k;
+    if( p.x+k*p.y>0.0 ) p = float2(p.x-k*p.y,-k*p.x-p.y)/2.0;
+    p.x -= clamp( p.x, -2.0*r, 0.0 );
+    return -length(p)*sign(p.y);
+}
+
       
 
 //Pixel function returns a solid color for each point.
@@ -148,8 +180,61 @@ float4 frag (varyings v) : COLOR {
 
   float3 c1 = hsv(v.uv.x * .1,1,1);
   
-  float3 fCol = 1 * v.fade;
-  return float4( fCol , 1);
+
+  float3 typeCol = hsv(v.type*.1,.5,1);
+  float3 fCol = 0;//hsv(v.type*.1,.5,1) * v.fade;
+
+  if( v.uv.y > .05 ){
+ //   fCol = float3(0,0,0);
+  }
+
+
+  float n = noise( float3(1*v.uv.x,v.uv.y * 30,_Time.x%20) * 10);
+
+  float baseY = saturate(v.uv.y * 20);
+
+  if( baseY >= 1){
+    //fCol = float3(0,0,1);
+
+    for( int i = 0; i < v.extra.x-.001; i++){
+
+
+        if( abs((v.uv.y) - (abs(v.uv.x-.5) * .02 + (.001+.1*( 1-((float)i/10))))) < .002 + n * .001   ){
+          fCol = typeCol * pow(v.fade,.5);
+        }
+      
+    }
+
+    if( abs(v.uv.x-.5) > .2){
+      fCol = float3(0,0,0);
+    }
+
+    if( abs(v.uv.x-.5) > .18 && abs(v.uv.x-.5) < .2){
+      fCol = typeCol * v.fade * (1-v.uv.y);
+    }
+
+  }else{
+
+   
+  float baseTri = sdEquilateralTriangle(float2(v.uv.x - .5 ,(1-baseY) - .5),.5);
+
+  if( baseTri < 0 - n * .1){
+    fCol = typeCol *1  * pow(v.fade,.5);
+  }else{
+    if( abs(v.uv.x-.5) > .18 && abs(v.uv.x-.5) < .2){
+      fCol = typeCol * v.fade * (1-v.uv.y) * baseY*baseY;
+    }
+  }
+
+}
+
+
+fCol *= n;
+
+  //fCol = baseTri;
+  //fCol = v.uv.y;
+  return float4( fCol , length(fCol));
+
 
 }
 

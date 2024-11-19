@@ -31,6 +31,17 @@ public class ActivityLeavingHelper : MonoBehaviour
         {
             SetLeavingText("Returned");
             God.wren.interfaceUtils.warningText.Ping();
+            God.wren.interfaceUtils.PingAll(); // ping to reset it!
+
+
+
+            God.wren.interfaceUtils.SetRingValue(2, 0);
+            God.wren.interfaceUtils.SetRingFade(2, 0);
+
+
+            God.wren.interfaceUtils.SetPointerFade(activity.mainPointOfInterest, 0);
+
+
         }
     }
 
@@ -47,8 +58,12 @@ public class ActivityLeavingHelper : MonoBehaviour
     {
 
 
-        SetLeavingText("Leaving Acitivity in " + Mathf.Floor(((1 - v) * activity.timeAllowedWhileExitedActivityArea) * 100) / 100 + " seconds");
+        SetLeavingText(" " + Mathf.Floor(((1 - v) * activity.timeAllowedWhileExitedActivityArea) * 100) / 100);
         God.wren.interfaceUtils.warningText.SetFade(Mathf.Sin(v * 100) + 1);
+
+
+        God.wren.interfaceUtils.SetRingValue(2, (1 - v));
+        God.wren.interfaceUtils.SetRingFade(2, Mathf.Sin(v * 100) + 1);
 
 
         //print("should be setting");
@@ -64,6 +79,8 @@ public class ActivityLeavingHelper : MonoBehaviour
         SetLeavingText("Activity Exited");
         God.wren.interfaceUtils.warningText.Ping();
         God.wren.interfaceUtils.SetPointerFade(activity.mainPointOfInterest, 0);
+        God.wren.interfaceUtils.SetRingValue(2, 0);
+        God.wren.interfaceUtils.PingAll();
     }
 
 }

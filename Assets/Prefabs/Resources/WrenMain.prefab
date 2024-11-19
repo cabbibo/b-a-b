@@ -2653,6 +2653,7 @@ MonoBehaviour:
   pointerTypes: 
   fades: []
   targetFades: []
+  extraData: []
   pointerPositions: []
   oPointerCount: 0
   updateRate: 10

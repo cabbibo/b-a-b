@@ -773,9 +773,21 @@ Shader "Crest/OceanCustom"
               //  col *= shadow.y;
                 //col *= floor(lightMatch * lightMatch*3+ .5)/2;
                 col += floor(lightMatch * lightMatch*3+ .5)/2 * _LightColor0.rgb;
+
+
+                col = refl * .5 + .5;
+
+                col = normal * .5 + .5;
+
+                col = pow(1 - saturate(dot( normal, normalize(eye))),100)* 10000 / length(eye);
+              //  col = saturate(pow( reflMatch, 1000) * 4);
               //  col *= shadow.y;
+
+              col = saturate(col);
                 
                 ApplyReflectionSky(view, n_pixel, lightDir, shadow.y, screenPos.xyzz, pixelZ, reflAlpha, col);
+
+
                 return half4(col, 1.);
             }
 

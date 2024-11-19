@@ -27,15 +27,19 @@ public class InterfacePointer : MonoBehaviour
 
     public List<Transform> pointerList = new List<Transform>();
 
-    public List<int> pointerTypes = new List<int>();
+    public List<float> pointerTypes = new List<float>();
 
     public List<float> fades = new List<float>();
 
     public List<float> targetFades = new List<float>();
+    public List<Vector4> extraData = new List<Vector4>();
+
+
 
     public ComputeBuffer _buffer;
     public ComputeBuffer _typeBuffer;
     public ComputeBuffer _fadeBuffer;
+    public ComputeBuffer _extraDataBuffer;
 
     public Vector3[] pointerPositions;
     public int oPointerCount;
@@ -77,6 +81,7 @@ public class InterfacePointer : MonoBehaviour
             _buffer = new ComputeBuffer(pointerList.Count, 3 * sizeof(float));
             _typeBuffer = new ComputeBuffer(pointerList.Count, 1 * sizeof(float));
             _fadeBuffer = new ComputeBuffer(pointerList.Count, 1 * sizeof(float));
+            _extraDataBuffer = new ComputeBuffer(pointerList.Count, 4 * sizeof(float));
             pointerPositions = new Vector3[pointerList.Count];
 
 
@@ -119,6 +124,11 @@ public class InterfacePointer : MonoBehaviour
         if (_fadeBuffer != null)
         {
             _fadeBuffer.Dispose();
+        }
+
+        if (_extraDataBuffer != null)
+        {
+            _extraDataBuffer.Dispose();
         }
 
         pointerPositions = new Vector3[0];
@@ -177,6 +187,7 @@ public class InterfacePointer : MonoBehaviour
             _buffer.SetData(pointerPositions);
             _typeBuffer.SetData(pointerTypes.ToArray());
             _fadeBuffer.SetData(fades.ToArray());
+            _extraDataBuffer.SetData(extraData.ToArray());
 
             if (mpb == null)
             {
@@ -190,6 +201,7 @@ public class InterfacePointer : MonoBehaviour
             mpb.SetBuffer("_PositionBuffer", _buffer);
             mpb.SetBuffer("_TypeBuffer", _typeBuffer);
             mpb.SetBuffer("_FadeBuffer", _fadeBuffer);
+            mpb.SetBuffer("_ExtraDataBuffer", _extraDataBuffer);
 
 
             mpb.SetVector("_WrenPos", God.wren.bird.head.position);
@@ -286,11 +298,24 @@ public class InterfacePointer : MonoBehaviour
         if (!pointerList.Contains(t))
         {
             pointerList.Add(t);
-            pointerTypes.Add(type);
+            pointerTypes.Add((float)type);
             targetFades.Add(0);
             fades.Add(0);
+            extraData.Add(new Vector4(0, 0, 0, 0));
         }
 
+    }
+
+    public void AddPointer(Transform t, int type, float tc)
+    {
+        if (!pointerList.Contains(t))
+        {
+            pointerList.Add(t);
+            pointerTypes.Add((float)type);
+            targetFades.Add(0);
+            fades.Add(0);
+            extraData.Add(new Vector4(tc, 0, 0, 0)); // adding to our extra data!
+        }
     }
 
 
@@ -301,6 +326,7 @@ public class InterfacePointer : MonoBehaviour
             pointerTypes.RemoveAt(pointerList.IndexOf(t));
             fades.RemoveAt(pointerList.IndexOf(t));
             targetFades.RemoveAt(pointerList.IndexOf(t));
+            extraData.RemoveAt(pointerList.IndexOf(t));
             pointerList.Remove(t);
         }
         else
@@ -316,6 +342,7 @@ public class InterfacePointer : MonoBehaviour
         pointerTypes.Clear();
         fades.Clear();
         targetFades.Clear();
+        extraData.Clear();
         ReleaseBuffers();
 
     }
@@ -339,7 +366,8 @@ public class InterfacePointer : MonoBehaviour
         GameObject[] allQuests = getAllOfTag("Quest");
         foreach (GameObject quest in allQuests)
         {
-            AddPointer(quest.GetComponent<Quest>().portal.transform, 0);
+
+            AddPointer(quest.GetComponent<Quest>().portal.transform, 0, quest.GetComponent<Quest>().completed ? 1 : 0);
         }
     }
 
@@ -349,7 +377,7 @@ public class InterfacePointer : MonoBehaviour
         GameObject[] allActivities = getAllOfTag("Activity");
         foreach (GameObject activity in allActivities)
         {
-            AddPointer(activity.GetComponent<Activity>().mainPointOfInterest, 1);
+            AddPointer(activity.GetComponent<Activity>().mainPointOfInterest, 1, activity.GetComponent<Activity>().numTimesCompleted);
         }
     }
 

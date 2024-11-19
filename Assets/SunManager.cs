@@ -43,6 +43,9 @@ public class SunManager : MonoBehaviour
     public Gradient dayColor;
     public Gradient nightColor;
 
+    public AnimationCurve dayRemapper;
+    public AnimationCurve nightRemapper;
+
 
 
     public void OnEnable()
@@ -51,7 +54,7 @@ public class SunManager : MonoBehaviour
 
         totalCycleLength = daySpeed + nightSpeed;
 
-        
+
 
     }
 
@@ -73,11 +76,11 @@ public class SunManager : MonoBehaviour
 
         float normalizedTimeInCycle = rawTimeInCycle / totalCycleLength;
 
-        timeInDay = Mathf.Clamp01(rawTimeInCycle / daySpeed);
+        timeInDay = dayRemapper.Evaluate(Mathf.Clamp01(rawTimeInCycle / daySpeed));
 
         dayNess = 1 - Mathf.Abs(timeInDay - 0.5f) * 2;
 
-        timeInNight = Mathf.Clamp01((rawTimeInCycle - daySpeed) / nightSpeed);
+        timeInNight = nightRemapper.Evaluate(Mathf.Clamp01((rawTimeInCycle - daySpeed) / nightSpeed));
 
         nightNess = 1 - Mathf.Abs(timeInNight - 0.5f) * 2;
 

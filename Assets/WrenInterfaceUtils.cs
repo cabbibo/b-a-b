@@ -3,6 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
+#if UNITY_EDITOR
+using UnityEditor;
+
+
+[CustomEditor(typeof(WrenInterfaceUtils))]
+public class WrenInterfaceUtilsEditor : Editor {
+   public override void OnInspectorGUI()
+    {  
+        WrenInterfaceUtils god = (WrenInterfaceUtils)target;
+        if(GUILayout.Button("PING"))
+        {
+            god.OnPing();
+        }
+
+        DrawDefaultInspector();
+    }
+}
+
+
+#endif
+
+
 public class WrenInterfaceUtils : MonoBehaviour
 {
 
@@ -39,7 +61,7 @@ public class WrenInterfaceUtils : MonoBehaviour
     {
 
         God.audio.Play(God.sounds.interfacePingClip, 1, 1);
-        God.wren.shards.SpendShards(crystalsSpentPerPing);
+        if (God.wren != null) God.wren.shards.SpendShards(crystalsSpentPerPing);
         if (God.state.currentlyActiveActivity != null)
         {
             PingCurrentActiveActivity();
@@ -82,6 +104,14 @@ public class WrenInterfaceUtils : MonoBehaviour
 
     public void PingRing(int ring)
     {
+        if (interfaceRings[ring].value <= 0)
+        {
+
+            return;
+        }
+
+
+
         interfaceRings[ring].Ping();
 
     }

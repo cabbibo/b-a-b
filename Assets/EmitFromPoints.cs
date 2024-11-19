@@ -17,11 +17,27 @@ public class EmitFromPoints : MonoBehaviour
 
     public int count;
 
-    public void SetPoints(Vector4[] pl, Vector3[] vels)
+    public Vector4[] points;
+    public Vector3[] vels;
+
+
+    public void SetPoints(Vector4[] pl, Vector3[] vl)
     {
         //points = pl;
-        count = pl.Length;
 
+
+        points = pl;
+        vels = vl;
+        SetupBuffer();
+
+
+    }
+
+
+    public void SetupBuffer()
+    {
+
+        count = points.Length;
         if (buffer != null)
         {
             buffer.Release();
@@ -29,12 +45,29 @@ public class EmitFromPoints : MonoBehaviour
         }
 
         buffer = new ComputeBuffer(count, sizeof(float) * 4);
-        buffer.SetData(pl);
+        buffer.SetData(points);
 
         bufferVels = new ComputeBuffer(count, sizeof(float) * 3);
         bufferVels.SetData(vels);
 
+    }
 
+    public void OnEnable()
+    {
+        if (points != null && points.Length > 0)
+        {
+            SetupBuffer();
+        }
+
+    }
+
+    public void OnDisable()
+    {
+        if (buffer != null)
+        {
+            buffer.Release();
+            bufferVels.Release();
+        }
     }
 
 
