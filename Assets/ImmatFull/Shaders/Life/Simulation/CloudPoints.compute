@@ -1,0 +1,54 @@
+﻿
+/*
+
+Code refrence for this style of constraint collision:
+https://github.com/TheAllenChou/unity-cj-lib
+
+*/
+
+
+#pragma kernel Force
+
+struct Vert{
+  float3 pos;
+  float3 vel;
+  float3 force;
+  float3 debug1;
+  float2 uv;
+  float life;
+  float gridID;
+};
+
+
+RWStructuredBuffer<Vert> _VertBuffer;
+int _VertBuffer_COUNT;
+#include "../../Chunks/safeID.cginc"
+#include "../../Chunks/hash.cginc"
+
+
+
+float4x4 _Transform;
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Force(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+  int pID = threadID + u3GroupID.x * NR_THREADS;
+
+  pID = safeID(pID,_VertBuffer_COUNT);
+  Vert vert = _VertBuffer[pID];
+
+  float3 rand = float3(
+    hash(float(pID)),
+    hash(float(pID) + 1),
+    hash(float(pID) + 2)
+  );
+
+  vert.pos = mul(_Transform,float4(rand * 100,1)).xyz;
+
+  
+  _VertBuffer[pID] = vert;
+
+}
+
+

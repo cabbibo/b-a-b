@@ -112,9 +112,9 @@ float totalSmoke = 0;
 
     totalSmoke = saturate(totalSmoke);
     
-col = saturate(col);
+
     
-  if( length(col) <= 0){
+  if( length(col) <= 0.5){
       discard;
   }
 
