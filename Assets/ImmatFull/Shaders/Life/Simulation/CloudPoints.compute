@@ -12,7 +12,7 @@ https://github.com/TheAllenChou/unity-cj-lib
 struct Vert{
   float3 pos;
   float3 vel;
-  float3 force;
+  float3 nor;
   float3 debug1;
   float2 uv;
   float life;
@@ -45,6 +45,7 @@ void Force(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   );
 
   vert.pos = mul(_Transform,float4(rand * 100,1)).xyz;
+  vert.nor = float3(0,0,1);
 
   
   _VertBuffer[pID] = vert;

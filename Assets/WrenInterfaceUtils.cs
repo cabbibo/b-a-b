@@ -42,6 +42,8 @@ public class WrenInterfaceUtils : MonoBehaviour
 
 
 
+
+
     // start with nothing on 
     public void OnEnable()
     {
@@ -179,6 +181,11 @@ public class WrenInterfaceUtils : MonoBehaviour
     public void SetPointerFade(Transform t, float fade)
     {
         interfacePointer.SetFade(t, fade);
+    }
+
+    public void UpdatePointerState()
+    {
+        interfacePointer.UpdateState();
     }
 
 

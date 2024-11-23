@@ -44,7 +44,7 @@ public class GPUCloud2 : MonoBehaviour
     public void SetShaderInfo()
     {
         computeShader.SetBuffer(0, "_VertBuffer", buffer);
-        computeShader.SetInt("_Count", count);
+        computeShader.SetInt("_VertBuffer_COUNT", count);
         computeShader.SetFloat("_Time", Time.time);
         computeShader.SetMatrix("_Transform", transform.localToWorldMatrix);
 
@@ -64,8 +64,12 @@ public class GPUCloud2 : MonoBehaviour
 
         mpb.SetBuffer("_VertBuffer", buffer);
         mpb.SetInt("_Count", count);
+        mpb.SetVector("_MainCameraPos", Camera.main.transform.position);
+        mpb.SetVector("_MainCameraForward", Camera.main.transform.forward);
+        mpb.SetVector("_MainCameraRight", Camera.main.transform.right);
+        mpb.SetVector("_MainCameraUp", Camera.main.transform.up);
 
-        Graphics.DrawProcedural(material, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+        Graphics.DrawProcedural(material, new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, count * 3 * 2, 1, null, mpb, ShadowCastingMode.On, true, LayerMask.NameToLayer("Debug"));
 
 
     }

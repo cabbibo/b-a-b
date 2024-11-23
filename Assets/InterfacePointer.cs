@@ -303,6 +303,10 @@ public class InterfacePointer : MonoBehaviour
             fades.Add(0);
             extraData.Add(new Vector4(0, 0, 0, 0));
         }
+        else
+        {
+            pointerTypes[pointerList.IndexOf(t)] = (float)type;
+        }
 
     }
 
@@ -315,6 +319,11 @@ public class InterfacePointer : MonoBehaviour
             targetFades.Add(0);
             fades.Add(0);
             extraData.Add(new Vector4(tc, 0, 0, 0)); // adding to our extra data!
+        }
+        else
+        {
+            pointerTypes[pointerList.IndexOf(t)] = (float)type;
+            extraData[pointerList.IndexOf(t)] = new Vector4(tc, 0, 0, 0);
         }
     }
 
@@ -386,6 +395,12 @@ public class InterfacePointer : MonoBehaviour
     public void AddAllBirds()
     {
 
+    }
+
+
+    public void UpdateState()
+    {
+        UpdateAllPointers();
     }
 
 

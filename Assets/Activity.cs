@@ -908,6 +908,11 @@ public class Activity : MonoBehaviour
         }
 
 
+        // update the state of the compass guiding stuff
+
+        God.wren.interfaceUtils.UpdatePointerState();
+
+
     }
     public void AlwaysStartBegin()
     {

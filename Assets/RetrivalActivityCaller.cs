@@ -54,20 +54,9 @@ public class RetrivalActivityCaller : MonoBehaviour
         radius = (God.wren.transform.position - activity.mainPointOfInterest.position).magnitude;
         oRadius = radius;
 
-        print("RADDDDDDDDDD");
-        print("RADDDDDDDDDD");
-        print("RADDDDDDDDDD");
-        print("RADDDDDDDDDD");
-        print("RADDDDDDDDDD");
-        print(radius);
+
         if (radius < startRadius)
         {
-            print("ENTERED ACTIVITY AREA!!!!!!!!!!!!!!");
-            print("ENTERED ACTIVITY AREA!!!!!!!!!!!!!!");
-            print("ENTERED ACTIVITY AREA!!!!!!!!!!!!!!");
-            print("ENTERED ACTIVITY AREA!!!!!!!!!!!!!!");
-            print("ENTERED ACTIVITY AREA!!!!!!!!!!!!!!");
-            print("ENTERED ACTIVITY AREA!!!!!!!!!!!!!!");
             activity.OnActivityAreaEntered();
         }
 
@@ -94,7 +83,6 @@ public class RetrivalActivityCaller : MonoBehaviour
 
                 if (activity.inActivityArea == false)
                 {
-                    print("ENTERED ACTIVITY AREA");
                     activity.OnActivityAreaEntered();
                 }
 
@@ -107,7 +95,6 @@ public class RetrivalActivityCaller : MonoBehaviour
                 // do we need to check if in slide?
                 if (activity.inActivityArea == true)
                 {
-                    print("EXITED ACTIVITY AREA");
                     activity.OnActivityAreaExited();
                 }
             }
@@ -136,8 +123,7 @@ public class RetrivalActivityCaller : MonoBehaviour
                     {
                         if (activity.exitingActivityArea == false)
                         { // TODO have to go wrong way for a bit before we say we are going the wrong way!
-                            print("ENTERED ACTIVITY AREA");
-                            print("exited");
+
                             activity.OnActivityAreaExited();
                         }
                         //  AreaExited();
@@ -150,7 +136,6 @@ public class RetrivalActivityCaller : MonoBehaviour
 
                     if (activity.exitingActivityArea == true)
                     {
-                        print("entered");
                         activity.OnActivityAreaEntered();
                         AreaEntered();
                     }
@@ -166,8 +151,6 @@ public class RetrivalActivityCaller : MonoBehaviour
                 {
 
 
-
-                    print("CARRYING:");
 
                     // check to see if we can end the activity!
                     oRadius = radius;
@@ -187,6 +170,8 @@ public class RetrivalActivityCaller : MonoBehaviour
                 else
                 {
 
+                    print("crystal dropped but in activity");
+                    activity.mainPointOfInterest.position = carryable.transform.position;
 
                     oRadius = radius;
 
@@ -241,6 +226,7 @@ public class RetrivalActivityCaller : MonoBehaviour
     {
         isCarrying = false;
 
+        // Have to set this on update when not carrying
         activity.mainPointOfInterest.position = carryable.transform.position;
 
     }

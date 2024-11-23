@@ -3,16 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
-public class SpeedToEndActivityCaller : MonoBehaviour
+public class FloorIsLavaActivityCaller : MonoBehaviour
 {
-
-    //switch main point of interest to destination when activity starts
-    // pulse ring to show time counting down
-    // on reach end, activity is complete
-    // leave activity area if we are facing wrong direction
-    // finish activity on time out?
-
-    // teleport back on finish?
 
 
 
@@ -35,6 +27,8 @@ public class SpeedToEndActivityCaller : MonoBehaviour
     public float oRadius;
 
     public float currentDot;
+
+
 
 
 
@@ -222,6 +216,13 @@ public class SpeedToEndActivityCaller : MonoBehaviour
         God.wren.interfaceUtils.SetRingFade(1, 0);
 
     }
+
+    public void OnLavaHit()
+    {
+        print("HIT LAVA");
+
+    }
+
 
 
 }
