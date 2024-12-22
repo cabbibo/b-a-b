@@ -46,7 +46,7 @@ Shader "Unlit/showDepthMap"
             fixed4 frag (v2f i) : SV_Target
             {
                 // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv)* 10.1;
+                fixed4 col =  tex2D(_MainTex, i.uv)* 1.1;
                 return col;
             }
             ENDCG

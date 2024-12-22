@@ -283,12 +283,13 @@ Shader "Feathers/FeatherTest1" {
         float4 bgCol = tex2Dproj(_BackgroundTexture1, grabPos);
 
         
-        col = dot(_WorldSpaceLightPos0, v.nor);
+        col += dot(_WorldSpaceLightPos0, v.nor);
         col *=  _LightColor0;
 
-        col = bgCol.xyz + col*col *col*col * 10;
+        //col = bgCol.xyz + col*col *col*col * 10;
 
-        col = bgCol;
+
+        //col = bgCol;
 
 
         //col = v.nor * .5 +.5;
