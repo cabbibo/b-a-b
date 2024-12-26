@@ -5,12 +5,21 @@ using UnityEngine;
 [ExecuteAlways]
 public class LookAtCenter : MonoBehaviour
 {
-   public Transform center;
+    public Transform center;
 
     // Update is called once per frame
     void Update()
     {
-        transform.LookAt(center.position);
+
+
+        if (center == null)
+        {
+            transform.LookAt(Vector3.zero);
+        }
+        else
+        {
+            transform.LookAt(center.position);
+        }
     }
 
 

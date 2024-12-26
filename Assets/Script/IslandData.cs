@@ -270,7 +270,6 @@ public class IslandData : MonoBehaviour
 
 
 
-    public TutorialStateManager tutorialStateManager;
 
     public void OnIslandEnter()
     {
@@ -281,17 +280,19 @@ public class IslandData : MonoBehaviour
         {
 
 
-            print(tutorialStateManager.islandReached);
+            /*print(tutorialStateManager.islandReached);
             if (tutorialStateManager.islandReached == false)
             {
                 print("reached here");
                 tutorialStateManager.OnIslandReached();
-            }
+            }*/
 
             God.state.OnIslandDiscovered();
             // TODO PLAY DISCOVERED ANIMATION
             islandDiscoveredCutScene.Play();
         }
+
+
 
     }
 

@@ -51,6 +51,10 @@ public class IslandController : MonoBehaviour
     public Vector2[] islandUVs;
 
 
+
+    public TutorialStateManager tutorialStateManager;
+
+
     /*
 
     // code to update with offset
@@ -83,6 +87,9 @@ public class IslandController : MonoBehaviour
         }
 
         OnNewIslandEntered(defaultIslandID);
+
+
+
     }
 
     // Update is called once per frame

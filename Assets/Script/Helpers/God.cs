@@ -84,6 +84,8 @@ namespace WrenUtils
         public TextManager _text;
 
 
+        public WeatherManager _weatherManager;
+
 
 
 
@@ -242,6 +244,14 @@ namespace WrenUtils
             }
         }
 
+        public static WeatherManager weatherManager
+        {
+            get
+            {
+                return instance._weatherManager;
+            }
+        }
+
         public static List<Wren> wrens
         {
             get
@@ -397,13 +407,15 @@ namespace WrenUtils
         }
 
 
-        public static Light sun{
-            get{
+        public static Light sun
+        {
+            get
+            {
                 return instance._sun;
             }
         }
 
-        
+
 
 
         public void SetTerrainCompute(int kernel, ComputeShader shader)
