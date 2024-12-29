@@ -4,6 +4,9 @@ using UnityEngine;
 using WrenUtils;
 using UnityEngine.Events;
 
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
+
 
 // Has some text!
 public class Slide : MonoBehaviour
@@ -35,11 +38,43 @@ public class Slide : MonoBehaviour
 
     public float FOV = 80;
 
+    //0 = instant
+    //1 = lerp
+    //2 = animated
+    //3 = locked
+    public enum TransitionType { instant, lerp, animated, locked };
+
+    public TransitionType transitionType;
+
+
+
+
 
     public float waitTime = 0;
 
-    public bool lerp;
+    //public bool lerp;
     public float lerpSpeed = 3;
+
+    //  public bool animated;
+    public TimelineAsset timeline;
+
+    public GameObject cameraTarget;
+    public GameObject wrenTarget;
+
+
+    // constantly sets our position to the position of the transform we are locked to
+    // with the offset and rotation! 
+    //( maybe alwasy jsut look at if needed?)
+
+    // public bool lockedToPosition;
+    public Transform transformToLockTo;
+    public Transform localTransformOffset;
+
+
+    public PlayableDirector playableDirector;
+
+
+    // can we auto our playable Director here? 
 
 
 

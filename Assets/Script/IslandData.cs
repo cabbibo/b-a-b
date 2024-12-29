@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 using UnityEngine.Events;
+using UnityEngine.Playables;
 
 
 [ExecuteAlways]
@@ -17,6 +18,8 @@ public class IslandData : MonoBehaviour
 
 
     public Terrain terrain;
+
+    public PlayableDirector playableDirector;
 
 
     public Quest[] quests;

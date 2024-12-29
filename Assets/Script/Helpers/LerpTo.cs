@@ -5,7 +5,7 @@ using WrenUtils;
 
 
 [ExecuteAlways]
-public class LerpTo : MonoBehaviour
+public class LerpTo : BaseCameraManager
 {
 
     public Transform target;
@@ -18,10 +18,6 @@ public class LerpTo : MonoBehaviour
     public Transform lookTarget;
 
     public Transform resetTarget;
-
-    public float FOV;
-
-    public float weight;
 
     // Start is called before the first frame update
     void OnEnable()
@@ -52,10 +48,9 @@ public class LerpTo : MonoBehaviour
             resetTarget = God.wren.cameraWork.camTarget;
         }
     }
-    // Update is called once per frame
-    void FixedUpdate()
-    {
 
+    public override void WhileInUse()
+    {
 
 
 
@@ -100,6 +95,53 @@ public class LerpTo : MonoBehaviour
 
         }
     }
+
+    // Update is called once per frame
+    /*void FixedUpdate()
+    {
+
+
+
+
+        if (God.wren != null)
+        {
+            FOV = God.wren.cameraWork.FOV;
+            resetTarget = God.wren.cameraWork.camTarget;
+        }
+        else
+        {
+            resetTarget = God.instance.transform;
+            FOV = 60;
+        }
+
+
+
+        if (wantsToRelease && Time.time - startLookTime > releaseTime)
+        {
+            lookTarget = null;
+
+        }
+        if (target != null)
+        {
+            transform.position = Vector3.Lerp(transform.position, target.position, lerpSpeed);
+
+            if (lookTarget != null)
+            {
+
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookTarget.position - transform.position, Vector3.up), slerpSpeed);
+            }
+            else
+            {
+                transform.rotation = Quaternion.Slerp(transform.rotation, target.rotation, slerpSpeed);
+            }
+        }
+        else
+        {
+            // gives us a target if we dont have one!
+          
+
+        }
+    }*/
 
 
     public void OnDisable()

@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
-public class TargetingCameraManager : MonoBehaviour
+public class TargetingCameraManager : BaseCameraManager
 {
-
-    public float FOV;
-    public float weight;
 
     public float distanceBehindBird = 10;
 
@@ -37,6 +34,15 @@ public class TargetingCameraManager : MonoBehaviour
     public void Update()
     {
 
+
+
+
+
+
+    }
+
+    public override void WhileInUse()
+    {
 
         if (God.wren != null && targets.Count != 0)
         {
@@ -92,13 +98,8 @@ public class TargetingCameraManager : MonoBehaviour
             }
 
 
-            weight = totalWeight * 10f;
 
         }
-
-
-
-
     }
 
 

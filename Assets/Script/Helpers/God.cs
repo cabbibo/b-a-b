@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.Playables;
 
 
 namespace WrenUtils
@@ -21,6 +22,9 @@ namespace WrenUtils
         public Vector3 _terrainOffset;
 
         public IslandData _islandData;
+        public IslandController _islandController;
+
+        public PlayableDirector _playableDirector;
 
         public bool _hasIslandData;
 
@@ -165,8 +169,28 @@ namespace WrenUtils
             get { return instance._menu; }
         }
 
+        public static IslandController islandController
+        {
+            get { return instance._islandController; }
+        }
 
+        public static PlayableDirector playableDirector
+        {
+            get { return instance._playableDirector; }
+        }
 
+        //cempa says : oooooooooooooooooo
+
+        // poooooooooo
+
+        public static void SetPlayableDirector(PlayableDirector pd)
+        {
+            instance._playableDirector = pd;
+        }
+        public static void SetIslandController(IslandController ic)
+        {
+            instance._islandController = ic;
+        }
         public static SceneController sceneController
         {
             get { return instance._sceneController; }
@@ -304,8 +328,6 @@ namespace WrenUtils
             instance._terrainData = islandData.terrain.terrainData;
             instance._terrainOffset = islandData.transform.position;
             instance._hasIslandData = true;
-
-
         }
 
 

@@ -86,6 +86,7 @@ add phase shift into onenable, not the set state!
 
         tutorialIslandCutScene.SetStartValues();
         islandFinishedCutScene.SetStartValues();
+
         if (God.state.tutorialFinished == false)
         {
 
@@ -165,6 +166,7 @@ add phase shift into onenable, not the set state!
         // auto takeoff
         if (God.wren)
         {
+            God.wren.PhaseShift(Vector3.up * 1000);
             God.wren.state.TakeOff();
             God.wren.shards.SetToBodyShards();
         }
@@ -307,8 +309,8 @@ add phase shift into onenable, not the set state!
         tutorialIsland.SetActive(true);
         postCrashTutorialObjects.SetActive(false);
         mainOcean.SetActive(true);
-        mainIsland.SetActive(false);
-        windCircle.SetActive(true);
+        mainIsland.SetActive(true);
+        windCircle.SetActive(false);
         portal.SetActive(true);
         tutorialOcean.SetActive(false);
         tutorialClouds.SetActive(true);
@@ -372,8 +374,10 @@ add phase shift into onenable, not the set state!
         tutorialIsland.SetActive(true);
         postCrashTutorialObjects.SetActive(true);
         mainOcean.SetActive(true);
-        mainIsland.SetActive(false);
-        windCircle.SetActive(true);
+
+
+        mainIsland.SetActive(true);
+        windCircle.SetActive(false);
 
         // turn off portal here?
         portal.SetActive(true);
@@ -407,9 +411,9 @@ add phase shift into onenable, not the set state!
         tutorialIsland.SetActive(true);
         postCrashTutorialObjects.SetActive(true);
         mainOcean.SetActive(true);
-        mainIsland.SetActive(false);
-        windCircle.SetActive(true);
-        portal.SetActive(false);
+        mainIsland.SetActive(true);
+        windCircle.SetActive(false);
+        portal.SetActive(true);
         tutorialOcean.SetActive(false);
         theCrossing.SetActive(false);
         /// hmmmmmm

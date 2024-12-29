@@ -72,6 +72,7 @@ public class Activity : MonoBehaviour
 
 
 
+
     /*
 
 
@@ -285,7 +286,7 @@ public class Activity : MonoBehaviour
 
 
         // input for slides
-        if (inSlide)
+        if (inSlide && !God.cameraManager.slideManager.transitioning)
         {
             if (God.input.xPressed)
             {

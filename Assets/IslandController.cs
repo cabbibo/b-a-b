@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Playables;
 using WrenUtils;
 
 
@@ -69,6 +70,8 @@ public class IslandController : MonoBehaviour
     public float islandSizeBuffer;
 
 
+    public PlayableDirector playableDirector;
+
 
     // Start is called before the first frame update
     void Start()
@@ -78,6 +81,9 @@ public class IslandController : MonoBehaviour
 
     void OnEnable()
     {
+
+        God.SetIslandController(this);
+        God.SetPlayableDirector(playableDirector);
         islandDistances = new Vector2[islands.Length];
         islandUVs = new Vector2[islands.Length];
 
