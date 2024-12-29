@@ -31,14 +31,40 @@ public class TargetingCameraManager : BaseCameraManager
     public float totalWeight;
     public float totalFOV;
 
-    public void Update()
+    public void FixedUpdate()
+    {
+        CheckInUse();
+
+    }
+
+    public void CheckInUse()
     {
 
+        bool anyOn = false;
+        for (int i = 0; i < targets.Count; i++)
+        {
+            Vector3 targetPos = targets[i].position;
+            Vector3 birdPos = God.wren.transform.position;
+
+            Vector3 direction = targetPos - birdPos;
+            float distance = direction.magnitude;
 
 
+            float distanceValue = (distance - strengthNearFar[i].x) / (strengthNearFar[i].y - strengthNearFar[i].x);
+            distanceValue = Mathf.Clamp(distanceValue, 0, 1);
+            distanceValue = 1 - distanceValue;
 
+            if (distanceValue > 0)
+            {
+                anyOn = true;
+                overallManager.RequestPriority(this);
+            }
+        }
 
-
+        if (!anyOn)
+        {
+            overallManager.ReleasePriority(this);
+        }
     }
 
     public override void WhileInUse()

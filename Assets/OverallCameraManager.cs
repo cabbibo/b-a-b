@@ -34,7 +34,7 @@ public class OverallCameraManager : MonoBehaviour
 
 
     // Use the weights of each value to decide where our camera goes!
-    public void LateUpdate()
+    public void FixedUpdate()
     {
 
 
@@ -81,10 +81,10 @@ public class OverallCameraManager : MonoBehaviour
             {
                 cameraManagers[i].WhileInUse();
 
-                totalPos += cameraManagers[i].transform.position * cameraManagers[i].weight;
-                totalFOV += cameraManagers[i].FOV * cameraManagers[i].weight;
-                totalForward += cameraManagers[i].transform.forward * cameraManagers[i].weight;
-                totalUp += cameraManagers[i].transform.up * cameraManagers[i].weight;
+                totalPos += cameraManagers[i].transform.position * normalizedWeights[i];
+                totalFOV += cameraManagers[i].FOV * normalizedWeights[i];
+                totalForward += cameraManagers[i].transform.forward * normalizedWeights[i];
+                totalUp += cameraManagers[i].transform.up * normalizedWeights[i];
 
             }
 
@@ -137,39 +137,65 @@ public class OverallCameraManager : MonoBehaviour
 
     public void RequestPriority(BaseCameraManager cm, float fadetime)
     {
-        currentPriority = cm;
-        priorityRequestTime = Time.time;
-        priorityRequestSpeed = fadetime;
+        if (currentPriority != cm)
+        {
+            currentPriority = cm;
+            priorityRequestTime = Time.time;
+            priorityRequestSpeed = fadetime;
+        }
+        else
+        {
+            Debug.LogWarning("Already have priority");
+        }
     }
 
 
     public void RequestPriority(BaseCameraManager cm)
     {
-        currentPriority = cm;
-        priorityRequestTime = Time.time;
-        priorityRequestSpeed = priorityRequestSpeedDefault;
+        if (currentPriority != cm)
+        {
+            currentPriority = cm;
+            priorityRequestTime = Time.time;
+            priorityRequestSpeed = priorityRequestSpeedDefault;
+        }
+        else
+        {
+            Debug.LogWarning("Already have priority");
+        }
     }
 
 
     public void ReleasePriority(BaseCameraManager cm, float fadeTime)
     {
 
-
-        // dont actullay need fade time if we want default
-        currentPriority = defaultPriority;
-        priorityRequestTime = Time.time;
-        priorityRequestSpeed = fadeTime;
+        if (currentPriority == cm)
+        {
+            // dont actullay need fade time if we want default
+            currentPriority = defaultPriority;
+            priorityRequestTime = Time.time;
+            priorityRequestSpeed = fadeTime;
+        }
+        else
+        {
+            Debug.LogWarning("Already released priority");
+        }
 
     }
 
     public void ReleasePriority(BaseCameraManager cm)
     {
 
+        if (currentPriority == cm)
+        {
+            currentPriority = defaultPriority;
+            priorityRequestTime = Time.time;
+            priorityRequestSpeed = priorityRequestSpeedDefault;
+        }
+        else
+        {
+            Debug.LogWarning("Already released priority");
+        }
 
-        // dont actullay need fade time if we want default
-        currentPriority = defaultPriority;
-        priorityRequestTime = Time.time;
-        priorityRequestSpeed = priorityRequestSpeedDefault;
 
     }
 
