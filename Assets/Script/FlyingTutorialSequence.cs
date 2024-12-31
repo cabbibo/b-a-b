@@ -210,7 +210,11 @@ public class FlyingTutorialSequence : MonoBehaviour
     // STATE MACHINE FOR TUTORIAL
     IEnumerator TutorialSequence()
     {
+
+
         yield return null;
+
+        print("set up tutorial)");
 
         stateManager.SetCinematicFlightTutorialState();
 
@@ -236,6 +240,13 @@ public class FlyingTutorialSequence : MonoBehaviour
             yield return null;
 
 
+        print("all set up have our bird etc");
+        God.wren.canMove = false;
+
+        OnBirdAllSetUp();
+
+        // On All Bird Set up
+
 
         cinematicCamera.mode = CinematicCameraHandler.Mode.Cinematic;
 
@@ -247,32 +258,42 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         cinematicCamera.tutorialCameraIdx = (float)Camera.Closeup;
 
-        yield return WaitWithCheat(5);
-        // Sticks
-        {
-            groupSticks.SetActive(true);
-            controllerText.text = "";
+        groupSticks.SetActive(true);
+        controllerText.text = "test";
+        print("first bird showing up");
 
-            yield return FadeGroup(groupContainer, 0, 1);
-        }
+        OnFirstShot();
+        yield return FadeGroup(groupContainer, 0, 1);
 
-        yield return WaitWithCheat(5f);
+
+        print("waiting for x to continue");
+        //yield return WaitWithCheat(5f);
         yield return WaitForXToContinue();
+
+
 
         groupSticks.SetActive(false);
         cinematicCamera.tutorialCameraIdx = (float)Camera.TopClose;
+        OnBirdBackShown();
 
-        yield return WaitWithCheat(5f);
+
+        print("waiting with cheat 3 seconds");
+        yield return WaitWithCheat(3f);
+        print("waiting for x to continue again");
         yield return WaitForXToContinue();
 
+        OnBirdZoomOutStart();
+        print("big lerp out");
         yield return LerpCamera((float)Camera.TopClose, (float)Camera.TopFar);
-
+        OnBirdZoomOutEnd();
         yield return WaitWithCheat(5f);
         yield return WaitForXToContinue();
 
+        OnRotateToFrontStart();
         cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
         yield return WaitWithCheat(.3f);
         yield return LerpCamera((float)Camera.Front, (float)Camera.Play);
+        OnRotateToFrontEnd();
 
         stateManager.StartFreeFlight();
         yield return WaitWithCheat(1f);
@@ -336,6 +357,14 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
+    public void OnFirstShot() { }
+    public void OnBirdBackShown() { }
+    public void OnBirdZoomOutStart() { }
+    public void OnBirdZoomOutEnd() { }
+    public void OnRotateToFrontStart() { }
+    public void OnRotateToFrontEnd() { }
+
+
 
     void SetControllerHint(ControllerHint hint)
     {
@@ -367,6 +396,9 @@ public class FlyingTutorialSequence : MonoBehaviour
             case ControllerHint.Hold:
                 controllerText.text = "PRESS sticks to HOLD";
                 break;
+                /* case ControllerHint.y:
+                     controllerText.text = "PRESS sticks to HOLD";
+                     break;*/
                 /*            case ControllerHint.TakeOff:
                                 controllerText.text = "PRESS X to TAKE OFF";
                                 break;*/
@@ -557,6 +589,87 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
         group.alpha = to;
     }
+
+
+
+
+
+
+
+
+
+
+    void OnBirdAllSetUp()
+    {
+        God.wren.canMove = false;
+        God.audio.Play(God.sounds.smallSuccessSound);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

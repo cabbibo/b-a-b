@@ -27974,6 +27974,8 @@ MonoBehaviour:
   terrain: {fileID: 0}
   swapLR: 1
   invert: 0
+  lockX: 0
+  lockY: 0
   gravityForce: 14
   tuckAddToGravityVal: 1
   slowestTwistAngle: 30

@@ -41,6 +41,10 @@ public class WrenPhysics : MonoBehaviour
     public bool swapLR;
     public bool invert; // TODO
 
+    public bool lockX;
+    public bool lockY;
+
+
     public float gravityForce;
     public float tuckAddToGravityVal;
 
@@ -1992,6 +1996,7 @@ public class WrenPhysics : MonoBehaviour
 
 
 
+
         for (int i = 0; i < allForces.Count; i++)
         {
 
@@ -2006,6 +2011,40 @@ public class WrenPhysics : MonoBehaviour
             rb.AddTorque(allTorques[i]);
         }
         allTorques.Clear();
+
+        if (lockX)
+        {
+            Vector3 vel = rb.velocity;
+            // get local velocity
+            Vector3 localVel = transform.InverseTransformDirection(vel);
+            localVel.x = 0;
+            rb.velocity = transform.TransformDirection(localVel);
+
+            Vector3 angVel = rb.angularVelocity;
+            // get local velocity
+            Vector3 localAngVel = transform.InverseTransformDirection(angVel);
+            localAngVel.y = 0;
+            localAngVel.z = 0;
+            rb.angularVelocity = transform.TransformDirection(localAngVel);
+        }
+
+        if (lockY)
+        {
+            Vector3 vel = rb.velocity;
+            // get local velocity
+            Vector3 localVel = transform.InverseTransformDirection(vel);
+            localVel.y = 0;
+            rb.velocity = transform.TransformDirection(localVel);
+
+            Vector3 angVel = rb.angularVelocity;
+            // get local velocity
+            Vector3 localAngVel = transform.InverseTransformDirection(angVel);
+            localAngVel.x = 0;
+            localAngVel.z = 0;
+            rb.angularVelocity = transform.TransformDirection(localAngVel);
+
+        }
+
 
 
     }

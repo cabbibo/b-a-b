@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 
 using WrenUtils;
+using Crest;
 
 [ExecuteAlways]
 public class PostController : MonoBehaviour
@@ -13,9 +14,23 @@ public class PostController : MonoBehaviour
 
 
     public PostProcessVolume volume;
-    private MainPost post;
-
     private VolumeProfile profile;
+
+
+    private MainPost mainPost;
+    private Bloom bloom;
+    private ColorGrading colorGrading;
+    private Vignette vignette;
+    private LensDistortion lensDistortion;
+    private ChromaticAberration chromaticAberration;
+    private FogEffect fogEffect;
+    private DepthOfField depthOfField;
+
+
+    // other controllers
+    public CustomFog customFog;
+    public UnderwaterRenderer crestUnderwaterRenderer;
+
 
 
     public float _Hue;
@@ -28,11 +43,22 @@ public class PostController : MonoBehaviour
 
     public Texture2D biomeMap;
 
+    public float depthOfFieldFocusDistance;
+
     void OnEnable()
     {
         volume = GetComponent<PostProcessVolume>();
 
-        volume.profile.TryGetSettings(out post);
+        volume.profile.TryGetSettings(out mainPost);
+        volume.profile.TryGetSettings(out bloom);
+        volume.profile.TryGetSettings(out colorGrading);
+        volume.profile.TryGetSettings(out vignette);
+        volume.profile.TryGetSettings(out lensDistortion);
+        volume.profile.TryGetSettings(out chromaticAberration);
+        volume.profile.TryGetSettings(out fogEffect);
+        volume.profile.TryGetSettings(out depthOfField);
+
+
     }
 
 
@@ -51,11 +77,18 @@ public class PostController : MonoBehaviour
 
 
         //        print(post);
-        post._Hue.value = _Hue;
-        post._Saturation.value = _Saturation;
-        post._Lightness.value = _Lightness;
-        post._Blend.value = _Blend;
-        post._Fade.value = _Fade;
+        mainPost._Hue.value = _Hue;
+        mainPost._Saturation.value = _Saturation;
+        mainPost._Lightness.value = _Lightness;
+        mainPost._Blend.value = _Blend;
+        mainPost._Fade.value = _Fade;
+
+        if (God.wren != null)
+        {
+            depthOfFieldFocusDistance = Vector3.Distance(God.wren.transform.position, God.camera.transform.position);
+        }
+        // todo if we are focusing on something else make that be the focus object ( even better make them both be in focus)
+        depthOfField.focusDistance.value = depthOfFieldFocusDistance;
 
     }
 

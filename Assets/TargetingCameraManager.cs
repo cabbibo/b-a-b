@@ -57,13 +57,19 @@ public class TargetingCameraManager : BaseCameraManager
             if (distanceValue > 0)
             {
                 anyOn = true;
-                overallManager.RequestPriority(this);
+                if (overallManager.currentPriority != this)
+                {
+                    overallManager.RequestPriority(this);
+                }
             }
         }
 
         if (!anyOn)
         {
-            overallManager.ReleasePriority(this);
+            if (overallManager.currentPriority == this)
+            {
+                overallManager.ReleasePriority(this);
+            }
         }
     }
 
