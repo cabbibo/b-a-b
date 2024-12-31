@@ -154,7 +154,7 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
         mpb.SetBuffer("_VertBuffer", _VertBuffer);
         mpb.SetInt("_Count", count);
 
-        Graphics.DrawProcedural(material, new Bounds(transform.position, Vector3.one * 500000), MeshTopology.Triangles, count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+        Graphics.DrawProcedural(material, new Bounds(transform.position, Vector3.one * 500000), MeshTopology.Triangles, count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Splats"));
 
     }
 

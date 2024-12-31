@@ -2,13 +2,13 @@
 #pragma kernel PlaceOnDepth
 
 struct Vert{
-  float3 pos;
-  float3 vel;
-  float3 nor;
-  float3 color;
-  float2 uv;
-  float life;
-  float debug;
+    float3 pos;
+    float3 vel;
+    float3 nor;
+    float3 color;
+    float2 uv;
+    float life;
+    float debug;
 };
 
 RWStructuredBuffer<Vert> _VertBuffer;
@@ -19,7 +19,7 @@ int safeID( int id , int max ){
     return clamp( id , 0 , max );
 }
 
-      
+
 
 float4x4 _CameraViewMatrix;
 float4x4 _CameraViewMatrixInverse;
@@ -27,7 +27,7 @@ float4x4 _CameraProjectionMatrix;
 float4x4 _CameraProjectionMatrixInverse;
 
 float3 _CameraPosition;
- 
+
 Texture2D<float4> _DepthTexture;
 SamplerState sampler_DepthTexture;
 SamplerState trilinear_clamp_sampler;
@@ -53,8 +53,8 @@ float hash11(float p)
 
 float2 hash21(float p)
 {
-	float3 p3 = frac(p * float3(.1031, .1030, .0973));
-	p3 += dot(p3, p3.yzx + 33.33);
+    float3 p3 = frac(p * float3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yzx + 33.33);
     return frac((p3.xx+p3.yz)*p3.zy);
 
 }
@@ -63,14 +63,14 @@ float _Time;
 
 
 struct Wren{
-  float3 pos;
-  float3 vel;
-  float l1;
-  float r1;
-  float hue1;
-  float hue2;
-  float hue3;
-  float hue4;
+    float3 pos;
+    float3 vel;
+    float l1;
+    float r1;
+    float hue1;
+    float hue2;
+    float hue3;
+    float hue4;
 };
 
 RWStructuredBuffer<Wren> _WrenBuffer;
@@ -90,24 +90,24 @@ float3 getWorldPos( float2 coordinates ){
 
 
 }
- float3 VecToRay( float3 ro , float3 rd, float3 pos ){
-  
-  float3 p2 = ro - rd * 200;
-  float3 pa = pos - ro;
-  float3 ba = ro - p2;
-  float h =  dot(pa,ba)/dot(ba,ba);
-  float3 pOnLine = h * rd* 200 +ro;
+float3 VecToRay( float3 ro , float3 rd, float3 pos ){
+    
+    float3 p2 = ro - rd * 200;
+    float3 pa = pos - ro;
+    float3 ba = ro - p2;
+    float h =  dot(pa,ba)/dot(ba,ba);
+    float3 pOnLine = h * rd* 200 +ro;
 
-  float3 inLine = pos - pOnLine;
+    float3 inLine = pos - pOnLine;
 
-  return  inLine;//normalize(inLine) * force *  (1 - clamp( length(inLine) / radius , 0 , 1));
+    return  inLine;//normalize(inLine) * force *  (1 - clamp( length(inLine) / radius , 0 , 1));
 }
 
 
 float2 hashwithoutsine21(float p)
 {
-	float3 p3 = frac(float3(p,p,p) * float3(.1031, .1030, .0973));
-	p3 += dot(p3, p3.yzx + 33.33);
+    float3 p3 = frac(float3(p,p,p) * float3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yzx + 33.33);
     return frac((p3.xx+p3.yz)*p3.zy);
 }
 
@@ -117,84 +117,85 @@ float2 hashwithoutsine21(float p)
 [numthreads(NR_THREADS,1,1)]
 void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
-  int pID = threadID + u3GroupID.x * NR_THREADS;
+    int pID = threadID + u3GroupID.x * NR_THREADS;
 
 
     if(pID < _VertBuffer_COUNT){ 
 
-    int sID = safeID( pID, _VertBuffer_COUNT );
-    Vert v = _VertBuffer[sID];
+        int sID = safeID( pID, _VertBuffer_COUNT );
+        Vert v = _VertBuffer[sID];
 
-    float4 currentViewPosition =mul( _CameraViewMatrix , float4(v.pos, 1.0));
-    float4 currentScreenSpacePosition =mul( _CameraProjectionMatrix , currentViewPosition);
-    currentScreenSpacePosition /= currentScreenSpacePosition.w;
+        float4 currentViewPosition =mul( _CameraViewMatrix , float4(v.pos, 1.0));
+        float4 currentScreenSpacePosition =mul( _CameraProjectionMatrix , currentViewPosition);
+        currentScreenSpacePosition /= currentScreenSpacePosition.w;
 
-    currentScreenSpacePosition /= 2.;
-    currentScreenSpacePosition += .5;
-
-
-if(  currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || currentScreenSpacePosition.y < 0 || currentScreenSpacePosition.y > 1){
-    v.life -= .1;
-}
-
- if( v.life < 0 ){
-
-    float2 coordinates = hashwithoutsine21(float(pID) + _Time);
-
-    /*if( currentScreenSpacePosition.x < 0 ){
-        coordinates.x = currentScreenSpacePosition.x + 1;
-    }else if( currentScreenSpacePosition.x > 1 ){
-        coordinates.x = currentScreenSpacePosition.x - 1;
-    }
-
-    if( currentScreenSpacePosition.y < 0 ){
-        coordinates.y = currentScreenSpacePosition.y + 1;
-    }else if( currentScreenSpacePosition.y > 1 ){
-        coordinates.y = currentScreenSpacePosition.y - 1;
-    }*/
+        currentScreenSpacePosition /= 2.;
+        currentScreenSpacePosition += .5;
 
 
-
-
-    float depth = _DepthTexture.SampleLevel(sampler_DepthTexture,coordinates, 0).r;
-
-    if( depth  < -1){
-        v.uv.y = -1;
-        
-    }else{
-
-        v.pos = getWorldPos( coordinates );//worldPos.xyz;
-
-        if( length(v.pos-_CameraPosition) > _CameraFar * .95 ){
-         v.pos = _CameraPosition + normalize(v.pos-_CameraPosition) * _CameraFar * .95;
+        if(  currentScreenSpacePosition.x < 0 || currentScreenSpacePosition.x > 1 || currentScreenSpacePosition.y < 0 || currentScreenSpacePosition.y > 1){
+            v.life -= .1;
         }
 
-        float3 dX = getWorldPos( coordinates + float2(.001,0) ) -  getWorldPos( coordinates - float2(.001,0) );
-        float3 dY = getWorldPos( coordinates + float2(0,.001) ) - getWorldPos( coordinates - float2(0,.001) );
+        if( v.life < 0 ){
 
-        v.nor = -normalize(cross(dX*100 ,dY*100));
+            float2 coordinates = hashwithoutsine21(float(pID) + _Time);
 
-        if ( dot( v.nor , float3(0,1,0) ) < .8 ){
-            v.life = -1;
-            v.pos = 100000;
-        }else{
+            /*if( currentScreenSpacePosition.x < 0 ){
+                coordinates.x = currentScreenSpacePosition.x + 1;
+                }else if( currentScreenSpacePosition.x > 1 ){
+                coordinates.x = currentScreenSpacePosition.x - 1;
+            }
 
-            v.color =  _ColorTexture.SampleLevel(sampler_ColorTexture,coordinates, 0).rgb;
+            if( currentScreenSpacePosition.y < 0 ){
+                coordinates.y = currentScreenSpacePosition.y + 1;
+                }else if( currentScreenSpacePosition.y > 1 ){
+                coordinates.y = currentScreenSpacePosition.y - 1;
+            }*/
 
-            v.debug = max( abs(coordinates.x-.5), abs(coordinates.y-.5) );
-            v.uv.y = 1;
-            v.life = 1;
+
+
+
+            float depth = _DepthTexture.SampleLevel(sampler_DepthTexture,coordinates, 0).r;
+
+            if( depth  < -1){
+                v.uv.y = -1;
+                
+                }else{
+
+                v.pos = getWorldPos( coordinates );//worldPos.xyz;
+
+                if( length(v.pos-_CameraPosition) > _CameraFar * .95 ){
+                    v.pos = _CameraPosition + normalize(v.pos-_CameraPosition) * _CameraFar * .95;
+                }
+
+                float3 dX = getWorldPos( coordinates + float2(.001,0) ) -  getWorldPos( coordinates - float2(.001,0) );
+                float3 dY = getWorldPos( coordinates + float2(0,.001) ) - getWorldPos( coordinates - float2(0,.001) );
+
+                v.nor = -normalize(cross(dX*100 ,dY*100));
+
+                if ( dot( v.nor , float3(0,1,0) ) < -1 ){
+                    v.life = -1;
+                    v.pos = 100000;
+                    
+                    }else{
+
+                    v.color =  _ColorTexture.SampleLevel(sampler_ColorTexture,coordinates, 0).rgb;
+
+                    v.debug = max( abs(coordinates.x-.5), abs(coordinates.y-.5) );
+                    v.uv.y = 1;
+                    v.life = 1;
+
+                }
+
+            }
+            
 
         }
 
-    }
-    
-
-    }
-
-    v.life  -= .001 * (hash11( float(pID * 31)  )+ .3);
-    v.life  -= .001 * (hash11( float(pID * 51)  )+ .3);
-    v.life  -= .001 * (hash11( float(pID * 91)  )+ .3);
+        v.life  -= .001 * (hash11( float(pID * 31)  )+ .3);
+        v.life  -= .001 * (hash11( float(pID * 51)  )+ .3);
+        v.life  -= .001 * (hash11( float(pID * 91)  )+ .3);
         
 
         _VertBuffer[sID] = v;

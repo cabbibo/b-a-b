@@ -17,21 +17,39 @@ public class PostController : MonoBehaviour
     private VolumeProfile profile;
 
 
-    private MainPost mainPost;
-    private Bloom bloom;
-    private ColorGrading colorGrading;
-    private Vignette vignette;
-    private LensDistortion lensDistortion;
-    private ChromaticAberration chromaticAberration;
-    private FogEffect fogEffect;
-    private DepthOfField depthOfField;
+    private MainPost mainPost_Reference;
+    private Bloom bloom_Reference;
+    private ColorGrading colorGrading_Reference;
+    private Vignette vignette_Reference;
+    private LensDistortion lensDistortion_Reference;
+    private ChromaticAberration chromaticAberration_Reference;
+    private FogEffect fogEffect_Reference;
+    private DepthOfField depthOfField_Reference;
+
+    private GlitchEffect glitchEffect_Reference;
+
+    public bool mainPost;
+    public bool bloom;
+    public bool colorGrading;
+    public bool vignette;
+    public bool lensDistortion;
+    public bool chromaticAberration;
+    public bool fogEffect;
+    public bool depthOfField;
+    public bool glitchEffect;
+
+    public bool splatEffect;
+
 
 
     // other controllers
     public CustomFog customFog;
     public UnderwaterRenderer crestUnderwaterRenderer;
 
+    public PlaceParticlesOnDepthMap placeParticlesOnDepthMap;
 
+
+    [Header("Main Post Settings")]
 
     public float _Hue;
     public float _Saturation;
@@ -39,24 +57,73 @@ public class PostController : MonoBehaviour
     public float _Blend;
     public float _Fade;
 
-
-
     public Texture2D biomeMap;
 
+
+
+    [Header("Depth Of Field Settings")]
+
     public float depthOfFieldFocusDistance;
+
+
+
+
+    [Header("Fog Settings")]
+    public float fogIntensity;
+    public float fogHeightPower;
+
+    [Header("Color Grading Settings")]
+    public Color colorFilter;
+
+
+    [Header("Vignette Settings")]
+    public float vignetteIntensity;
+
+
+    [Header("Bloom Settings")]
+    public float bloomIntensity;
+    public float bloomThreshold;
+
+    [Header("Lens Distortion Settings")]
+    public float lensDistortionIntensity;
+    public float lensDistortionScale;
+
+    [Header("Chromatic Aberration Settings")]
+    public float chromaticAberrationIntensity;
+
+    [Header("Depth Of Field Settings")]
+    public float depthOfFieldAperture;
+    public float depthOfFieldFocalLength;
+    public bool focusOnWren;
+
+    [Header("Glitch Settings")]
+    public float glitchIntensity;
+
+    [Header("Splat Settings")]
+    public bool renderBackground;
+    public float splatsAmount;
+    public float splatSize;
+
+    public float splatSpeed;
+
+
+
+
+
 
     void OnEnable()
     {
         volume = GetComponent<PostProcessVolume>();
 
-        volume.profile.TryGetSettings(out mainPost);
-        volume.profile.TryGetSettings(out bloom);
-        volume.profile.TryGetSettings(out colorGrading);
-        volume.profile.TryGetSettings(out vignette);
-        volume.profile.TryGetSettings(out lensDistortion);
-        volume.profile.TryGetSettings(out chromaticAberration);
-        volume.profile.TryGetSettings(out fogEffect);
-        volume.profile.TryGetSettings(out depthOfField);
+        volume.profile.TryGetSettings(out mainPost_Reference);
+        volume.profile.TryGetSettings(out bloom_Reference);
+        volume.profile.TryGetSettings(out colorGrading_Reference);
+        volume.profile.TryGetSettings(out vignette_Reference);
+        volume.profile.TryGetSettings(out lensDistortion_Reference);
+        volume.profile.TryGetSettings(out chromaticAberration_Reference);
+        volume.profile.TryGetSettings(out fogEffect_Reference);
+        volume.profile.TryGetSettings(out depthOfField_Reference);
+        volume.profile.TryGetSettings(out glitchEffect_Reference);
 
 
     }
@@ -77,18 +144,54 @@ public class PostController : MonoBehaviour
 
 
         //        print(post);
-        mainPost._Hue.value = _Hue;
-        mainPost._Saturation.value = _Saturation;
-        mainPost._Lightness.value = _Lightness;
-        mainPost._Blend.value = _Blend;
-        mainPost._Fade.value = _Fade;
+        mainPost_Reference._Hue.value = _Hue;
+        mainPost_Reference._Saturation.value = _Saturation;
+        mainPost_Reference._Lightness.value = _Lightness;
+        mainPost_Reference._Blend.value = _Blend;
+        mainPost_Reference._Fade.value = _Fade;
 
         if (God.wren != null)
         {
             depthOfFieldFocusDistance = Vector3.Distance(God.wren.transform.position, God.camera.transform.position);
         }
         // todo if we are focusing on something else make that be the focus object ( even better make them both be in focus)
-        depthOfField.focusDistance.value = depthOfFieldFocusDistance;
+        depthOfField_Reference.focusDistance.value = depthOfFieldFocusDistance;
+
+
+
+        mainPost_Reference.enabled.Override(mainPost);
+        bloom_Reference.enabled.Override(bloom);
+        colorGrading_Reference.enabled.Override(colorGrading);
+        vignette_Reference.enabled.Override(vignette);
+        lensDistortion_Reference.enabled.Override(lensDistortion);
+        chromaticAberration_Reference.enabled.Override(chromaticAberration);
+        fogEffect_Reference.enabled.Override(fogEffect);
+        depthOfField_Reference.enabled.Override(depthOfField);
+        glitchEffect_Reference.enabled.Override(glitchEffect);
+
+        if (splatEffect)
+        {
+            placeParticlesOnDepthMap.enabled = true;
+            if (renderBackground)
+            {
+                LayerMask everything = ~0;
+                God.camera.cullingMask = everything;
+            }
+            else
+            {
+
+                LayerMask debug = (1 << LayerMask.NameToLayer("Splats"));
+                //print(debug);
+                God.camera.cullingMask = debug;
+            }
+        }
+        else
+        {
+            placeParticlesOnDepthMap.enabled = false;
+
+            LayerMask everything = ~0;
+            God.camera.cullingMask = everything;
+        }
 
     }
 

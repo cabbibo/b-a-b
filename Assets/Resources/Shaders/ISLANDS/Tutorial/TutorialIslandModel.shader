@@ -637,7 +637,7 @@ Shader "Islands/Tutorial/TutorialIslandModel" {
 
                 //                col.xy = sin(GetXYInLightSpace(v.worldPos));
                 col *= lerp(float3(.1,.1,.2),float3(1,.9,.9),shadow * (.4+floor(lightMatch*5)/5));
-                col *= _LightColor0;
+                //col *= _LightColor0;
                 /// col = lightingData.flatLightMatch* _LightColor0;//* shadow ;
                 //DoEdgeDiscard(lightingData,v.worldPos,v.eye);
                 DoWrenDiscard(v.worldPos);
