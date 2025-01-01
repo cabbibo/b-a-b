@@ -175,6 +175,12 @@ public class WrenPhysics : MonoBehaviour
 
     public float velocityReductionOnEnterWater = .3f;
 
+
+
+
+    public float maxUpAngle = .8f;
+    public float maxUpAngleForceRightingMultiplier = 10;
+
     /*
 
 
@@ -322,6 +328,10 @@ public class WrenPhysics : MonoBehaviour
     public Vector3 oceanNormalForce; // Force that gives us lift from the ocean
     public Vector3 oceanBoyancyForce; // Force that pushes us up from underwater
 
+    public Vector3 maxUpRightingForce;
+    public Vector3 maxUpRightingForcePosition;
+
+
 
     public Vector3 carryingForceL;
     public Vector3 carryingForcePositionL;
@@ -378,6 +388,8 @@ public class WrenPhysics : MonoBehaviour
 
     public float maxAngle;
     public float minAngle;
+
+
 
     /*
 
@@ -555,6 +567,8 @@ public class WrenPhysics : MonoBehaviour
             HorizonRightingForces();
             BumperForces();
             OceanForces();
+
+            LimitUpForces();
 
             CarryingForces();
             ApplyForces();
@@ -1608,6 +1622,28 @@ public class WrenPhysics : MonoBehaviour
     }
 
 
+    public void LimitUpForces()
+    {
+
+        if (Vector3.Dot(vel.normalized, Vector3.up) > maxUpAngle)
+        {
+
+            maxUpRightingForce = Vector3.down * maxUpAngleForceRightingMultiplier;
+            maxUpRightingForcePosition = transform.position + transform.forward;
+
+        }
+        else if (Vector3.Dot(vel.normalized, Vector3.up) < -maxUpAngle)
+        {
+            maxUpRightingForce = Vector3.up * maxUpAngleForceRightingMultiplier;
+            maxUpRightingForcePosition = transform.position + transform.forward;
+        }
+        else
+        {
+            maxUpRightingForce = Vector3.zero;
+        }
+
+    }
+
 
 
 
@@ -1683,6 +1719,8 @@ public class WrenPhysics : MonoBehaviour
 
         AddForce(waveLiftForceL, waveLiftForcePositionL);
         AddForce(waveLiftForceR, waveLiftForcePositionR);
+
+        AddForce(maxUpRightingForce, maxUpRightingForcePosition);
 
 
         // add a force here that has to do with the direction of the light

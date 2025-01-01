@@ -13,6 +13,17 @@ public class ScenePostSettings : MonoBehaviour
     public Material terrainMaterial;
 
 
+    public Gradient sunGradient;
+    public Gradient moonGradient;
+
+
+
+
+
+
+
+    public bool mainPost;
+    public bool glitch;
     public bool fog;
     public bool depthOfField;
     public bool chromaticAberration;
@@ -20,11 +31,12 @@ public class ScenePostSettings : MonoBehaviour
     public bool colorGrading;
     public bool vignette;
 
+    public bool splatEffect;
+
+
+
     public float fogIntensity;
     public float fogHeightPower;
-
-
-
 
 
     // Start is called before the first frame update
@@ -42,6 +54,16 @@ public class ScenePostSettings : MonoBehaviour
     public void Set()
     {
         God.skyboxUpdater.UpdateSkybox(skyboxMaterial);
+
+        God.postController.mainPost = mainPost;
+        God.postController.glitchEffect = glitch;
+        God.postController.fogEffect = fog;
+        God.postController.depthOfField = depthOfField;
+        God.postController.chromaticAberration = chromaticAberration;
+        God.postController.bloom = bloom;
+        God.postController.colorGrading = colorGrading;
+        God.postController.vignette = vignette;
+        God.postController.splatEffect = splatEffect;
 
     }
 

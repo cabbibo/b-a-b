@@ -251,6 +251,13 @@ public class SceneController : MonoBehaviour
 
         //print(God.state);
         //print(wrenScene.portals);
+        // print(God.state);
+        // print(wrenScene);
+
+        if (wrenScene == null)
+        {
+            Debug.LogError("Scene not found : Make sure scene is top object in hierarchy!");
+        }
 
         // Only animate in if we have animation!
         if (God.state.currentBiomeID >= 0 && God.state.currentBiomeID < wrenScene.portals.Length && God.wren != null)

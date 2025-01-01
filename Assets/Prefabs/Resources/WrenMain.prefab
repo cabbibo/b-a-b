@@ -25649,6 +25649,8 @@ MonoBehaviour:
   waveLiftForceMultiplier: 0
   oceanToFlatOnExit: 0.3
   velocityReductionOnEnterWater: 0.3
+  maxUpAngle: 0
+  maxUpAngleForceRightingMultiplier: 10
   carryingForceMultiplier: 1
   carryingDragMultiplier: 0
   groundPower: 3
@@ -25713,6 +25715,8 @@ MonoBehaviour:
   oceanMomentumForce: {x: 0, y: 0, z: 0}
   oceanNormalForce: {x: 0, y: 0, z: 0}
   oceanBoyancyForce: {x: 0, y: 0, z: 0}
+  maxUpRightingForce: {x: 0, y: 0, z: 0}
+  maxUpRightingForcePosition: {x: 0, y: 0, z: 0}
   carryingForceL: {x: 0, y: 0, z: 0}
   carryingForcePositionL: {x: 0, y: 0, z: 0}
   carryingForceR: {x: 0, y: 0, z: 0}

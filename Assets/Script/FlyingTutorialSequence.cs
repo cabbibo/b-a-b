@@ -304,11 +304,13 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
+        yield return HitTargetSequence();
 
         // Fades Out Background
 
         while (bgT > 0)
         {
+            print("fading out bg");
             SetBGFade(bgT);
             bgT -= Time.unscaledDeltaTime * .1f;
             if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
@@ -317,19 +319,30 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
 
 
+        OnFreeFlightStarted();
+
+
+
         // Start free flight
 
         SetBGFade(0);
-
         StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
+
+        OnPushLeftInstructions();
+
 
         // Left
         yield return ControllerHintSequence(ControllerHint.Left);
         yield return WaitWithCheat(0.5f);
 
+
+        OnPushRightInstructions();
         // Right
         yield return ControllerHintSequence(ControllerHint.Right);
         yield return WaitWithCheat(0.5f);
+
+        OnHoldInstructions();
 
         // Hold
         yield return ControllerHintSequence(ControllerHint.Hold);
@@ -342,6 +355,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         // Space to fly
         yield return WaitWithCheat(11);
 
+        OnDiveInstructions();
         // Dive
         yield return ControllerHintSequence(ControllerHint.Dive);
 
@@ -363,6 +377,12 @@ public class FlyingTutorialSequence : MonoBehaviour
     public void OnBirdZoomOutEnd() { }
     public void OnRotateToFrontStart() { }
     public void OnRotateToFrontEnd() { }
+
+    public void OnPushLeftInstructions() { }
+    public void OnPushRightInstructions() { }
+    public void OnHoldInstructions() { }
+    public void OnDiveInstructions() { }
+
 
 
 
@@ -442,6 +462,80 @@ public class FlyingTutorialSequence : MonoBehaviour
     }
 
 
+    public GameObject hitTarget;
+    public float hitTargetRadius = 20;
+
+    Vector3 tv1;
+    IEnumerator HitTargetSequence()
+    {
+        float t = 0;
+
+
+        SetControllerHint(ControllerHint.Up);
+        hitTarget.transform.position = God.wren.transform.position + Vector3.forward * 100 + Vector3.up * 10;
+        StartCoroutine(FadeGroup(groupContainer, 0, 1));
+
+        while (t < 1)
+        {
+
+            God.wren.physics.lockX = true;
+
+            tv1 = God.wren.transform.position - hitTarget.transform.position;
+
+            float upOrDown = Vector3.Dot(God.wren.transform.up, tv1);
+
+            if (upOrDown > 0)
+            {
+                SetControllerHint(ControllerHint.Down);
+            }
+            else
+            {
+                SetControllerHint(ControllerHint.Up);
+            }
+
+
+            if (tv1.magnitude < hitTargetRadius)
+            {
+                t += .2f;
+                // place next target
+                // God.particleSystems.smallSuccessParticleSystem.Play();
+                if (upOrDown > 0)
+                {
+                    PlaceHitTarget(true);
+                }
+                else
+                {
+                    PlaceHitTarget(false);
+                }
+
+            }
+            else
+            {
+
+                if (Vector3.Dot(God.wren.transform.forward, tv1) > 0)
+                {
+
+                    if (upOrDown > 0)
+                    {
+                        PlaceHitTarget(true);
+                    }
+                    else
+                    {
+                        PlaceHitTarget(false);
+                    }
+                }
+
+                t = Mathf.Clamp01(t - Time.unscaledDeltaTime * 1.25f);
+            }
+            ShowProgress(t);
+            yield return null;
+        }
+    }
+
+    void PlaceHitTarget(bool upDown)
+    {
+        hitTarget.transform.position = God.wren.transform.position + Vector3.forward * 100;
+    }
 
 
     IEnumerator ControllerHintSequence(ControllerHint hint)
