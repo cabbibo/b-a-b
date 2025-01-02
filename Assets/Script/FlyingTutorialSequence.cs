@@ -330,27 +330,45 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         SetBGFade(0);
         God.wren.canMove = true;
+        yield return WaitWithCheat(1);
         yield return FlapSequence();
+        yield return WaitWithCheat(1);
         yield return StopSequence();
+        yield return WaitWithCheat(1);
         yield return FlapSequence();
+        yield return WaitWithCheat(1);
         yield return StopSequence();
+        yield return WaitWithCheat(3);
 
         yield return UpDownSequence();
+        yield return WaitWithCheat(3);
+        yield return LeftOrRightSequence();
+
+
+
+
+        OnFreeFlightStarted();
+        /*y
 
         // Fades Out Background
 
         while (bgT > 0)
         {
             print("fading out bg");
+
             SetBGFade(bgT);
+
             bgT -= Time.unscaledDeltaTime * .1f;
+
             if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
                 break;
+
             yield return null;
+
         }
 
+        */
 
-        OnFreeFlightStarted();
 
 
 
@@ -360,7 +378,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
 
-        OnPushLeftInstructions();
+        /*OnPushLeftInstructions();
 
 
         // Left
@@ -381,6 +399,8 @@ public class FlyingTutorialSequence : MonoBehaviour
         God.wren.physics.rb.AddRelativeForce(Vector3.forward * 1000, ForceMode.Force);
 
         yield return WaitWithCheat(waitTimeInFlightSpace);
+*/
+
 
 
         // Space to fly
@@ -520,6 +540,33 @@ public class FlyingTutorialSequence : MonoBehaviour
     }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public GameObject hitTarget;
     public float hitTargetRadius = 20;
     public float moveTowardsTargetForwardMultiplier = 100;
@@ -530,27 +577,18 @@ public class FlyingTutorialSequence : MonoBehaviour
     {
         float t = 0;
 
-
-
-        float horizonRightingForceVal = God.wren.physics.horizonRightingForceVal;
-        float rightingForce = God.wren.physics.rightingForce;
-        float rightingDependentOnNotTouchingVal = God.wren.physics.rightingDependentOnNotTouchingVal;
-
+        God.wren.physics.lockX = true;
+        God.wren.physics.lockY = false;
 
         // make it so its righting hard 
-        God.wren.physics.horizonRightingForceVal = 1;
-        God.wren.physics.rightingForce = -6;
-        God.wren.physics.rightingDependentOnNotTouchingVal = 0;
-        God.wren.physics.maxUpAngle = .7f;
-        God.wren.physics.maxUpAngleForceRightingMultiplier = 10f;
-        God.wren.physics.lockX = true;
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
 
         PlaceHitTarget();
 
         SetControllerHint(ControllerHint.Up);
         StartCoroutine(FadeGroup(groupContainer, 0, 1));
 
-        God.wren.interfaceUtils.interfacePointer.AddPointer(hitTarget.transform, 0);
+        God.wren.interfaceUtils.interfacePointer.AddPointer(hitTarget.transform, 0, new Vector4(0, 0, 0, 1));
         God.wren.interfaceUtils.interfacePointer.TurnOnPointer(hitTarget.transform);
 
         while (t < 1)
@@ -581,7 +619,9 @@ public class FlyingTutorialSequence : MonoBehaviour
                 t += .1f;
 
                 // place next target
-                // God.particleSystems.smallSuccessParticleSystem.Play();
+                God.particleSystems.smallSuccessParticleSystem.transform.position = God.wren.transform.position + God.wren.transform.forward * 5;
+                God.particleSystems.smallSuccessParticleSystem.Play();
+                God.audio.Play(God.sounds.smallSuccessSound);
                 if (upOrDown > 0)
                 {
                     PlaceHitTarget();
@@ -615,6 +655,15 @@ public class FlyingTutorialSequence : MonoBehaviour
             ShowProgress(t);
             // Set back to normal;
 
+            StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
+            God.wren.physics.lockX = false;
+            God.wren.physics.lockY = false;
+
+            // make it so its righting hard 
+            God.wren.parameters.LoadParamSet("wrenTutorialSequence");
+
+
 
             yield return null;
 
@@ -622,9 +671,143 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
 
         // after wee have completed
-        print("hiii yess");
-        God.wren.physics.lockX = false;
+        // God.wren.physics.lockX = false;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public bool placeLeftOrRight;
+    IEnumerator LeftOrRightSequence()
+    {
+        float t = 0;
+
+
+        // Set WrenParams for tutorial!
+
+        God.wren.physics.lockX = false;
+        God.wren.physics.lockY = true;
+
+        // make it so its righting hard 
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence_LeftRight");
+
+
+        hitTarget.SetActive(true);
+
+        PlaceLRHitTarget();
+
+        SetControllerHint(ControllerHint.Up);
+        StartCoroutine(FadeGroup(groupContainer, 0, 1));
+
+        God.wren.interfaceUtils.interfacePointer.AddPointer(hitTarget.transform, 0, new Vector4(0, 0, 0, 1));
+        God.wren.interfaceUtils.interfacePointer.TurnOnPointer(hitTarget.transform);
+
+        while (t < 1)
+        {
+
+            tv1 = God.wren.transform.position - hitTarget.transform.position;
+
+            // turn wren towards target in xz plane
+            float upOrDown = Vector3.Dot(God.wren.transform.up, tv1);
+            float leftOrRight = Vector3.Dot(God.wren.transform.right, Vector3.forward);
+
+
+            God.wren.physics.AddForce(God.wren.transform.right * leftOrRight * moveTowardsTargetForwardMultiplier, God.wren.transform.position + God.wren.transform.forward);
+
+
+            if (leftOrRight > 0)
+            {
+                SetControllerHint(ControllerHint.Left);
+            }
+            else
+            {
+                SetControllerHint(ControllerHint.Right);
+            }
+
+
+            if (tv1.magnitude < hitTargetRadius)
+            {
+                t += .1f;
+
+                PlaceLRHitTarget();
+
+            }
+            else
+            {
+
+                // maybe need some new way here?
+                if (Vector3.Dot(God.wren.transform.forward, tv1) > .4f)
+                {
+
+                    PlaceLRHitTarget();
+                }
+
+                // fade it out if we want to make it be constant 
+                //t = Mathf.Clamp01(t - Time.unscaledDeltaTime * 1.25f);
+            }
+
+            ShowProgress(t);
+            // Set back to normal;
+
+
+            yield return null;
+
+
+        }
+
+        // set back to normal params
+
+
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
+        // after wee have completed
+        God.wren.physics.lockX = false;
+        God.wren.physics.lockY = false;
+
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence");
+
+
+        God.wren.interfaceUtils.RemovePointer(hitTarget.transform);
+        hitTarget.SetActive(false);
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     IEnumerator FlapSequence()
@@ -635,18 +818,11 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
-        float horizonRightingForceVal = God.wren.physics.horizonRightingForceVal;
-        float rightingForce = God.wren.physics.rightingForce;
-        float rightingDependentOnNotTouchingVal = God.wren.physics.rightingDependentOnNotTouchingVal;
-
+        God.wren.physics.lockX = true;
+        God.wren.physics.lockY = false;
 
         // make it so its righting hard 
-        God.wren.physics.horizonRightingForceVal = 10;
-        God.wren.physics.rightingForce = -6;
-        God.wren.physics.rightingDependentOnNotTouchingVal = 0;
-        God.wren.physics.maxUpAngle = .7f;
-        God.wren.physics.maxUpAngleForceRightingMultiplier = 10f;
-        God.wren.physics.lockX = true;
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
 
         //PlaceHitTarget();
 
@@ -666,19 +842,6 @@ public class FlyingTutorialSequence : MonoBehaviour
             if (God.input.l2 > .5f && God.input.r2 > .5f)
             {
                 flapStart = true;
-                //t += .01f;
-
-                // place next target
-                // God.particleSystems.smallSuccessParticleSystem.Play();
-                //if (upOrDown > 0)
-                //{
-                //    PlaceHitTarget();
-                //}
-                //else
-                //{
-                //    PlaceHitTarget();
-                //}
-
             }
             else
             {
@@ -693,15 +856,23 @@ public class FlyingTutorialSequence : MonoBehaviour
             ShowProgress(t);
             // Set back to normal;
 
-
             yield return null;
 
 
         }
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
         // after wee have completed
-        print("hiii yess");
-        God.wren.physics.lockX = false;
+        //God.wren.physics.lockX = false;
+
+
+        God.wren.physics.lockX = true;
+        God.wren.physics.lockY = false;
+
+        // make it so its righting hard 
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence");
+
+
     }
 
     IEnumerator StopSequence()
@@ -713,9 +884,9 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         while (t < 1)
         {
-            if (God.wren.physics.rb.velocity.magnitude < 10)
+            if (God.wren.physics.rb.velocity.magnitude < 2)
             {
-                t += .03f;
+                t += .01f;
             }
 
             ShowProgress(t);
@@ -728,11 +899,51 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
     void PlaceHitTarget()
     {
         hitTarget.transform.position = God.wren.transform.position + Vector3.forward * 50 + Vector3.up * (placeUpOrDown ? 10 : -10);
         placeUpOrDown = !placeUpOrDown;
     }
+
+
+    void PlaceLRHitTarget()
+    {
+        Vector3 flatWrenForward = Vector3.Scale(God.wren.transform.forward, new Vector3(1, 0, 1));
+
+        hitTarget.transform.position = God.wren.transform.position + flatWrenForward * 50 + Vector3.right * (placeLeftOrRight ? 10 : -10);
+        placeLeftOrRight = !placeLeftOrRight;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     IEnumerator ControllerHintSequence(ControllerHint hint)

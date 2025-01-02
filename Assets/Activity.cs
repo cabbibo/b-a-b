@@ -23,6 +23,7 @@ public class Activity : MonoBehaviour
     public float currentAmountComplete = 0;
     public float percentangeComplete = 0;
 
+
     public float[] amountToCompleteTimesVisited;
 
     public bool doingActivity;
@@ -34,6 +35,8 @@ public class Activity : MonoBehaviour
     public bool currentlyComplete;
 
     public int numTimesCompleted;
+    public int numTimesCompletedTilFullCompletion = 1;
+    public bool fullCompleted;
 
     public bool canStartMidActivityOnLoad = false;
 
@@ -1011,7 +1014,14 @@ public class Activity : MonoBehaviour
         onCompleteEvent.Invoke();
         currentlyComplete = true;
         numTimesCompleted++;
+        if (numTimesCompleted >= numTimesCompletedTilFullCompletion)
+        {
+            fullCompleted = true;
+            OnFullComplete();
+        }
         timeCompleted = God.state.totalTimeInGame;
+
+        SaveState();
 
         SetSlide(completeSlides[0]);
     }
@@ -1034,6 +1044,12 @@ public class Activity : MonoBehaviour
             EndSlide(currentSlide);
         }
 
+    }
+
+    public void OnFullComplete()
+    {
+
+        SaveState();
     }
 
     // this will happen if we want to make it so they can restart on complete!
@@ -1597,6 +1613,7 @@ public class Activity : MonoBehaviour
         PlayerPrefs.SetInt("Activity_" + fullName + "_CurrentlyComplete", currentlyComplete ? 1 : 0);
         PlayerPrefs.SetFloat("Activity_" + fullName + "_BestTime", bestTime);
         PlayerPrefs.SetFloat("Activity_" + fullName + "_BestAmountComplete", bestAmountComplete);
+        PlayerPrefs.SetInt("Activity_" + fullName + "_FullCompleted", fullCompleted ? 1 : 0);
 
 
     }
@@ -1626,6 +1643,9 @@ public class Activity : MonoBehaviour
         bestAmountComplete = PlayerPrefs.GetFloat("Activity_" + fullName + "_BestAmountComplete", 0);
 
 
+        fullCompleted = PlayerPrefs.GetInt("Activity_" + fullName + "_FullCompleted", 0) == 1;
+
+
     }
 
     public void FullStateReset()
@@ -1639,6 +1659,7 @@ public class Activity : MonoBehaviour
         numTimesCompleted = 0;
         bestTime = 10000000;
         bestAmountComplete = 0;
+        fullCompleted = false;
 
         SaveState();
     }

@@ -34,6 +34,12 @@ public class InterfacePointer : MonoBehaviour
     public List<float> targetFades = new List<float>();
     public List<Vector4> extraData = new List<Vector4>();
 
+    // EXTRADATA
+
+    // times complete
+    // fully complete
+    // ???
+    // only show directional pointer
 
 
     public ComputeBuffer _buffer;
@@ -327,6 +333,22 @@ public class InterfacePointer : MonoBehaviour
         }
     }
 
+    public void AddPointer(Transform t, int type, Vector4 tc)
+    {
+        if (!pointerList.Contains(t))
+        {
+            pointerList.Add(t);
+            pointerTypes.Add((float)type);
+            targetFades.Add(0);
+            fades.Add(0);
+            extraData.Add(tc); // adding to our extra data!
+        }
+        else
+        {
+            pointerTypes[pointerList.IndexOf(t)] = (float)type;
+            extraData[pointerList.IndexOf(t)] = tc;
+        }
+    }
 
     public void RemovePointer(Transform t)
     {
@@ -386,6 +408,10 @@ public class InterfacePointer : MonoBehaviour
         GameObject[] allActivities = getAllOfTag("Activity");
         foreach (GameObject activity in allActivities)
         {
+            Vector4 tc = new Vector4(
+                activity.GetComponent<Activity>().numTimesCompleted,
+                activity.GetComponent<Activity>().fullCompleted ? 1 : 0,
+                0, 0);
             AddPointer(activity.GetComponent<Activity>().mainPointOfInterest, 1, activity.GetComponent<Activity>().numTimesCompleted);
         }
     }

@@ -93,6 +93,14 @@ public class WrenParams : MonoBehaviour
         paramFiles = allNames();
     }
 
+    public void LoadParamSet(string name)
+    {
+        paramSetName = name;
+        Load();
+    }
+
+
+
 
     public void Load()
     {

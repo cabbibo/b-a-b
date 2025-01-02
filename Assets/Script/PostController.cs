@@ -28,6 +28,8 @@ public class PostController : MonoBehaviour
 
     private GlitchEffect glitchEffect_Reference;
 
+    private AmbientOcclusion ambientOcclusion_Reference;
+
     public bool mainPost;
     public bool bloom;
     public bool colorGrading;
@@ -39,6 +41,7 @@ public class PostController : MonoBehaviour
     public bool glitchEffect;
 
     public bool splatEffect;
+    public bool ambientOcclusion;
 
 
 
@@ -106,6 +109,11 @@ public class PostController : MonoBehaviour
 
     public float splatSpeed;
 
+    [Header("Ambient Occlusion Settings")]
+    public float ambientOcclusionIntensity;
+    public Color ambientOcclusionColor;
+
+
 
 
 
@@ -124,6 +132,7 @@ public class PostController : MonoBehaviour
         volume.profile.TryGetSettings(out fogEffect_Reference);
         volume.profile.TryGetSettings(out depthOfField_Reference);
         volume.profile.TryGetSettings(out glitchEffect_Reference);
+        volume.profile.TryGetSettings(out ambientOcclusion_Reference);
 
 
     }
@@ -168,6 +177,7 @@ public class PostController : MonoBehaviour
         fogEffect_Reference.enabled.Override(fogEffect);
         depthOfField_Reference.enabled.Override(depthOfField);
         glitchEffect_Reference.enabled.Override(glitchEffect);
+        ambientOcclusion_Reference.enabled.Override(ambientOcclusion);
 
         if (splatEffect)
         {
