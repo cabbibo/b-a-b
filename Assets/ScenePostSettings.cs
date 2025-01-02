@@ -65,6 +65,8 @@ public class ScenePostSettings : MonoBehaviour
         God.postController.vignette = vignette;
         God.postController.splatEffect = splatEffect;
 
+        // God.weatherManager.
+
     }
 
 }

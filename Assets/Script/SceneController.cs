@@ -36,9 +36,6 @@ public class SceneController : MonoBehaviour
     // STEP ONE UNLOAD EVERYTHING
     public void OnEnable()
     {
-        // Add our listeners
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        SceneManager.sceneUnloaded += OnSceneUnloaded;
 
 
         // Unloading all the scenes!
@@ -50,10 +47,19 @@ public class SceneController : MonoBehaviour
             {
                 if (scene.name != "BaseScene" && scene.name != null)
                 {
+                    print("unloading scene");
+                    print(scene.name);
                     SceneManager.UnloadScene(scene);
                 }
             }
         }
+
+
+        // Add our listeners
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
+
+
     }
 
 
@@ -232,7 +238,17 @@ public class SceneController : MonoBehaviour
     {
 
 
+        // dont do anything if we are in the base scene
+        if (scene.name == "BaseScene")
+        {
+            return;
+        }
+        print("Scene Loaded");
+        print(scene);
+        print(scene.name);
+
         GameObject[] rootObjects = scene.GetRootGameObjects();
+        print(rootObjects[0]);
 
         WrenUtils.Scene wrenScene = rootObjects[0].GetComponent<WrenUtils.Scene>();
 

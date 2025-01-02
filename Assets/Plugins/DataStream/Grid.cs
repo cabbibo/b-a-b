@@ -64,6 +64,14 @@ public class Grid : MonoBehaviour
 
     }
 
+    void OnDisable()
+    {
+        if (pointBuffer != null)
+        {
+            pointBuffer.Release();
+        }
+    }
+
     MaterialPropertyBlock mpb;
 
     public Vector3 extents = new Vector3(10000, 10000, 10000);

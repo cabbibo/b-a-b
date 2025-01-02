@@ -140,6 +140,8 @@ public class WrenGrowthManager : MonoBehaviour
     {
 
 
+        float oldStam = stats.stamina;
+
         float d = -Mathf.Clamp(wren.input.o_left2 - wren.input.left2, -1, 0);
 
         stats.StaminaAdd(-d * flapStaminaSubtractor);
@@ -169,6 +171,14 @@ public class WrenGrowthManager : MonoBehaviour
         {
             stats.StaminaAdd(staminaRefillSpeed);
         }
+
+
+        if (Mathf.Abs(stats.stamina - oldStam) > 0)
+        {
+            wren.interfaceUtils.SetRingValue(2, stats.stamina);
+            wren.interfaceUtils.PingRing(2);
+        }
+
 
 
         healthRefillSpeed = Mathf.Clamp(healthRefillSpeed, healthRefillSpeedMin, healthRefillSpeedMax);

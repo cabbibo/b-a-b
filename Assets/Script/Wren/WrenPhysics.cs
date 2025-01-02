@@ -2056,14 +2056,19 @@ public class WrenPhysics : MonoBehaviour
             // get local velocity
             Vector3 localVel = transform.InverseTransformDirection(vel);
             localVel.x = 0;
-            rb.velocity = transform.TransformDirection(localVel);
+            //rb.velocity = transform.TransformDirection(localVel);
 
+
+            rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
             Vector3 angVel = rb.angularVelocity;
             // get local velocity
             Vector3 localAngVel = transform.InverseTransformDirection(angVel);
             localAngVel.y = 0;
             localAngVel.z = 0;
-            rb.angularVelocity = transform.TransformDirection(localAngVel);
+            // rb.angularVelocity = transform.TransformDirection(localAngVel);
+            rb.angularVelocity = new Vector3(rb.angularVelocity.x, 0, 0);
+
+
         }
 
         if (lockY)

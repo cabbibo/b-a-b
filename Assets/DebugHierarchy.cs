@@ -123,6 +123,19 @@ public class DebugHierarchy : MonoBehaviour
 
     }
 
+
+    public void OnDisable()
+    {
+        if (_buffer != null)
+        {
+            _buffer.Release();
+        }
+
+        if (_connectionsBuffer != null)
+        {
+            _connectionsBuffer.Release();
+        }
+    }
     public void UpdateMatrices()
     {
 

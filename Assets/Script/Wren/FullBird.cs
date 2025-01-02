@@ -381,6 +381,11 @@ public class FullBird : MonoBehaviour
 
    }
 
+   void OnDestroy()
+   {
+      OnDisable();
+   }
+
 
 
 

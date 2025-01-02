@@ -197,6 +197,8 @@ public class WrenParams : MonoBehaviour
     takeOffForwardForce
     takeOffUpForce
     paintedWindForceMultiplier
+    maxUpAngle
+    maxUpAngleForceRightingMultiplier
 
     */
     public MechanicParams GetWrenMechanics()
@@ -279,6 +281,8 @@ public class WrenParams : MonoBehaviour
         PamPam.boostMultiplier = wren.physics.boostMultiplier;
         PamPam.oceanToFlatOnExit = wren.physics.oceanToFlatOnExit;
         PamPam.velocityReductionOnEnterWater = wren.physics.velocityReductionOnEnterWater;
+        PamPam.maxUpAngle = wren.physics.maxUpAngle;
+        PamPam.maxUpAngleForceRightingMultiplier = wren.physics.maxUpAngleForceRightingMultiplier;
 
         return PamPam;
 
@@ -373,6 +377,8 @@ public class WrenParams : MonoBehaviour
 
         wren.physics.oceanToFlatOnExit = PamPam.oceanToFlatOnExit;
         wren.physics.velocityReductionOnEnterWater = PamPam.velocityReductionOnEnterWater;
+        wren.physics.maxUpAngle = PamPam.maxUpAngle;
+        wren.physics.maxUpAngleForceRightingMultiplier = PamPam.maxUpAngleForceRightingMultiplier;
 
 
     }
@@ -562,6 +568,9 @@ public class MechanicParams
 
     public float oceanToFlatOnExit;
     public float velocityReductionOnEnterWater;
+
+    public float maxUpAngle;
+    public float maxUpAngleForceRightingMultiplier;
 
 
 

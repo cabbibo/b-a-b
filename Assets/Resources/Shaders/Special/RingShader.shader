@@ -143,9 +143,9 @@
 
 
                     float3 eye = _WorldSpaceCameraPos - v.worldPos;
-                    for( int i = 0; i< 3; i++){
+                    for( int k = 0; k< 3; k++){
 
-                        float3 fPos = v.worldPos - normalize(eye) * float(i) *  .7;
+                        float3 fPos = v.worldPos - normalize(eye) * float(k) *  .7;
                         fPos = mul( unity_WorldToObject , float4(fPos,1)).xyz;
                         float2 fUV = float2( fPos.x, fPos.y);
                         //col.r += 1/(1+abs(length(fPos.xy)-.5) * 100);
@@ -161,8 +161,8 @@
                         }
 
                         float3 colMultiplier = float3(1,0,0);
-                        if( i == 1){ colMultiplier = float3(0,1,0);}
-                        if( i == 2){ colMultiplier = float3(0,0,1);}
+                        if( k == 1){ colMultiplier = float3(0,1,0);}
+                        if( k == 2){ colMultiplier = float3(0,0,1);}
 
                         col += colMultiplier *  .8/(1+pow( abs(uvL-.49) * 10,4) * 100);
 
@@ -192,11 +192,11 @@
 
 
                 float3 shadowCol = 0;
-                for( int i = 0; i < 3; i++){
+                for( int j = 0; j < 3; j++){
 
-                    float3 fPos = v.worldPos - normalize(eye) * float(i) * .7;
+                    float3 fPos = v.worldPos - normalize(eye) * float(j) * .7;
                     float v = ((snoise(fPos * 10))+1)/2;
-                    shadowCol += hsv((float)i/3,1,v);
+                    shadowCol += hsv((float)j/3,1,v);
 
                     
                 }//
@@ -229,7 +229,7 @@
                 // apply fog
                 //UNITY_APPLY_FOG(v.fogCoord, col);
 
-                col = float3(1,0,1);;
+                //col = float3(1,0,1);;
                 return float4(col,1);
             }
             ENDCG
