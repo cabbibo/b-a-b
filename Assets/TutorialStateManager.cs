@@ -195,7 +195,7 @@ add phase shift into onenable, not the set state!
         windCircle.SetActive(false);
         portal.SetActive(false);
         tutorialOcean.SetActive(true);
-        tutorialClouds.SetActive(true);
+        tutorialClouds.SetActive(false);
         fadeOrb.SetActive(true);
         theCrossing.SetActive(false);
 
@@ -248,7 +248,7 @@ add phase shift into onenable, not the set state!
         windCircle.SetActive(false);
         portal.SetActive(false);
         tutorialOcean.SetActive(true);
-        tutorialClouds.SetActive(true);
+        tutorialClouds.SetActive(false);
         theCrossing.SetActive(false);
 
 
@@ -313,7 +313,7 @@ add phase shift into onenable, not the set state!
         windCircle.SetActive(false);
         portal.SetActive(true);
         tutorialOcean.SetActive(false);
-        tutorialClouds.SetActive(true);
+        tutorialClouds.SetActive(false);
         theCrossing.SetActive(false);
 
         God.state.OnTutorialFinish();

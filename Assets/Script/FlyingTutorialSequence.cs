@@ -69,8 +69,11 @@ public class FlyingTutorialSequence : MonoBehaviour
     public GameObject groupDown;
     public GameObject groupHold;
     public GameObject groupFlap;
+    public GameObject groupSwoop;
+    public GameObject groupRelease;
+    public GameObject groupRelease2;
 
-    enum ControllerHint { None, Dive, Left, Right, Up, Down, Hold, Takeoff, Flap }
+    enum ControllerHint { None, Dive, Left, Right, Up, Down, Hold, Takeoff, Flap, Swoop, Release, Release2 }
 
     [Header("Tooltip Cards")]
     public CanvasGroup groupCard;
@@ -330,23 +333,35 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         SetBGFade(0);
         God.wren.canMove = true;
-        yield return WaitWithCheat(1);
-        yield return FlapSequence();
-        yield return WaitWithCheat(1);
-        yield return StopSequence();
-        yield return WaitWithCheat(1);
-        yield return FlapSequence();
-        yield return WaitWithCheat(1);
-        yield return StopSequence();
-        yield return WaitWithCheat(3);
 
+
+
+
+        // make it so its righting hard 
+
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence_Swoop");
+        yield return SwoopSequence();
+
+        yield return WaitWithCheat(1);
+        yield return StopSequence();
+
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
+        yield return WaitWithCheat(1);
+        yield return FlapSequence();
+
+        yield return WaitWithCheat(1);
+        yield return StopSequence();
+
+        yield return WaitWithCheat(1);
         yield return UpDownSequence();
+
+
         yield return WaitWithCheat(3);
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence_LeftRight");
         yield return LeftOrRightSequence();
 
 
-
-
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence");
         OnFreeFlightStarted();
         /*y
 
@@ -469,6 +484,9 @@ public class FlyingTutorialSequence : MonoBehaviour
         groupDive.SetActive(hint == ControllerHint.Dive);
         groupHold.SetActive(hint == ControllerHint.Hold);
         groupFlap.SetActive(hint == ControllerHint.Flap);
+        groupSwoop.SetActive(hint == ControllerHint.Swoop);
+        groupRelease.SetActive(hint == ControllerHint.Release);
+        groupRelease2.SetActive(hint == ControllerHint.Release2);
 
         controllerText.transform.parent.gameObject.SetActive(hint != ControllerHint.None);
         switch (hint)
@@ -477,22 +495,31 @@ public class FlyingTutorialSequence : MonoBehaviour
                 controllerText.text = "Hold to DIVE";
                 break;
             case ControllerHint.Left:
-                controllerText.text = "Both sticks to TURN LEFT";
+                controllerText.text = "Push Sticks LEFT to TURN LEFT";
                 break;
             case ControllerHint.Right:
-                controllerText.text = "Both sticks to TURN RIGHT";
+                controllerText.text = "Push Sticks RIGHT to TURN RIGHT";
                 break;
             case ControllerHint.Up:
-                controllerText.text = "Both sticks up to FLY DOWN";
+                controllerText.text = "Push Sticks FORWARD to FLY DOWN";
                 break;
             case ControllerHint.Down:
-                controllerText.text = "Both sticks down to FLY UP";
+                controllerText.text = "Push Sticks BACK to FLY UP";
                 break;
             case ControllerHint.Hold:
-                controllerText.text = "PRESS sticks to HOLD";
+                controllerText.text = "PRESS sticks to BRAKE";
                 break;
             case ControllerHint.Flap:
                 controllerText.text = "Tap R2 & L2 to FLAP";
+                break;
+            case ControllerHint.Swoop:
+                controllerText.text = "Press R2 & L2 to SWOOP";
+                break;
+            case ControllerHint.Release:
+                controllerText.text = "Release R2 & L2 to GLIDE";
+                break;
+            case ControllerHint.Release2:
+                controllerText.text = "Release R2 & L2 to REGAIN STAMINA";
                 break;
                 /* case ControllerHint.y:
                      controllerText.text = "PRESS sticks to HOLD";
@@ -577,22 +604,18 @@ public class FlyingTutorialSequence : MonoBehaviour
     {
         float t = 0;
 
-        God.wren.physics.lockX = true;
-        God.wren.physics.lockY = false;
-
-        // make it so its righting hard 
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
-
-        PlaceHitTarget();
 
         SetControllerHint(ControllerHint.Up);
         StartCoroutine(FadeGroup(groupContainer, 0, 1));
 
-        God.wren.interfaceUtils.interfacePointer.AddPointer(hitTarget.transform, 0, new Vector4(0, 0, 0, 1));
-        God.wren.interfaceUtils.interfacePointer.TurnOnPointer(hitTarget.transform);
+        ActivatePointer();
+        PlaceHitTarget();
 
         while (t < 1)
         {
+
+            hitTarget.transform.LookAt(hitTarget.transform.position + Vector3.forward);
+
 
             tv1 = God.wren.transform.position - hitTarget.transform.position;
 
@@ -655,14 +678,6 @@ public class FlyingTutorialSequence : MonoBehaviour
             ShowProgress(t);
             // Set back to normal;
 
-            StartCoroutine(FadeGroup(groupContainer, 1, 0));
-
-            God.wren.physics.lockX = false;
-            God.wren.physics.lockY = false;
-
-            // make it so its righting hard 
-            God.wren.parameters.LoadParamSet("wrenTutorialSequence");
-
 
 
             yield return null;
@@ -670,6 +685,9 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         }
 
+
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
+        DeactivatePointer();
         // after wee have completed
         // God.wren.physics.lockX = false;
     }
@@ -679,16 +697,121 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
+    public bool divingOrNot;
+    IEnumerator SwoopSequence()
+    {
+        float t = 0;
+
+        PlaceSwoopTarget();
+
+        SetControllerHint(ControllerHint.Up);
+        StartCoroutine(FadeGroup(groupContainer, 0, 1));
+
+        ActivatePointer();
+
+
+
+        while (t < 1)
+        {
+
+            tv1 = God.wren.transform.position - hitTarget.transform.position;
+
+            hitTarget.transform.LookAt(hitTarget.transform.position + Vector3.up);
+
+            // turn wren towards target in xz plane
+            float upOrDown = Vector3.Dot(God.wren.transform.up, tv1);
+            float leftOrRight = Vector3.Dot(God.wren.transform.right, Vector3.forward);
+
+
+            God.wren.physics.AddForce(God.wren.transform.right * leftOrRight * moveTowardsTargetForwardMultiplier, God.wren.transform.position + God.wren.transform.forward);
+
+
+            if (divingOrNot)
+            {
+                SetControllerHint(ControllerHint.Swoop);
+            }
+            else
+            {
+                SetControllerHint(ControllerHint.Release);
+            }
+
+            if (divingOrNot)
+            {
+                hitTarget.transform.position = new Vector3(
+                    God.wren.transform.position.x,
+                    hitTarget.transform.position.y,
+                    God.wren.transform.position.z
+                );
+
+                hitTarget.transform.position += Vector3.Scale(God.wren.transform.forward, new Vector3(1, 0, 1)).normalized * 2 * Mathf.Abs(hitTarget.transform.position.y - God.wren.transform.position.y);
+
+            }
+
+            if (tv1.magnitude < hitTargetRadius && divingOrNot)
+            {
+                t += .3f;
+
+                // place next target
+                God.particleSystems.smallSuccessParticleSystem.transform.position = God.wren.transform.position + God.wren.transform.forward * 5;
+                God.particleSystems.smallSuccessParticleSystem.Play();
+                God.audio.Play(God.sounds.smallSuccessSound);
+                divingOrNot = false;
+
+                PlaceSwoopTarget();
+                DeactivatePointer();
+
+
+
+            }
+            else
+            {
+
+
+                if (!divingOrNot && Vector3.Dot(God.wren.transform.forward, Vector3.forward) > 0.99f)
+                {
+
+                    God.audio.Play(God.sounds.smallSuccessSound);
+
+                    divingOrNot = true;
+
+                    PlaceSwoopTarget();
+
+                    ActivatePointer();
+
+
+                }
+
+
+                // maybe need some new way here?
+                if (Vector3.Dot(God.wren.transform.forward, tv1) > .4f)
+                {
+
+                    PlaceSwoopTarget();
+                }
+
+                // fade it out if we want to make it be constant 
+                //t = Mathf.Clamp01(t - Time.unscaledDeltaTime * 1.25f);
+            }
+
+            ShowProgress(t);
+            // Set back to normal;
 
 
 
 
 
+            yield return null;
 
 
+        }
+
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
+        DeactivatePointer();
 
 
-
+        // after wee have completed
+        // God.wren.physics.lockX = false;
+    }
 
 
 
@@ -700,37 +823,25 @@ public class FlyingTutorialSequence : MonoBehaviour
         float t = 0;
 
 
-        // Set WrenParams for tutorial!
-
-        God.wren.physics.lockX = false;
-        God.wren.physics.lockY = true;
-
-        // make it so its righting hard 
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence_LeftRight");
-
-
-        hitTarget.SetActive(true);
 
         PlaceLRHitTarget();
 
         SetControllerHint(ControllerHint.Up);
         StartCoroutine(FadeGroup(groupContainer, 0, 1));
-
-        God.wren.interfaceUtils.interfacePointer.AddPointer(hitTarget.transform, 0, new Vector4(0, 0, 0, 1));
-        God.wren.interfaceUtils.interfacePointer.TurnOnPointer(hitTarget.transform);
+        ActivatePointer();
 
         while (t < 1)
         {
 
+            hitTarget.transform.LookAt(God.wren.transform.position);
+
             tv1 = God.wren.transform.position - hitTarget.transform.position;
+
+            hitTarget.transform.position = new Vector3(hitTarget.transform.position.x, God.wren.transform.position.y, hitTarget.transform.position.z);
 
             // turn wren towards target in xz plane
             float upOrDown = Vector3.Dot(God.wren.transform.up, tv1);
             float leftOrRight = Vector3.Dot(God.wren.transform.right, Vector3.forward);
-
-
-            God.wren.physics.AddForce(God.wren.transform.right * leftOrRight * moveTowardsTargetForwardMultiplier, God.wren.transform.position + God.wren.transform.forward);
-
 
             if (leftOrRight > 0)
             {
@@ -745,26 +856,19 @@ public class FlyingTutorialSequence : MonoBehaviour
             if (tv1.magnitude < hitTargetRadius)
             {
                 t += .1f;
-
+                God.particleSystems.smallSuccessParticleSystem.transform.position = God.wren.transform.position + God.wren.transform.forward * 5;
+                God.particleSystems.smallSuccessParticleSystem.Play();
+                God.audio.Play(God.sounds.smallSuccessSound);
                 PlaceLRHitTarget();
-
             }
             else
             {
-
                 // maybe need some new way here?
-                if (Vector3.Dot(God.wren.transform.forward, tv1) > .4f)
-                {
-
-                    PlaceLRHitTarget();
-                }
-
-                // fade it out if we want to make it be constant 
-                //t = Mathf.Clamp01(t - Time.unscaledDeltaTime * 1.25f);
+                if (Vector3.Dot(God.wren.transform.forward, tv1) > .4f){ PlaceLRHitTarget(); }
             }
 
             ShowProgress(t);
-            // Set back to normal;
+
 
 
             yield return null;
@@ -772,21 +876,36 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         }
 
-        // set back to normal params
-
-
         StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
-        // after wee have completed
-        God.wren.physics.lockX = false;
-        God.wren.physics.lockY = false;
 
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence");
+        DeactivatePointer();
+
+    }
+
+    // set back to normal params
 
 
+
+
+
+
+
+
+
+
+    public void ActivatePointer()
+    {
+        hitTarget.SetActive(true);
+        God.wren.interfaceUtils.interfacePointer.AddPointer(hitTarget.transform, 0, new Vector4(0, 0, 0, 1));
+        God.wren.interfaceUtils.interfacePointer.TurnOnPointer(hitTarget.transform);
+    }
+
+
+    public void DeactivatePointer()
+    {
         God.wren.interfaceUtils.RemovePointer(hitTarget.transform);
         hitTarget.SetActive(false);
-
     }
 
 
@@ -801,36 +920,62 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
+    /*
+        IEnumerator FlapSequence()
+        {
+
+
+            float t = 0;
+
+            SetControllerHint(ControllerHint.Flap);
+            StartCoroutine(FadeGroup(groupContainer, 0, 1));
+
+            bool flapStart = false;
+
+            while (t < 1)
+            {
+
+                print(flapStart);
+
+                if (God.input.l2 > .5f && God.input.r2 > .5f)
+                {
+                    flapStart = true;
+                }
+                else
+                {
+
+                    if (flapStart)
+                    {
+                        t += .1f;
+                        flapStart = false;
+                    }
+                }
+
+                ShowProgress(t);
+
+                yield return null;
+
+
+            }
+            StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
+        }
+    */
 
 
 
+    // Only tells you to stop once you are out of stamina 
 
 
-
-
-
-
+    public bool staminaLowHit;
     IEnumerator FlapSequence()
     {
 
 
         float t = 0;
 
-
-
-        God.wren.physics.lockX = true;
-        God.wren.physics.lockY = false;
-
-        // make it so its righting hard 
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
-
-        //PlaceHitTarget();
-
         SetControllerHint(ControllerHint.Flap);
         StartCoroutine(FadeGroup(groupContainer, 0, 1));
-
-        //God.wren.interfaceUtils.interfacePointer.AddPointer(hitTarget.transform, 0);
-        //God.wren.interfaceUtils.interfacePointer.TurnOnPointer(hitTarget.transform);
 
         bool flapStart = false;
 
@@ -839,22 +984,62 @@ public class FlyingTutorialSequence : MonoBehaviour
 
             print(flapStart);
 
+            if (staminaLowHit)
+            {
+
+                SetControllerHint(ControllerHint.Release2);
+            }
+            else
+            {
+                SetControllerHint(ControllerHint.Flap);
+            }
+
+            if (God.wren.stats.stamina < .3f)
+            {
+                if (staminaLowHit == false)
+                {
+                    t += .3f;
+                    staminaLowHit = true;
+                }
+            }
+
+            if (God.wren.stats.stamina > .95f)
+            {
+                staminaLowHit = false;
+            }
+
+
+
+
+
+            // print(flapStart);
+
             if (God.input.l2 > .5f && God.input.r2 > .5f)
             {
-                flapStart = true;
+                if (flapStart == false)
+                {
+
+                    StartCoroutine(FadeGroup(groupContainer, 1, 0));
+                    flapStart = true;
+                }
             }
             else
             {
 
                 if (flapStart)
                 {
-                    t += .1f;
+                    // t += .1f;
+                    // DO GOOD FLAP FEEDBACK here
+
+                    StartCoroutine(FadeGroup(groupContainer, 0, 1));
                     flapStart = false;
                 }
             }
 
+
+
+
             ShowProgress(t);
-            // Set back to normal;
 
             yield return null;
 
@@ -862,18 +1047,18 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
         StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
-        // after wee have completed
-        //God.wren.physics.lockX = false;
-
-
-        God.wren.physics.lockX = true;
-        God.wren.physics.lockY = false;
-
-        // make it so its righting hard 
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence");
-
-
     }
+
+
+
+
+
+
+
+
+
+
+
 
     IEnumerator StopSequence()
     {
@@ -893,6 +1078,8 @@ public class FlyingTutorialSequence : MonoBehaviour
             yield return null;
         }
 
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
         ShowProgress(0);
     }
 
@@ -907,7 +1094,11 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
+    void PlaceSwoopTarget()
+    {
 
+        hitTarget.transform.position = God.wren.transform.position + Vector3.forward * 50 + Vector3.up * -10;
+    }
 
 
 

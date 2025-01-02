@@ -74,6 +74,8 @@ public class WrenCameraWork : MonoBehaviour
     lookTarget += v;
     fLookTarget += v;
 
+    SnapLookTarget();
+
     //transform.position += v;
     camTarget.position += v;
     Camera.main.transform.position += v;

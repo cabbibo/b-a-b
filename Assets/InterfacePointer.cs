@@ -362,7 +362,7 @@ public class InterfacePointer : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Pointer not found in list");
+            //Debug.LogError("Pointer not found in list");
         }
     }
 

@@ -4,18 +4,23 @@ using UnityEditor;
 
 [CustomEditor(typeof(Wren))]
 [CanEditMultipleObjects]
-public class WrenEditor: Editor 
+public class WrenEditor : Editor
 {
 
 
-int paramID;
-int oParamID;
-    public override void OnInspectorGUI()
-    {
-        
-        
+   int paramID;
+   int oParamID;
+   public override void OnInspectorGUI()
+   {
 
-      /*  Wren wren = (Wren)target;
+
+      Wren wren = (Wren)target;
+      if (GUILayout.Button("Phase Shift Test"))
+      {
+         wren.PhaseShift(wren.transform.position + new Vector3(1, 1, 1) * 300);
+      }
+
+      /* 
         if(GUILayout.Button("Save Params As New")){
            wren.parameters.SaveNewParamSet();
         }
@@ -24,11 +29,13 @@ int oParamID;
            wren.parameters.Save();
         }
 
+
+
         wren.parameters.paramID = EditorGUILayout.Popup(wren.parameters.paramID,wren.parameters.paramFiles);*/
-        DrawDefaultInspector();
+      DrawDefaultInspector();
 
 
 
-    }
+   }
 
 }

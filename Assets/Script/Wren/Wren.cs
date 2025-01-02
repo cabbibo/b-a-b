@@ -5,6 +5,7 @@ using TMPro;
 using Normal.Realtime;
 using UnityEngine.UI;
 using WrenUtils;
+//using System.Numerics;
 
 public class Wren : MonoBehaviour
 {
@@ -149,6 +150,7 @@ public class Wren : MonoBehaviour
 
 
     }
+
 
     public void PhaseShift(Transform t)
     {
@@ -414,42 +416,6 @@ public class Wren : MonoBehaviour
 
 
 
-
-
-
-
-                /*
-                            float d = Mathf.Abs( input.o_left2 - input.left2);
-                            state.stamina -= d;
-
-                            if( d > 0 ){
-                                lastFlapTime = Time.time;
-                            }
-
-                            d = Mathf.Abs( input.o_right2 - input.right2);
-                            state.stamina -= d;
-
-                            if( d > 0 ){
-                                lastFlapTime = Time.time;
-                            }
-
-
-                            if( state.stamina < 0 ){
-                                state.stamina = 0;
-                            }
-
-                            float staminaCooldownTime = 1;
-                            float staminaRefillSpeed = .1f;   
-
-                            if( Time.time - lastFlapTime  > staminaCooldownTime ){
-                                state.stamina += staminaRefillSpeed;
-                                if( state.stamina > state.maxStamina ){
-                                    state.stamina = state.maxStamina;
-                                }
-                            }
-
-
-                */
 
                 // ONLY do interface stuff when we aren't 
                 // in the ether!

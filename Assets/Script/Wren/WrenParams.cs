@@ -97,6 +97,7 @@ public class WrenParams : MonoBehaviour
     {
         paramSetName = name;
         Load();
+        print("loading");
     }
 
 
@@ -207,6 +208,8 @@ public class WrenParams : MonoBehaviour
     paintedWindForceMultiplier
     maxUpAngle
     maxUpAngleForceRightingMultiplier
+    lockX
+    lockY
 
     */
     public MechanicParams GetWrenMechanics()
@@ -291,6 +294,8 @@ public class WrenParams : MonoBehaviour
         PamPam.velocityReductionOnEnterWater = wren.physics.velocityReductionOnEnterWater;
         PamPam.maxUpAngle = wren.physics.maxUpAngle;
         PamPam.maxUpAngleForceRightingMultiplier = wren.physics.maxUpAngleForceRightingMultiplier;
+        PamPam.lockX = wren.physics.lockX;
+        PamPam.lockY = wren.physics.lockY;
 
         return PamPam;
 
@@ -302,7 +307,8 @@ public class WrenParams : MonoBehaviour
     {
 
 
-        //   print("settintg");
+        print("settintg");
+        print("setting forces");
         //  print(PamPam.skimForceUp);
 
 
@@ -387,6 +393,9 @@ public class WrenParams : MonoBehaviour
         wren.physics.velocityReductionOnEnterWater = PamPam.velocityReductionOnEnterWater;
         wren.physics.maxUpAngle = PamPam.maxUpAngle;
         wren.physics.maxUpAngleForceRightingMultiplier = PamPam.maxUpAngleForceRightingMultiplier;
+
+        wren.physics.lockX = PamPam.lockX;
+        wren.physics.lockY = PamPam.lockY;
 
 
     }
@@ -579,6 +588,9 @@ public class MechanicParams
 
     public float maxUpAngle;
     public float maxUpAngleForceRightingMultiplier;
+
+    public bool lockX;
+    public bool lockY;
 
 
 

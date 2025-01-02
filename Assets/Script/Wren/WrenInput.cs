@@ -121,12 +121,8 @@ public class WrenInput : MonoBehaviour
         right1 = finalExtraNetworkData.localPosition.y;
         fDebug = finalExtraNetworkData.localPosition.z;
 
+        // dont need to reduce left2 / right2 by stamina cuz its coming from other side!
 
-        if (wren.stats.stamina <= 0)
-        {
-            left2 = 0;
-            right2 = 0;
-        }
 
 
     }
@@ -171,11 +167,15 @@ public class WrenInput : MonoBehaviour
         right2 = controller.r2;
 
 
-        if (wren.stats.stamina <= 0)
-        {
-            left2 = 0;
-            right2 = 0;
-        }
+        //if (wren.stats.stamina <= 0)
+        //{
+
+        // only reduce if we are under .7f
+
+        float flapReducer = 1 - Mathf.Clamp((.5f - wren.stats.stamina) / .5f, 0, 1);
+        left2 *= flapReducer;
+        right2 *= flapReducer;
+        // }
 
 
         leftStickNetworkData.localPosition = new Vector3(leftX, leftY, left2);
