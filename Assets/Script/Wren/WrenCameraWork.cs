@@ -70,6 +70,8 @@ public class WrenCameraWork : MonoBehaviour
   {
 
 
+    print("camera offset");
+
     //fLookTarget = transform.position;
     lookTarget += v;
     fLookTarget += v;
@@ -79,6 +81,7 @@ public class WrenCameraWork : MonoBehaviour
     //transform.position += v;
     camTarget.position += v;
     Camera.main.transform.position += v;
+
     CameraWork();
 
 
@@ -87,6 +90,8 @@ public class WrenCameraWork : MonoBehaviour
   public void Offset(Transform startingTransform, Transform endingTransform)
   {
 
+
+    print("camera offset 2");
     Vector3 localPos = startingTransform.InverseTransformPoint(camTarget.position);
     Vector3 localForward = startingTransform.InverseTransformDirection(camTarget.forward);
     Vector3 localUp = startingTransform.InverseTransformDirection(camTarget.up);
