@@ -27961,8 +27961,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea98959e68e82034a9c14c836903b20b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onGround: 0
-  walking: 0
   input: {fileID: 6676056819307743982}
   wren: {fileID: 9160943688313912041}
   leftWing: {fileID: 9160943687160614091}
@@ -27972,55 +27970,79 @@ MonoBehaviour:
   rb: {fileID: 9160943688313912040}
   terrainCollider: {fileID: 0}
   terrain: {fileID: 0}
+  showDebugForces: 0
   swapLR: 1
   invert: 0
   lockX: 0
   lockY: 0
+  reduceFlapOnStaminaStart: 0
+  reduceFlapOnStaminaMax: 0
+  maxAngleForY: 0
+  maxAngleForYMax: 0
+  maxAngleForYMaxReduction: 0
   gravityForce: 14
-  tuckAddToGravityVal: 1
   slowestTwistAngle: 30
   fastestTwistAngle: 30
   slowestBendAngle: 22.5
   fastestBendAngle: 22.5
   twistLerpSpeed: 0.8
   bendLerpSpeed: 0.8
+  slowestAmountToSide: 0.5
+  fastestAmountToSide: 0.1
+  twistForceVal: 2
   allFeathersMaxSpeed: 0
   noFeathersMaxSpeed: 0
   maxSpeed: 35
   maxSpeedDamper: 0.005
   baseSpeed: 2
   baseSpeedDamper: 0.0005
-  twistForceVal: 2
-  slowestAmountToSide: 0.5
-  fastestAmountToSide: 0.1
-  tuckReduceLiftVal: 0.9
   closeForwardBoostVal: 80
   thrustForceMultiplier: 0.5
   strafeVal: 10
+  straightLiftForce: 15
+  velMatchMultiplier: -2
+  tuckAddToGravityVal: 1
+  tuckReduceLiftVal: 0.9
   tuckedAngularDrag: 1
   untuckedAngularDrag: 4
   tuckedDrag: 0
   untuckedDrag: 0
   tuckLerpSpeed: 0.26
-  flapToSide: 0.2
-  flapPowerUp: 30
-  flapPowerForward: 60
-  straightLiftForce: 15
+  forwardExtraBoostOnTuck: 3
+  tuckDampeningReduction: 0.8
+  tuckReduceUpdraftVal: 0.8
   horizonRightingForceVal: 1
   rightingForce: -4
   rightingDependentOnNotTouchingVal: 0.8
+  maxUpAngle: 0
+  maxUpAngleForceRightingMultiplier: 10
+  pushingBackThrustForceCorrector: 10
   closestHeight: 0
   furthestHeight: 40
   closestForce: 2
   furthestForce: 0
-  tuckReduceUpdraftVal: 0.8
-  windAmountToTheSide: 2
   groundForceTweenVal: 0.2
-  forwardExtraBoostOnTuck: 3
-  tuckDampeningReduction: 0.8
-  velMatchMultiplier: -2
+  windAmountToTheSide: 2
+  groundPower: 6
+  groundOut: 0.3
+  groundDampening: 0.9
+  rotateTowardsTargetOnGround: 1
+  groundUpForce: 4
+  groundUpVal: 3
+  flapToSide: 0.2
+  flapPowerUp: 30
+  flapPowerForward: 60
   bumperForce: 0
   bumperTorqueForce: 0
+  takeOffForwardForce: 40
+  takeOffUpForce: 40
+  carryingForceMultiplier: 0
+  carryingDragMultiplier: 0
+  paintedWindForceMultiplier: 0
+  skimForceUp: 50
+  skimForceForward: 50
+  skimImpulseMulitplier: 1
+  boostMultiplier: 0
   oceanForceMultiplier: 10
   oceanVelocityForceMaxHeight: 0
   oceanVelocityForceMultiplier: 0
@@ -28035,26 +28057,9 @@ MonoBehaviour:
   waveLiftForceMultiplier: 10
   oceanToFlatOnExit: 0.3
   velocityReductionOnEnterWater: 0.3
-  maxUpAngle: 0
-  maxUpAngleForceRightingMultiplier: 10
-  carryingForceMultiplier: 0
-  carryingDragMultiplier: 0
-  groundPower: 6
-  groundOut: 0.3
-  groundDampening: 0.9
-  rotateTowardsTargetOnGround: 1
-  groundUpForce: 4
-  groundUpVal: 3
-  takeOffForwardForce: 40
-  takeOffUpForce: 40
-  paintedWindForceMultiplier: 0
-  skimForceUp: 50
-  skimForceForward: 50
-  skimImpulseMulitplier: 1
-  boostMultiplier: 0
+  onGround: 0
   closestTag: 
   closestObject: {fileID: 0}
-  showDebugForces: 0
   reset: 0
   distToGround: 0
   rawDistToGround: 0
@@ -28177,6 +28182,8 @@ MonoBehaviour:
   rightExtraNetworkData: {fileID: 2930793301573149146}
   finalExtraNetworkData: {fileID: 8254302847936220619}
   invertY: 0
+  swapLR: 0
+  maxAngle: 0.7
   leftX: 0
   leftY: 0
   left2: 0

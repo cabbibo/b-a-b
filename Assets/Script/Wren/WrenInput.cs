@@ -18,6 +18,10 @@ public class WrenInput : MonoBehaviour
     public Transform finalExtraNetworkData;
 
     public bool invertY;
+    public bool swapLR;
+
+
+    public float maxAngle = .7f;
 
     /*
 
@@ -170,12 +174,70 @@ public class WrenInput : MonoBehaviour
         //if (wren.stats.stamina <= 0)
         //{
 
-        // only reduce if we are under .7f
-
+        // reducing our input based on stamina
         float flapReducer = 1 - Mathf.Clamp((.5f - wren.stats.stamina) / .5f, 0, 1);
         left2 *= flapReducer;
         right2 *= flapReducer;
         // }
+
+
+        float d = Vector3.Dot(transform.forward, Vector3.up);
+
+        if (God.wren.physics.maxAngleForY != God.wren.physics.maxAngleForYMax)
+        {
+
+            float reductionFactor = Mathf.Clamp((Mathf.Abs(d) - God.wren.physics.maxAngleForY) / (God.wren.physics.maxAngleForYMax - God.wren.physics.maxAngleForY), 0, 1);
+
+            reductionFactor *= reductionFactor;
+            reductionFactor *= God.wren.physics.maxAngleForYMaxReduction;
+
+            if (d < 0)
+            {
+
+                if (leftY > 0)
+                {
+                    leftY = leftY * (1 - reductionFactor);
+                }
+
+
+                if (rightY > 0)
+                {
+                    rightY = rightY * (1 - reductionFactor);
+                }
+
+            }
+            else
+            {
+                if (leftY < 0)
+                {
+                    leftY = leftY * (1 - reductionFactor);
+                }
+
+                if (rightY < 0)
+                {
+                    rightY = rightY * (1 - reductionFactor);
+                }
+
+            }
+
+        }
+
+
+
+        /*if (d > maxAngle)
+        {
+            leftY = 0;
+            rightY = 0;
+        }
+        else if (d < -maxAngle)
+        {
+            leftY = 0;
+            rightY = 0;
+        }*/
+
+
+        // reducing our pushing up and down based on the max angle we can go
+        // leftY = leftY *
 
 
         leftStickNetworkData.localPosition = new Vector3(leftX, leftY, left2);

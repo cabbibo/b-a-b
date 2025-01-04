@@ -74,6 +74,8 @@ public class LerpTo : BaseCameraManager
         }
         if (target != null)
         {
+
+
             transform.position = Vector3.Lerp(transform.position, target.position, lerpSpeed);
 
             if (lookTarget != null)

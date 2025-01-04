@@ -148,6 +148,8 @@ public class Wren : MonoBehaviour
 
         physics.TransportToPosition(p, physics.rb.velocity);
 
+        God.cameraManager.PhaseShift();
+
 
     }
 
@@ -168,6 +170,7 @@ public class Wren : MonoBehaviour
         // cameraWork.SetDirection(t);
         // bird.SetDirection(t);
 
+        God.cameraManager.PhaseShift();
 
     }
 

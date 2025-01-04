@@ -200,6 +200,14 @@ public class OverallCameraManager : MonoBehaviour
     }
 
 
+    public void PhaseShift()
+    {
+
+        lerpManager.transform.position = God.wren.cameraWork.camTarget.position;
+        lerpManager.transform.rotation = God.wren.cameraWork.camTarget.rotation;
+
+    }
+
 
 
 }
