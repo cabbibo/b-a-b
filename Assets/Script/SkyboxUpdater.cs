@@ -17,10 +17,15 @@ public class SkyboxUpdater : MonoBehaviour
 
     public int framesPerUpdate = 10;
 
+    public int resolution = 1024;
+
 
     private void OnEnable()
-    {
-
+    {// Initialize cubemap/render texture
+        RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
+        //  resolution = RenderSettings.defaultReflectionResolution;
+        renderTexture = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.ARGBHalf) { autoGenerateMips = false, useMipMap = true };
+        renderTexture.Create();
         RenderSkybox();
 
 
@@ -29,11 +34,7 @@ public class SkyboxUpdater : MonoBehaviour
 
     public void RenderSkybox()
     {
-        // Initialize cubemap/render texture
-        RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
-        var resolution = RenderSettings.defaultReflectionResolution;
-        renderTexture = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.ARGBHalf) { autoGenerateMips = false, useMipMap = true };
-        renderTexture.Create();
+
 
         cubemap = new Cubemap(resolution, TextureFormat.RGBAHalf, true) { filterMode = FilterMode.Trilinear };
         cubemap.Apply(false, true);

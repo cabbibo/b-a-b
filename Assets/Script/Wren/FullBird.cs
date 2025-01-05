@@ -29,6 +29,8 @@ public class FullBird : MonoBehaviour
 
    public Transform specialTarget;
 
+   public BirdSkeleton skeleton;
+
    [Range(0, 1)]
    public float percentageRendered;
 

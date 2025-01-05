@@ -1428,6 +1428,7 @@ GameObject:
   - component: {fileID: 1769432092429419987}
   - component: {fileID: 3751723881530980275}
   - component: {fileID: 5524963220372310173}
+  - component: {fileID: 6719260869996275021}
   m_Layer: 10
   m_Name: Hip
   m_TagString: Untagged
@@ -2431,6 +2432,23 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!114 &6719260869996275021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 993148340553756512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb8bb06846478154fbcfd5050105ae3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fullBird: {fileID: 3880365654864790025}
+  debugHierarchy: {fileID: 3751723881530980275}
+  instanceMesh: {fileID: 4300000, guid: 4e2b0d56626ca6a4fa67c76a2991f1d5, type: 2}
+  instanceMaterial: {fileID: 2100000, guid: d45c015b25fe3974bae0fd98749dd515, type: 2}
+  subMeshIndex: 0
 --- !u!1 &1418729127448067054
 GameObject:
   m_ObjectHideFlags: 0
@@ -10912,6 +10930,7 @@ MonoBehaviour:
   wingDebugLineMaterial: {fileID: 0}
   bodyDebugLineMaterial: {fileID: 0}
   specialTarget: {fileID: 0}
+  skeleton: {fileID: 0}
   percentageRendered: 1
   _MiddleSecondaryFeatherScaleMultiplier: 2
   _BaseSecondaryFeatherScale: 4.5
@@ -25586,11 +25605,11 @@ MonoBehaviour:
   invert: 0
   lockX: 1
   lockY: 0
-  reduceFlapOnStaminaStart: 0
-  reduceFlapOnStaminaMax: 0
-  maxAngleForY: 0
-  maxAngleForYMax: 0
-  maxAngleForYMaxReduction: 0
+  reduceFlapOnStaminaStart: 0.7
+  reduceFlapOnStaminaMax: 1
+  maxAngleForY: 0.5
+  maxAngleForYMax: 1
+  maxAngleForYMaxReduction: 1
   gravityForce: 14
   slowestTwistAngle: 30
   fastestTwistAngle: 30
@@ -25603,14 +25622,14 @@ MonoBehaviour:
   twistForceVal: 2
   allFeathersMaxSpeed: 35
   noFeathersMaxSpeed: 2
-  maxSpeed: 35
+  maxSpeed: 0
   maxSpeedDamper: 0.005
   baseSpeed: 2
   baseSpeedDamper: 0.0005
   closeForwardBoostVal: 80
   thrustForceMultiplier: 0.5
   strafeVal: 10
-  straightLiftForce: 15
+  straightLiftForce: 0
   velMatchMultiplier: -2
   tuckAddToGravityVal: 1
   tuckReduceLiftVal: 0.9
@@ -25622,12 +25641,12 @@ MonoBehaviour:
   forwardExtraBoostOnTuck: 3
   tuckDampeningReduction: 0.8
   tuckReduceUpdraftVal: 0.8
-  horizonRightingForceVal: 15
+  horizonRightingForceVal: 10
   rightingForce: -5
   rightingDependentOnNotTouchingVal: 0
   maxUpAngle: 0.7
   maxUpAngleForceRightingMultiplier: 10
-  pushingBackThrustForceCorrector: 10
+  pushingBackThrustForceCorrector: 5
   closestHeight: 0
   furthestHeight: 40
   closestForce: 2
@@ -25972,9 +25991,10 @@ MonoBehaviour:
   - fullTestLessTwistNoRighting
   - fullTestNoRighting
   - wrenTutorialSequence
-  - wrenTutorialSequence_UpDown
   - wrenTutorialSequence_LeftRight
-  paramSetName: wrenTutorialSequence_Swoop
+  - wrenTutorialSequence_Swoop
+  - wrenTutorialSequence_UpDown
+  paramSetName: wrenTutorialSequence_LeftRight
 --- !u!114 &742813609323488648
 MonoBehaviour:
   m_ObjectHideFlags: 0

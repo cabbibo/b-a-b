@@ -98,6 +98,9 @@ public class Sounds : MonoBehaviour
     public AudioClip whileInActivityLoop;
 
 
+
+    public AudioClip[] texturalHitClips;
+
     // barrel roll sound?
 
     [Header("Button Press Sounds")]

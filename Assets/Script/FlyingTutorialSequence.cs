@@ -340,6 +340,9 @@ public class FlyingTutorialSequence : MonoBehaviour
         God.wren.canMove = true;
         print("ABOUT TO LOAD PARAMS");
 
+        God.wren.shards.SpendAllShards();
+        God.wren.bird.debugHierarchyConnections = true;
+
 
 
 
@@ -367,7 +370,14 @@ public class FlyingTutorialSequence : MonoBehaviour
         yield return LeftRightSequence();
 
 
-        God.wren.parameters.LoadParamSet("wrenTutorialIsland");
+
+
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence");
+
+
+        yield return FreeFlightSection();
+
+
         OnFreeFlightStarted();
         /*y
 
@@ -493,6 +503,9 @@ public class FlyingTutorialSequence : MonoBehaviour
         groupSwoop.SetActive(hint == ControllerHint.Swoop);
         groupRelease.SetActive(hint == ControllerHint.Release);
         groupRelease2.SetActive(hint == ControllerHint.Release2);
+        groupGentle.SetActive(hint == ControllerHint.Gentle);
+        groupBoost.SetActive(hint == ControllerHint.Boost);
+        groupPing.SetActive(hint == ControllerHint.Ping);
 
         controllerText.transform.parent.gameObject.SetActive(hint != ControllerHint.None);
         switch (hint)
@@ -598,9 +611,12 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
-
-
-
+    public int shardsPerTargetHit = 30;
+    public void OnTargetHit()
+    {
+        God.audio.PlayBasedOnWrenSpeed(God.sounds.texturalHitClips[Random.Range(0, God.sounds.texturalHitClips.Length)]);
+        God.wren.shards.CollectShards(shardsPerTargetHit, Random.Range(0, 10f), hitTarget.transform.position);
+    }
 
 
 
@@ -658,7 +674,8 @@ public class FlyingTutorialSequence : MonoBehaviour
                 t += .1f;
 
                 // place next target
-                God.audio.Play(God.sounds.smallSuccessSound);
+                OnTargetHit();
+
                 if (upOrDown > 0)
                 {
                     PlaceHitTarget();
@@ -895,17 +912,13 @@ public class FlyingTutorialSequence : MonoBehaviour
 
             if (heightDiff < 0 && oHeightDiff > 0)
             {
-                God.audio.Play(God.sounds.smallSuccessSound);
-
-                God.wren.shards.CollectShards(30, Random.Range(0, 10f), hitTarget.transform.position);
+                OnTargetHit();
                 t += .1f;
 
             }
             else if (heightDiff > 0 && oHeightDiff < 0)
             {
-                God.audio.Play(God.sounds.smallSuccessSound);
-
-                God.wren.shards.CollectShards(30, Random.Range(0, 10f), hitTarget.transform.position);
+                OnTargetHit();
                 t += .1f;
             }
 
@@ -994,9 +1007,8 @@ public class FlyingTutorialSequence : MonoBehaviour
             if (tv1.magnitude < hitTargetRadius)
             {
                 t += .1f;
-                God.particleSystems.smallSuccessParticleSystem.transform.position = God.wren.transform.position + God.wren.transform.forward * 5;
-                God.particleSystems.smallSuccessParticleSystem.Play();
-                God.audio.Play(God.sounds.smallSuccessSound);
+
+                OnTargetHit();
                 PlaceLRHitTarget();
             }
             else
@@ -1023,6 +1035,71 @@ public class FlyingTutorialSequence : MonoBehaviour
     }
 
     // set back to normal params
+
+
+
+
+
+
+
+    IEnumerator FreeFlightSection()
+    {
+        float t = 0;
+
+
+
+
+        SetControllerHint(ControllerHint.Gentle);
+        StartCoroutine(FadeGroup(groupContainer, 0, 1));
+        ActivatePointer();
+        hitTarget.SetActive(true);
+        PlaceFreeFlightTarget();
+
+        while (t < 1)
+        {
+
+            hitTarget.transform.LookAt(God.wren.transform.position);
+
+            tv1 = God.wren.transform.position - hitTarget.transform.position;
+
+
+            if (tv1.magnitude < hitTargetRadius)
+            {
+                t += .1f;
+
+                OnTargetHit();
+                PlaceFreeFlightTarget();
+            }
+            else
+            {
+                // TODO do we need helpers here?
+                //if (Vector3.Dot(God.wren.transform.forward, tv1) > .4f) { PlaceLRHitTarget(); }
+            }
+
+            ShowProgress(t);
+
+
+
+            yield return null;
+
+
+        }
+
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
+
+        DeactivatePointer();
+        hitTarget.SetActive(false);
+
+    }
+
+    void PlaceFreeFlightTarget()
+    {
+        hitTarget.transform.position = God.wren.transform.position + Random.onUnitSphere * 100;
+    }
+
+    // set back to normal params
+
 
 
 

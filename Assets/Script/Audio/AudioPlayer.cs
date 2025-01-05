@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using WrenUtils;
 
 [ExecuteAlways]
 public class AudioPlayer : MonoBehaviour
@@ -338,6 +339,22 @@ public class AudioPlayer : MonoBehaviour
 
 
 
+
+
+    public void PlayBasedOnWrenSpeed(AudioClip clip, float maxSpeed, float minSpeed, float maxPitch, float minPitch, float maxVolume, float minVolume)
+    {
+
+        float speed = God.wren.physics.rb.velocity.magnitude;//.speed;
+        float pitch = Mathf.Lerp(minPitch, maxPitch, Mathf.InverseLerp(minSpeed, maxSpeed, speed));
+        float volume = Mathf.Lerp(minVolume, maxVolume, Mathf.InverseLerp(minSpeed, maxSpeed, speed));
+        Play(clip, pitch, volume);
+    }
+
+
+    public void PlayBasedOnWrenSpeed(AudioClip clip)
+    {
+        PlayBasedOnWrenSpeed(clip, God.wren.physics.maxSpeed, God.wren.physics.baseSpeed, 3, .4f, 1, .2f);
+    }
 
 
 

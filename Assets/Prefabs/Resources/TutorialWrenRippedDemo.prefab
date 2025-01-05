@@ -1111,6 +1111,7 @@ MonoBehaviour:
   wingDebugLineMaterial: {fileID: 0}
   bodyDebugLineMaterial: {fileID: 0}
   specialTarget: {fileID: 0}
+  skeleton: {fileID: 0}
   percentageRendered: 1
   _MiddleSecondaryFeatherScaleMultiplier: 2
   _BaseSecondaryFeatherScale: 4.5
