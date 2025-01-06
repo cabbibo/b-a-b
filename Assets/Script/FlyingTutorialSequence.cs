@@ -226,23 +226,12 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
+    public Material featherStartMaterial;
+    public Material featherMainMaterial;
 
 
-
-
-
-
-
-
-
-    // STATE MACHINE FOR TUTORIAL
-    IEnumerator TutorialSequence()
+    public void DoTutorialSequenceSetup()
     {
-
-
-        yield return null;
-
-        print("set up tutorial)");
 
         stateManager.SetCinematicFlightTutorialState();
 
@@ -258,25 +247,55 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         float bgT = 1f;
         SetBGFade(bgT);
-
-        while (God.wren == null)
-            yield return null;
-
-        // yield return WaitWithCheat(2);
-
-        while (God.wren.physics.onGround)
-            yield return null;
+        God.wren.bird.featherMaterial = featherStartMaterial;
 
 
-        print("all set up have our bird etc");
+
         God.wren.canMove = false;
+        God.wren.physics.rb.isKinematic = true;
+
+
+
+
+
+
 
         OnBirdAllSetUp();
 
-        // On All Bird Set up
-
 
         cinematicCamera.mode = CinematicCameraHandler.Mode.Cinematic;
+
+
+
+
+
+
+    }
+
+
+
+
+
+    // STATE MACHINE FOR TUTORIAL
+    IEnumerator TutorialSequence()
+    {
+
+
+
+
+
+
+
+        yield return null;
+        while (God.wren == null)
+            yield return null;
+
+        while (God.wren.physics.onGround) // wait for takeoff ro we should just set this ourselves?
+            yield return null;
+
+        DoTutorialSequenceSetup();
+
+
 
         while (debug)
         {
@@ -284,51 +303,41 @@ public class FlyingTutorialSequence : MonoBehaviour
             yield return null;
         }
 
+
+
         cinematicCamera.tutorialCameraIdx = (float)Camera.Closeup;
 
         groupSticks.SetActive(true);
         controllerText.text = "test";
-        print("first bird showing up");
 
         OnFirstShot();
+
+
         yield return FadeGroup(groupContainer, 0, 1);
-
-
-        God.wren.canMove = false;
-        print("waiting for x to continue");
-        //yield return WaitWithCheat(5f);
         yield return WaitForXToContinue();
 
-
-
-        God.wren.canMove = false;
         groupSticks.SetActive(false);
         cinematicCamera.tutorialCameraIdx = (float)Camera.TopClose;
         OnBirdBackShown();
 
-
-        God.wren.canMove = false;
-        print("waiting with cheat 3 seconds");
-        //yield return WaitWithCheat(waitTimeInFirstShots);
-        print("waiting for x to continue again");
         yield return WaitForXToContinue();
 
         OnBirdZoomOutStart();
-        print("big lerp out");
         yield return LerpCamera((float)Camera.TopClose, (float)Camera.TopFar);
         OnBirdZoomOutEnd();
         // yield return WaitWithCheat(waitTimeInFirstShots);
         yield return WaitForXToContinue();
-        God.wren.canMove = false;
 
         OnRotateToFrontStart();
         cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
-        //yield return WaitWithCheat(waitTimeInFirstShots);
+        yield return WaitWithCheat(waitTimeInFirstShots);
         yield return LerpCamera((float)Camera.Front, (float)Camera.Play);
         OnRotateToFrontEnd();
 
-        God.wren.canMove = false;
-        stateManager.StartFreeFlight();
+        yield return FadeBG(1, 0);
+
+        God.wren.shards.SpendAllShards();
+
         yield return WaitWithCheat(waitTimeInFlightSpace);
 
         cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
@@ -337,32 +346,35 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
         SetBGFade(0);
+
+        God.wren.physics.rb.isKinematic = false;
         God.wren.canMove = true;
-        print("ABOUT TO LOAD PARAMS");
-
-        God.wren.shards.SpendAllShards();
-        God.wren.bird.debugHierarchyConnections = true;
 
 
-
-
-        // make it so its righting hard 
-
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence_Swoop");
-        yield return SwoopSequence();
-
-        yield return WaitWithCheat(1);
-        yield return StopSequence();
+        TutorialSectionComplete();
 
         God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
         yield return WaitWithCheat(1);
         yield return FlapSequence();
-
+        TutorialSectionComplete();
         yield return WaitWithCheat(1);
         yield return StopSequence();
 
-        yield return WaitWithCheat(1);
+        God.wren.bird.featherMaterial = featherMainMaterial;
+
+
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence_Swoop");
+        stateManager.StartFreeFlight();
+        God.wren.bird.featherMaterial = featherMainMaterial;
+        yield return SwoopSequence();
+
+        TutorialSectionComplete();
+
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
+        yield return WaitWithCheat(3);
         yield return UpDownSequence();
+
+        TutorialSectionComplete();
 
 
         yield return WaitWithCheat(3);
@@ -370,6 +382,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         yield return LeftRightSequence();
 
 
+        TutorialSectionComplete();
 
 
         God.wren.parameters.LoadParamSet("wrenTutorialSequence");
@@ -379,63 +392,9 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
         OnFreeFlightStarted();
-        /*y
-
-        // Fades Out Background
-
-        while (bgT > 0)
-        {
-            print("fading out bg");
-
-            SetBGFade(bgT);
-
-            bgT -= Time.unscaledDeltaTime * .1f;
-
-            if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
-                break;
-
-            yield return null;
-
-        }
-
-        */
-
-
-
 
         // Start free flight
-
-        SetBGFade(0);
-        StartCoroutine(FadeGroup(groupContainer, 1, 0));
-
-
-        /*OnPushLeftInstructions();
-
-
-        // Left
-        yield return ControllerHintSequence(ControllerHint.Left);
-        yield return WaitWithCheat(waitTimeInFlightSpace);
-
-
-        OnPushRightInstructions();
-        // Right
-        yield return ControllerHintSequence(ControllerHint.Right);
-        yield return WaitWithCheat(waitTimeInFlightSpace);
-
-        OnHoldInstructions();
-
-        // Hold
-        yield return ControllerHintSequence(ControllerHint.Hold);
-
-        God.wren.physics.rb.AddRelativeForce(Vector3.forward * 1000, ForceMode.Force);
-
-        yield return WaitWithCheat(waitTimeInFlightSpace);
-*/
-
-
-
-        // Space to fly
-        yield return WaitWithCheat(30);
+        TutorialSectionComplete();
 
         OnDiveInstructions();
         // Dive
@@ -450,6 +409,16 @@ public class FlyingTutorialSequence : MonoBehaviour
     }
 
 
+
+    public void TutorialSectionComplete()
+    {
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
+        ShowProgress(0);
+        God.audio.Play(God.sounds.texturalHitClips);
+        God.audio.Play(God.sounds.tuiCallClips);
+        WaitWithCheat(3);
+
+    }
 
 
 
@@ -541,7 +510,7 @@ public class FlyingTutorialSequence : MonoBehaviour
                 controllerText.text = "Release R2 & L2 to REGAIN STAMINA";
                 break;
             case ControllerHint.Gentle:
-                controllerText.text = "Gentle Movements are Key";
+                controllerText.text = "Use All Sticks GENTLY";
                 break;
             case ControllerHint.Boost:
                 controllerText.text = "Press O to BOOST";
@@ -1047,6 +1016,8 @@ public class FlyingTutorialSequence : MonoBehaviour
         float t = 0;
 
 
+        God.wren.physics.showDebugForces = true;
+
 
 
         SetControllerHint(ControllerHint.Gentle);
@@ -1095,7 +1066,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
     void PlaceFreeFlightTarget()
     {
-        hitTarget.transform.position = God.wren.transform.position + Random.onUnitSphere * 100;
+        hitTarget.transform.position = God.wren.transform.position + Vector3.Scale(Random.onUnitSphere * 100, new Vector3(1, .3f, 1));
     }
 
     // set back to normal params
@@ -1455,6 +1426,23 @@ public class FlyingTutorialSequence : MonoBehaviour
             yield return null;
         }
         group.alpha = to;
+    }
+
+
+    IEnumerator FadeBG(float from = 0, float to = 1)
+    {
+        float t = 0;
+        float duration = 1;
+        while (t < duration)
+        {
+
+            t += Time.unscaledDeltaTime;
+            float nTime = t / duration;
+
+            SetBGFade(Mathf.Lerp(from, to, nTime));
+            yield return null;
+
+        }
     }
 
 

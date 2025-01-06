@@ -652,12 +652,15 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
   float3 lockScale;
 
   int whichFeatherType = 0;
+  int featherColor = 0;
 
   if( pID < _NumScapularRows * _NumScapularColumns ){
     whichFeatherType = 0;
+    featherColor = 4;
     body(pID,lockPos,lockFwd,lockUp,lockScale);
     }else{
     whichFeatherType = 1;
+    featherColor = 1;
     tail( pID,lockPos,lockFwd,lockUp,lockScale);
   }
 
@@ -918,7 +921,8 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
   
   feather.pos = fPos;//fPos;
   feather.vel = vel;
-  feather.featherType = whichFeatherType;
+  feather.featherType = float(whichFeatherType);
+  feather.debug = float(featherColor);
   feather.ltw = rts;
 
 

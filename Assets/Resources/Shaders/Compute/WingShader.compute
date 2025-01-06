@@ -73,10 +73,13 @@ struct Feather{
   float locked;
   float4x4 ltw;
   float3 ogPos;
-  float3 ogNor;
+  float type;
+  float lockTime;
+  float debug;
   float touchingGround;
   float id;
 };
+
 
 RWStructuredBuffer<Feather> _FeatherBuffer;
 float _Time;
@@ -188,18 +191,23 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
   float3 lockScale;
 
   int whichFeatherType = 0;
+  int featherColor = 0;
 
   if( pID < _NumPrimaryFeathers ){
     whichFeatherType = 0;
+    featherColor = 0;
     primaryFeathers( pID , lockPos , lockFwd , lockUp , lockScale );
     }else if( pID < _NumPrimaryFeathers + _NumPrimaryCoverts ){
     whichFeatherType = 1; 
+    featherColor = 1;
     primaryCoverts( pID , lockPos , lockFwd , lockUp , lockScale );
     }else if( pID < _NumPrimaryFeathers + _NumPrimaryCoverts + _NumLesserCovertRows * _NumLesserCovertRows ){
-    whichFeatherType = 2; 
+    whichFeatherType = 2;
+    featherColor = 2;
     lesserCoverts( pID , lockPos , lockFwd , lockUp , lockScale );
     }else{  
     whichFeatherType = 3; 
+    featherColor = 3;
     lesserCoverts( pID , lockPos , lockFwd , lockUp , lockScale );
   }
 
@@ -214,9 +222,7 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
   if( feather.id < _NumShards && feather.id > _TmpNumShards ){
     feather.locked = 0;
     feather.pos = _CollectionPosition;
-    feather.ogNor.x = _CollectionType;
-    feather.ogNor.y = 0;
-    feather.ogNor.z = 0;
+    feather.type = _CollectionType;
   }
 
   if( feather.id > _NumShards ){
@@ -373,7 +379,7 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
     fFwd = lockFwd;
     fScale = lockScale;
     feather.ogPos = fPos;
-    feather.ogNor = normalize(lockFwd);
+    // feather.ogNor = normalize(lockFwd);
     feather.touchingGround = 0;
     vel = 0;
 
@@ -395,7 +401,7 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
     fFwd = lockFwd;
     fScale = lockScale;
     feather.ogPos = lockPos;
-    feather.ogNor = lockFwd;
+    //   feather.ogNor = lockFwd;
     feather.touchingGround = 0;
     vel = 0;
   }
@@ -432,6 +438,7 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
   feather.pos = fPos;//fPos;
   feather.vel = vel;
   feather.featherType = float(whichFeatherType);
+  feather.debug = float(featherColor);
   feather.ltw = rts;
 
   nanCheck(feather);

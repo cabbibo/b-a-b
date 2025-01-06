@@ -2446,7 +2446,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fullBird: {fileID: 3880365654864790025}
   debugHierarchy: {fileID: 3751723881530980275}
-  instanceMesh: {fileID: 4300000, guid: 4e2b0d56626ca6a4fa67c76a2991f1d5, type: 2}
+  instanceMesh: {fileID: -5495902117074765545, guid: a1dcddb2b4aedf54787f09b2bbc712e0,
+    type: 3}
   instanceMaterial: {fileID: 2100000, guid: d45c015b25fe3974bae0fd98749dd515, type: 2}
   subMeshIndex: 0
 --- !u!1 &1418729127448067054
@@ -10923,8 +10924,7 @@ MonoBehaviour:
   wren: {fileID: 6951865465235407638}
   bodyShader: {fileID: 7200000, guid: 57467b9a1aa3d474fbc328c1291ce57c, type: 3}
   wingShader: {fileID: 7200000, guid: a0db877c85463b9489bf7e6b4a374b1b, type: 3}
-  bodyMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a, type: 2}
-  wingMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
+  featherMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
   wingDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67, type: 2}
   bodyDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67, type: 2}
   wingDebugLineMaterial: {fileID: 0}
@@ -11040,6 +11040,8 @@ MonoBehaviour:
   debugHierarchyConnections: 0
   debugHierarchyBasis: 0
   debugHierarchy: {fileID: 3751723881530980275}
+  showBones: 0
+  birdSkeleton: {fileID: 0}
   drawBodyFeather: 1
   drawLeftWingFeathers: 1
   drawRightWingFeathers: 1
@@ -25413,6 +25415,7 @@ GameObject:
   - component: {fileID: 2035757486640604507}
   - component: {fileID: 6886267601303656548}
   - component: {fileID: 6573287407883477050}
+  - component: {fileID: 6960692582476909970}
   m_Layer: 10
   m_Name: WrenMain
   m_TagString: Wren
@@ -25473,6 +25476,7 @@ MonoBehaviour:
   parameters: {fileID: 6738018899578692129}
   state: {fileID: 5852462534492014359}
   stats: {fileID: 8384076030520376333}
+  canDo: {fileID: 6960692582476909970}
   maker: {fileID: 0}
   revereser: {fileID: 6886267601303656548}
   beacon: {fileID: 9119398298632821260}
@@ -25586,7 +25590,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6777034358615131737}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ea98959e68e82034a9c14c836903b20b, type: 3}
   m_Name: 
@@ -25603,8 +25607,8 @@ MonoBehaviour:
   showDebugForces: 0
   swapLR: 0
   invert: 0
-  lockX: 1
-  lockY: 0
+  lockX: 0
+  lockY: 1
   reduceFlapOnStaminaStart: 0.7
   reduceFlapOnStaminaMax: 1
   maxAngleForY: 0.5
@@ -25788,6 +25792,7 @@ MonoBehaviour:
   doBasicGroundControls: 0
   basicGroundLookControls_lookSpeed: 3
   basicGroundLookControls_moveSpeed: 0
+  hovering: 0
   totalForcesApplied: 0
   forceBufferArray: []
   maxForces: 100
@@ -26276,6 +26281,27 @@ MonoBehaviour:
   wrenCompass: {fileID: 0}
   crystalsSpentPerPing: 10
   warningText: {fileID: 0}
+--- !u!114 &6960692582476909970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6777034358615131737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1391225e0280b3740ae3132d66a7c81a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hover: 0
+  boost: 0
+  ping: 0
+  disintegrate: 0
+  call: 0
+  magnitize: 0
+  placeBeacon: 0
+  rewind: 0
+  carry: 0
 --- !u!1 &6829873558942316692
 GameObject:
   m_ObjectHideFlags: 0

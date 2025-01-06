@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
-Shader "Feathers/FeatherTest1" {
+Shader "Islands/Ether/Feathers" {
   Properties {
 
     _Color ("Color", Color) = (1,1,1,1)
@@ -13,6 +13,83 @@ Shader "Feathers/FeatherTest1" {
     
     _MainTex ("Base (RGB) Trans (A)", 2D) = "white" {}
   }
+
+
+  CGINCLUDE
+
+  
+  #include "AutoLight.cginc"
+  #include "UnityLightingCommon.cginc"
+  
+
+  #include "Assets/Resources/Shaders/Chunks/hsv.cginc"
+
+  //A simple input struct for our pixel shader step containing a position.
+  struct varyings {
+    float4 pos      : SV_POSITION;
+    float3 nor      : TEXCOORD0;
+    float3 worldPos : TEXCOORD1;
+    float3 eye      : TEXCOORD2;
+    float3 debug    : TEXCOORD3;
+    float2 uv       : TEXCOORD4;
+    float2 uv2       : TEXCOORD6;
+    float id        : TEXCOORD5;
+    float randID   : TEXCOORD13;
+    float hue        : TEXCOORD10;
+    float offset : TEXCOORD11;
+    float baseHue : TEXCOORD12;
+    int feather:TEXCOORD7;
+    float4 data1:TEXCOORD9;
+    float collectionType:TEXCOORD14;
+    float3 barycentric : TEXCOORD15;
+    float3 localPos : TEXCOORD16;
+    float3 localCam : TEXCOORD17;
+    float3 localRD : TEXCOORD18;
+    UNITY_SHADOW_COORDS(8)
+  };
+
+
+  [maxvertexcount(3)]
+  void geom(triangle varyings input[3], inout TriangleStream<varyings> triStream)
+  {
+    varyings o;
+    //  float3 normal = normalize(cross(input[1].vertex - input[0].vertex, input[2].vertex - input[0].vertex));
+    
+    float3 normal = float3(0,1,0);
+
+    
+    o = input[0];
+    o.barycentric = float3(1,0,0);
+    triStream.Append(o);
+
+    o = input[1];
+    o.barycentric = float3(0,1,0);
+    triStream.Append(o);
+
+    o = input[2];
+    o.barycentric = float3(0,0,1);
+    triStream.Append(o);
+    
+    
+    triStream.RestartStrip();
+  }
+  
+
+  float getGrid( float3 barys , float size  , float offset  ){
+    
+    float val = max(max( sin( barys.x  * size), sin( barys.y  * size) ), sin( barys.z  * size));
+    val -= offset;
+    val /= (1-offset);
+    val = clamp(val,0,1);
+    return val;
+  }
+
+
+  ENDCG
+
+
+
+
 
 
   SubShader{
@@ -32,6 +109,7 @@ Shader "Feathers/FeatherTest1" {
       
       CGPROGRAM
       #pragma vertex vert
+      #pragma geometry geom
       #pragma fragment frag
       #pragma target 4.5
       // make fog work
@@ -39,11 +117,6 @@ Shader "Feathers/FeatherTest1" {
       #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 
       #include "UnityCG.cginc"
-      #include "AutoLight.cginc"
-      #include "UnityLightingCommon.cginc"
-      
-
-      #include "../Chunks/hsv.cginc"
 
 
       uniform int _Count;
@@ -60,7 +133,6 @@ Shader "Feathers/FeatherTest1" {
         float2 uv;
       };
 
-
       struct Feather{
         float3 pos;
         float3 vel;
@@ -68,12 +140,11 @@ Shader "Feathers/FeatherTest1" {
         float locked;
         float4x4 ltw;
         float3 ogPos;
-        float type;
-        float lockTime;
-        float debug;
+        float3 ogNor;
         float touchingGround;
         float id;
       };
+
 
       StructuredBuffer<Vert> _VertBuffer;
       StructuredBuffer<int> _TriBuffer;
@@ -90,27 +161,9 @@ Shader "Feathers/FeatherTest1" {
       //uniform float4x4 worldMat;
 
       sampler2D _MainTex;
-      //A simple input struct for our pixel shader step containing a position.
-      struct varyings {
-        float4 pos      : SV_POSITION;
-        float3 nor      : TEXCOORD0;
-        float3 worldPos : TEXCOORD1;
-        float3 eye      : TEXCOORD2;
-        float3 debug    : TEXCOORD3;
-        float2 uv       : TEXCOORD4;
-        float2 uv2       : TEXCOORD6;
-        float id        : TEXCOORD5;
-        float randID   : TEXCOORD13;
-        float hue        : TEXCOORD10;
-        float offset : TEXCOORD11;
-        float baseHue : TEXCOORD12;
-        int feather:TEXCOORD7;
-        float4 data1:TEXCOORD9;
-        float collectionType:TEXCOORD14;
-        UNITY_SHADOW_COORDS(8)
-      };
+      
 
-      #include "../Chunks/hash.cginc"
+      #include "Assets/Resources/Shaders/Chunks/hash.cginc"
       uniform float4x4 _Transform;
       uniform int _NumberMeshes;
 
@@ -139,9 +192,10 @@ Shader "Feathers/FeatherTest1" {
         Feather feather = _FeatherBuffer[base];
         
         int whichMesh = int(feather.featherType); //int(floor(hash(float(base)) * float(_NumberMeshes)));// %4;
-        int hueType = int(feather.debug);
+
 
         float4x4 baseMatrix = feather.ltw;
+        float4x4 worldToLocal = transpose(baseMatrix);
         Vert v = _VertBuffer[_TriBuffer[alternate + whichMesh * _TrisPerMesh]];
 
 
@@ -152,6 +206,9 @@ Shader "Feathers/FeatherTest1" {
         }
 
 
+        o.localPos = pos;
+        o.localCam = mul( worldToLocal, float4(_WorldSpaceCameraPos,1)).xyz;
+        o.localRD = normalize(o.localCam - pos);
         
 
         // o.data1 = feather.newData1;
@@ -164,12 +221,14 @@ Shader "Feathers/FeatherTest1" {
         o.hue = _Hue1;
         o.randID = feather.id;
 
-        if( hueType == 1 ){ o.hue = _Hue2;}
-        if( hueType == 2 ){ o.hue = _Hue3;}
-        if( hueType == 3 ){ o.hue = _Hue4;}
-        if( hueType == 4 ){ o.hue = _Hue4;}
 
-        o.collectionType = feather.type;
+
+        if( whichMesh == 1 ){ o.hue = _Hue2;}
+        if( whichMesh == 2 ){ o.hue = _Hue3;}
+        if( whichMesh == 3 ){ o.hue = _Hue4;}
+        if( whichMesh == 4 ){ o.hue = _Hue4; } 
+
+        o.collectionType = feather.ogNor.x;
 
 
         
@@ -188,7 +247,8 @@ Shader "Feathers/FeatherTest1" {
       }
 
       sampler2D _FullColorMap;
-      #include "../Chunks/snoise.cginc"
+      #include "Assets/Resources/Shaders/Chunks/snoise.cginc"
+      #include "Assets/Resources/Shaders/Chunks/triNoise3D.cginc"
 
       
       sampler2D _BackgroundTexture1;
@@ -285,9 +345,43 @@ Shader "Feathers/FeatherTest1" {
         
         col += dot(_WorldSpaceLightPos0, v.nor);
         col *=  _LightColor0;
-        col = hsv(v.hue,1,1);
 
+
+        float3 barys;
+        barys.xy = v.barycentric;
+        barys.z = 1 - barys.x - barys.y;
+        
+        float minBary = min(barys.x, min(barys.y, barys.z));
+
+        col = lerp( 1, 0, saturate(minBary * 10));
         //col = bgCol.xyz + col*col *col*col * 10;
+
+
+
+        float3 ro = v.localPos;
+        float3 rd = v.localRD;
+
+        float3 fog = 0;
+
+        float id = v.id;
+        for( int i = 0; i < 3; i++ ){
+
+
+          float3 fPos = ro - rd * i * .01f;
+          float v = triNoise3D(fPos * 10 + id* 10 + float3(0,_Time.x,0),1,1);
+
+          if( v > .48 ){
+            fog += hsv(0,0,1);
+
+          }
+          fog += 100*hsv ( float(i)/3+ sin(id), 1, v*v*v/(length(fPos) * 100));
+
+        }
+
+        col = fog;
+        col *= hsv(v.hue,.5,1);//fog;
+
+        // col = fog / 30;
 
 
         //col = bgCol;
@@ -361,7 +455,7 @@ Shader "Feathers/FeatherTest1" {
       #pragma fragmentoption ARB_precision_hint_fastest
 
       #include "UnityCG.cginc"
-      #include "../Chunks/ShadowCasterPos.cginc"
+      #include "Assets/Resources/Shaders/Chunks/ShadowCasterPos.cginc"
       
 
 
@@ -380,9 +474,7 @@ Shader "Feathers/FeatherTest1" {
         float locked;
         float4x4 ltw;
         float3 ogPos;
-        float type;
-        float lockTime;
-        float debug;
+        float3 ogNor;
         float touchingGround;
         float id;
       };
@@ -428,6 +520,8 @@ Shader "Feathers/FeatherTest1" {
 
         float4x4 baseMatrix = feather.ltw;
         Vert v = _VertBuffer[_TriBuffer[alternate + whichMesh * _TrisPerMesh]];
+
+        float4x4 worldToLocal = transpose(baseMatrix);
 
         o.worldPos = mul( baseMatrix , float4(v.pos,1)).xyz;//extra;
 

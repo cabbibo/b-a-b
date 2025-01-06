@@ -426,3 +426,43 @@ public class MechanicParams
 
 
 }
+
+
+[System.Serializable]
+public class GeneralWrenParams
+{
+
+    public bool canHover;
+    public bool canBoost;
+    public bool canPing;
+    public bool canDisintegrate;
+
+    public bool canCall;
+    public bool canMagnitize;
+    public bool canPlaceBeacon;
+    public bool canRewind;
+
+    public bool canCarry;
+
+}
+
+
+
+[System.Serializable]
+public class GrowthParams
+{
+
+    public float staminaCooldownTime;
+    public float staminaRefillSpeed;
+
+    public int crystalsLostPerBoost;
+    public int crystalsLostPerPing;
+    public int crystalsLostPerDisintegrate;
+    public int crystalsLostPerCall;
+    public int crystalsLostPerMagnitize;
+    public int crystalsLostPerPlaceBeacon;
+    public int crystalsLostPerRewind;
+
+    public int crystalsLostWhileCarrying;
+
+}

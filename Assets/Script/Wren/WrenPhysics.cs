@@ -608,30 +608,38 @@ public class WrenPhysics : MonoBehaviour
         if (!onGround)
         {
 
-            UpdateVelocity();
 
-            BendAndTwist();
-            Flap();
-            RotationValues();
+            if (!hovering)
+            {
+                UpdateVelocity();
 
-            GravityForces();
+                BendAndTwist();
+                Flap();
+                RotationValues();
 
-            LiftForces();
+                GravityForces();
 
-            GetGroundDistanceInfo();
-            GroundUpdraft();
+                LiftForces();
 
-            GroundBoost();
-            RightingForces();
-            PaintedWindForce();
-            HorizonRightingForces();
-            BumperForces();
-            OceanForces();
+                GetGroundDistanceInfo();
+                GroundUpdraft();
 
-            LimitUpForces();
+                GroundBoost();
+                RightingForces();
+                PaintedWindForce();
+                HorizonRightingForces();
+                BumperForces();
+                OceanForces();
 
-            CarryingForces();
-            ApplyForces();
+                LimitUpForces();
+
+                CarryingForces();
+                ApplyForces();
+            }
+            else
+            {
+                Hovering();
+            }
 
         }
         else
@@ -1961,6 +1969,18 @@ public class WrenPhysics : MonoBehaviour
         AddForce(rb.velocity * boostVal);
     }
 
+    public bool hovering;
+    public void ToggleHoverState()
+    {
+        hovering = !hovering;
+    }
+
+    public void Hovering()
+    {
+        vel = Vector3.zero;
+        rb.velocity = Vector3.zero;
+    }
+
 
 
     /*
@@ -2155,6 +2175,7 @@ public class WrenPhysics : MonoBehaviour
 
 
     }
+
 
     public void Update()
     {

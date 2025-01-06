@@ -109,9 +109,10 @@ Shader "Debug/BonesConnection" {
         float3 u = (u1 + u2) / 2;
 
 
+
         r = normalize(dif);
 
-        u = normalize(cross(r, f));
+        u = float3(0,1,0);//normalize(cross(r, f));
         f = cross(u, r);
         
 
@@ -122,20 +123,20 @@ Shader "Debug/BonesConnection" {
 
 
 
-        float scl = length(dif);
+        float scl = length(dif)  * _Size;
         
 
         float4x4 worldMat = float4x4(
-        4*scl*r.x, 1*scl*u.x, 1*scl*f.x, p.x,
-        4*scl*r.y, 1*scl*u.y, 1*scl*f.y, p.y,
-        4*scl*r.z, 1*scl*u.z, 1*scl*f.z, p.z,
+        scl*r.x, scl*u.x, scl*f.x, p.x,
+        scl*r.y, scl*u.y, scl*f.y, p.y,
+        scl*r.z, scl*u.z, scl*f.z, p.z,
         0,0,0, 1);
 
         //worldMat = createTransformationMatrix(f, r, u, p, 1);
 
 
 
-        float3 worldPos = mul( worldMat , float4(v.vertex.xyz * .06,1)).xyz;
+        float3 worldPos = mul( worldMat , float4(v.vertex.xyz * _Size,1)).xyz;
 
         // worldPos = v.vertex.xyz * .02 * ( f + u +r) + p;
 
@@ -160,7 +161,7 @@ Shader "Debug/BonesConnection" {
       float4 frag (varyings v) : COLOR {
 
 
-        float3 col = v.nor;
+        float3 col = 1;
         return float4(col,1 );
       }
 

@@ -101,6 +101,11 @@ public class Sounds : MonoBehaviour
 
     public AudioClip[] texturalHitClips;
 
+
+    public AudioClip[] tuiCallClips;
+
+    public AudioClip[] birdFlapClips;
+
     // barrel roll sound?
 
     [Header("Button Press Sounds")]

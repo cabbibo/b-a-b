@@ -37,6 +37,18 @@ public class DebugHierarchy : MonoBehaviour
     public void SetUpConnections()
     {
 
+
+        UpdateMatrices();
+
+        if (_buffer == null)
+        {
+            return;
+        }
+
+        _connectionsBuffer.SetData(connections);
+
+
+
         if (debugConnections || debugBasis)
         {
 
@@ -46,17 +58,6 @@ public class DebugHierarchy : MonoBehaviour
                 lineRenderer.SetPosition(i, transforms[i].position);
             }
 
-            UpdateMatrices();
-
-            if (_buffer == null)
-            {
-                return;
-            }
-
-
-
-
-            _connectionsBuffer.SetData(connections);
 
 
 

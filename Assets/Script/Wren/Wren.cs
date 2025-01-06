@@ -39,6 +39,8 @@ public class Wren : MonoBehaviour
     public WrenState state;
     public WrenStats stats;
 
+    public WrenCanDo canDo;
+
     public WrenMaker maker;
 
     public WrenReverser revereser;
@@ -84,6 +86,8 @@ public class Wren : MonoBehaviour
     public bool autoTakeOff;
 
     public bool doInterface;
+
+
 
 
 
@@ -300,12 +304,14 @@ public class Wren : MonoBehaviour
         {
 
 
+
+
             input.SetInput();
 
             // state.inInterface = God.menu.menuOn;
 
             // ALWAYS PING
-            if (input.o_triangle < .5 && input.triangle > .5)
+            if (input.o_triangle < .5 && input.triangle > .5 && canDo.ping)
             {
                 if (interfaceUtils != null)
                 {
@@ -314,10 +320,15 @@ public class Wren : MonoBehaviour
             }
 
             // ALWAYS DISINTEGRATE
-            if (input.o_square < .5 && input.square > .5)
+            if (input.o_square < .5 && input.square > .5 && canDo.disintegrate)
             {
                 disintegration.Disintegrate();
             }
+
+
+
+
+
 
             if (doInterface)
             {
@@ -398,13 +409,23 @@ public class Wren : MonoBehaviour
                 }
 
 
+                if (input.o_ex < .5 && input.ex > .5 && physics.onGround == false && canDo.hover)
+                {
+                    God.audio.Play(God.sounds.takeoffClip);
+                    physics.ToggleHoverState();
+                }
+
+
                 if (input.o_ex < .5 && input.ex > .5 && physics.onGround == true && state.inInterface == false && state.canTakeOff)
                 {
                     God.audio.Play(God.sounds.takeoffClip);
                     state.TakeOff();
                 }
 
-                if (input.o_circle < .5 && input.circle > .5 && physics.onGround == false && state.inInterface == false && shards.numShards > 0)
+
+
+
+                if (input.o_circle < .5 && input.circle > .5 && physics.onGround == false && state.inInterface == false && shards.numShards > 0 && canDo.boost)
                 {
                     God.audio.Play(God.sounds.boostClip);
                     shards.DoBoost(); ;
@@ -412,10 +433,18 @@ public class Wren : MonoBehaviour
                 }
 
 
-                if (input.o_dLeft < .5 && input.dLeft > .5)
-                {
-                    revereser.MoveToPrevious();
-                }
+
+                /*
+                            if (input.o_dLeft < .5 && input.dLeft > .5 && state.inInterface == false && canDo.rewind)
+                            {
+                                // revereser.MoveToNext();
+                            }
+                            else
+                            {
+
+                                revereser.MoveToPrevious();
+                            }
+                            */
 
 
 

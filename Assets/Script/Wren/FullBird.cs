@@ -17,8 +17,7 @@ public class FullBird : MonoBehaviour
    public ComputeShader bodyShader;
    public ComputeShader wingShader;
 
-   public Material bodyMaterial;
-   public Material wingMaterial;
+   public Material featherMaterial;
 
    public Material wingDebugMaterial;
    public Material bodyDebugMaterial;
@@ -232,60 +231,7 @@ public class FullBird : MonoBehaviour
       rightEyeOParent = rightEye.parent;
       beakOParent = beak.parent;
 
-
-      leftWing_gpu.shader = wingShader;
-      leftWing_gpu.featherDebugMaterial = wingDebugMaterial;
-      leftWing_gpu.featherDebugLineMaterial = wingDebugLineMaterial;
-      leftWing_gpu.featherMaterial = wingMaterial;
-
-      leftWing_gpu.primaryFeather = primaryFeather;
-      leftWing_gpu.secondaryFeather = secondaryFeather;
-      leftWing_gpu.primaryCovert = primaryCovert;
-      leftWing_gpu.secondaryCovert = secondaryCovert;
-      leftWing_gpu.lesserCovert = lesserCovert;
-
-      leftWing_gpu.numberPrimaryFeathers = _NumPrimaryFeathers;
-      leftWing_gpu.numberPrimaryCoverts = _NumPrimaryCoverts;
-      leftWing_gpu.numberLesserCovertsRows = _NumLesserCovertsRows;
-      leftWing_gpu.numberLesserCovertsCols = _NumLesserCovertsCols;
-
-      leftWing_gpu.wing = leftWing;
-      leftWing_gpu.bird = this;
-
-
-
-      rightWing_gpu.shader = wingShader;
-      rightWing_gpu.featherDebugMaterial = wingDebugMaterial;
-      rightWing_gpu.featherDebugLineMaterial = wingDebugLineMaterial;
-      rightWing_gpu.featherMaterial = wingMaterial;
-
-      rightWing_gpu.primaryFeather = primaryFeather;
-      rightWing_gpu.secondaryFeather = secondaryFeather;
-      rightWing_gpu.primaryCovert = primaryCovert;
-      rightWing_gpu.secondaryCovert = secondaryCovert;
-      rightWing_gpu.lesserCovert = lesserCovert;
-
-      rightWing_gpu.numberPrimaryFeathers = _NumPrimaryFeathers;
-      rightWing_gpu.numberPrimaryCoverts = _NumPrimaryCoverts;
-      rightWing_gpu.numberLesserCovertsRows = _NumLesserCovertsRows;
-      rightWing_gpu.numberLesserCovertsCols = _NumLesserCovertsCols;
-
-      rightWing_gpu.wing = rightWing;
-      rightWing_gpu.bird = this;
-
-      body_gpu.shader = bodyShader;
-      body_gpu.featherMaterial = bodyMaterial;
-      body_gpu.featherDebugMaterial = bodyDebugMaterial;
-      body_gpu.featherDebugLineMaterial = bodyDebugLineMaterial;
-
-      body_gpu.scapularFeather = scapularFeather;
-      body_gpu.tailFeather = tailFeather;
-
-      body_gpu.numberScapularColumns = _NumScapularColumns;
-      body_gpu.numberScapularRows = _NumScapularRows;
-      body_gpu.numberTailFeathers = _NumTailFeathers;
-
-      body_gpu.bird = this;
+      PassAlongMaterialProperties();
 
       leftWing.Create();
       rightWing.Create();
@@ -307,6 +253,66 @@ public class FullBird : MonoBehaviour
       ResetFeatherValues();
       SetMaterialProperties();
 
+
+   }
+
+
+   public void PassAlongMaterialProperties()
+   {
+
+      leftWing_gpu.shader = wingShader;
+      leftWing_gpu.featherDebugMaterial = wingDebugMaterial;
+      leftWing_gpu.featherDebugLineMaterial = wingDebugLineMaterial;
+      leftWing_gpu.featherMaterial = featherMaterial;
+
+      leftWing_gpu.primaryFeather = primaryFeather;
+      leftWing_gpu.secondaryFeather = secondaryFeather;
+      leftWing_gpu.primaryCovert = primaryCovert;
+      leftWing_gpu.secondaryCovert = secondaryCovert;
+      leftWing_gpu.lesserCovert = lesserCovert;
+
+      leftWing_gpu.numberPrimaryFeathers = _NumPrimaryFeathers;
+      leftWing_gpu.numberPrimaryCoverts = _NumPrimaryCoverts;
+      leftWing_gpu.numberLesserCovertsRows = _NumLesserCovertsRows;
+      leftWing_gpu.numberLesserCovertsCols = _NumLesserCovertsCols;
+
+      leftWing_gpu.wing = leftWing;
+      leftWing_gpu.bird = this;
+
+
+
+      rightWing_gpu.shader = wingShader;
+      rightWing_gpu.featherDebugMaterial = wingDebugMaterial;
+      rightWing_gpu.featherDebugLineMaterial = wingDebugLineMaterial;
+      rightWing_gpu.featherMaterial = featherMaterial;
+
+      rightWing_gpu.primaryFeather = primaryFeather;
+      rightWing_gpu.secondaryFeather = secondaryFeather;
+      rightWing_gpu.primaryCovert = primaryCovert;
+      rightWing_gpu.secondaryCovert = secondaryCovert;
+      rightWing_gpu.lesserCovert = lesserCovert;
+
+      rightWing_gpu.numberPrimaryFeathers = _NumPrimaryFeathers;
+      rightWing_gpu.numberPrimaryCoverts = _NumPrimaryCoverts;
+      rightWing_gpu.numberLesserCovertsRows = _NumLesserCovertsRows;
+      rightWing_gpu.numberLesserCovertsCols = _NumLesserCovertsCols;
+
+      rightWing_gpu.wing = rightWing;
+      rightWing_gpu.bird = this;
+
+      body_gpu.shader = bodyShader;
+      body_gpu.featherMaterial = featherMaterial;
+      body_gpu.featherDebugMaterial = bodyDebugMaterial;
+      body_gpu.featherDebugLineMaterial = bodyDebugLineMaterial;
+
+      body_gpu.scapularFeather = scapularFeather;
+      body_gpu.tailFeather = tailFeather;
+
+      body_gpu.numberScapularColumns = _NumScapularColumns;
+      body_gpu.numberScapularRows = _NumScapularRows;
+      body_gpu.numberTailFeathers = _NumTailFeathers;
+
+      body_gpu.bird = this;
 
    }
 
@@ -496,6 +502,8 @@ public class FullBird : MonoBehaviour
 
 
 
+
+
    }
 
    public bool debug;
@@ -511,6 +519,9 @@ public class FullBird : MonoBehaviour
       //body_gpu.UpdateFeathers();
       //leftWing_gpu.UpdateFeathers();
       //rightWing_gpu.UpdateFeathers();
+
+      PassAlongMaterialProperties();
+      SetMaterialProperties();
 
       if (debug)
       {
@@ -969,7 +980,6 @@ public class FullBird : MonoBehaviour
          OnEnable();
       }
 
-
       leftWing_gpu.mpb.SetFloat("_Hue1", wren.state.hue1);
       leftWing_gpu.mpb.SetFloat("_Hue2", wren.state.hue2);
       leftWing_gpu.mpb.SetFloat("_Hue3", wren.state.hue3);
@@ -1011,6 +1021,9 @@ public class FullBird : MonoBehaviour
    public bool debugHierarchyConnections;
    public bool debugHierarchyBasis;
    public DebugHierarchy debugHierarchy;
+
+   public bool showBones;
+   public BirdSkeleton birdSkeleton;
 
    public void SetUpDebug()
    {

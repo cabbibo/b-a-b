@@ -57,6 +57,15 @@ public class BirdSkeleton : MonoBehaviour
     void LateUpdate()
     {
 
+
+        if (debugHierarchy.enabled == false)
+        {
+            debugHierarchy.UpdateMatrices();
+        }
+        else
+        {
+
+        }
         instanceCount = debugHierarchy.connections.Length;
 
         if (cachedInstanceCount != instanceCount || cachedSubMeshIndex != subMeshIndex)

@@ -1104,8 +1104,7 @@ MonoBehaviour:
   wren: {fileID: 9160943688313912041}
   bodyShader: {fileID: 7200000, guid: 57467b9a1aa3d474fbc328c1291ce57c, type: 3}
   wingShader: {fileID: 7200000, guid: a0db877c85463b9489bf7e6b4a374b1b, type: 3}
-  bodyMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a, type: 2}
-  wingMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
+  featherMaterial: {fileID: 0}
   wingDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67, type: 2}
   bodyDebugMaterial: {fileID: 2100000, guid: a21aba6d870d6ca4a92aa7c3aafc1e67, type: 2}
   wingDebugLineMaterial: {fileID: 0}
@@ -1221,6 +1220,8 @@ MonoBehaviour:
   debugHierarchyConnections: 0
   debugHierarchyBasis: 0
   debugHierarchy: {fileID: 5978150348886614211}
+  showBones: 0
+  birdSkeleton: {fileID: 0}
   drawBodyFeather: 1
   drawLeftWingFeathers: 1
   drawRightWingFeathers: 1
@@ -27844,6 +27845,7 @@ MonoBehaviour:
   parameters: {fileID: 5119402594301017824}
   state: {fileID: 9156686790671013125}
   stats: {fileID: 6744424082612651983}
+  canDo: {fileID: 0}
   maker: {fileID: 0}
   revereser: {fileID: 0}
   beacon: {fileID: 1499124320774614241}
@@ -28159,6 +28161,7 @@ MonoBehaviour:
   doBasicGroundControls: 0
   basicGroundLookControls_lookSpeed: 3
   basicGroundLookControls_moveSpeed: 0
+  hovering: 0
   totalForcesApplied: 0
   forceBufferArray: []
   maxForces: 100
