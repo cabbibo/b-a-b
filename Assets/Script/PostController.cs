@@ -30,6 +30,9 @@ public class PostController : MonoBehaviour
 
     private AmbientOcclusion ambientOcclusion_Reference;
 
+    private SpaterPostSettings spaterPost_Reference;
+    private Astigma astigma_Reference;
+
     public bool mainPost;
     public bool bloom;
     public bool colorGrading;
@@ -42,6 +45,8 @@ public class PostController : MonoBehaviour
 
     public bool splatEffect;
     public bool ambientOcclusion;
+    public bool spaterPost;
+    public bool astigma;
 
 
 
@@ -133,6 +138,8 @@ public class PostController : MonoBehaviour
         volume.profile.TryGetSettings(out depthOfField_Reference);
         volume.profile.TryGetSettings(out glitchEffect_Reference);
         volume.profile.TryGetSettings(out ambientOcclusion_Reference);
+        volume.profile.TryGetSettings(out spaterPost_Reference);
+        volume.profile.TryGetSettings(out astigma_Reference);
 
 
     }
@@ -152,20 +159,6 @@ public class PostController : MonoBehaviour
         }
 
 
-        //        print(post);
-        mainPost_Reference._Hue.value = _Hue;
-        mainPost_Reference._Saturation.value = _Saturation;
-        mainPost_Reference._Lightness.value = _Lightness;
-        mainPost_Reference._Blend.value = _Blend;
-        mainPost_Reference._Fade.value = _Fade;
-
-        if (God.wren != null)
-        {
-            depthOfFieldFocusDistance = Vector3.Distance(God.wren.transform.position, God.camera.transform.position);
-        }
-        // todo if we are focusing on something else make that be the focus object ( even better make them both be in focus)
-        depthOfField_Reference.focusDistance.value = depthOfFieldFocusDistance;
-
 
 
         mainPost_Reference.enabled.Override(mainPost);
@@ -178,6 +171,8 @@ public class PostController : MonoBehaviour
         depthOfField_Reference.enabled.Override(depthOfField);
         glitchEffect_Reference.enabled.Override(glitchEffect);
         ambientOcclusion_Reference.enabled.Override(ambientOcclusion);
+        spaterPost_Reference.enabled.Override(spaterPost);
+        astigma_Reference.enabled.Override(astigma);
 
         if (splatEffect)
         {
@@ -204,6 +199,41 @@ public class PostController : MonoBehaviour
         }
 
     }
+
+
+
+
+
+
+
+    public void SetReferenceValues()
+    {
+
+
+        //        print(post);
+        mainPost_Reference._Hue.value = _Hue;
+        mainPost_Reference._Saturation.value = _Saturation;
+        mainPost_Reference._Lightness.value = _Lightness;
+        mainPost_Reference._Blend.value = _Blend;
+        mainPost_Reference._Fade.value = _Fade;
+
+        if (God.wren != null)
+        {
+            depthOfFieldFocusDistance = Vector3.Distance(God.wren.transform.position, God.camera.transform.position);
+        }
+
+        // todo if we are focusing on something else make that be the focus object ( even better make them both be in focus)
+        depthOfField_Reference.focusDistance.value = depthOfFieldFocusDistance;
+
+
+    }
+
+
+
+
+
+
+
 
 
 
