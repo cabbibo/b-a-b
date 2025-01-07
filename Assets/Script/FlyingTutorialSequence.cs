@@ -319,6 +319,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         yield return WaitWithCheat(5);
 
         yield return WaitForXToContinue();
+        TutorialSectionComplete();
 
         print("second shot");
         groupSticks.SetActive(false);
@@ -328,6 +329,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         yield return WaitWithCheat(10);
         yield return WaitForXToContinue();
+        TutorialSectionComplete();
 
         OnBirdZoomOutStart();
         print("third shot shot");
@@ -335,11 +337,17 @@ public class FlyingTutorialSequence : MonoBehaviour
         OnBirdZoomOutEnd();
         // yield return WaitWithCheat(waitTimeInFirstShots);
         yield return WaitForXToContinue();
-
+        TutorialSectionComplete();
         God.wren.bird.Explode();
+        God.wren.shards.SpendAllShards();
         God.wren.bird.drawSkeleton = true;
+        God.audio.Play(God.sounds.texturalHitClips);
         God.postController.astigma = false;
 
+        yield return WaitWithCheat(3);
+
+        yield return WaitForXToContinue();
+        TutorialSectionComplete();
 
         OnRotateToFrontStart();
         cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
@@ -1141,7 +1149,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         while (t < 1)
         {
 
-            print(flapStart);
+            //            print(flapStart);
 
             if (staminaLowHit)
             {

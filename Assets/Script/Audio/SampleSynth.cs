@@ -72,6 +72,7 @@ public class SampleSynth : MonoBehaviour
 
 
             player.Play(clip, fPitch, volume, fLocation, fLength, mixer, group, gameObject.transform.position);
+
         }
     }
 

@@ -124,6 +124,9 @@ Shader "Hidden/Custom/SpaterPost"
         lookup = frameVal;
         float4 aCol = sampleAudio(lookup * _AudioLookupSize + _LookupOffset);//SAMPLE_TEXTURE2D(_AudioMap, sampler_AudioMap, float2(frameVal * .5,_Timeline));
 
+
+
+        aCol = SAMPLE_TEXTURE2D(_AudioMap,sampler_AudioMap, float2(lookup * _AudioLookupSize + _LookupOffset ,0));
         float2 newTexCoord;
 
         //dir = normalize(fUV-.5);
@@ -151,6 +154,8 @@ Shader "Hidden/Custom/SpaterPost"
 
         
         color.rgb *= saturate(frameVal * 4 - 0);
+
+    //    color.rgb = aCol;
 
         
 

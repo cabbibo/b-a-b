@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
-namespace IMMATERIA{
-public class AudioListenerTexture : Form
+public class AudioListenerTexture : MonoBehaviour
 {
 
     private int width; // texture width
@@ -20,59 +18,67 @@ public class AudioListenerTexture : Form
 
     public Color[] pixels;
 
-    public override void SetStructSize(){
-      structSize = 4;
-    }
 
-    public override void SetCount(){
-      count = size * 2;
-    }
 
-    public override void Create()
+    public ComputeBuffer buffer;
+
+    public void OnEnable()
     {
         width = size;
         height = 1;
 
         // create the samples array
-        samples = new float [ size * 8 ];
-        lowRes = new float [ 64 ];
+        samples = new float[size * 8];
+        lowRes = new float[64];
         lowResSize = 64;
 
         // create the AudioTexture and assign to the guiTexture:
-        texture = new Texture2D ( width, height );
-        pixels = texture.GetPixels(0,0,width,1 );
+        texture = new Texture2D(width, height);
+        pixels = texture.GetPixels(0, 0, width, 1);
 
         // create a 'blank screen' image
-        blank = new Color [ width * height ];
+        blank = new Color[width * height];
 
-        for ( int i = 0; i < blank.Length; i++ ){
-            blank [ i ] = backgroundColor;
+        for (int i = 0; i < blank.Length; i++)
+        {
+            blank[i] = backgroundColor;
         }
 
+        buffer = new ComputeBuffer(size * 2, sizeof(float) * 4);
         // refresh the display each 100mS
     }
 
 
-
-    public override void WhileLiving( float v ){
-
-        AudioListener.GetSpectrumData ( samples, 0, FFTWindow.Triangle );
-        pixels = texture.GetPixels(0,0,width,1 );
-        for ( int i = 0; i < size; i++ )
-        {
-
-            pixels [ i ].r = pixels [ i ].r * .8f + samples [ ( int ) ( i * 4 ) + 0 ] * 128;
-            pixels [ i ].g = pixels [ i ].g * .8f + samples [ ( int ) ( i * 4 ) + 1 ] * 128;
-            pixels [ i ].b = pixels [ i ].b * .8f + samples [ ( int ) ( i * 4 ) + 2 ] * 128;
-            pixels [ i ].a = pixels [ i ].a * .8f + samples [ ( int ) ( i * 4 ) + 3 ] * 128;
-
-        }   
-
-        texture.SetPixels ( pixels );
-        texture.Apply();
-
-        SetData( samples );
-        Shader.SetGlobalTexture( "_AudioMap" , texture );
+    public void OnDestroy()
+    {
+        if (buffer != null) buffer.Release();
     }
 
-}}
+
+    public void LateUpdate()
+    {
+
+        AudioListener.GetSpectrumData(samples, 0, FFTWindow.Triangle);
+        pixels = texture.GetPixels(0, 0, width, 1);
+        for (int i = 0; i < size; i++)
+        {
+
+            pixels[i].r = pixels[i].r * .8f + samples[(int)(i * 4) + 0] * 128;
+            pixels[i].g = pixels[i].g * .8f + samples[(int)(i * 4) + 1] * 128;
+            pixels[i].b = pixels[i].b * .8f + samples[(int)(i * 4) + 2] * 128;
+            pixels[i].a = pixels[i].a * .8f + samples[(int)(i * 4) + 3] * 128;
+
+        }
+
+        texture.SetPixels(pixels);
+        texture.Apply();
+
+        if (buffer != null)
+        {
+            buffer.SetData(samples);
+        }
+        Shader.SetGlobalTexture("_AudioMap", texture);
+    }
+
+
+}

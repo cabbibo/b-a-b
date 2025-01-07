@@ -493,8 +493,8 @@ void body( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out fl
   //p3 -= p1;
   // p3 = cross( -normalize(p-p2) , normalize(p3) );
 
-  float3 backDirection = (p-p2) * 10000;
-  float3 leftRight = (p1 - p3) * 10000;
+  float3 backDirection = (p-p2) * 100;
+  float3 leftRight = (p1 - p3) * 100;
 
   if( length(backDirection) < .001 ){ backDirection = float3(0,0,.1);}
   if( length(leftRight) < .001 ){ leftRight = float3(.1,0,0);}
@@ -516,9 +516,9 @@ void body( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out fl
   float3 newBackDir = backDirection;// normalize( backDirection );
   float3 newUp = up;//normalize(cross(leftRight,newBackDir));
 
-  newUp = normalize(1000*cross(newBackDir,newUp));
-  newBackDir = normalize(1000*cross(newUp,newBackDir));
-  newBackDir = -normalize(1000*cross(newUp,newBackDir));
+  //newUp = normalize(1000*cross(newBackDir,newUp));
+  //newBackDir = normalize(1000*cross(newUp,newBackDir));
+ // newBackDir = -normalize(1000*cross(newUp,newBackDir));
 
 
 
@@ -526,8 +526,8 @@ void body( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out fl
 
   float3 scale = 5* (.5-abs(rowVal -.5));//*float3( sx, sy , sz)/1;
   
-  fFwd = newBackDir;
-  fUp = newUp;
+  fFwd =newBackDir;
+  fUp = float3(0,1,0);//newUp;
   fScale = scale;
   fPos = p;    
 
@@ -536,12 +536,12 @@ void body( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out fl
 
   
   
- fFwd += cross( fUp , fFwd ) * _BaseDirectionLeftRightNoise * (hash(float(id * 10))-.5);
-  fFwd += fUp  * _BaseDirectionUpNoise * ((hash(float(id * 30)))-.5);
-  fFwd += fUp  * _BackAmountOverlapping;
+ //fFwd += cross( fUp , fFwd ) * _BaseDirectionLeftRightNoise * (hash(float(id * 10))-.5);
+ // fFwd += fUp  * _BaseDirectionUpNoise * ((hash(float(id * 30)))-.5);
+ // fFwd += fUp  * _BackAmountOverlapping;
 
 
-  fUp = -normalize(1000*cross(1000*fFwd,1000*fUp));
+  //fUp = -normalize(1000*cross(1000*fFwd,1000*fUp));
  // fUp = normalize(cross(fFwd,fUp));
 
 

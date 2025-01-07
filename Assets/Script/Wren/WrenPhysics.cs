@@ -2103,12 +2103,19 @@ public class WrenPhysics : MonoBehaviour
 
             for (int i = 0; i < allForces.Count; i++)
             {
+
+                if (i >= maxForces)
+                {
+                    break;
+                }
+
                 forceBufferArray[i * 6 + 0] = allForces[i].force.x;
                 forceBufferArray[i * 6 + 1] = allForces[i].force.y;
                 forceBufferArray[i * 6 + 2] = allForces[i].force.z;
                 forceBufferArray[i * 6 + 3] = allForces[i].position.x;
                 forceBufferArray[i * 6 + 4] = allForces[i].position.y;
                 forceBufferArray[i * 6 + 5] = allForces[i].position.z;
+
             }
 
             forceBuffer.SetData(forceBufferArray);
