@@ -247,10 +247,12 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         float bgT = 1f;
         SetBGFade(bgT);
+
         God.wren.bird.featherMaterial = featherStartMaterial;
+        God.wren.bird.ResetFeatherValues();
 
 
-
+        God.wren.bird.drawSkeleton = false;
         God.wren.canMove = false;
         God.wren.physics.rb.isKinematic = true;
 
@@ -309,29 +311,40 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         groupSticks.SetActive(true);
         controllerText.text = "test";
-
+        print("first shot");
         OnFirstShot();
-
+        yield return WaitWithCheat(10);
 
         yield return FadeGroup(groupContainer, 0, 1);
+        yield return WaitWithCheat(5);
+
         yield return WaitForXToContinue();
 
+        print("second shot");
         groupSticks.SetActive(false);
+        God.postController.focusOnWren = true;
         cinematicCamera.tutorialCameraIdx = (float)Camera.TopClose;
         OnBirdBackShown();
 
+        yield return WaitWithCheat(10);
         yield return WaitForXToContinue();
 
         OnBirdZoomOutStart();
-        yield return LerpCamera((float)Camera.TopClose, (float)Camera.TopFar);
+        print("third shot shot");
+        yield return LerpCamera((float)Camera.TopClose, (float)Camera.TopFar, 10);
         OnBirdZoomOutEnd();
         // yield return WaitWithCheat(waitTimeInFirstShots);
         yield return WaitForXToContinue();
 
+        God.wren.bird.Explode();
+        God.wren.bird.drawSkeleton = true;
+        God.postController.astigma = false;
+
+
         OnRotateToFrontStart();
         cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
         yield return WaitWithCheat(waitTimeInFirstShots);
-        yield return LerpCamera((float)Camera.Front, (float)Camera.Play);
+        yield return LerpCamera((float)Camera.Front, (float)Camera.Play, 5);
         OnRotateToFrontEnd();
 
         yield return FadeBG(1, 0);
@@ -476,7 +489,9 @@ public class FlyingTutorialSequence : MonoBehaviour
         groupBoost.SetActive(hint == ControllerHint.Boost);
         groupPing.SetActive(hint == ControllerHint.Ping);
 
-        controllerText.transform.parent.gameObject.SetActive(hint != ControllerHint.None);
+        controllerText.transform.parent.gameObject.SetActive(hint != ControllerHint.None); // turns it off if we arent using any text 
+
+
         switch (hint)
         {
             case ControllerHint.Dive:
@@ -539,14 +554,14 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
     }
 
-    IEnumerator LerpCamera(float from, float to)
+    IEnumerator LerpCamera(float from, float to, float time)
     {
         float cT = 0;
-        while (cT < cameraLerpTime)
+        while (cT < time)
         {
             if (Input.GetKey(KeyCode.Space))
                 break;
-            cinematicCamera.tutorialCameraIdx = Mathf.Lerp(from, to, Mathf.SmoothStep(0, 1, cT));
+            cinematicCamera.tutorialCameraIdx = Mathf.Lerp(from, to, Mathf.SmoothStep(0, 1, cT / time));
             cT += Time.unscaledDeltaTime;
             yield return null;
         }
@@ -1412,7 +1427,7 @@ public class FlyingTutorialSequence : MonoBehaviour
     IEnumerator FadeGroup(CanvasGroup group, float from = 0, float to = 1, float delay = 0)
     {
         float t = 0;
-        float duration = 0.3f;
+        float duration = 0.5f;
         float _ct = Time.unscaledTime;
         while (t < duration)
         {
@@ -1421,7 +1436,7 @@ public class FlyingTutorialSequence : MonoBehaviour
                 yield return null;
                 continue;
             }
-            group.alpha = Mathf.Lerp(from, to, t);
+            group.alpha = Mathf.Lerp(from, to, t / duration);
             t += Time.unscaledDeltaTime;
             yield return null;
         }

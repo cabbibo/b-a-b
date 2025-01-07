@@ -1216,15 +1216,15 @@ MonoBehaviour:
   beak: {fileID: 7643670994601658526}
   _ResetLocation: {x: 0, y: 0, z: 0}
   totalShards: 0
+  featherStructSize: 36
   debug: 0
   debugHierarchyConnections: 0
   debugHierarchyBasis: 0
   debugHierarchy: {fileID: 5978150348886614211}
-  showBones: 0
-  birdSkeleton: {fileID: 0}
   drawBodyFeather: 1
   drawLeftWingFeathers: 1
   drawRightWingFeathers: 1
+  drawSkeleton: 0
   drawLeftFeatherLines: 0
   drawRightFeatherLines: 0
   drawLeftWingFeatherPoints: 0

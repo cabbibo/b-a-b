@@ -50,6 +50,10 @@ Shader "FantasyCrystals/ShardShader"
 
         // Grab the screen behind the object into _BackgroundTexture
 
+        GrabPass {
+            "_BackgroundTexture"
+        }
+
       Cull Off
     Pass{
 CGPROGRAM
@@ -280,6 +284,8 @@ float3 col = 0;
   return float4(col * pow( totalSmoke , 3),totalSmoke);
 
 }
+
+
 //Pixel function returns a solid color for each point.
 float4 frag (varyings v) : COLOR {
   float3 col =0;//hsv( float(v.face) * .3 , 1,1);
@@ -296,11 +302,14 @@ float4 frag (varyings v) : COLOR {
   col.b = traceValB.b;
        
  float m = dot( normalize(v.unrefracted), normalize(v.nor) );
- col += pow((1-m),_ReflectionSharpness) * _ReflectionMultiplier * _ReflectionColor;
+ //col += pow((1-m),_ReflectionSharpness) * _ReflectionMultiplier * _ReflectionColor;
 
  col = pow( length(col), _Contrast) * _ColorMultiplier * col;
 
 
+ // get backgroundTexture
+  float4 bg = tex2D( _BackgroundTexture, v.grabPos.xy );
+ // col = bg;
 
     col = saturate(col * .8) / .8;
     return float4( col.xyz , 1);//saturate(float4(col,3*length(col) ));
@@ -315,7 +324,7 @@ float4 frag (varyings v) : COLOR {
     }
   }
 
-  Fallback Off
+  Fallback "Diffuse"
 
 
 }

@@ -114,6 +114,7 @@ Shader "Debug/BonesConnection" {
 
         u = float3(0,1,0);//normalize(cross(r, f));
         f = cross(u, r);
+        u = cross(r, f); // unflatten if similar
         
 
 

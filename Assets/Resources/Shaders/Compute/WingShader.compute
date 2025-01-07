@@ -61,26 +61,11 @@ void SetUpValues(){
 #include "../Chunks/translationMatrix.cginc"
 #include "../Chunks/scaleMatrix.cginc"
 #include "../Chunks/hash.cginc"
-#include "../Chunks/snoise.cginc"
+#include "../Chunks/snoise3D.cginc"
 #include "../Chunks/curlNoise.cginc"
 
 
-
-struct Feather{
-  float3 pos;
-  float3 vel;
-  float featherType;
-  float locked;
-  float4x4 ltw;
-  float3 ogPos;
-  float type;
-  float lockTime;
-  float debug;
-  float touchingGround;
-  float id;
-};
-
-
+#include "Assets/Resources/Shaders/Chunks/FeatherStruct.cginc"  
 RWStructuredBuffer<Feather> _FeatherBuffer;
 float _Time;
 float _DT;
@@ -438,7 +423,7 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
   feather.pos = fPos;//fPos;
   feather.vel = vel;
   feather.featherType = float(whichFeatherType);
-  feather.debug = float(featherColor);
+  feather.featherColor = float(featherColor);
   feather.ltw = rts;
 
   nanCheck(feather);

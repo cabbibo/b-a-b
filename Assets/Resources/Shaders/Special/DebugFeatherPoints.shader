@@ -44,19 +44,7 @@ Shader "Debug/FeatherPoints" {
       uniform float _Hue4;
 
 
-
-struct Feather{
-  float3 pos;
-  float3 vel;
-  float featherType;
-  float locked;
-  float4x4 ltw;
-  float3 ogPos;
-  float3 ogNor;
-  float touchingGround;
-  float debug;
-};
-
+#include "Assets/Resources/Shaders/Chunks/FeatherStruct.cginc"
 
 #include "../Chunks/hash.cginc"
 
@@ -197,7 +185,7 @@ float3 p = v.pos;//mul(v.ltw , float4(0,0,0,1)).xyz;
 
 float dieSize = 1/(1+(_Time.y- v.locked) * .1);
 
-v.debug = saturate( v.debug );
+//v.debug = saturate( v.type );
 float fSize = _Size;//  * min( v.debug , (1-v.debug) * 40) * dieSize; 
 //fSize *= fSize;
 

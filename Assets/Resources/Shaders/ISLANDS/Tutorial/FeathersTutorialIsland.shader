@@ -130,18 +130,8 @@ Shader "Islands/Tutorial/Feathers" {
         float2 uv;
       };
 
-      struct Feather{
-        float3 pos;
-        float3 vel;
-        float featherType;
-        float locked;
-        float4x4 ltw;
-        float3 ogPos;
-        float3 ogNor;
-        float touchingGround;
-        float id;
-      };
-
+    
+      #include "Assets/Resources/Shaders/Chunks/FeatherStruct.cginc"
 
       StructuredBuffer<Vert> _VertBuffer;
       StructuredBuffer<int> _TriBuffer;
@@ -221,7 +211,7 @@ Shader "Islands/Tutorial/Feathers" {
         if( whichMesh == 3 ){ o.hue = _Hue4;}
         if( whichMesh == 4 ){ o.hue = _Hue4; } 
 
-        o.collectionType = feather.ogNor.x;
+        o.collectionType = feather.type;
 
 
         
@@ -432,20 +422,8 @@ Shader "Islands/Tutorial/Feathers" {
         float3 nor;
         float2 uv;
       };
-      struct Feather{
-        float3 pos;
-        float3 vel;
-        float featherType;
-        float locked;
-        float4x4 ltw;
-        float3 ogPos;
-        float3 ogNor;
-        float touchingGround;
-        float id;
-      };
-
-
-      
+ 
+      #include "Assets/Resources/Shaders/Chunks/FeatherStruct.cginc"
       int _TrisPerMesh;
       StructuredBuffer<Vert> _VertBuffer;
       StructuredBuffer<Feather> _FeatherBuffer;

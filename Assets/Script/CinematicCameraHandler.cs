@@ -16,57 +16,67 @@ public class CinematicCameraHandler : MonoBehaviour
   [System.Serializable]
   public class CameraDescriptor
   {
-      public float fov = 80;
+    public float fov = 80;
 
-      [Header("Orbit")]
-      public bool orbit = true;
-      [Range(0,1)] public float orbitAngle = 0;
-      public float orbitRadius = 2;
-      [Range(-90,90)]
-      public float orbitHeight = 1f;
+    [Header("Orbit")]
+    public bool orbit = true;
+    [Range(0, 1)] public float orbitAngle = 0;
+    public float orbitRadius = 2;
+    [Range(-90, 90)]
+    public float orbitHeight = 1f;
 
-      public enum BodyTarget {
-          None,
-          Body,
-          Head,
-          Eye
-      }
-      public bool parentToBird = false;
+    public enum BodyTarget
+    {
+      None,
+      Body,
+      Head,
+      Eye
+    }
+    public bool parentToBird = false;
 
-      [Header("Targets")]
-      public BodyTarget bodyTarget = BodyTarget.None;
-      public Vector3 posOffset = new Vector3(0,0.6f,-2);
-      public BodyTarget aimTarget = BodyTarget.None;
-      public Vector3 aimPosOffset = new Vector3(0,0,.8f);
-      public Vector3 rotationOffset = new Vector3(0,0,.8f);
+    [Header("Targets")]
+    public BodyTarget bodyTarget = BodyTarget.None;
+    public Vector3 posOffset = new Vector3(0, 0.6f, -2);
+    public BodyTarget aimTarget = BodyTarget.None;
+    public Vector3 aimPosOffset = new Vector3(0, 0, .8f);
+    public Vector3 rotationOffset = new Vector3(0, 0, .8f);
 
-      public enum Rotation {
-          None,
-          UseBodyRotation,
-          UseAimRotation,
-          LookAt,
-          WorldUp
-      }
-      public Rotation rotation = Rotation.LookAt;
+    public enum Rotation
+    {
+      None,
+      UseBodyRotation,
+      UseAimRotation,
+      LookAt,
+      WorldUp
+    }
+    public Rotation rotation = Rotation.LookAt;
 
 
-      public static CameraDescriptor Lerp(CameraDescriptor a, CameraDescriptor b, float t)
+    public float wiggleSize = 0;
+    public float forwardWiggleSize = 0;
+    public Vector3 osscilateSize = Vector3.zero;
+    public float osscilateSpeed = 0;
+
+
+    public static CameraDescriptor Lerp(CameraDescriptor a, CameraDescriptor b, float t)
+    {
+      return new CameraDescriptor()
       {
-          return new CameraDescriptor() {
-              fov = Mathf.Lerp(a.fov, b.fov, t),
-              orbit = t > .5f ? b.orbit : a.orbit,
-              orbitAngle = Mathf.LerpAngle(a.orbitAngle, b.orbitAngle, t),
-              orbitRadius = Mathf.Lerp(a.orbitRadius, b.orbitRadius, t),
-              orbitHeight = Mathf.Lerp(a.orbitHeight, b.orbitHeight, t),
-              parentToBird = t > .5f ? b.parentToBird : a.parentToBird,
-              bodyTarget = a.bodyTarget,
-              posOffset = Vector3.Lerp(a.posOffset, b.posOffset, t),
-              aimTarget = a.aimTarget,
-              aimPosOffset = Vector3.Lerp(a.aimPosOffset, b.aimPosOffset, t),
-              rotationOffset = Vector3.Lerp(a.rotationOffset, b.rotationOffset, t),
-              rotation = a.rotation
-          };
-      }
+        fov = Mathf.Lerp(a.fov, b.fov, t),
+        orbit = t > .5f ? b.orbit : a.orbit,
+        orbitAngle = Mathf.LerpAngle(a.orbitAngle, b.orbitAngle, t),
+        orbitRadius = Mathf.Lerp(a.orbitRadius, b.orbitRadius, t),
+        orbitHeight = Mathf.Lerp(a.orbitHeight, b.orbitHeight, t),
+        parentToBird = t > .5f ? b.parentToBird : a.parentToBird,
+        bodyTarget = a.bodyTarget,
+        posOffset = Vector3.Lerp(a.posOffset, b.posOffset, t),
+        aimTarget = a.aimTarget,
+        aimPosOffset = Vector3.Lerp(a.aimPosOffset, b.aimPosOffset, t),
+        rotationOffset = Vector3.Lerp(a.rotationOffset, b.rotationOffset, t),
+        wiggleSize = Mathf.Lerp(a.wiggleSize, b.wiggleSize, t),
+        rotation = a.rotation
+      };
+    }
   }
 
   Transform BirdTransform
@@ -142,10 +152,11 @@ public class CinematicCameraHandler : MonoBehaviour
         GetCustomCameraPositions(c1.descriptor, out var cPos, out var tPos);
       else
         GetCustomCameraPositions(CameraDescriptor.Lerp(c1.descriptor, c2.descriptor, tutorialCameraIdx % 1), out var cPos, out var tPos);
-      
-      
-      
-    } else if (mode == Mode.Activities)
+
+
+
+    }
+    else if (mode == Mode.Activities)
     {
       // orbit camera
       float radius = 120;
@@ -159,12 +170,13 @@ public class CinematicCameraHandler : MonoBehaviour
         r * Mathf.Sin(Mathf.Lerp(-Mathf.PI, Mathf.PI, a))
       );
       float secPerTrigger = 3;
-      var t = startTriggers[Mathf.FloorToInt(((Time.unscaledTime-_lastModeChangeT) / secPerTrigger) % startTriggers.Length)];
+      var t = startTriggers[Mathf.FloorToInt(((Time.unscaledTime - _lastModeChangeT) / secPerTrigger) % startTriggers.Length)];
       God.camera.transform.position = t.transform.position + pos;
       God.camera.transform.rotation = Quaternion.LookRotation(t.transform.position - God.camera.transform.position, Vector3.up);
       God.camera.fieldOfView = 60;
-    
-    } else if (mode == Mode.TutorialEnd)
+
+    }
+    else if (mode == Mode.TutorialEnd)
     {
       God.camera.transform.position = endTransform.position;
       God.camera.transform.rotation = endTransform.rotation;
@@ -240,7 +252,40 @@ public class CinematicCameraHandler : MonoBehaviour
     //     break;
     // }
     // God.camera.transform.rotation = rotation;
-    
+
+    // Offset based off sticks
+    float v = cam.wiggleSize;
+    float v2 = cam.forwardWiggleSize;
+
+
+
+    Vector3 tmpPos = God.camera.transform.position;
+
+
+
+    Vector3 targetPos = God.camera.transform.position;
+
+
+    targetPos += God.camera.transform.right * cam.wiggleSize * God.input.left.x;
+    targetPos += God.camera.transform.up * cam.wiggleSize * God.input.left.y;
+
+    targetPos += God.camera.transform.right * cam.wiggleSize * God.input.right.x;
+    targetPos += God.camera.transform.up * cam.wiggleSize * God.input.right.y;
+
+    targetPos += God.camera.transform.forward * cam.forwardWiggleSize * God.input.r2;
+    targetPos += God.camera.transform.forward * cam.forwardWiggleSize * God.input.l2;
+
+    //God.camera.transform.position = Vector3.Lerp(God.camera.transform.position, targetPos, .04f);
+    God.camera.transform.position = targetPos;
+
+
+    God.camera.transform.position += God.camera.transform.right * cam.osscilateSize.x * Mathf.Sin(Time.time * .83f * cam.osscilateSpeed + 1233.347f);
+    God.camera.transform.position += God.camera.transform.up * cam.osscilateSize.y * Mathf.Sin(Time.time * 1.21f * cam.osscilateSpeed + 123.47f);
+    God.camera.transform.position += God.camera.transform.forward * cam.osscilateSize.z * Mathf.Sin(Time.time * 1f * cam.osscilateSpeed + 6233.72f);
+
+
+
+
     Quaternion rotation = Quaternion.identity;
     switch (cam.rotation)
     {
@@ -262,6 +307,8 @@ public class CinematicCameraHandler : MonoBehaviour
         rotation = Quaternion.LookRotation(lookPos - God.camera.transform.position, bodyTarget.up);
         break;
     }
+
+
     God.camera.transform.rotation = rotation;
 
     God.camera.transform.Rotate(cam.rotationOffset, Space.Self);

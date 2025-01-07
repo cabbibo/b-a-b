@@ -19,11 +19,8 @@ Shader "VertexFragment/Astigma"
             sampler2D _CameraGBufferTexture2;
             sampler2D _OcclusionDepthMap;
 
-            sampler2D _GritTexture;
-            sampler2D _GritTexture2;
-            sampler2D _GritTexture3;
-            sampler2D _GritTexture4;
 
+            
 
             float2 blurAngle;
             float2 blurAngle2;
@@ -57,33 +54,51 @@ Shader "VertexFragment/Astigma"
                 
             }
 
+            float _Intensity;
+            float _Scale;
+            float _Cutoff;
+            float _AspectRatio;
+            float _NumSamples;
+            float _NumDirections;
+            float _Angle;
+
+           // float4 _ScreenParams;
+
 
             float3 upDownSample( sampler2D tex, float2 uv, float2 offset, float2 texelSize )
             {
+                float n = length(float2( sin( uv.x * 100+_Time.y * 100), sin(uv.y * 100 +_Time.y * 100)));
+                n = 1;
+            
                 float3 totalCol = 0;
-                for( int i = 1; i < 40; i++ ){
+                for( int i = 1; i < int(_NumSamples); i++ ){
 
-                    float multiplier =  1.0 / (float)(i+1);
+                    float multiplier = pow( 1-(float(i)/_NumSamples),2);// 1.0 / (float)(i+1);
 
                     //multiplier *= multiplier;
                     //multiplier *= 4;
 
                     float2 uvOffset = uv + offset  * (float)i * texelSize;
                     float3 col = tex2D(tex, uvOffset).rgb;
-                    totalCol += col * col * multiplier;
+                    //totalCol += col * col * multiplier;
                     uvOffset = uv - offset  * (float)i * texelSize;
                     col = tex2D(tex, uvOffset).rgb;
-                    totalCol += col * col  * multiplier;
+
+                    if( length(col) > _Cutoff ){
+                        totalCol += col * col  * multiplier * multiplier;
+                    }
+
                 }
-                return totalCol/5;
+                return totalCol;// * n;
             }
 
-            float _Amount;
 
             float4 FragMain(FragData input) : SV_Target
             {
                 float3 color = 0;
                 color = tex2D(_MainTex, input.texcoord).rgb;
+
+
                 /* float3 grit = tex2D(_GritTexture, input.texcoord).rgb;
                 float3 grit2 = tex2D(_GritTexture2, input.texcoord.xy).rgb;
                 float3 grit3 = tex2D(_GritTexture3, input.texcoord.xy).rgb;
@@ -103,8 +118,11 @@ Shader "VertexFragment/Astigma"
 
                 // color = length(color);
 
-                color = upDownSample( _MainTex, input.texcoord, float2(1,0), .002 );
-                color += upDownSample( _MainTex, input.texcoord, float2(0,-1), .002 );
+                for( int i = 0; i < int(_NumDirections); i++){
+                    float angle = 6.28318530718 *(_Angle + (float)i / _NumDirections);
+                    float2 dir = float2(cos(angle), sin(angle));
+                    color += _Intensity * upDownSample( _MainTex, input.texcoord, dir, _ScreenParams.zw * _Scale );
+                }
 
                 /*  color += grit2 * tex2D(_AudioMap, float2(length(grit2) * .2,_Timeline)) * 1;
                 color += grit * grit * grit * tex2D(_AudioMap, float2(length(grit) * .2,_Timeline)) * 1;
@@ -127,7 +145,7 @@ Shader "VertexFragment/Astigma"
 
                 color.xyz = length(sparkle.xyz)* sparkle.xyz * 10;// - tex2D(_MainTex, input.texcoord).rgb) *tex2D(_MainTex, input.texcoord).rgb ;
                 */
-                color *= _Amount;
+              //  color *= _Amount;
 
 
                 color = saturate(color);

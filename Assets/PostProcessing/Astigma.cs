@@ -7,11 +7,13 @@ namespace UnityEngine.Rendering.PostProcessing
     [PostProcess(typeof(AstigmaRenderer), PostProcessEvent.BeforeStack, "Astigma")]
     public class Astigma : PostProcessEffectSettings
     {
-        public FloatParameter amount = new FloatParameter { value = 1.0f };
-        public TextureParameter gritTexture = new TextureParameter { value = null };
-        public TextureParameter gritTexture2 = new TextureParameter { value = null };
-        public TextureParameter gritTexture3 = new TextureParameter { value = null };
-        public TextureParameter gritTexture4 = new TextureParameter { value = null };
+        public FloatParameter intensity = new FloatParameter { value = 1.0f };
+        public FloatParameter scale = new FloatParameter { value = 1.0f };
+        public FloatParameter cutoff = new FloatParameter { value = 0.0f };
+        public FloatParameter aspectRatio = new FloatParameter { value = 1.0f };
+        public FloatParameter angle = new FloatParameter { value = 0.0f };
+        public FloatParameter numSamples = new FloatParameter { value = 5.0f };
+        public FloatParameter numDirections = new FloatParameter { value = 4.0f };
 
     }
 
@@ -35,11 +37,14 @@ namespace UnityEngine.Rendering.PostProcessing
                 return;
             }
 
-            sheet.properties.SetFloat("_Amount", settings.amount);
-            /*            sheet.properties.SetTexture("_GritTexture", settings.gritTexture);
-                        sheet.properties.SetTexture("_GritTexture2", settings.gritTexture2);
-                        sheet.properties.SetTexture("_GritTexture3", settings.gritTexture3);
-                        sheet.properties.SetTexture("_GritTexture4", settings.gritTexture4);*/
+            sheet.properties.SetFloat("_Intensity", settings.intensity);
+            sheet.properties.SetFloat("_Scale", settings.scale);
+            sheet.properties.SetFloat("_Cutoff", settings.cutoff);
+            sheet.properties.SetFloat("_AspectRatio", settings.aspectRatio);
+            sheet.properties.SetFloat("_Angle", settings.angle);
+            sheet.properties.SetFloat("_NumSamples", settings.numSamples);
+            sheet.properties.SetFloat("_NumDirections", settings.numDirections);
+            sheet.properties.SetVector("_ScreenParams", new Vector4(context.width, context.height, 1.0f / context.width, 1.0f / context.height));
 
 
 

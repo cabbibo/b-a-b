@@ -79,7 +79,7 @@ public class GPUBody : MonoBehaviour
 
         lineBuffer = new ComputeBuffer(totalLinePoints, 3 * sizeof(float));
 
-        featherBuffer = new ComputeBuffer(totalFeatherPoints, 32 * sizeof(float));
+        featherBuffer = new ComputeBuffer(totalFeatherPoints, bird.featherStructSize * sizeof(float));
         // populateFeatherData();
 
 

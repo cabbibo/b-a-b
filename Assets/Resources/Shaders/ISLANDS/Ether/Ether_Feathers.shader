@@ -17,73 +17,9 @@ Shader "Islands/Ether/Feathers" {
 
   CGINCLUDE
 
-  
-  #include "AutoLight.cginc"
-  #include "UnityLightingCommon.cginc"
-  
 
-  #include "Assets/Resources/Shaders/Chunks/hsv.cginc"
-
-  //A simple input struct for our pixel shader step containing a position.
-  struct varyings {
-    float4 pos      : SV_POSITION;
-    float3 nor      : TEXCOORD0;
-    float3 worldPos : TEXCOORD1;
-    float3 eye      : TEXCOORD2;
-    float3 debug    : TEXCOORD3;
-    float2 uv       : TEXCOORD4;
-    float2 uv2       : TEXCOORD6;
-    float id        : TEXCOORD5;
-    float randID   : TEXCOORD13;
-    float hue        : TEXCOORD10;
-    float offset : TEXCOORD11;
-    float baseHue : TEXCOORD12;
-    int feather:TEXCOORD7;
-    float4 data1:TEXCOORD9;
-    float collectionType:TEXCOORD14;
-    float3 barycentric : TEXCOORD15;
-    float3 localPos : TEXCOORD16;
-    float3 localCam : TEXCOORD17;
-    float3 localRD : TEXCOORD18;
-    UNITY_SHADOW_COORDS(8)
-  };
-
-
-  [maxvertexcount(3)]
-  void geom(triangle varyings input[3], inout TriangleStream<varyings> triStream)
-  {
-    varyings o;
-    //  float3 normal = normalize(cross(input[1].vertex - input[0].vertex, input[2].vertex - input[0].vertex));
-    
-    float3 normal = float3(0,1,0);
-
-    
-    o = input[0];
-    o.barycentric = float3(1,0,0);
-    triStream.Append(o);
-
-    o = input[1];
-    o.barycentric = float3(0,1,0);
-    triStream.Append(o);
-
-    o = input[2];
-    o.barycentric = float3(0,0,1);
-    triStream.Append(o);
-    
-    
-    triStream.RestartStrip();
-  }
-  
-
-  float getGrid( float3 barys , float size  , float offset  ){
-    
-    float val = max(max( sin( barys.x  * size), sin( barys.y  * size) ), sin( barys.z  * size));
-    val -= offset;
-    val /= (1-offset);
-    val = clamp(val,0,1);
-    return val;
-  }
-
+  #include "Assets/Resources/Shaders/Chunks/FeatherCommon.cginc"
+ 
 
   ENDCG
 
@@ -116,231 +52,15 @@ Shader "Islands/Ether/Feathers" {
       #pragma multi_compile_fogV
       #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 
-      #include "UnityCG.cginc"
-
-
-      uniform int _Count;
-      uniform float _Size;
-      uniform float3 _Color;
-
-      float _Saturation;
-
-      uniform int _TrisPerMesh;
-
-      struct Vert{
-        float3 pos;
-        float3 nor;
-        float2 uv;
-      };
-
-      struct Feather{
-        float3 pos;
-        float3 vel;
-        float featherType;
-        float locked;
-        float4x4 ltw;
-        float3 ogPos;
-        float3 ogNor;
-        float touchingGround;
-        float id;
-      };
-
-
-      StructuredBuffer<Vert> _VertBuffer;
-      StructuredBuffer<int> _TriBuffer;
-      StructuredBuffer<Feather> _FeatherBuffer;
-
-
-      uniform float _BodyShardRendered;
-
-      bool GetShown( int id ){
-
-      }
-
-
-      float4x4 GetInverse(float4x4 a)
-      {
-        float  s0 = a[0, 0] * a[1, 1] - a[1, 0] * a[0, 1];
-        float  s1 = a[0, 0] * a[1, 2] - a[1, 0] * a[0, 2];
-        float  s2 = a[0, 0] * a[1, 3] - a[1, 0] * a[0, 3];
-        float  s3 = a[0, 1] * a[1, 2] - a[1, 1] * a[0, 2];
-        float  s4 = a[0, 1] * a[1, 3] - a[1, 1] * a[0, 3];
-        float  s5 = a[0, 2] * a[1, 3] - a[1, 2] * a[0, 3];
-
-        float  c5 = a[2, 2] * a[3, 3] - a[3, 2] * a[2, 3];
-        float  c4 = a[2, 1] * a[3, 3] - a[3, 1] * a[2, 3];
-        float  c3 = a[2, 1] * a[3, 2] - a[3, 1] * a[2, 2];
-        float  c2 = a[2, 0] * a[3, 3] - a[3, 0] * a[2, 3];
-        float  c1 = a[2, 0] * a[3, 2] - a[3, 0] * a[2, 2];
-        float  c0 = a[2, 0] * a[3, 1] - a[3, 0] * a[2, 1];
-
-        // Should check for 0 determinant
-        float  invdet = 1.0 / (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
-
-        float4x4 b;
-
-        b[0, 0] = ( a[1, 1] * c5 - a[1, 2] * c4 + a[1, 3] * c3) * invdet;
-        b[0, 1] = (-a[0, 1] * c5 + a[0, 2] * c4 - a[0, 3] * c3) * invdet;
-        b[0, 2] = ( a[3, 1] * s5 - a[3, 2] * s4 + a[3, 3] * s3) * invdet;
-        b[0, 3] = (-a[2, 1] * s5 + a[2, 2] * s4 - a[2, 3] * s3) * invdet;
-
-        b[1, 0] = (-a[1, 0] * c5 + a[1, 2] * c2 - a[1, 3] * c1) * invdet;
-        b[1, 1] = ( a[0, 0] * c5 - a[0, 2] * c2 + a[0, 3] * c1) * invdet;
-        b[1, 2] = (-a[3, 0] * s5 + a[3, 2] * s2 - a[3, 3] * s1) * invdet;
-        b[1, 3] = ( a[2, 0] * s5 - a[2, 2] * s2 + a[2, 3] * s1) * invdet;
-
-        b[2, 0] = ( a[1, 0] * c4 - a[1, 1] * c2 + a[1, 3] * c0) * invdet;
-        b[2, 1] = (-a[0, 0] * c4 + a[0, 1] * c2 - a[0, 3] * c0) * invdet;
-        b[2, 2] = ( a[3, 0] * s4 - a[3, 1] * s2 + a[3, 3] * s0) * invdet;
-        b[2, 3] = (-a[2, 0] * s4 + a[2, 1] * s2 - a[2, 3] * s0) * invdet;
-
-        b[3, 0] = (-a[1, 0] * c3 + a[1, 1] * c1 - a[1, 2] * c0) * invdet;
-        b[3, 1] = ( a[0, 0] * c3 - a[0, 1] * c1 + a[0, 2] * c0) * invdet;
-        b[3, 2] = (-a[3, 0] * s3 + a[3, 1] * s1 - a[3, 2] * s0) * invdet;
-        b[3, 3] = ( a[2, 0] * s3 - a[2, 1] * s1 + a[2, 2] * s0) * invdet;
-
-        return b;
-      }
-
-
-
-      // Function to compute the inverse of a 4x4 matrix
-      float4x4 InverseMatrix(float4x4 m)
-      {
-        float4x4 inv;
-
-        // Calculate the determinant
-        float det = 
-        m._m00 * (m._m11 * (m._m22 * m._m33 - m._m23 * m._m32) - m._m12 * (m._m21 * m._m33 - m._m23 * m._m31) + m._m13 * (m._m21 * m._m32 - m._m22 * m._m31)) -
-        m._m01 * (m._m10 * (m._m22 * m._m33 - m._m23 * m._m32) - m._m12 * (m._m20 * m._m33 - m._m23 * m._m30) + m._m13 * (m._m20 * m._m32 - m._m22 * m._m30)) +
-        m._m02 * (m._m10 * (m._m21 * m._m33 - m._m23 * m._m31) - m._m11 * (m._m20 * m._m33 - m._m23 * m._m30) + m._m13 * (m._m20 * m._m31 - m._m21 * m._m30)) -
-        m._m03 * (m._m10 * (m._m21 * m._m32 - m._m22 * m._m31) - m._m11 * (m._m20 * m._m32 - m._m22 * m._m30) + m._m12 * (m._m20 * m._m31 - m._m21 * m._m30));
-
-        // Check if determinant is 0 (matrix is singular)
-        if (det == 0.0)
-        {
-          // Return a zero matrix or identity matrix in case of a non-invertible matrix
-          return float4x4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0);
-        }
-
-        // Compute the inverse (using adjugate and determinant)
-        float invDet = 1.0 / det;
-
-        inv._m00 = (m._m11 * (m._m22 * m._m33 - m._m23 * m._m32) - m._m12 * (m._m21 * m._m33 - m._m23 * m._m31) + m._m13 * (m._m21 * m._m32 - m._m22 * m._m31)) * invDet;
-        inv._m01 = -(m._m01 * (m._m22 * m._m33 - m._m23 * m._m32) - m._m02 * (m._m21 * m._m33 - m._m23 * m._m31) + m._m03 * (m._m21 * m._m32 - m._m22 * m._m31)) * invDet;
-        inv._m02 = (m._m01 * (m._m12 * m._m33 - m._m13 * m._m32) - m._m02 * (m._m11 * m._m33 - m._m13 * m._m31) + m._m03 * (m._m11 * m._m32 - m._m12 * m._m31)) * invDet;
-        inv._m03 = -(m._m01 * (m._m12 * m._m23 - m._m13 * m._m22) - m._m02 * (m._m11 * m._m23 - m._m13 * m._m21) + m._m03 * (m._m11 * m._m22 - m._m12 * m._m21)) * invDet;
-
-        inv._m10 = -(m._m10 * (m._m22 * m._m33 - m._m23 * m._m32) - m._m12 * (m._m20 * m._m33 - m._m23 * m._m30) + m._m13 * (m._m20 * m._m32 - m._m22 * m._m30)) * invDet;
-        inv._m11 = (m._m00 * (m._m22 * m._m33 - m._m23 * m._m32) - m._m02 * (m._m20 * m._m33 - m._m23 * m._m30) + m._m03 * (m._m20 * m._m32 - m._m22 * m._m30)) * invDet;
-        inv._m12 = -(m._m00 * (m._m12 * m._m33 - m._m13 * m._m32) - m._m02 * (m._m10 * m._m33 - m._m13 * m._m30) + m._m03 * (m._m10 * m._m32 - m._m12 * m._m30)) * invDet;
-        inv._m13 = (m._m00 * (m._m12 * m._m23 - m._m13 * m._m22) - m._m02 * (m._m10 * m._m23 - m._m13 * m._m20) + m._m03 * (m._m10 * m._m22 - m._m12 * m._m20)) * invDet;
-
-        inv._m20 = (m._m10 * (m._m21 * m._m33 - m._m23 * m._m31) - m._m11 * (m._m20 * m._m33 - m._m23 * m._m30) + m._m13 * (m._m20 * m._m31 - m._m21 * m._m30)) * invDet;
-        inv._m21 = -(m._m00 * (m._m21 * m._m33 - m._m23 * m._m31) - m._m01 * (m._m20 * m._m33 - m._m23 * m._m30) + m._m03 * (m._m20 * m._m31 - m._m21 * m._m30)) * invDet;
-        inv._m22 = (m._m00 * (m._m11 * m._m33 - m._m13 * m._m31) - m._m01 * (m._m10 * m._m33 - m._m13 * m._m30) + m._m03 * (m._m10 * m._m31 - m._m11 * m._m30)) * invDet;
-        inv._m23 = -(m._m00 * (m._m11 * m._m23 - m._m13 * m._m21) - m._m01 * (m._m10 * m._m23 - m._m13 * m._m20) + m._m03 * (m._m10 * m._m21 - m._m11 * m._m20)) * invDet;
-
-        inv._m30 = -(m._m10 * (m._m21 * m._m32 - m._m22 * m._m31) - m._m11 * (m._m20 * m._m32 - m._m22 * m._m30) + m._m12 * (m._m20 * m._m31 - m._m21 * m._m30)) * invDet;
-        inv._m31 = (m._m00 * (m._m21 * m._m32 - m._m22 * m._m31) - m._m01 * (m._m20 * m._m32 - m._m22 * m._m30) + m._m02 * (m._m20 * m._m31 - m._m21 * m._m30)) * invDet;
-        inv._m32 = -(m._m00 * (m._m11 * m._m32 - m._m12 * m._m31) - m._m01 * (m._m10 * m._m32 - m._m12 * m._m30) + m._m02 * (m._m10 * m._m31 - m._m11 * m._m30)) * invDet;
-        inv._m33 = (m._m00 * (m._m11 * m._m22 - m._m12 * m._m21) - m._m01 * (m._m10 * m._m22 - m._m12 * m._m20) + m._m02 * (m._m10 * m._m21 - m._m11 * m._m20))  * invDet;
-
-
-
-        return inv;
-      }
-
-
-
-
-
-
-      //uniform float4x4 worldMat;
-
-      sampler2D _MainTex;
       
 
-      #include "Assets/Resources/Shaders/Chunks/hash.cginc"
-      uniform float4x4 _Transform;
-      uniform int _NumberMeshes;
-
-      float _Hue1;
-      float _Hue2;
-      float _Hue3;
-      float _Hue4;
-
-      float _IsBody;
-
-      
-
-      float _TotalShardsInBody;
-      float _NumShards;
-      float _TmpNumShards;
-      float _ONumShards;
-      
       //Our vertex function simply fetches a point from the buffer corresponding to the vertex index
       //which we transform with the view-projection matrix before passing to the pixel program.
       varyings vert (uint id : SV_VertexID){
 
-        varyings o;
-
-        int base = id / _TrisPerMesh;
-        int alternate = id %_TrisPerMesh;
-        Feather feather = _FeatherBuffer[base];
-        
-        int whichMesh = int(feather.featherType); //int(floor(hash(float(base)) * float(_NumberMeshes)));// %4;
-
-
-        float4x4 baseMatrix = feather.ltw;
-        float4x4 worldToLocal = InverseMatrix(baseMatrix);
-        Vert v = _VertBuffer[_TriBuffer[alternate + whichMesh * _TrisPerMesh]];
-
-
-        float3 pos = v.pos;
-
-        if(feather.id > _NumShards){
-          //pos *= 0;
-        }
-
-
-        o.localPos = pos;
-        o.localCam = mul( worldToLocal, float4(_WorldSpaceCameraPos,1)).xyz;
-        o.localRD = normalize(o.localCam - pos);
         
 
-        // o.data1 = feather.newData1;
-        o.worldPos = mul( baseMatrix , float4(pos,1)).xyz;//extra;
-        o.id = float(base);
-        o.feather = whichMesh;
-
-        o.baseHue = _Hue1;
-
-        o.hue = _Hue1;
-        o.randID = feather.id;
-
-
-
-        if( whichMesh == 1 ){ o.hue = _Hue2;}
-        if( whichMesh == 2 ){ o.hue = _Hue3;}
-        if( whichMesh == 3 ){ o.hue = _Hue4;}
-        if( whichMesh == 4 ){ o.hue = _Hue4; } 
-
-        o.collectionType = feather.ogNor.x;
-
-
-        
-
-
-        //o.data1 = feather.newData1;
-        o.nor = normalize(mul( baseMatrix , float4(v.nor,0)).xyz);
-        o.pos = mul (UNITY_MATRIX_VP, float4(o.worldPos,1.0f));
-        o.uv = v.uv;
-        o.eye = _WorldSpaceCameraPos - o.worldPos;
-        UNITY_TRANSFER_SHADOW(o,o.worldPos);
-        
-
-        return o;
+        return SetUpOutputValues(id);
 
       }
       
@@ -355,15 +75,6 @@ Shader "Islands/Ether/Feathers" {
 
 
 
-
-
-
-      sampler2D _FullColorMap;
-      #include "Assets/Resources/Shaders/Chunks/snoise.cginc"
-      #include "Assets/Resources/Shaders/Chunks/triNoise3D.cginc"
-
-      
-      sampler2D _BackgroundTexture1;
 
 
       //Pixel function returns a solid color for each point.
@@ -516,15 +227,18 @@ Shader "Islands/Ether/Feathers" {
           }
 
           
-          /*if( length(fPos) < .03 + v* .1){
+          /*if( v > 0.3/40 ){
             fog = hsv(float(i)/10,1,1);
             break;
           }*/
-          fog += hsv ( float(i)/30, 1, v );
+          
+          fog += hsv ( float(i)/30, 1, v*v );
 
         }
 
-        col = fog;
+        col = 50*fog;
+
+        //col *= hsv( v.hue + sin(id) * .1,.4,1);
 
         if( minBary < .001){
           // col = 1;// bgCol.xyz;
@@ -618,30 +332,6 @@ Shader "Islands/Ether/Feathers" {
 
 
 
-      struct Vert{
-        float3 pos;
-        float3 nor;
-        float2 uv;
-      };
-      struct Feather{
-        float3 pos;
-        float3 vel;
-        float featherType;
-        float locked;
-        float4x4 ltw;
-        float3 ogPos;
-        float3 ogNor;
-        float touchingGround;
-        float id;
-      };
-
-
-      
-      int _TrisPerMesh;
-      StructuredBuffer<Vert> _VertBuffer;
-      StructuredBuffer<Feather> _FeatherBuffer;
-      StructuredBuffer<int> _TriBuffer;
-
       struct v2f {
         V2F_SHADOW_CASTER;
         float3 nor : NORMAL;
@@ -649,11 +339,6 @@ Shader "Islands/Ether/Feathers" {
         float2 uv : TEXCOORD0;
         float4 data1 : TEXCOORD2;
       };
-
-      float _TotalShardsInBody;
-      float _NumShards;
-      float _TmpNumShards;
-      float _ONumShards;
 
 
       v2f vert(appdata_base input, uint id : SV_VertexID)

@@ -361,7 +361,7 @@ void Lines(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id
 #include "../Chunks/rotationMatrix.cginc"
 #include "../Chunks/translationMatrix.cginc"
 #include "../Chunks/scaleMatrix.cginc"
-#include "../Chunks/snoise.cginc"
+#include "../Chunks/snoise3D.cginc"
 #include "../Chunks/curlNoise.cginc"
 #include "../Chunks/hash.cginc"
 
@@ -369,20 +369,8 @@ int _NumScapularColumns;
 int _NumTailFeathers;
 
 
-struct Feather{
-  float3 pos;
-  float3 vel;
-  float featherType;
-  float locked;
-  float4x4 ltw;
-  float3 ogPos;
-  float type;
-  float lockTime;
-  float debug;
-  float touchingGround;
-  float id;
-};
 
+#include "Assets/Resources/Shaders/Chunks/FeatherStruct.cginc"
 RWStructuredBuffer<Feather> _FeatherBuffer;
 
 
@@ -499,34 +487,38 @@ void body( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out fl
   float3 p = cubicLoop8( inRowVal ,pos1);
   float3 p2 = cubicLoop8( inRowVal ,pos2);
 
-  float3 p1 = cubicLoop8( (inRowVal+.01) ,pos1);
-  float3 p3 = cubicLoop8( (inRowVal-.01) ,pos2);
+  float3 p1 = cubicLoop8( (inRowVal+.1) ,pos1);
+  float3 p3 = cubicLoop8( (inRowVal-.1) ,pos2);
 
   //p3 -= p1;
   // p3 = cross( -normalize(p-p2) , normalize(p3) );
 
-  float3 backDirection = p-p2;
-  float3 leftRight = p1 - p3;
+  float3 backDirection = (p-p2) * 10000;
+  float3 leftRight = (p1 - p3) * 10000;
 
-  if( length(backDirection) < .001 ){ backDirection = float3(0,0,.001);}
-  if( length(leftRight) < .001 ){ leftRight = float3(.001,0,0);}
+  if( length(backDirection) < .001 ){ backDirection = float3(0,0,.1);}
+  if( length(leftRight) < .001 ){ leftRight = float3(.1,0,0);}
 
-  backDirection = normalize(backDirection);
-  leftRight = normalize(leftRight);
+  backDirection = normalize(100*backDirection);
+  leftRight = normalize(100*leftRight);
 
   
-  float3 up = cross(leftRight,backDirection);
+  float3 up = normalize(cross(leftRight,backDirection));
 
   if( length(up) < 100 ){ up = float3(0,1,0);}
 
 
-  up = float3(0,1,0);
-  up = normalize(up);
+  //up = float3(0,1,0);
+  //up = normalize(up);
 
 
 
   float3 newBackDir = backDirection;// normalize( backDirection );
   float3 newUp = up;//normalize(cross(leftRight,newBackDir));
+
+  newUp = normalize(1000*cross(newBackDir,newUp));
+  newBackDir = normalize(1000*cross(newUp,newBackDir));
+  newBackDir = -normalize(1000*cross(newUp,newBackDir));
 
 
 
@@ -544,9 +536,13 @@ void body( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out fl
 
   
   
-  fFwd += cross( fUp , fFwd ) * _BaseDirectionLeftRightNoise * (hash(float(id * 10))-.5);
+ fFwd += cross( fUp , fFwd ) * _BaseDirectionLeftRightNoise * (hash(float(id * 10))-.5);
   fFwd += fUp  * _BaseDirectionUpNoise * ((hash(float(id * 30)))-.5);
   fFwd += fUp  * _BackAmountOverlapping;
+
+
+  fUp = -normalize(1000*cross(1000*fFwd,1000*fUp));
+ // fUp = normalize(cross(fFwd,fUp));
 
 
 
@@ -789,7 +785,9 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
   
   vel *=  (hash(float(pID)) * .6 + .4);
   
-  vel += _WrenVel;
+ // vel += _WrenVel;
+ 
+ 
   if( length( vel ) > 1000 ){
     vel = normalize(vel) * 1000;
   }
@@ -907,12 +905,13 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
   float sNoiseSlow = snoise( feather.ogPos * _NoiseSizeForFlutter + _MinFlutterSpeed * _Time) * _MinFlutter;
   float sNoiseFast = snoise( feather.ogPos * _NoiseSizeForFlutter + _MaxFlutterSpeed * _Time) * _MaxFlutter;
 
-  fFwd += fUp *  lerp( sNoiseSlow, sNoiseFast , length(_Velocity)/400 );
+ fFwd += fUp *  lerp( sNoiseSlow, sNoiseFast , length(_Velocity)/400 );
   fFwd = normalize(fFwd);
 
 
   float4x4 t = translationMatrix(fPos);
   float4x4 r = look_at_matrix(fFwd,fUp);
+  //float4x4 r = look_at_matrix(float3(10,0,0),float3(0,10,0));
   float4x4 s = scaleMatrix(fScale);
 
 
@@ -922,7 +921,7 @@ void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3
   feather.pos = fPos;//fPos;
   feather.vel = vel;
   feather.featherType = float(whichFeatherType);
-  feather.debug = float(featherColor);
+  feather.featherColor = float(featherColor);
   feather.ltw = rts;
 
 

@@ -119,6 +119,18 @@ public class PostController : MonoBehaviour
     public Color ambientOcclusionColor;
 
 
+    [Header("Spater Post Settings")]
+    public float spaterPostBlend;
+    public float spaterPostFade;
+
+    [Header("Astigma Settings")]
+    public float astigmaIntensity;
+    public float astigmaScale;
+    public float astigmaCutoff;
+    public float astimgaAngle;
+    public float astigmaNumSamples;
+    public float astigmaNumDirections;
+
 
 
 
@@ -153,11 +165,14 @@ public class PostController : MonoBehaviour
     public void Update()
     {
 
+        //        print("hi");
+
         if (God.wren != null)
         {
             CartToPolar(God.wren.transform.position);
         }
 
+        SetReferenceValues();
 
 
 
@@ -217,13 +232,26 @@ public class PostController : MonoBehaviour
         mainPost_Reference._Blend.value = _Blend;
         mainPost_Reference._Fade.value = _Fade;
 
-        if (God.wren != null)
+        if (God.wren != null && focusOnWren)
         {
             depthOfFieldFocusDistance = Vector3.Distance(God.wren.transform.position, God.camera.transform.position);
         }
 
         // todo if we are focusing on something else make that be the focus object ( even better make them both be in focus)
         depthOfField_Reference.focusDistance.value = depthOfFieldFocusDistance;
+        depthOfField_Reference.aperture.value = depthOfFieldAperture;
+        depthOfField_Reference.focalLength.value = depthOfFieldFocalLength;
+
+
+        astigma_Reference.intensity.value = astigmaIntensity;
+        astigma_Reference.scale.value = astigmaScale;
+        astigma_Reference.cutoff.value = astigmaCutoff;
+        astigma_Reference.angle.value = astimgaAngle;
+        astigma_Reference.numSamples.value = astigmaNumSamples;
+        astigma_Reference.numDirections.value = astigmaNumDirections;
+
+
+
 
 
     }

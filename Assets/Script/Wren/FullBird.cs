@@ -10,7 +10,6 @@ public class FullBird : MonoBehaviour
 
 
 
-
    public float eyeSize;
    public float beakSize;
    public Wren wren;
@@ -209,6 +208,8 @@ public class FullBird : MonoBehaviour
 
    public int totalShards;
 
+   public int featherStructSize = 36;
+
    void OnEnable()
    {
 
@@ -329,37 +330,37 @@ public class FullBird : MonoBehaviour
       }
 
 
-      float[] values = new float[32 * leftWing_gpu.totalFeathers];
+      float[] values = new float[featherStructSize * leftWing_gpu.totalFeathers];
       for (int i = 0; i < leftWing_gpu.totalFeathers; i++)
       {
 
          int randomID = Random.Range(0, idArray.Count);
-         values[i * 32 + 31] = (float)idArray[randomID];
+         values[i * featherStructSize + 34] = (float)idArray[randomID];
          idArray.RemoveAt(randomID);
 
       }
 
       leftWing_gpu.featherBuffer.SetData(values);
 
-      values = new float[32 * rightWing_gpu.totalFeathers];
+      values = new float[featherStructSize * rightWing_gpu.totalFeathers];
       for (int i = 0; i < rightWing_gpu.totalFeathers; i++)
       {
 
          int randomID = Random.Range(0, idArray.Count);
-         values[i * 32 + 31] = (float)idArray[randomID];
+         values[i * featherStructSize + 34] = (float)idArray[randomID];
          idArray.RemoveAt(randomID);
       }
 
       rightWing_gpu.featherBuffer.SetData(values);
 
 
-      values = new float[body_gpu.totalFeatherPoints * 32];
+      values = new float[body_gpu.totalFeatherPoints * featherStructSize];
 
       for (int i = 0; i < body_gpu.totalFeatherPoints; i++)
       {
 
          int randomID = Random.Range(0, idArray.Count);
-         values[i * 32 + 31] = idArray[randomID];
+         values[i * featherStructSize + 34] = idArray[randomID];
          idArray.RemoveAt(randomID);
       }
 
@@ -1022,14 +1023,12 @@ public class FullBird : MonoBehaviour
    public bool debugHierarchyBasis;
    public DebugHierarchy debugHierarchy;
 
-   public bool showBones;
-   public BirdSkeleton birdSkeleton;
-
    public void SetUpDebug()
    {
 
       debugHierarchy.debugConnections = debugHierarchyConnections;
       debugHierarchy.debugBasis = debugHierarchyBasis;
+      skeleton.enabled = drawSkeleton;
 
    }
 
@@ -1038,6 +1037,9 @@ public class FullBird : MonoBehaviour
    public bool drawBodyFeather;
    public bool drawLeftWingFeathers;
    public bool drawRightWingFeathers;
+
+   public bool drawSkeleton;
+
 
 
    public bool drawLeftFeatherLines;
@@ -1049,6 +1051,7 @@ public class FullBird : MonoBehaviour
 
    public bool drawBodyPoints;
    public bool drawBodyFeatherPoints;
+
 
 
 

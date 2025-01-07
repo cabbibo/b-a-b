@@ -91,7 +91,7 @@ public class GPUWing : MonoBehaviour
         vertBuffer = new ComputeBuffer(totalMeshPoints, 8 * sizeof(float));
         triBuffer = new ComputeBuffer(totalTris, sizeof(int));
 
-        featherBuffer = new ComputeBuffer(totalFeathers, 32 * sizeof(float));
+        featherBuffer = new ComputeBuffer(totalFeathers, bird.featherStructSize * sizeof(float));
 
 
         populateMeshData();
