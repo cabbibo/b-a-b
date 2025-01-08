@@ -2527,7 +2527,7 @@ GameObject:
   - component: {fileID: 2992305083140764157}
   - component: {fileID: 729311022242060584}
   m_Layer: 0
-  m_Name: soul (1)
+  m_Name: Soul Gem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2541,12 +2541,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1315740570936701672}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: -0.000000029802319, z: 0.00000001117587, w: 0.70710677}
-  m_LocalPosition: {x: -0, y: -0.009, z: -0.1252}
-  m_LocalScale: {x: 0.40000004, y: 0.40000007, z: 0.40000007}
+  m_LocalRotation: {x: 0.7071068, y: -0.000000059604638, z: 0.000000014901159, w: 0.70710677}
+  m_LocalPosition: {x: 0, y: -0.008951895, z: -0.12508842}
+  m_LocalScale: {x: 0.4, y: 0.40000004, z: 0.40000007}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 6394841455818829835}
+  m_Father: {fileID: 2513156481100995811}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!33 &3766366295018381666
 MeshFilter:
@@ -3659,6 +3659,52 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &1796573163053325612
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2513156481100995811}
+  - component: {fileID: 8454103830005891935}
+  m_Layer: 10
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2513156481100995811
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1796573163053325612}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2561691145321045332}
+  m_Father: {fileID: 6394841455818829835}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8454103830005891935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1796573163053325612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa251f36a2af7c242a91890603c287bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 3
 --- !u!1 &1834910607210570925
 GameObject:
   m_ObjectHideFlags: 0
@@ -25577,7 +25623,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6394841455818829835}
-  - component: {fileID: 2904033150810526993}
   m_Layer: 10
   m_Name: Soul
   m_TagString: Untagged
@@ -25598,22 +25643,9 @@ Transform:
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2561691145321045332}
+  - {fileID: 2513156481100995811}
   m_Father: {fileID: 6892441118360489082}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2904033150810526993
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6732547565055778868}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa251f36a2af7c242a91890603c287bb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 3
 --- !u!1 &6769985206594238573
 GameObject:
   m_ObjectHideFlags: 0

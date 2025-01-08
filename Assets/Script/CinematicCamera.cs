@@ -38,4 +38,6 @@ public class CinematicCamera : MonoBehaviour
     {
         debugArmed = false;
     }
+
+    public CinematicCameraManager.CinematicCameraDescriptor info = new CinematicCameraManager.CinematicCameraDescriptor();
 }

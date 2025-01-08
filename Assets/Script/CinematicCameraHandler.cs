@@ -30,6 +30,7 @@ public class CinematicCameraHandler : MonoBehaviour
       None,
       Body,
       Head,
+      Soul,
       Eye
     }
     public bool parentToBird = false;
@@ -68,6 +69,7 @@ public class CinematicCameraHandler : MonoBehaviour
         orbitRadius = Mathf.Lerp(a.orbitRadius, b.orbitRadius, t),
         orbitHeight = Mathf.Lerp(a.orbitHeight, b.orbitHeight, t),
         parentToBird = t > .5f ? b.parentToBird : a.parentToBird,
+
         bodyTarget = a.bodyTarget,
         posOffset = Vector3.Lerp(a.posOffset, b.posOffset, t),
         aimTarget = a.aimTarget,
@@ -84,6 +86,14 @@ public class CinematicCameraHandler : MonoBehaviour
     get
     {
       return God.wren.cameraWork.transform;
+    }
+  }
+
+  Transform Soul
+  {
+    get
+    {
+      return God.wren.soul.transform;
     }
   }
 
@@ -192,6 +202,12 @@ public class CinematicCameraHandler : MonoBehaviour
       case CameraDescriptor.BodyTarget.Head:
       case CameraDescriptor.BodyTarget.Eye:
         return Head;
+    }
+
+    switch (target)
+    {
+      case CameraDescriptor.BodyTarget.Soul:
+        return Soul;
     }
     return BirdTransform;
   }

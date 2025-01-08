@@ -10,6 +10,8 @@ public class OverallCameraManager : MonoBehaviour
     public SlideCameraManager slideManager;
     public TargetingCameraManager targetingManager;
 
+    public CinematicCameraManager cinematicManager;
+
     public BaseCameraManager[] cameraManagers;
 
     public float[] normalizedWeights;

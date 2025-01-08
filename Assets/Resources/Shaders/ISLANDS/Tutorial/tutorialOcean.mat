@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: tutorialOcean
-  m_Shader: {fileID: 4800000, guid: e52976febffbb5e469ee5e9797cd205b, type: 3}
+  m_Shader: {fileID: 4800000, guid: ce6b5a2c15367cd4d80f1a230f6d7e2f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []

@@ -78,6 +78,10 @@ public class FlyingTutorialSequence : MonoBehaviour
     public GameObject groupPing;
 
 
+    [Header("Cameras")]
+    public CinematicCamera cameraInsideCloseup;
+
+
     enum ControllerHint { None, Dive, Left, Right, Forward, Back, Hold, Takeoff, Flap, Swoop, Release, Release2, Gentle, Boost, Ping }
 
     [Header("Tooltip Cards")]
@@ -243,7 +247,9 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         SetControllerHint(ControllerHint.None);
         ShowProgress(0);
-        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
+
+
+        //cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
 
         float bgT = 1f;
         SetBGFade(bgT);
@@ -258,6 +264,9 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
+        God.cameraManager.cinematicManager.SetCamera(cameraInsideCloseup.info, 1);
+
+
 
 
 
@@ -265,7 +274,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         OnBirdAllSetUp();
 
 
-        cinematicCamera.mode = CinematicCameraHandler.Mode.Cinematic;
+        // cinematicCamera.mode = CinematicCameraHandler.Mode.Cinematic;
 
 
 
@@ -301,13 +310,13 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         while (debug)
         {
-            cinematicCamera.tutorialCameraIdx = debugCamIdx;
+            //cinematicCamera.tutorialCameraIdx = debugCamIdx;
             yield return null;
         }
 
 
 
-        cinematicCamera.tutorialCameraIdx = (float)Camera.Closeup;
+        //        cinematicCamera.tutorialCameraIdx = (float)Camera.Closeup;
 
         groupSticks.SetActive(true);
         controllerText.text = "test";
@@ -350,7 +359,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         TutorialSectionComplete();
 
         OnRotateToFrontStart();
-        cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
+        //cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
         yield return WaitWithCheat(waitTimeInFirstShots);
         yield return LerpCamera((float)Camera.Front, (float)Camera.Play, 5);
         OnRotateToFrontEnd();
@@ -361,7 +370,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         yield return WaitWithCheat(waitTimeInFlightSpace);
 
-        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
+        //cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
 
         yield return WaitWithCheat(waitTimeInFlightSpace);
 
@@ -569,11 +578,11 @@ public class FlyingTutorialSequence : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.Space))
                 break;
-            cinematicCamera.tutorialCameraIdx = Mathf.Lerp(from, to, Mathf.SmoothStep(0, 1, cT / time));
+            //cinematicCamera.tutorialCameraIdx = Mathf.Lerp(from, to, Mathf.SmoothStep(0, 1, cT / time));
             cT += Time.unscaledDeltaTime;
             yield return null;
         }
-        cinematicCamera.tutorialCameraIdx = to;
+        //cinematicCamera.tutorialCameraIdx = to;
     }
 
     enum Camera
@@ -1750,7 +1759,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         groupCard.alpha = 0;
         groupXToContinue.alpha = 0;
-        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
+        // cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
         groupXToContinue.gameObject.SetActive(true);
 
         SetCardInfo(CardType.RevealIsland);
@@ -1777,7 +1786,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         SetCardInfo(CardType.CycleThroughTriggers);
 
-        cinematicCamera.mode = CinematicCameraHandler.Mode.Activities;
+        //   cinematicCamera.mode = CinematicCameraHandler.Mode.Activities;
 
         groupXToContinue.alpha = 0;
         yield return WaitWithCheat(2.5f);
@@ -1809,7 +1818,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         SetCardInfo(CardType.TutorialEnd);
 
-        cinematicCamera.mode = CinematicCameraHandler.Mode.TutorialEnd;
+        //   cinematicCamera.mode = CinematicCameraHandler.Mode.TutorialEnd;
 
         groupXToContinue.alpha = 0;
         yield return WaitWithCheat(1.5f);
@@ -1826,7 +1835,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         God.wren.physics.rb.isKinematic = false;
 
-        cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
+        //  cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
         groupCard.alpha = 0;
         groupXToContinue.alpha = 0;
 
