@@ -65,6 +65,10 @@ public class WingSounds : MonoBehaviour
         float overallValue = Mathf.Clamp(God.wren.shards.GetBodyShardPercentage(), .3f, 1);
 
 
+
+
+
+        // Left X
         if (Time.time - lastGrainTime_LX > minTimeBetweenGrains)
         {
             if (leftXDelta > .03f)
@@ -72,12 +76,21 @@ public class WingSounds : MonoBehaviour
                 lastGrainTime_LX = Time.time;
 
                 float leftBlend = .2f + input.leftX * .2f;
+
+
+                float location = leftXDelta * 400;
+
+
+                print(location);
+
                 // synth.NewGrain(2.8f, 3 * overallValue, leftXDelta * 6 * overallValue, Random.Range(0, 1f), 0, leftBlend);
-                synth.NewGrain(.5f, 1 * overallValue, leftXDelta * 6 * overallValue, Random.Range(0.5f, 1f), 1, leftBlend);
+                synth.NewGrain(.5f, 1 * overallValue, leftXDelta * 6 * overallValue, location, 1, leftBlend);
             }
 
         }
 
+
+        // Right X
         if (Time.time - lastGrainTime_RX > minTimeBetweenGrains)
         {
             if (rightXDelta > .03f)
@@ -87,24 +100,31 @@ public class WingSounds : MonoBehaviour
                 float rightBlend = .8f + input.rightX * .2f;
                 //synth.NewGrain(2.8f, 3 * overallValue, rightXDelta * 6 * overallValue, Random.Range(0, 1f), 0, rightBlend);
 
-                synth.NewGrain(.5f, 1 * overallValue, rightXDelta * 6 * overallValue, Random.Range(0.5f, 1f), 1, rightBlend);
+
+                float location = Random.Range(0f, 100f);
+
+
+                synth.NewGrain(.5f, 1 * overallValue, rightXDelta * 6 * overallValue, location, 1, rightBlend);
             }
 
         }
 
-
+        // Left Y
         if (Time.time - lastGrainTime_LY > minTimeBetweenGrains)
         {
             if (leftYDelta > .03f)
             {
                 lastGrainTime_LY = Time.time;
                 float leftBlend = .2f;
-                synth.NewGrain(1.8f, 1 * overallValue, leftYDelta * 6 * overallValue, Random.Range(0, 1f), 1, leftBlend);
+                float location = Random.Range(0f, 100f);
+                synth.NewGrain(1.8f, 1 * overallValue, leftYDelta * 6 * overallValue, location, 1, leftBlend);
             }
 
         }
 
 
+
+        // Right Y
 
         if (Time.time - lastGrainTime_RY > minTimeBetweenGrains)
         {
@@ -112,6 +132,8 @@ public class WingSounds : MonoBehaviour
             {
                 lastGrainTime_RY = Time.time;
                 float rightBlend = .8f;
+
+                float location = Random.Range(0f, 100f);
                 synth.NewGrain(1.8f, 1 * overallValue, rightYDelta * 6 * overallValue, Random.Range(0, 1f), 1, rightBlend);
             }
 

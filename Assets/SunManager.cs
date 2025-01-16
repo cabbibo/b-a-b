@@ -18,6 +18,8 @@ public class SunManager : MonoBehaviour
 
     public float nightSpeed = 10;
 
+    public float transitionSpeed = 3;
+
     public float totalCycleLength;
 
 
@@ -45,6 +47,8 @@ public class SunManager : MonoBehaviour
 
     public AnimationCurve dayRemapper;
     public AnimationCurve nightRemapper;
+
+
 
 
 

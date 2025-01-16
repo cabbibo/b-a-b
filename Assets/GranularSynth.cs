@@ -237,6 +237,7 @@ public class GranularSynth : MonoBehaviour
         g.clipID = clipID;
         g.totalNumberOfSamples = (int)((float)sampleRate * length);
         g.startPositionInSample = (int)(positionInSample * (float)(sampleLengths[g.clipID] - g.totalNumberOfSamples));
+        print(g.startPositionInSample);
         g.currentPositionInSample = 0;
         g.playbackSpeed = speed;
         g.active = 1;
