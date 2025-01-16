@@ -85,7 +85,7 @@ public class FullState : MonoBehaviour
     public void UpdateState()
     {
 
-        print("Updating State");
+        //        print("Updating State");
         // TODO save all this to player prefs
 
         PlayerPrefsX.SetBool("_GameStarted", gameStarted);

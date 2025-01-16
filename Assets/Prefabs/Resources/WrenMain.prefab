@@ -3670,7 +3670,7 @@ GameObject:
   - component: {fileID: 2513156481100995811}
   - component: {fileID: 8454103830005891935}
   m_Layer: 10
-  m_Name: GameObject
+  m_Name: SoulGemHolder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12937,6 +12937,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 907715e23f9af8a43955feebf425d886, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  wren: {fileID: 6951865465235407638}
   interfaceRings:
   - {fileID: 747918731625244976}
   - {fileID: 4948385763640187042}
@@ -12945,6 +12946,8 @@ MonoBehaviour:
   wrenCompass: {fileID: 6941728428549406741}
   crystalsSpentPerPing: 10
   warningText: {fileID: 2529878351890496884}
+  showStaminaRing: 1
+  showForces: 1
 --- !u!1 &4290941773635643082
 GameObject:
   m_ObjectHideFlags: 0
@@ -25708,7 +25711,6 @@ GameObject:
   - component: {fileID: 2597521534360778826}
   - component: {fileID: 2035757486640604507}
   - component: {fileID: 6886267601303656548}
-  - component: {fileID: 6573287407883477050}
   - component: {fileID: 6960692582476909970}
   m_Layer: 10
   m_Name: WrenMain
@@ -26558,23 +26560,6 @@ MonoBehaviour:
   maxNumPositions: 100
   spaceBetweenPositions: 3
   lastPosition: {x: 0, y: 0, z: 0}
---- !u!114 &6573287407883477050
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6777034358615131737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 907715e23f9af8a43955feebf425d886, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  interfaceRings: []
-  interfacePointer: {fileID: 0}
-  wrenCompass: {fileID: 0}
-  crystalsSpentPerPing: 10
-  warningText: {fileID: 0}
 --- !u!114 &6960692582476909970
 MonoBehaviour:
   m_ObjectHideFlags: 0

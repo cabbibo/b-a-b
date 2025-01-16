@@ -22,6 +22,7 @@ public class CinematicCameraManager : BaseCameraManager
             Orbit,
             Location,
             LockToBird,
+            None
         }
         public enum LockToBirdLocation { Soul, Head, LeftEye, RightEye }
 
@@ -29,6 +30,10 @@ public class CinematicCameraManager : BaseCameraManager
         public CameraType cameraType = CameraType.Orbit;
 
         public Transform lookAtTarget;
+
+        public Vector3 upVector = Vector3.up;
+
+        public Vector3 lookOffset = Vector3.zero;
 
         public float FOV = 60;
         public float wiggleSize = 0;
@@ -56,8 +61,10 @@ public class CinematicCameraManager : BaseCameraManager
         [Header("Lock to Bird Info")]
 
         public bool localOffset;
+        public bool useLocalUp;
         public Vector3 lockBirdOffset = new Vector3(0, 0, 0);
         public LockToBirdLocation locktoBirdLocation = LockToBirdLocation.Soul;
+
 
 
         [Header("Data")]
@@ -92,7 +99,7 @@ public class CinematicCameraManager : BaseCameraManager
     public void SetCamera(CinematicCameraDescriptor cam, float speed)
     {
 
-        print("SETTING");
+        //        print("SETTING");
         currentDescriptor = cam;
         RequestPriority(speed);
     }
@@ -110,7 +117,12 @@ public class CinematicCameraManager : BaseCameraManager
     void Update()
     {
 
-        if (currentDescriptor == null)
+        if (currentDescriptor == null || God.wren == null)
+        {
+            return;
+        }
+
+        if (currentDescriptor.cameraType == CinematicCameraDescriptor.CameraType.None)
         {
             return;
         }
@@ -119,9 +131,6 @@ public class CinematicCameraManager : BaseCameraManager
         Vector3 lookPosition = GetCameraLookPosition(currentDescriptor);
         Vector3 lookUp = GetCameraLookUp(currentDescriptor);
 
-        print(lookUp);
-        //   print(lookPosition);
-        // print(God.wren.soul.transform.position);
         transform.position = targetPosition;
         transform.LookAt(lookPosition, lookUp);
 
@@ -157,7 +166,7 @@ public class CinematicCameraManager : BaseCameraManager
     public Vector3 GetCameraLookUp(CinematicCameraDescriptor cam)
     {
 
-        Vector3 pos = Vector3.up;
+        Vector3 pos = cam.upVector;
 
         switch (cam.cameraType)
         {
@@ -165,15 +174,11 @@ public class CinematicCameraManager : BaseCameraManager
                 pos = cam.orbitAxis;
                 break;
             case CinematicCameraDescriptor.CameraType.Location:
-                pos = Vector3.up;
                 break;
             case CinematicCameraDescriptor.CameraType.LockToBird:
-                pos = Vector3.up;
                 if (cam.localOffset)
                 {
-                    print("hii");
-                    print(God.wren.transform.up);
-                    pos = God.wren.transform.up;
+                    pos = God.wren.transform.TransformDirection(pos);
                 }
                 break;
 
@@ -186,6 +191,8 @@ public class CinematicCameraManager : BaseCameraManager
     {
         Vector3 pos = Vector3.zero;
 
+        pos += cam.lookOffset;
+
         switch (cam.cameraType)
         {
             case CinematicCameraDescriptor.CameraType.Orbit:
@@ -195,10 +202,20 @@ public class CinematicCameraManager : BaseCameraManager
                 pos = GetBirdPosition(cam);
                 break;
             case CinematicCameraDescriptor.CameraType.LockToBird:
-                pos = GetBirdPosition(cam); ;
+                pos = GetBirdPosition(cam);
+
+                Vector3 offset = cam.lookOffset;
+                if (cam.localOffset)
+                {
+                    offset = God.wren.transform.TransformDirection(offset);
+                }
+
+                pos += offset;
+
                 break;
 
         }
+
 
 
 
@@ -273,12 +290,25 @@ public class CinematicCameraManager : BaseCameraManager
 
         Vector3 offset = cam.lockBirdOffset;
 
+
+
+        offset += Vector3.right * God.wren.input.rightX * cam.wiggleSize;
+        offset += Vector3.up * God.wren.input.rightY * cam.wiggleSize;
+
+        offset += new Vector3(
+            Mathf.Sin(Time.time * cam.osscilateSpeed * 1.2f + 12.313f) * cam.osscilationSize.x,
+            Mathf.Sin(Time.time * cam.osscilateSpeed * .9f + 312.32f) * cam.osscilationSize.y,
+            Mathf.Sin(Time.time * cam.osscilateSpeed * 1f + .31f) * cam.osscilationSize.z
+            );
+
         if (cam.localOffset)
         {
 
             offset = God.wren.soul.transform.TransformDirection(offset);
         }
 
+        offset += God.camera.transform.right * God.wren.input.leftX * cam.wiggleSize;
+        offset += God.camera.transform.up * God.wren.input.leftY * cam.wiggleSize;
 
         pos += offset;
 
@@ -287,6 +317,10 @@ public class CinematicCameraManager : BaseCameraManager
 
 
 
+    public void LerpCamera(CinematicCameraDescriptor a, CinematicCameraDescriptor b, float t)
+    {
+        SetCamera(LerpDescriptors(a, b, t));
+    }
 
 
 
@@ -319,6 +353,11 @@ public class CinematicCameraManager : BaseCameraManager
         c.localOffset = a.localOffset;
         c.lockBirdOffset = Vector3.Lerp(a.lockBirdOffset, b.lockBirdOffset, t);
         c.locktoBirdLocation = a.locktoBirdLocation;
+
+        c.lookAtTarget = a.lookAtTarget;
+        c.upVector = Vector3.Lerp(a.upVector, b.upVector, t);
+        c.lookOffset = Vector3.Lerp(a.lookOffset, b.lookOffset, t);
+
 
         return c;
     }

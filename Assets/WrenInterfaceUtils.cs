@@ -8,11 +8,12 @@ using UnityEditor;
 
 
 [CustomEditor(typeof(WrenInterfaceUtils))]
-public class WrenInterfaceUtilsEditor : Editor {
-   public override void OnInspectorGUI()
-    {  
+public class WrenInterfaceUtilsEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
         WrenInterfaceUtils god = (WrenInterfaceUtils)target;
-        if(GUILayout.Button("PING"))
+        if (GUILayout.Button("PING"))
         {
             god.OnPing();
         }
@@ -28,6 +29,8 @@ public class WrenInterfaceUtilsEditor : Editor {
 public class WrenInterfaceUtils : MonoBehaviour
 {
 
+    public Wren wren;
+
     public InterfaceRing[] interfaceRings;
 
     public InterfacePointer interfacePointer;
@@ -39,9 +42,22 @@ public class WrenInterfaceUtils : MonoBehaviour
 
     public WrenUIText warningText;
 
+    public bool showStaminaRing = true;
+    public bool showForces = true;
 
 
 
+    public void Update()
+    {
+        if (showStaminaRing)
+        {
+            //SetRingValue(0, God.wren.stamina.currentStamina / God.wren.stamina.maxStamina);
+        }
+
+        // print(wren);
+        // print(wren.physics);
+        wren.physics.showDebugForces = showForces;
+    }
 
 
     // start with nothing on 

@@ -80,8 +80,8 @@ public class InterfacePointer : MonoBehaviour
 
         ReleaseBuffers();
 
-        print("RemakeBuffer");
-        print(pointerList.Count);
+        //      print("RemakeBuffer");
+        //        print(pointerList.Count);
         if (pointerList.Count > 0)
         {
             _buffer = new ComputeBuffer(pointerList.Count, 3 * sizeof(float));

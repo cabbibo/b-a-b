@@ -90,7 +90,7 @@ add phase shift into onenable, not the set state!
         if (God.state.tutorialFinished == false)
         {
 
-            print("start cinematic flight tutorial");
+            //            print("start cinematic flight tutorial");
             // start from the beginning
             StartCinematicFlightTutorial();
 
@@ -159,7 +159,7 @@ add phase shift into onenable, not the set state!
     public void StartCinematicFlightTutorial()
     {
 
-        print("starting cinematic flight");
+        //        print("starting cinematic flight");
 
         SetCinematicFlightTutorialState();
 
@@ -178,7 +178,7 @@ add phase shift into onenable, not the set state!
     public void SetCinematicFlightTutorialState()
     {
 
-        print("setting cinematic flight state");
+        //        print("setting cinematic flight state");
 
         hasCrashed = false;
         flightFinished = false;
@@ -194,7 +194,7 @@ add phase shift into onenable, not the set state!
         mainIsland.SetActive(false);
         windCircle.SetActive(false);
         portal.SetActive(false);
-        tutorialOcean.SetActive(true);
+        tutorialOcean.SetActive(false);
         tutorialClouds.SetActive(false);
         fadeOrb.SetActive(true);
         theCrossing.SetActive(false);

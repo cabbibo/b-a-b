@@ -70,7 +70,7 @@ public class WrenCameraWork : MonoBehaviour
   {
 
 
-    print("camera offset");
+    //    print("camera offset");
 
     //fLookTarget = transform.position;
     lookTarget += v;

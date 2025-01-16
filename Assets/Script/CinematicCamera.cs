@@ -30,8 +30,6 @@ public class CinematicCameraEditor : Editor
 public class CinematicCamera : MonoBehaviour
 {
 
-    public CinematicCameraHandler.CameraDescriptor descriptor = new CinematicCameraHandler.CameraDescriptor();
-
     public bool debugArmed = false;
 
     void Start()

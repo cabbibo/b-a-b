@@ -2187,7 +2187,7 @@ public class WrenPhysics : MonoBehaviour
     public void Update()
     {
 
-        if (forceBuffer != null)
+        if (forceBuffer != null && showDebugForces)
         {
             if (mpb == null)
             {

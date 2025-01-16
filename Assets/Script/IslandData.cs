@@ -276,7 +276,7 @@ public class IslandData : MonoBehaviour
 
     public void OnIslandEnter()
     {
-        print("ON ISLAND ENTER");
+        //        print("ON ISLAND ENTER");
 
         onIsland = true;
         if (God.state.islandDiscovered == false)

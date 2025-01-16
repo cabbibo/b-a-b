@@ -149,16 +149,16 @@ public class WrenParams : MonoBehaviour
             //print(PamPam.GetType().GetFields()[i].Name);
             if (PamPam.GetType().GetFields()[i].Name == "lockX")
             {
-                print("print lockX");
-                print(PamPam.GetType().GetFields()[i].GetValue(PamPam));
+                //                print("print lockX");
+                //print(PamPam.GetType().GetFields()[i].GetValue(PamPam));
 
             }
 
             //print(PamPam.GetType().GetFields()[i].Name);
             if (PamPam.GetType().GetFields()[i].Name == "lockY")
             {
-                print("print lockY");
-                print(PamPam.GetType().GetFields()[i].GetValue(PamPam));
+                // print("print lockY");
+                //print(PamPam.GetType().GetFields()[i].GetValue(PamPam));
 
             }
 

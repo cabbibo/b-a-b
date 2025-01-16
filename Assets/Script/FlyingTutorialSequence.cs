@@ -38,7 +38,7 @@ public class FlyingTutorialSequence : MonoBehaviour
     public static UnityAction OnFreeFlightStarted;
 
 
-    public CinematicCameraHandler cinematicCamera;
+    //  public CinematicCameraHandler cinematicCamera;
 
     public CanvasGroup groupContainer;
     public CanvasGroup xToContinue;
@@ -80,6 +80,8 @@ public class FlyingTutorialSequence : MonoBehaviour
 
     [Header("Cameras")]
     public CinematicCamera cameraInsideCloseup;
+    public CinematicCamera cameraCloseBack;
+    public CinematicCamera cameraFarBack;
 
 
     enum ControllerHint { None, Dive, Left, Right, Forward, Back, Hold, Takeoff, Flap, Swoop, Release, Release2, Gentle, Boost, Ping }
@@ -237,6 +239,8 @@ public class FlyingTutorialSequence : MonoBehaviour
     public void DoTutorialSequenceSetup()
     {
 
+
+
         stateManager.SetCinematicFlightTutorialState();
 
         God.postController.FadeIn();
@@ -252,7 +256,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         //cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
 
         float bgT = 1f;
-        SetBGFade(bgT);
+        SetBGFade(0);
 
         God.wren.bird.featherMaterial = featherStartMaterial;
         God.wren.bird.ResetFeatherValues();
@@ -261,10 +265,13 @@ public class FlyingTutorialSequence : MonoBehaviour
         God.wren.bird.drawSkeleton = false;
         God.wren.canMove = false;
         God.wren.physics.rb.isKinematic = true;
+        God.wren.interfaceUtils.showStaminaRing = false;
+        God.wren.interfaceUtils.showForces = false;
+        God.postController.focusOnWren = false;
+        God.postController.depthOfFieldFocusDistance = .1f;
+        God.postController.astigma = true;
 
 
-
-        God.cameraManager.cinematicManager.SetCamera(cameraInsideCloseup.info, 1);
 
 
 
@@ -301,6 +308,9 @@ public class FlyingTutorialSequence : MonoBehaviour
         while (God.wren == null)
             yield return null;
 
+        print("setting camera");
+        God.cameraManager.cinematicManager.SetCamera(cameraInsideCloseup.info, 1);
+
         while (God.wren.physics.onGround) // wait for takeoff ro we should just set this ourselves?
             yield return null;
 
@@ -320,7 +330,7 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         groupSticks.SetActive(true);
         controllerText.text = "test";
-        print("first shot");
+        // print("first shot");
         OnFirstShot();
         yield return WaitWithCheat(10);
 
@@ -333,7 +343,9 @@ public class FlyingTutorialSequence : MonoBehaviour
         print("second shot");
         groupSticks.SetActive(false);
         God.postController.focusOnWren = true;
-        cinematicCamera.tutorialCameraIdx = (float)Camera.TopClose;
+        //  cinematicCamera.tutorialCameraIdx = (float)Camera.TopClose;
+
+        God.cameraManager.cinematicManager.SetCamera(cameraCloseBack.info, 1);
         OnBirdBackShown();
 
         yield return WaitWithCheat(10);
@@ -341,9 +353,9 @@ public class FlyingTutorialSequence : MonoBehaviour
         TutorialSectionComplete();
 
         OnBirdZoomOutStart();
-        print("third shot shot");
-        yield return LerpCamera((float)Camera.TopClose, (float)Camera.TopFar, 10);
+        yield return LerpCamera(cameraCloseBack, cameraFarBack, 10);
         OnBirdZoomOutEnd();
+
         // yield return WaitWithCheat(waitTimeInFirstShots);
         yield return WaitForXToContinue();
         TutorialSectionComplete();
@@ -353,35 +365,38 @@ public class FlyingTutorialSequence : MonoBehaviour
         God.audio.Play(God.sounds.texturalHitClips);
         God.postController.astigma = false;
 
+
         yield return WaitWithCheat(3);
 
         yield return WaitForXToContinue();
         TutorialSectionComplete();
+        God.cameraManager.cinematicManager.ReleasePriority(.1f);
 
-        OnRotateToFrontStart();
+        // OnRotateToFrontStart();
         //cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
-        yield return WaitWithCheat(waitTimeInFirstShots);
-        yield return LerpCamera((float)Camera.Front, (float)Camera.Play, 5);
-        OnRotateToFrontEnd();
+        // yield return WaitWithCheat(waitTimeInFirstShots);
+        //yield return LerpCamera((float)Camera.Front, (float)Camera.Play, 5);
+        // OnRotateToFrontEnd();
 
-        yield return FadeBG(1, 0);
+        // yield return FadeBG(1, 0);
 
-        God.wren.shards.SpendAllShards();
+        //God.wren.shards.SpendAllShards();
 
-        yield return WaitWithCheat(waitTimeInFlightSpace);
+        // yield return WaitWithCheat(waitTimeInFlightSpace);
 
-        //cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
-
-        yield return WaitWithCheat(waitTimeInFlightSpace);
 
 
         SetBGFade(0);
 
         God.wren.physics.rb.isKinematic = false;
         God.wren.canMove = true;
+        God.wren.interfaceUtils.showStaminaRing = true;
 
 
         TutorialSectionComplete();
+        stateManager.StartFreeFlight();
+
+        SetBGFade(0);
 
         God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
         yield return WaitWithCheat(1);
@@ -394,7 +409,8 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
         God.wren.parameters.LoadParamSet("wrenTutorialSequence_Swoop");
-        stateManager.StartFreeFlight();
+
+
         God.wren.bird.featherMaterial = featherMainMaterial;
         yield return SwoopSequence();
 
@@ -418,6 +434,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         God.wren.parameters.LoadParamSet("wrenTutorialSequence");
 
 
+        God.wren.interfaceUtils.showForces = true;
         yield return FreeFlightSection();
 
 
@@ -427,6 +444,8 @@ public class FlyingTutorialSequence : MonoBehaviour
         TutorialSectionComplete();
 
         OnDiveInstructions();
+
+        SetBGFade(0);
         // Dive
         yield return ControllerHintSequence(ControllerHint.Dive);
 
@@ -564,7 +583,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         float t = 0;
         while (t < seconds)
         {
-            if (Input.GetKey(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space))
                 break;
             t += Time.unscaledDeltaTime;
             yield return null;
@@ -576,13 +595,32 @@ public class FlyingTutorialSequence : MonoBehaviour
         float cT = 0;
         while (cT < time)
         {
-            if (Input.GetKey(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space))
                 break;
             //cinematicCamera.tutorialCameraIdx = Mathf.Lerp(from, to, Mathf.SmoothStep(0, 1, cT / time));
             cT += Time.unscaledDeltaTime;
             yield return null;
         }
         //cinematicCamera.tutorialCameraIdx = to;
+    }
+
+
+    IEnumerator LerpCamera(CinematicCamera from, CinematicCamera to, float time)
+    {
+        float cT = 0;
+        while (cT < time)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+                break;
+            //cinematicCamera.tutorialCameraIdx = Mathf.Lerp(from, to, Mathf.SmoothStep(0, 1, cT / time));
+            God.cameraManager.cinematicManager.LerpCamera(from.info, to.info, cT / time);
+
+
+            cT += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        God.cameraManager.cinematicManager.SetCamera(to.info, 1);
     }
 
     enum Camera
@@ -617,6 +655,13 @@ public class FlyingTutorialSequence : MonoBehaviour
     {
         God.audio.PlayBasedOnWrenSpeed(God.sounds.texturalHitClips[Random.Range(0, God.sounds.texturalHitClips.Length)]);
         God.wren.shards.CollectShards(shardsPerTargetHit, Random.Range(0, 10f), hitTarget.transform.position);
+
+        print("TARGET HIT");
+        God.particleSystems.Emit(God.particleSystems.smallSuccessParticleSystem, God.wren.transform.position + God.wren.transform.forward * 5f, 100);
+        //God.particleSystems.transform.position = God.wren.transform.position + God.wren.transform.forward * 5;
+        //God.particleSystems.smallSuccessParticleSystem.Play();
+
+
     }
 
 
@@ -1898,7 +1943,7 @@ public class FlyingTutorialSequence : MonoBehaviour
                 God.wren.PhaseShift(ender.transform.position + Vector3.down * 180);
             }
 
-            if (Input.GetKey(KeyCode.LeftAlt))
+            if (Input.GetKeyDown(KeyCode.LeftAlt))
             {
                 // wind tunnel 1
                 if (Input.GetKeyDown(KeyCode.Alpha1))

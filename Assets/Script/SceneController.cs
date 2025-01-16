@@ -47,8 +47,8 @@ public class SceneController : MonoBehaviour
             {
                 if (scene.name != "BaseScene" && scene.name != null)
                 {
-                    print("unloading scene");
-                    print(scene.name);
+                    //                    print("unloading scene");
+                    //                  print(scene.name);
                     SceneManager.UnloadScene(scene);
                 }
             }
@@ -243,12 +243,12 @@ public class SceneController : MonoBehaviour
         {
             return;
         }
-        print("Scene Loaded");
-        print(scene);
-        print(scene.name);
+        //        print("Scene Loaded");
+        //       print(scene);
+        //     print(scene.name);
 
         GameObject[] rootObjects = scene.GetRootGameObjects();
-        print(rootObjects[0]);
+        //        print(rootObjects[0]);
 
         WrenUtils.Scene wrenScene = rootObjects[0].GetComponent<WrenUtils.Scene>();
 
@@ -278,12 +278,12 @@ public class SceneController : MonoBehaviour
         // Only animate in if we have animation!
         if (God.state.currentBiomeID >= 0 && God.state.currentBiomeID < wrenScene.portals.Length && God.wren != null)
         {
-            print("starting portal animation in");
+            //   print("starting portal animation in");
             StartCoroutine(PortalAnimationIn(wrenScene.portals[God.state.currentBiomeID]));
         }
         else
         {
-            print("starting base animation in");
+            //            print("starting base animation in");
             StartCoroutine(BaseAnimationIn());
         }
 
@@ -441,9 +441,14 @@ public class SceneController : MonoBehaviour
         Quaternion startRot = God.wren.cameraWork.camTarget.rotation;//portal.startPoint.rotation;
 
 
+        /*
+        
+        TODO what do do about this actually!
+        
         while (Time.time - StartTime < fadeInLength)
         {
 
+            print("fading");
 
             float val = (Time.time - StartTime) / fadeInLength;
             //God.fade
@@ -452,11 +457,18 @@ public class SceneController : MonoBehaviour
             God.camera.transform.rotation = Quaternion.Slerp(endRot, startRot, val);///.Lerp()
 
             yield return null;
-        }
 
+        }*/
+
+
+        God.camera.transform.position = endPoint;
+        God.camera.transform.rotation = endRot;
 
 
         OnFadedIn();
+
+
+        yield return null;
 
 
     }
