@@ -49,6 +49,7 @@ public class TutorialStateManager : MonoBehaviour
 
 
 
+
     /*
 
         Bugs
@@ -654,7 +655,7 @@ add phase shift into onenable, not the set state!
 
         if (inFreeFlight)
         {
-//            print("while in free flight");
+            //            print("while in free flight");
             WhileInFreeFlight();
         }
 

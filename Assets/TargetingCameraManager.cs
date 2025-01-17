@@ -43,6 +43,8 @@ public class TargetingCameraManager : BaseCameraManager
         bool anyOn = false;
         for (int i = 0; i < targets.Count; i++)
         {
+
+
             Vector3 targetPos = targets[i].position;
             Vector3 birdPos = God.wren.transform.position;
 
@@ -138,6 +140,8 @@ public class TargetingCameraManager : BaseCameraManager
     public void AddTarget(Transform target)
     {
 
+        print("hiii");
+        print(targets);
         if (!targets.Contains(target))
         {
             targets.Add(target);
@@ -203,6 +207,9 @@ public class TargetingCameraManager : BaseCameraManager
         if (targets.Contains(target))
         {
             int index = targets.IndexOf(target);
+
+            print("contains target");
+            print(index);
             targets.RemoveAt(index);
             strengthNearFar.RemoveAt(index);
             weights.RemoveAt(index);
@@ -210,6 +217,10 @@ public class TargetingCameraManager : BaseCameraManager
             targetDirections.RemoveAt(index);
             FOVs.RemoveAt(index);
             distancesFromBird.RemoveAt(index);
+        }
+        else
+        {
+            print("doesnt contain target");
         }
     }
 

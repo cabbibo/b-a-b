@@ -117,6 +117,8 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
+    public float amountProgressPerHit = .3f;
+
 
 
     static FlyingTutorialSequence _instance;
@@ -288,7 +290,10 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         TutorialSectionComplete();
 
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
+        // up down feels bad
+        //  God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
+
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence_Swoop");
         yield return WaitWithCheat(3);
         yield return UpDownSequence();
 
@@ -303,9 +308,13 @@ public class FlyingTutorialSequence : MonoBehaviour
         TutorialSectionComplete();
 
 
+        OnFreeFlightStarted();
+        SetBGFade(0);
+
+        yield return WaitWithCheat(3);
+
         God.wren.parameters.LoadParamSet("wrenTutorialSequence");
         God.wren.interfaceUtils.showForces = true;
-        OnFreeFlightStarted();
 
         yield return FreeFlightSection();
 
@@ -395,6 +404,11 @@ public class FlyingTutorialSequence : MonoBehaviour
         God.postController.focusOnWren = false;
         God.postController.depthOfFieldFocusDistance = .1f;
         God.postController.astigma = true;
+
+
+        // set up weather manager so we get sun in right direction!
+        weatherManager.sunManager.auto = false;
+        weatherManager.sunManager.rawTimeInCycle = weatherManager.sunManager.daySpeed * .98f;
 
 
 
@@ -508,17 +522,19 @@ public class FlyingTutorialSequence : MonoBehaviour
         SetControllerHint(ControllerHint.Forward);
         StartCoroutine(FadeGroup(groupContainer, 0, 1));
 
-        ActivatePointer();
-        hitTarget.SetActive(true);
         PlaceHitTarget();
+        // ActivatePointer();
+        //  hitTarget.SetActive(true);
 
         while (t < 1)
         {
 
-            hitTarget.transform.LookAt(hitTarget.transform.position + Vector3.forward);
 
 
-            tv1 = God.wren.transform.position - hitTarget.transform.position;
+            // hitTarget.transform.LookAt(hitTarget.transform.position + Vector3.forward);
+
+
+            tv1 = God.wren.transform.position - targetManager.currentTarget.transform.position;
 
             // turn wren towards target in xz plane
             float upOrDown = Vector3.Dot(God.wren.transform.up, tv1);
@@ -526,6 +542,8 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
             God.wren.physics.AddForce(God.wren.transform.right * leftOrRight * moveTowardsTargetForwardMultiplier, God.wren.transform.position + God.wren.transform.forward);
+
+
 
 
             if (upOrDown > 0)
@@ -540,18 +558,32 @@ public class FlyingTutorialSequence : MonoBehaviour
 
             if (tv1.magnitude < hitTargetRadius)
             {
-                t += .1f;
+                t += amountProgressPerHit;
 
-                // place next target
-                OnTargetHit();
 
-                if (upOrDown > 0)
+                // only place new if not finished
+                if (t < 1)
                 {
-                    PlaceHitTarget();
+
+                    // place next target
+                    OnTargetHit();
+
+                    // canHit = true;
+
+                    if (upOrDown > 0)
+                    {
+                        PlaceHitTarget();
+                    }
+                    else
+                    {
+                        PlaceHitTarget();
+                    }
+
                 }
                 else
                 {
-                    PlaceHitTarget();
+                    DeactivatePointer();
+                    targetManager.EraseAllTargets();
                 }
 
             }
@@ -563,10 +595,13 @@ public class FlyingTutorialSequence : MonoBehaviour
 
                     if (upOrDown > 0)
                     {
+                        DeactivatePointer();
                         PlaceHitTarget();
                     }
                     else
                     {
+
+                        DeactivatePointer();
                         PlaceHitTarget();
                     }
                 }
@@ -578,7 +613,8 @@ public class FlyingTutorialSequence : MonoBehaviour
             ShowProgress(t);
             // Set back to normal;
 
-
+            if (Input.GetKeyDown(KeyCode.Space))
+                break;
 
             yield return null;
 
@@ -586,9 +622,11 @@ public class FlyingTutorialSequence : MonoBehaviour
         }
 
 
-        StartCoroutine(FadeGroup(groupContainer, 1, 0));
         DeactivatePointer();
-        hitTarget.SetActive(false);
+        targetManager.EraseAllTargets();
+        StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
+        //hitTarget.SetActive(false);
         // after wee have completed
         // God.wren.physics.lockX = false;
     }
@@ -612,84 +650,142 @@ public class FlyingTutorialSequence : MonoBehaviour
 */
 
 
+
+    /// top
+
     public bool divingOrNot;
     public float hitTime;
+
+    public bool canPlace;
+
+    public float maxHeightAboveBelow = 4f;
     IEnumerator SwoopSequence()
     {
         float t = 0;
 
-        hitTarget.SetActive(true);
-        PlaceSwoopTarget();
+        //PlaceSwoopTarget(-1);
+        canPlace = true;
+        divingOrNot = true;
 
         SetControllerHint(ControllerHint.Swoop);
         StartCoroutine(FadeGroup(groupContainer, 0, 1));
 
-        ActivatePointer();
+        // ActivatePointer();
 
         divingOrNot = true;
 
+        float heightDiff = 10;//God.wren.transform.position.y - targetManager.currentTarget.transform.position.y;
+        float oHeightDiff = 10;//heightDiff;
 
-        float heightDiff = God.wren.transform.position.y - hitTarget.transform.position.y;
-        float oHeightDiff = heightDiff;
 
         while (t < 1)
         {
 
-            tv1 = God.wren.transform.position - hitTarget.transform.position;
 
-            hitTarget.transform.LookAt(hitTarget.transform.position + Vector3.up);
+            //  hitTarget.transform.LookAt(hitTarget.transform.position + Vector3.up);
 
             // turn wren towards target in xz plane
-            float upOrDown = Vector3.Dot(God.wren.transform.up, tv1);
+            // float upOrDown = Vector3.Dot(God.wren.transform.up, tv1);
             float leftOrRight = Vector3.Dot(God.wren.transform.right, Vector3.forward);
 
 
             God.wren.physics.AddForce(God.wren.transform.right * leftOrRight * moveTowardsTargetForwardMultiplier, God.wren.transform.position + God.wren.transform.forward);
 
-            oHeightDiff = heightDiff;
-            heightDiff = God.wren.transform.position.y - hitTarget.transform.position.y;
 
-            if (heightDiff > 0)
+
+            // cant connect if not placed!
+            if (!canPlace)
             {
-                SetControllerHint(ControllerHint.Swoop);
+
+
+                tv1 = God.wren.transform.position - targetManager.currentTarget.transform.position;
+                oHeightDiff = heightDiff;
+                heightDiff = God.wren.transform.position.y - targetManager.currentTarget.transform.position.y;
+
+                if (heightDiff > 0)
+                {
+                    SetControllerHint(ControllerHint.Swoop);
+                }
+                else
+                {
+                    SetControllerHint(ControllerHint.Back);
+                }
+
+                // make sure we arent *too* high up or *too* low
+
+                float fHeight = targetManager.currentTarget.transform.position.y;
+
+                if (fHeight > God.wren.transform.position.y + maxHeightAboveBelow)
+                {
+                    fHeight = Mathf.Lerp(fHeight, God.wren.transform.position.y + maxHeightAboveBelow, .1f);
+                }
+                else if (fHeight < God.wren.transform.position.y - maxHeightAboveBelow)
+                {
+                    fHeight = Mathf.Lerp(fHeight, God.wren.transform.position.y - maxHeightAboveBelow, .1f);
+                }
+
+
+                // if (divingOrNot)
+                // {
+                targetManager.currentTarget.transform.position = new Vector3(
+                    God.wren.transform.position.x,
+                   fHeight,
+                    God.wren.transform.position.z
+                );
+
+
+
+
+
+
+                targetManager.currentTarget.transform.position += Vector3.Scale(God.wren.transform.forward, new Vector3(1, 0, 1)).normalized * 1.2f * Mathf.Abs(targetManager.currentTarget.transform.position.y - God.wren.transform.position.y);
+
+                //}
+
+
+
+                if (heightDiff < 0 && oHeightDiff > 0)
+                {
+                    OnTargetHit();
+                    t += amountProgressPerHit;
+                    canPlace = true;
+                    divingOrNot = false;
+
+                }
+                else if (heightDiff > 0 && oHeightDiff < 0)
+                {
+                    OnTargetHit();
+                    t += amountProgressPerHit;
+                    canPlace = true;
+                    divingOrNot = true;
+                }
+
             }
-            else
+
+
+            if (canPlace)
             {
-                SetControllerHint(ControllerHint.Back);
-            }
+                if (Vector3.Dot(God.wren.transform.forward, Vector3.up) > .4f && !divingOrNot)
+                {
 
+                    PlaceSwoopTarget(1);
+                    canPlace = false;
+                }
 
-            // if (divingOrNot)
-            // {
-            hitTarget.transform.position = new Vector3(
-                God.wren.transform.position.x,
-                hitTarget.transform.position.y,
-                God.wren.transform.position.z
-            );
-
-            hitTarget.transform.position += Vector3.Scale(God.wren.transform.forward, new Vector3(1, 0, 1)).normalized * 1.2f * Mathf.Abs(hitTarget.transform.position.y - God.wren.transform.position.y);
-
-            //}
-
-            if (heightDiff < 0 && oHeightDiff > 0)
-            {
-                OnTargetHit();
-                t += .1f;
+                if (Vector3.Dot(God.wren.transform.forward, Vector3.up) < -.4f && divingOrNot)
+                {
+                    PlaceSwoopTarget(-1);
+                    canPlace = false;
+                }
 
             }
-            else if (heightDiff > 0 && oHeightDiff < 0)
-            {
-                OnTargetHit();
-                t += .1f;
-            }
-
-
 
             ShowProgress(t);
             // Set back to normal;
 
 
-
+            if (Input.GetKeyDown(KeyCode.Space))
+                break;
 
 
             yield return null;
@@ -697,10 +793,11 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         }
 
+
+        DeactivatePointer();
+        targetManager.EraseAllTargets();
         StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
-        hitTarget.SetActive(false);
-        DeactivatePointer();
 
 
         // after wee have completed
@@ -744,21 +841,22 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
 
 
-        PlaceLRHitTarget();
 
         SetControllerHint(ControllerHint.Forward);
         StartCoroutine(FadeGroup(groupContainer, 0, 1));
-        ActivatePointer();
-        hitTarget.SetActive(true);
+
+
+        PlaceLRHitTarget();
+
 
         while (t < 1)
         {
 
-            hitTarget.transform.LookAt(God.wren.transform.position);
 
-            tv1 = God.wren.transform.position - hitTarget.transform.position;
 
-            hitTarget.transform.position = new Vector3(hitTarget.transform.position.x, God.wren.transform.position.y, hitTarget.transform.position.z);
+            tv1 = God.wren.transform.position - targetManager.currentTarget.transform.position;
+
+            targetManager.currentTarget.transform.position = new Vector3(targetManager.currentTarget.transform.position.x, God.wren.transform.position.y, targetManager.currentTarget.transform.position.z);
 
             // turn wren towards target in xz plane
             float upOrDown = Vector3.Dot(God.wren.transform.up, tv1);
@@ -776,31 +874,49 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
             if (tv1.magnitude < hitTargetRadius)
             {
-                t += .1f;
+                t += amountProgressPerHit;
 
-                OnTargetHit();
-                PlaceLRHitTarget();
+                if (t < 1)
+                {
+                    OnTargetHit();
+                    PlaceLRHitTarget();
+
+                }
+
+
             }
             else
             {
+
+
                 // maybe need some new way here?
-                if (Vector3.Dot(God.wren.transform.forward, tv1) > .4f) { PlaceLRHitTarget(); }
+                if (Vector3.Dot(God.wren.transform.forward, tv1.normalized) > .4f)
+                {
+
+                    print("PLACING");
+                    DeactivatePointer();
+                    PlaceLRHitTarget();
+                }
+
+
             }
 
             ShowProgress(t);
 
 
-
+            if (Input.GetKeyDown(KeyCode.Space))
+                break;
             yield return null;
 
 
         }
 
+        DeactivatePointer();
+        targetManager.EraseAllTargets();
         StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
 
-        DeactivatePointer();
-        hitTarget.SetActive(false);
+        //  hitTarget.SetActive(false);
 
     }
 
@@ -838,6 +954,8 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 */
 
 
+    public float maxDistanceFreeflightFromTarget = 50;
+
 
     IEnumerator FreeFlightSection()
     {
@@ -850,24 +968,30 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
         SetControllerHint(ControllerHint.Gentle);
         StartCoroutine(FadeGroup(groupContainer, 0, 1));
-        ActivatePointer();
-        hitTarget.SetActive(true);
+
         PlaceFreeFlightTarget();
+        // ActivatePointer();
 
         while (t < 1)
         {
 
-            hitTarget.transform.LookAt(God.wren.transform.position);
 
-            tv1 = God.wren.transform.position - hitTarget.transform.position;
+            tv1 = God.wren.transform.position - targetManager.currentTarget.transform.position;
 
+            if (tv1.magnitude > maxDistanceFreeflightFromTarget)
+            {
+                targetManager.currentTarget.transform.position = God.wren.transform.position - tv1.normalized * maxDistanceFreeflightFromTarget;
+            }
 
             if (tv1.magnitude < hitTargetRadius)
             {
+
+                print("htittt");
                 t += .1f;
 
                 OnTargetHit();
                 PlaceFreeFlightTarget();
+
             }
             else
             {
@@ -884,17 +1008,13 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
         }
 
+
+        DeactivatePointer();
+        targetManager.EraseAllTargets();
         StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
 
-        DeactivatePointer();
-        hitTarget.SetActive(false);
 
-    }
-
-    void PlaceFreeFlightTarget()
-    {
-        hitTarget.transform.position = God.wren.transform.position + Vector3.Scale(Random.onUnitSphere * 100, new Vector3(1, .3f, 1));
     }
 
     // set back to normal params
@@ -1011,11 +1131,16 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
 
             ShowProgress(t);
-
+            if (Input.GetKeyDown(KeyCode.Space))
+                break;
             yield return null;
 
 
         }
+
+
+        DeactivatePointer();
+        targetManager.EraseAllTargets();
         StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
     }
@@ -1064,11 +1189,15 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
             }
 
             ShowProgress(t);
+            if (Input.GetKeyDown(KeyCode.Space))
+                break;
             yield return null;
         }
 
         StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
+        DeactivatePointer();
+        targetManager.EraseAllTargets();
         ShowProgress(0);
     }
 
@@ -1119,15 +1248,6 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
     }
 
 
-    public void SetUpSceneValues()
-    {
-
-        weatherManager.sunManager.auto = false;
-        weatherManager.sunManager.rawTimeInCycle = weatherManager.sunManager.daySpeed * .9f;
-
-
-    }
-
 
 
 
@@ -1136,42 +1256,20 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
     public void ActivatePointer()
     {
         //hitTarget.SetActive(true);
-        God.wren.interfaceUtils.interfacePointer.AddPointer(hitTarget.transform, 0, new Vector4(0, 0, 0, 1));
-        God.wren.interfaceUtils.interfacePointer.TurnOnPointer(hitTarget.transform);
+        God.wren.interfaceUtils.interfacePointer.AddPointer(targetManager.currentTarget.transform, 0, new Vector4(0, 0, 0, 1));
+        God.wren.interfaceUtils.interfacePointer.TurnOnPointer(targetManager.currentTarget.transform);
     }
 
 
     public void DeactivatePointer()
     {
-        God.wren.interfaceUtils.RemovePointer(hitTarget.transform);
+        if (targetManager.currentTarget != null)
+        {
+            God.wren.interfaceUtils.RemovePointer(targetManager.currentTarget.transform);
+        }
+        targetManager.EraseCurrentTarget();
         // hitTarget.SetActive(false);
     }
-
-
-    void PlaceSwoopTarget()
-    {
-
-        hitTarget.transform.position = God.wren.transform.position + Vector3.forward * 50 + Vector3.up * -10;
-    }
-
-
-
-
-    void PlaceHitTarget()
-    {
-        hitTarget.transform.position = God.wren.transform.position + Vector3.forward * 50 + Vector3.up * (placeUpOrDown ? 10 : -10);
-        placeUpOrDown = !placeUpOrDown;
-    }
-
-
-    void PlaceLRHitTarget()
-    {
-        Vector3 flatWrenForward = Vector3.Scale(God.wren.transform.forward, new Vector3(1, 0, 1));
-
-        hitTarget.transform.position = God.wren.transform.position + flatWrenForward * 50 + Vector3.right * (placeLeftOrRight ? 10 : -10);
-        placeLeftOrRight = !placeLeftOrRight;
-    }
-
 
 
 
@@ -1193,6 +1291,8 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
         print("TARGET HIT");
         God.particleSystems.Emit(God.particleSystems.smallSuccessParticleSystem, God.wren.transform.position + God.wren.transform.forward * 5f, 100);
+        DeactivatePointer();
+        targetManager.HitTarget(God.wren.physics.speed);
         //God.particleSystems.transform.position = God.wren.transform.position + God.wren.transform.forward * 5;
         //God.particleSystems.smallSuccessParticleSystem.Play();
 
@@ -1213,6 +1313,69 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
     {
         xToContinue.gameObject.SetActive(bShow);
     }
+
+
+
+
+
+
+    /**
+          ____  _        _    ____ _____   _____  _    ____   ____ _____ _____   _   _ _____ _     ____  _____ ____  ____  
+         |  _ \| |      / \  / ___| ____| |_   _|/ \  |  _ \ / ___| ____|_   _| | | | | ____| |   |  _ \| ____|  _ \/ ___| 
+         | |_) | |     / _ \| |   |  _|     | | / _ \ | |_) | |  _|  _|   | |   | |_| |  _| | |   | |_) |  _| | |_) \___ \ 
+         |  __/| |___ / ___ \ |___| |___    | |/ ___ \|  _ <| |_| | |___  | |   |  _  | |___| |___|  __/| |___|  _ < ___) |
+         |_|   |_____/_/   \_\____|_____|   |_/_/   \_\_| \_\\____|_____| |_|   |_| |_|_____|_____|_|   |_____|_| \_\____/ 
+                                                                                                                           
+*/
+
+    void PlaceSwoopTarget(int upDown)
+    {
+        targetManager.SetTarget(God.wren.transform.position + Vector3.forward * 50 + Vector3.up * (float)upDown * 20, 2);
+        ActivatePointer();
+    }
+
+
+
+    void PlaceHitTarget()
+    {
+        targetManager.SetTarget(God.wren.transform.position + Vector3.forward * 100 + Vector3.up * (placeUpOrDown ? 10 : -10), 1);
+        placeUpOrDown = !placeUpOrDown;
+        ActivatePointer();
+    }
+
+
+    void PlaceLRHitTarget()
+    {
+        Vector3 flatWrenForward = Vector3.Scale(God.wren.transform.forward, new Vector3(1, 0, 1));
+        Vector3 flatWrenRight = Vector3.Scale(God.wren.transform.right, new Vector3(1, 0, 1));
+
+        float leftOrRight = Vector3.Dot(flatWrenForward, Vector3.right);
+
+        if (leftOrRight > 0)
+        {
+            targetManager.SetTarget(God.wren.transform.position + flatWrenForward * 100 + flatWrenRight * -20, 0);
+        }
+        else
+        {
+            targetManager.SetTarget(God.wren.transform.position + flatWrenForward * 100 + flatWrenRight * 20, 0);
+        }
+
+
+        placeLeftOrRight = !placeLeftOrRight;
+        ActivatePointer();
+
+    }
+
+
+
+    void PlaceFreeFlightTarget()
+    {
+        targetManager.SetTarget(God.wren.transform.position + 100 * (Vector3.Scale(God.wren.transform.forward * 3 + Random.onUnitSphere, new Vector3(1f, .2f, 1f))), 0);
+        ActivatePointer();
+    }
+
+
+
 
 
 

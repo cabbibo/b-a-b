@@ -116,5 +116,11 @@ public class Sounds : MonoBehaviour
 
 
 
+    public AudioClip crystalTogetherClip;
+    public AudioClip crystalApartClip;
+
+
+
+
 
 }
