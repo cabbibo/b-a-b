@@ -50,6 +50,25 @@ public class WrenCanDo : MonoBehaviour
     }
 
 
+    public void ResetState()
+    {
+        hover = false;
+        boost = false;
+        ping = false;
+        disintegrate = false;
+
+        call = false;
+        magnitize = false;
+        placeBeacon = false;
+        rewind = false;
+
+        carry = false;
+    }
+
+
+
 
 
 }
+
+

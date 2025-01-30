@@ -16,7 +16,6 @@ namespace WrenUtils
         public UnityEvent OnLoadEvent;
 
         public string name;
-        public Material skyboxMaterial;
         public string physicsParameters;
 
         public Portal[] portals;
@@ -25,6 +24,8 @@ namespace WrenUtils
 
         public bool isDemo;
         public bool startInFlight;
+
+        public ScenePostSettings postSettings;
 
 
         public void SceneLoaded(int newScene, bool loadedFromPortal)
@@ -49,7 +50,6 @@ namespace WrenUtils
             }
 
 
-            God.skyboxUpdater.UpdateSkybox(skyboxMaterial);
 
             // Sets up our demo info
             for (int i = 0; i < portals.Length; i++)
@@ -74,6 +74,8 @@ namespace WrenUtils
 
             }
 
+
+            postSettings.Set();
 
 
             OnLoadEvent.Invoke();

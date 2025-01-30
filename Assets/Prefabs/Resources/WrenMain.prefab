@@ -25771,7 +25771,6 @@ MonoBehaviour:
   parameters: {fileID: 6738018899578692129}
   state: {fileID: 5852462534492014359}
   stats: {fileID: 8384076030520376333}
-  canDo: {fileID: 6960692582476909970}
   maker: {fileID: 0}
   revereser: {fileID: 6886267601303656548}
   beacon: {fileID: 9119398298632821260}

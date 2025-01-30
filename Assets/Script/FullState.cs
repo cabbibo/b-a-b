@@ -51,6 +51,8 @@ public class FullState : MonoBehaviour
 
     public float totalTimeInGame;
 
+    public WrenCanDo wrenCanDo;
+
     public void OnEnable()
     {
         //   print("full state enabled");
@@ -111,6 +113,8 @@ public class FullState : MonoBehaviour
         PlayerPrefs.SetInt("_CurrentQuest", currentQuestID);
 
         PlayerPrefs.SetInt("_TotalSecondsInGame", (int)totalTimeInGame);
+
+        wrenCanDo.SaveState();
 
 
 
@@ -223,6 +227,8 @@ public class FullState : MonoBehaviour
 
         totalTimeInGame = (float)PlayerPrefs.GetInt("_TotalSecondsInGame", 0);
 
+        wrenCanDo.LoadState();
+
 
 
 
@@ -236,7 +242,7 @@ public class FullState : MonoBehaviour
         PlayerPrefs.DeleteAll();
 
 
-        currentSceneID = 0;
+        currentSceneID = 1;
         currentBiomeID = -1;
 
         gameStarted = false;
@@ -263,7 +269,9 @@ public class FullState : MonoBehaviour
 
 
 
+        wrenCanDo.ResetState();
         UpdateState();
+
 
 
     }
@@ -421,6 +429,7 @@ public class FullState : MonoBehaviour
     public void OnTutorialFinish()
     {
         tutorialFinished = true;
+        wrenCanDo.ping = true;
         UpdateState();
     }
 

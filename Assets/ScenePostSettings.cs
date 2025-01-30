@@ -20,15 +20,13 @@ public class ScenePostSettings : MonoBehaviour
 
 
 
-    public float fogIntensity;
-    public float fogHeightPower;
-
-
     // Start is called before the first frame update
     void Start()
     {
 
     }
+
+
 
     // Update is called once per frame
     void Update()
@@ -36,9 +34,17 @@ public class ScenePostSettings : MonoBehaviour
 
     }
 
+
+
     public void Set()
     {
+
         God.skyboxUpdater.UpdateSkybox(skyboxMaterial);
+        if (God.wren != null)
+        {
+            // God.wren.bird.SetMaterial(birdMaterial);
+            God.wren.bird.featherMaterial = birdMaterial;
+        }
 
         God.postController.SetPostParameters(postParameters);
 

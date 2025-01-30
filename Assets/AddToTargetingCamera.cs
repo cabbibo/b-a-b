@@ -13,10 +13,7 @@ public class AddToTargetingCamera : MonoBehaviour
     public void OnEnable()
     {
 
-        print("Adding to targeting camera");
-        print(gameObject);
-        print(transform);
-        print(God.cameraManager.targetingManager);
+
 
         God.cameraManager.targetingManager.AddTarget(transform, nearFar, distanceFromBird, FOV);
 

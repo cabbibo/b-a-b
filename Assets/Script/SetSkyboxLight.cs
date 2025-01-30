@@ -8,12 +8,14 @@ using WrenUtils;
 public class SetSkyboxLight : MonoBehaviour
 {
 
-    public Scene scene;
+    /*  public Scene scene;
 
 
-    // Update is called once per frame
-    void Update()
-    {
-        scene.skyboxMaterial.SetVector("_LightDir", transform.forward);
-    }
+      // Update is called once per frame
+      void Update()
+      {
+          scene.skyboxMaterial.SetVector("_LightDir", transform.forward);
+      }*/
+
+
 }

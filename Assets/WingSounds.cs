@@ -81,7 +81,7 @@ public class WingSounds : MonoBehaviour
                 float location = leftXDelta * 400;
 
 
-                print(location);
+                //  print(location);
 
                 // synth.NewGrain(2.8f, 3 * overallValue, leftXDelta * 6 * overallValue, Random.Range(0, 1f), 0, leftBlend);
                 synth.NewGrain(.5f, 1 * overallValue, leftXDelta * 6 * overallValue, location, 1, leftBlend);

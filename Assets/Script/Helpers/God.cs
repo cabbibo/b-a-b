@@ -53,6 +53,7 @@ namespace WrenUtils
 
         public Light _sun;
 
+        public WrenCanDo _wrenCanDo;
 
 
 
@@ -434,6 +435,14 @@ namespace WrenUtils
             get
             {
                 return instance._sun;
+            }
+        }
+
+        public static WrenCanDo wrenCanDo
+        {
+            get
+            {
+                return instance._wrenCanDo;
             }
         }
 

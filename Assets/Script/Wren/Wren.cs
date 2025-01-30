@@ -39,7 +39,7 @@ public class Wren : MonoBehaviour
     public WrenState state;
     public WrenStats stats;
 
-    public WrenCanDo canDo;
+    //public WrenCanDo canDo;
 
     public WrenMaker maker;
 
@@ -311,7 +311,7 @@ public class Wren : MonoBehaviour
             // state.inInterface = God.menu.menuOn;
 
             // ALWAYS PING
-            if (input.o_triangle < .5 && input.triangle > .5 && canDo.ping)
+            if (input.o_triangle < .5 && input.triangle > .5 && God.wrenCanDo.ping)
             {
                 if (interfaceUtils != null)
                 {
@@ -320,7 +320,7 @@ public class Wren : MonoBehaviour
             }
 
             // ALWAYS DISINTEGRATE
-            if (input.o_square < .5 && input.square > .5 && canDo.disintegrate)
+            if (input.o_square < .5 && input.square > .5 && God.wrenCanDo.disintegrate)
             {
                 disintegration.Disintegrate();
             }
@@ -409,7 +409,7 @@ public class Wren : MonoBehaviour
                 }
 
 
-                if (input.o_ex < .5 && input.ex > .5 && physics.onGround == false && canDo.hover)
+                if (input.o_ex < .5 && input.ex > .5 && physics.onGround == false && God.wrenCanDo.hover)
                 {
                     God.audio.Play(God.sounds.takeoffClip);
                     physics.ToggleHoverState();
@@ -425,7 +425,7 @@ public class Wren : MonoBehaviour
 
 
 
-                if (input.o_circle < .5 && input.circle > .5 && physics.onGround == false && state.inInterface == false && shards.numShards > 0 && canDo.boost)
+                if (input.o_circle < .5 && input.circle > .5 && physics.onGround == false && state.inInterface == false && shards.numShards > 0 && God.wrenCanDo.boost)
                 {
                     God.audio.Play(God.sounds.boostClip);
                     shards.DoBoost(); ;
@@ -435,7 +435,7 @@ public class Wren : MonoBehaviour
 
 
                 /*
-                            if (input.o_dLeft < .5 && input.dLeft > .5 && state.inInterface == false && canDo.rewind)
+                            if (input.o_dLeft < .5 && input.dLeft > .5 && state.inInterface == false && God.wrenCanDo.rewind)
                             {
                                 // revereser.MoveToNext();
                             }
