@@ -39,6 +39,12 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
     public Vector2 renderSize = new Vector2(1920, 1080);
 
     public MeshRenderer debugDepthRenderer;
+
+    public float particleSize;
+    public float particleSpawnSpeed;
+    public float particleMatchAmount;
+
+
     void OnEnable()
     {
 

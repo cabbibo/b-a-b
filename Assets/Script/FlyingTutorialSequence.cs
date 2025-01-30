@@ -136,7 +136,8 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
-
+    public PostParameters preSplosionPostParameters;
+    public PostParameters postSplosionPostParameters;
 
 
     void Update()
@@ -210,6 +211,9 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         groupSticks.SetActive(true);
         controllerText.text = "test";
+
+
+        God.postController.SetPostParameters(preSplosionPostParameters);
         OnFirstShot();
         yield return WaitWithCheat(10);
 
@@ -220,15 +224,13 @@ public class FlyingTutorialSequence : MonoBehaviour
         TutorialSectionComplete();
 
         groupSticks.SetActive(false);
-        God.postController.focusOnWren = true;
 
-        God.cameraManager.cinematicManager.SetCamera(cameraCloseBack.info, 1);
-        OnBirdBackShown();
+        God.postController.WormHole(OnBirdBackShown);
+
 
         yield return WaitWithCheat(10);
         yield return WaitForXToContinue();
         TutorialSectionComplete();
-
         OnBirdZoomOutStart();
         yield return LerpCamera(cameraCloseBack, cameraFarBack, 10);
         OnBirdZoomOutEnd();
@@ -237,8 +239,10 @@ public class FlyingTutorialSequence : MonoBehaviour
         yield return WaitForXToContinue();
         TutorialSectionComplete();
 
+        God.postController.WormHole(DoWrenSplosition, PostSplosion);
+        //DoWrenSplosition();
 
-        DoWrenSplosition();
+
 
         yield return WaitWithCheat(3);
 
@@ -284,7 +288,6 @@ public class FlyingTutorialSequence : MonoBehaviour
 
         God.wren.bird.featherMaterial = featherMainMaterial;
         God.wren.parameters.LoadParamSet("wrenTutorialSequence_Swoop");
-
 
         yield return SwoopSequence();
 
@@ -332,8 +335,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         ShowProgress(0);
         StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
-
-        stateManager.StartTransition();
+        God.postController.WormHole(OnFlightTutorialEnd);
 
     }
 
@@ -401,9 +403,7 @@ public class FlyingTutorialSequence : MonoBehaviour
         God.wren.physics.rb.isKinematic = true;
         God.wren.interfaceUtils.showStaminaRing = false;
         God.wren.interfaceUtils.showForces = false;
-        God.postController.focusOnWren = false;
-        God.postController.depthOfFieldFocusDistance = .1f;
-        God.postController.astigma = true;
+
 
 
         // set up weather manager so we get sun in right direction!
@@ -435,16 +435,6 @@ public class FlyingTutorialSequence : MonoBehaviour
 
 
 
-    public void DoWrenSplosition()
-    {
-
-        God.wren.bird.Explode();
-        God.wren.shards.SpendAllShards();
-        God.wren.bird.drawSkeleton = true;
-        God.audio.Play(God.sounds.texturalHitClips);
-        God.postController.astigma = false;
-
-    }
 
 
 
@@ -995,6 +985,14 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
             }
             else
             {
+
+                if (Vector3.Dot(God.wren.transform.forward, tv1) > .4f)
+                {
+                    DeactivatePointer();
+                    PlaceFreeFlightTarget();
+                }
+
+
                 // TODO do we need helpers here?
                 //if (Vector3.Dot(God.wren.transform.forward, tv1) > .4f) { PlaceLRHitTarget(); }
             }
@@ -1711,7 +1709,10 @@ _______     _______ _   _ _____ ____
 
 
     public void OnFirstShot() { }
-    public void OnBirdBackShown() { }
+    public void OnBirdBackShown()
+    {
+        God.cameraManager.cinematicManager.SetCamera(cameraCloseBack.info, 1);
+    }
     public void OnBirdZoomOutStart() { }
     public void OnBirdZoomOutEnd() { }
     public void OnRotateToFrontStart() { }
@@ -1726,6 +1727,28 @@ _______     _______ _   _ _____ ____
 
 
 
+    public void DoWrenSplosition()
+    {
+
+        God.wren.bird.Explode();
+        God.wren.shards.SpendAllShards();
+        God.wren.bird.drawSkeleton = true;
+        God.audio.Play(God.sounds.texturalHitClips);
+
+    }
+
+    public void PostSplosion()
+    {
+
+        God.postController.SetPostParameters(postSplosionPostParameters);
+    }
+
+
+
+    public void OnFlightTutorialEnd()
+    {
+        stateManager.StartTransition();
+    }
 
 
 

@@ -16,22 +16,7 @@ public class ScenePostSettings : MonoBehaviour
     public Gradient sunGradient;
     public Gradient moonGradient;
 
-
-
-
-
-
-
-    public bool mainPost;
-    public bool glitch;
-    public bool fog;
-    public bool depthOfField;
-    public bool chromaticAberration;
-    public bool bloom;
-    public bool colorGrading;
-    public bool vignette;
-
-    public bool splatEffect;
+    public PostParameters postParameters;
 
 
 
@@ -55,17 +40,8 @@ public class ScenePostSettings : MonoBehaviour
     {
         God.skyboxUpdater.UpdateSkybox(skyboxMaterial);
 
-        God.postController.mainPost = mainPost;
-        God.postController.glitchEffect = glitch;
-        God.postController.fogEffect = fog;
-        God.postController.depthOfField = depthOfField;
-        God.postController.chromaticAberration = chromaticAberration;
-        God.postController.bloom = bloom;
-        God.postController.colorGrading = colorGrading;
-        God.postController.vignette = vignette;
-        God.postController.splatEffect = splatEffect;
+        God.postController.SetPostParameters(postParameters);
 
-        // God.weatherManager.
 
     }
 

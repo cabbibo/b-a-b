@@ -370,7 +370,7 @@ public class SceneController : MonoBehaviour
 
             float val = (Time.time - StartTime) / portalAnimationOutLength;
             //God.fade
-            God.postController._Fade = val * val;
+            God.postController.SetFade(val * val);
             God.camera.transform.position = Vector3.Lerp(startPoint, endPoint, val);///.Lerp()
             God.camera.transform.rotation = Quaternion.Slerp(startRot, endRot, val);///.Lerp()
 
@@ -411,7 +411,7 @@ public class SceneController : MonoBehaviour
 
             float val = (Time.time - StartTime) / fadeInLength;
             //God.fade
-            God.postController._Fade = (1 - val);
+            God.postController.SetFade(1 - val);
             God.camera.transform.position = Vector3.Lerp(endPoint, startPoint, val);///.Lerp()
             God.camera.transform.rotation = Quaternion.Slerp(endRot, startRot, val);///.Lerp()
 

@@ -45,7 +45,8 @@ public class StopAfterSomeSeconds : MonoBehaviour
         }
 
 
-        God.postController._Fade = 1 - val * val;
+        God.postController.SetFade(1 - val * val);
+
 
         if (val == 0)
         {

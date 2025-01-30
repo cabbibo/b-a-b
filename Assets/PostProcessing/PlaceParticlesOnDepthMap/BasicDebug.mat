@@ -74,7 +74,7 @@ Material:
     - _NormalOffset: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Size: 0.54
+    - _Size: 7
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1

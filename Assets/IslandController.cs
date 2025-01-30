@@ -129,13 +129,13 @@ public class IslandController : MonoBehaviour
                     islands[i].onIsland == false)
                 {
 
-                    print(wrenPos);
-                    print(islandPos);
-                    print(Mathf.Abs(difference.x));
-                    print(islands[i].size.x + islandSizeBuffer);
-                    print(Mathf.Abs(difference.z));
-                    print(islands[i].size.z + islandSizeBuffer);
-                    print("ENTERING ISLAND");
+                    /* print(wrenPos);
+                     print(islandPos);
+                     print(Mathf.Abs(difference.x));
+                     print(islands[i].size.x + islandSizeBuffer);
+                     print(Mathf.Abs(difference.z));
+                     print(islands[i].size.z + islandSizeBuffer);
+                     print("ENTERING ISLAND");*/
                     OnNewIslandEntered(i);
                     //break;
                 }

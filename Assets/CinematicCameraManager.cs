@@ -90,7 +90,6 @@ public class CinematicCameraManager : BaseCameraManager
     public void SetCamera(CinematicCameraDescriptor cam)
     {
 
-        print("SETTING");
         currentDescriptor = cam;
         RequestPriority();
     }

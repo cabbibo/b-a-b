@@ -8,46 +8,84 @@ using UnityEngine.Rendering.PostProcessing;
 using WrenUtils;
 using Crest;
 
+
+#if UNITY_EDITOR
+
+
+using UnityEditor;
+
+
+[CustomEditor(typeof(PostController))]
+public class PostControllerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+
+        PostController myScript = (PostController)target;
+        
+        if (GUILayout.Button("Fade Out"))
+        {
+            myScript.FadeOut();
+        }
+
+        if (GUILayout.Button("Fade In"))
+        {
+            myScript.FadeIn();
+        }
+
+        if (GUILayout.Button("Glitch Hit"))
+        {
+            myScript.GlitchHit();
+        }
+
+        if(GUILayout.Button("Worm Hole"))
+        {
+            myScript.WormHole();
+        }
+
+        DrawDefaultInspector();
+
+
+
+    }
+}
+
+#endif
+
+
+
 [ExecuteAlways]
 public class PostController : MonoBehaviour
 {
 
 
+    public PostParameters tmpPostParameters;
+    public PostParameters basePostParameters;
+    public PostParameters[] postParameters;
+
+
+
+
+
     public PostProcessVolume volume;
-    private VolumeProfile profile;
+    public VolumeProfile profile;
 
+    public MainPost mainPost_Reference;
+    public Bloom bloom_Reference;
 
-    private MainPost mainPost_Reference;
-    private Bloom bloom_Reference;
-    private ColorGrading colorGrading_Reference;
-    private Vignette vignette_Reference;
-    private LensDistortion lensDistortion_Reference;
-    private ChromaticAberration chromaticAberration_Reference;
-    private FogEffect fogEffect_Reference;
-    private DepthOfField depthOfField_Reference;
+    public ColorGrading colorGrading_Reference;
+    public Vignette vignette_Reference;
+    public LensDistortion lensDistortion_Reference;
+    public ChromaticAberration chromaticAberration_Reference;
+    public FogEffect fogEffect_Reference;
+    public DepthOfField depthOfField_Reference;
 
-    private GlitchEffect glitchEffect_Reference;
+    public GlitchEffect glitchEffect_Reference;
 
-    private AmbientOcclusion ambientOcclusion_Reference;
+    public AmbientOcclusion ambientOcclusion_Reference;
 
-    private SpaterPostSettings spaterPost_Reference;
-    private Astigma astigma_Reference;
-
-    public bool mainPost;
-    public bool bloom;
-    public bool colorGrading;
-    public bool vignette;
-    public bool lensDistortion;
-    public bool chromaticAberration;
-    public bool fogEffect;
-    public bool depthOfField;
-    public bool glitchEffect;
-
-    public bool splatEffect;
-    public bool ambientOcclusion;
-    public bool spaterPost;
-    public bool astigma;
-
+    public SpaterPostSettings spaterPost_Reference;
+    public Astigma astigma_Reference;
 
 
     // other controllers
@@ -55,85 +93,6 @@ public class PostController : MonoBehaviour
     public UnderwaterRenderer crestUnderwaterRenderer;
 
     public PlaceParticlesOnDepthMap placeParticlesOnDepthMap;
-
-
-    [Header("Main Post Settings")]
-
-    public float _Hue;
-    public float _Saturation;
-    public float _Lightness;
-    public float _Blend;
-    public float _Fade;
-
-    public Texture2D biomeMap;
-
-
-
-    [Header("Depth Of Field Settings")]
-
-    public float depthOfFieldFocusDistance;
-
-
-
-
-    [Header("Fog Settings")]
-    public float fogIntensity;
-    public float fogHeightPower;
-
-    [Header("Color Grading Settings")]
-    public Color colorFilter;
-
-
-    [Header("Vignette Settings")]
-    public float vignetteIntensity;
-
-
-    [Header("Bloom Settings")]
-    public float bloomIntensity;
-    public float bloomThreshold;
-
-    [Header("Lens Distortion Settings")]
-    public float lensDistortionIntensity;
-    public float lensDistortionScale;
-
-    [Header("Chromatic Aberration Settings")]
-    public float chromaticAberrationIntensity;
-
-    [Header("Depth Of Field Settings")]
-    public float depthOfFieldAperture;
-    public float depthOfFieldFocalLength;
-    public bool focusOnWren;
-
-    [Header("Glitch Settings")]
-    public float glitchIntensity;
-
-    [Header("Splat Settings")]
-    public bool renderBackground;
-    public float splatsAmount;
-    public float splatSize;
-
-    public float splatSpeed;
-
-    [Header("Ambient Occlusion Settings")]
-    public float ambientOcclusionIntensity;
-    public Color ambientOcclusionColor;
-
-
-    [Header("Spater Post Settings")]
-    public float spaterPostBlend;
-    public float spaterPostFade;
-
-    [Header("Astigma Settings")]
-    public float astigmaIntensity;
-    public float astigmaScale;
-    public float astigmaCutoff;
-    public float astimgaAngle;
-    public float astigmaNumSamples;
-    public float astigmaNumDirections;
-
-
-
-
 
 
     void OnEnable()
@@ -162,37 +121,34 @@ public class PostController : MonoBehaviour
 
 
 
+
+
+
+
     public void Update()
     {
 
-        //        print("hi");
 
-        if (God.wren != null)
-        {
-            CartToPolar(God.wren.transform.position);
-        }
+        tmpPostParameters.SetValues(
+             mainPost_Reference,
+             bloom_Reference,
+             colorGrading_Reference,
+             vignette_Reference,
+             lensDistortion_Reference,
+             chromaticAberration_Reference,
+             fogEffect_Reference,
+             depthOfField_Reference,
+             glitchEffect_Reference,
+             ambientOcclusion_Reference,
+             spaterPost_Reference,
+             astigma_Reference,
+             placeParticlesOnDepthMap
+         );
 
-        SetReferenceValues();
-
-
-
-        mainPost_Reference.enabled.Override(mainPost);
-        bloom_Reference.enabled.Override(bloom);
-        colorGrading_Reference.enabled.Override(colorGrading);
-        vignette_Reference.enabled.Override(vignette);
-        lensDistortion_Reference.enabled.Override(lensDistortion);
-        chromaticAberration_Reference.enabled.Override(chromaticAberration);
-        fogEffect_Reference.enabled.Override(fogEffect);
-        depthOfField_Reference.enabled.Override(depthOfField);
-        glitchEffect_Reference.enabled.Override(glitchEffect);
-        ambientOcclusion_Reference.enabled.Override(ambientOcclusion);
-        spaterPost_Reference.enabled.Override(spaterPost);
-        astigma_Reference.enabled.Override(astigma);
-
-        if (splatEffect)
+        if (tmpPostParameters.splatEffect)
         {
             placeParticlesOnDepthMap.enabled = true;
-            if (renderBackground)
+            if (tmpPostParameters.renderBackground)
             {
                 LayerMask everything = ~0;
                 God.camera.cullingMask = everything;
@@ -201,7 +157,6 @@ public class PostController : MonoBehaviour
             {
 
                 LayerMask debug = (1 << LayerMask.NameToLayer("Splats"));
-                //print(debug);
                 God.camera.cullingMask = debug;
             }
         }
@@ -213,95 +168,31 @@ public class PostController : MonoBehaviour
             God.camera.cullingMask = everything;
         }
 
+
+
     }
 
 
-
-
-
-
-
-    public void SetReferenceValues()
+    public void SetPostParameters(string name)
     {
-
-
-        //        print(post);
-        mainPost_Reference._Hue.value = _Hue;
-        mainPost_Reference._Saturation.value = _Saturation;
-        mainPost_Reference._Lightness.value = _Lightness;
-        mainPost_Reference._Blend.value = _Blend;
-        mainPost_Reference._Fade.value = _Fade;
-
-        if (God.wren != null && focusOnWren)
+        foreach (PostParameters p in postParameters)
         {
-            depthOfFieldFocusDistance = Vector3.Distance(God.wren.transform.position, God.camera.transform.position);
+            if (p.name == name)
+            {
+                p.CopyTo(tmpPostParameters);
+                return;
+            }
         }
-
-        // todo if we are focusing on something else make that be the focus object ( even better make them both be in focus)
-        depthOfField_Reference.focusDistance.value = depthOfFieldFocusDistance;
-        depthOfField_Reference.aperture.value = depthOfFieldAperture;
-        depthOfField_Reference.focalLength.value = depthOfFieldFocalLength;
-
-
-        astigma_Reference.intensity.value = astigmaIntensity;
-        astigma_Reference.scale.value = astigmaScale;
-        astigma_Reference.cutoff.value = astigmaCutoff;
-        astigma_Reference.angle.value = astimgaAngle;
-        astigma_Reference.numSamples.value = astigmaNumSamples;
-        astigma_Reference.numDirections.value = astigmaNumDirections;
-
-
-
-
-
     }
 
-
-
-
-
-
-
-
-
-
-    Vector2 CartToPolar(Vector3 position)
+    public void SetPostParameters(PostParameters p)
     {
-
-        float angle = Mathf.Atan2(position.x, position.z);
-        float radius = (new Vector2(position.x, position.z)).magnitude;
-
-
-        float x = (position.x + 2048) / 4096;
-        float y = (position.z + 2048) / 4096;
-
-        Color c = biomeMap.GetPixelBilinear(x, y, 0);
-
-        //        print( c.a);
-
-
-        float h, s, v;
-
-        Color.RGBToHSV(c, out h, out s, out v);
-
-        _Hue = h;
-        _Blend = c.a;
-
-
-
-        /* angle = (angle > 0 ? angle : (2*Mathf.PI + angle));
-         angle /= 2 * Mathf.PI;
-
-         _Hue = angle;
-         _Hue += angleOffset;
-         _Hue %= 1;
-
-
-         print( _Hue );*/
-
-        return new Vector2(angle, radius);
-
+        p.CopyTo(tmpPostParameters);
     }
+
+
+
+
 
 
     public void FadeOut()
@@ -317,13 +208,20 @@ public class PostController : MonoBehaviour
     public float fadeInSpeed = 1;
     public float fadeOutSpeed = 1;
 
+    public void SetFade(float f)
+    {
+
+        mainPost_Reference._Fade.value = f;
+
+    }
+
     IEnumerator DoFadeOut()
     {
         float t = 0;
         while (t < 1)
         {
             t += .03f * fadeOutSpeed;
-            _Fade = t;
+            SetFade(t);
             yield return null;
         }
     }
@@ -334,11 +232,196 @@ public class PostController : MonoBehaviour
         while (t > 0)
         {
             t -= .03f * fadeInSpeed;
-            _Fade = t;
+            SetFade(t);
             yield return null;
         }
     }
 
 
 
+
+
+
+
+
+
+    [Space(50)]
+    [Header("Post Processing Effects")]
+    public float glitchSpeed;
+
+    public void GlitchHit()
+    {
+        StartCoroutine(DoGlitchHit());
+    }
+
+    IEnumerator DoGlitchHit()
+    {
+        bool tmpGlitch = tmpPostParameters.glitchEffect;
+
+        tmpPostParameters.glitchEffect = true;
+        tmpPostParameters.glitchIntensity = 0;
+
+        float t = 0;
+        while (t < 1)
+        {
+            t += .03f * 1;
+            tmpPostParameters.glitchIntensity = t;
+            yield return null;
+        }
+
+
+        while (t > 0)
+        {
+            t -= .03f * 1;
+            tmpPostParameters.glitchIntensity = t;
+            yield return null;
+        }
+
+        tmpPostParameters.glitchEffect = tmpGlitch;
+
+    }
+
+
+
+
+    public void WormHole()
+    {
+        emptyDelegate = null;
+        emptyDelegate2 = null;
+        StartCoroutine(DoWormHole());
+    }
+
+    public void WormHole(EmptyDelegate ed)
+    {
+        emptyDelegate = ed;
+        emptyDelegate2 = null;
+        StartCoroutine(DoWormHole());
+    }
+
+    public void WormHole(EmptyDelegate ed, EmptyDelegate ed2)
+    {
+        emptyDelegate = ed;
+        emptyDelegate2 = ed2;
+        StartCoroutine(DoWormHole());
+    }
+
+    public float maxLensDistortion = -20;
+    public float maxChromaticAberration = 20;
+
+    public float maxBloomIntensity = 100;
+    public float maxBloomThreshold = .1f;
+
+    public Vector2 wormHoleSpeed = new Vector2(.03f, .1f);
+
+    public delegate void EmptyDelegate();
+    public EmptyDelegate emptyDelegate;
+    public EmptyDelegate emptyDelegate2;
+    public void test()
+    {
+        print("hiiiiiiiii");
+    }
+    IEnumerator DoWormHole()
+    {
+
+
+        print("hi9ii");
+        bool tmpChromaticAberration = tmpPostParameters.chromaticAberration;
+        float tmpChromaticAberrationIntensity = tmpPostParameters.chromaticAberrationIntensity;
+
+        bool tmpLensDistortion = tmpPostParameters.lensDistortion;
+        float tmpLensDistortionIntensity = tmpPostParameters.lensDistortionIntensity;
+
+        bool tmpBloom = tmpPostParameters.bloom;
+        float tmpBloomIntensity = tmpPostParameters.bloomIntensity;
+        float tmpBloomThreshold = tmpPostParameters.bloomThreshold;
+
+
+
+
+        float startingChromaticIntensity = 0;
+        if (tmpChromaticAberration)
+        {
+
+            startingChromaticIntensity = tmpChromaticAberrationIntensity;
+        }
+
+        float startingLensIntensity = 0;
+        if (tmpLensDistortion)
+        {
+            startingLensIntensity = tmpLensDistortionIntensity;
+        }
+
+        float startingBloomIntensity = 0;
+        float startingBloomThreshold = 1;
+        if (tmpBloom)
+        {
+            startingBloomIntensity = tmpBloomIntensity;
+            startingBloomThreshold = tmpBloomThreshold;
+        }
+
+
+        tmpPostParameters.chromaticAberration = true;
+        tmpPostParameters.lensDistortion = true;
+
+        tmpPostParameters.chromaticAberrationIntensity = startingChromaticIntensity;
+        tmpPostParameters.lensDistortionIntensity = startingLensIntensity;
+
+        tmpPostParameters.bloom = true;
+        tmpPostParameters.bloomIntensity = startingBloomIntensity;
+        tmpPostParameters.bloomThreshold = startingBloomThreshold;
+
+
+        float val = startingChromaticIntensity / maxChromaticAberration;
+
+
+        float t = val;
+        while (t < 1)
+        {
+
+            t += wormHoleSpeed.x * 1;
+
+            float ft = t * t;
+            tmpPostParameters.chromaticAberrationIntensity = Mathf.Lerp(0, maxChromaticAberration, ft);
+            tmpPostParameters.lensDistortionIntensity = Mathf.Lerp(0, maxLensDistortion, ft * t);
+
+            tmpPostParameters.bloomIntensity = Mathf.Lerp(startingBloomIntensity, maxBloomIntensity, ft * ft * ft);
+            tmpPostParameters.bloomThreshold = Mathf.Lerp(startingBloomThreshold, maxBloomThreshold, ft * ft);
+
+            yield return null;
+        }
+
+
+        if (emptyDelegate != null)
+        {
+            emptyDelegate();
+        }
+
+        while (t > 0)
+        {
+            t -= wormHoleSpeed.y * 1;
+
+            float ft = t * t;
+            tmpPostParameters.chromaticAberrationIntensity = Mathf.Lerp(startingChromaticIntensity, maxChromaticAberration, ft);
+            tmpPostParameters.lensDistortionIntensity = Mathf.Lerp(startingLensIntensity, maxLensDistortion, ft * t);
+
+
+            tmpPostParameters.bloomIntensity = Mathf.Lerp(startingBloomIntensity, maxBloomIntensity, ft * ft * ft);
+            tmpPostParameters.bloomThreshold = Mathf.Lerp(startingBloomThreshold, maxBloomThreshold, ft * ft);
+            yield return null;
+        }
+
+        if (emptyDelegate2 != null)
+        {
+            emptyDelegate2();
+        }
+
+
+    }
+
+
+
+
+
+
 }
+
