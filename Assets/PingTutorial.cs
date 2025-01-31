@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using WrenUtils;
 
 public class PingTutorial : TutorialCoroutine
 {
@@ -19,10 +20,10 @@ public class PingTutorial : TutorialCoroutine
 
         // DoTutorialSequenceSetup();
 
-        yield return WaitWithCheat(10);
+        yield return God.interfaceTutorial.WaitWithCheat(10);
 
-        yield return FadeGroup(groupContainer, 0, 1);
-        yield return WaitWithCheat(5);
+        yield return God.interfaceTutorial.FadeGroup(God.interfaceTutorial.groupContainer, 0, 1);
+        yield return God.interfaceTutorial.WaitWithCheat(5);
 
 
     }

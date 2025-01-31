@@ -362,4 +362,24 @@ public class CinematicCameraManager : BaseCameraManager
     }
 
 
+    public IEnumerator LerpCamera(CinematicCamera from, CinematicCamera to, float time)
+    {
+        float cT = 0;
+        while (cT < time)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+                break;
+            //cinematicCamera.tutorialCameraIdx = Mathf.Lerp(from, to, Mathf.SmoothStep(0, 1, cT / time));
+            LerpCamera(from.info, to.info, cT / time);
+
+
+            cT += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        SetCamera(to.info, 1);
+    }
+
+
+
 }

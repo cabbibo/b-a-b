@@ -92,6 +92,9 @@ namespace WrenUtils
         public WeatherManager _weatherManager;
 
 
+        public InterfaceTutorial _interfaceTutorial;
+
+
 
 
         private static God _instance;
@@ -446,6 +449,13 @@ namespace WrenUtils
             }
         }
 
+        public static InterfaceTutorial interfaceTutorial
+        {
+            get
+            {
+                return instance._interfaceTutorial;
+            }
+        }
 
 
 
