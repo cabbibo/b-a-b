@@ -76,16 +76,10 @@ public class InterfaceTutorial : MonoBehaviour
             if (Application.isEditor && Input.GetKeyDown(KeyCode.Space))
                 wait = false;
             lastX = God.input.x;
-            // if (God.input.x)
-            // wait = false;
-            // else
             yield return null;
         }
 
         _lastSequenceTime = Time.unscaledTime;
-        // yield return FadeGroup(groupContainer, 0, 1));
-        // while (HandleSticksProgress(ref t, speed: 1.7f, gravity: true))
-        //     yield return null;
 
         groupContainer.alpha = 0;
         ShowContinue(false);
@@ -95,11 +89,13 @@ public class InterfaceTutorial : MonoBehaviour
 
     public IEnumerator FadeGroup(CanvasGroup group, float from = 0, float to = 1, float delay = 0)
     {
+
         float t = 0;
         float duration = 0.5f;
         float _ct = Time.unscaledTime;
         while (t < duration)
         {
+
             if (delay > 0 && Time.unscaledTime - _ct < delay)
             {
                 yield return null;

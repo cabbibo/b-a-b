@@ -44,7 +44,6 @@ public class TutorialStateManager : MonoBehaviour
 
     public bool islandReached;
 
-    public GameObject fadeOrb;
     public GameObject introFull;
 
 
@@ -81,6 +80,9 @@ add phase shift into onenable, not the set state!
         FlyingTutorialSequence.OnTutorialStart += SetCinematicFlightTutorialState;
         FlyingTutorialSequence.OnFreeFlightStarted += SetFreeFlightState;
         FlyingTutorialSequence.OnTutorialDiveFinished += SetTransitionState;
+
+
+        God.interfaceTutorial.SetBGFade(0);
 
         //        print(" Which Start Status : ");
 
@@ -188,6 +190,8 @@ add phase shift into onenable, not the set state!
         islandReached = true;
 
 
+        God.interfaceTutorial.SetBGFade(0);
+
         introFull.SetActive(true);
         tutorialIsland.SetActive(false);
         postCrashTutorialObjects.SetActive(false);
@@ -197,7 +201,7 @@ add phase shift into onenable, not the set state!
         portal.SetActive(false);
         tutorialOcean.SetActive(false);
         tutorialClouds.SetActive(false);
-        fadeOrb.SetActive(true);
+
         theCrossing.SetActive(false);
 
 
@@ -241,7 +245,7 @@ add phase shift into onenable, not the set state!
 
 
         introFull.SetActive(true);
-        fadeOrb.SetActive(true);
+
         tutorialIsland.SetActive(false);
         postCrashTutorialObjects.SetActive(false);
         mainOcean.SetActive(false);
@@ -305,8 +309,9 @@ add phase shift into onenable, not the set state!
         islandReached = true;
 
 
+        God.interfaceTutorial.SetBGFade(0);
         introFull.SetActive(true);
-        fadeOrb.SetActive(false);
+
         tutorialIsland.SetActive(true);
         postCrashTutorialObjects.SetActive(false);
         mainOcean.SetActive(true);
@@ -349,12 +354,14 @@ add phase shift into onenable, not the set state!
 
         // play our first cut scene
         tutorialIslandCutScene.Play();
+        God.interfaceTutorial.SetBGFade(0);
 
     }
 
     public void OnFirstCrashEnd()
     {
 
+        God.interfaceTutorial.SetBGFade(0);
         tutorialIslandCutScene.SetEndValues();
         God.wren.shards.SpendAllShards();
         SetFirstCrashEndState();
@@ -371,11 +378,12 @@ add phase shift into onenable, not the set state!
         islandReached = true;
 
         introFull.SetActive(true);
-        fadeOrb.SetActive(false);
+
         tutorialIsland.SetActive(true);
         postCrashTutorialObjects.SetActive(true);
         mainOcean.SetActive(true);
 
+        God.interfaceTutorial.SetBGFade(0);
 
         mainIsland.SetActive(true);
         windCircle.SetActive(false);
@@ -400,6 +408,7 @@ add phase shift into onenable, not the set state!
         inFreeFlight = false;
         tutorialIslandCompleted = false;
         islandReached = true;
+        God.interfaceTutorial.SetBGFade(0);
 
         // Set Wren position to last position loaded in state;
         if (God.wren)
@@ -408,7 +417,7 @@ add phase shift into onenable, not the set state!
         }
 
         introFull.SetActive(true);
-        fadeOrb.SetActive(false);
+
         tutorialIsland.SetActive(true);
         postCrashTutorialObjects.SetActive(true);
         mainOcean.SetActive(true);
@@ -464,6 +473,7 @@ add phase shift into onenable, not the set state!
     public void SetTutorialIslandFinishedStartState()
     {
 
+        God.interfaceTutorial.SetBGFade(0);
         hasCrashed = true;
         flightFinished = true;
         inFreeFlight = false;
@@ -477,7 +487,7 @@ add phase shift into onenable, not the set state!
         }
 
         introFull.SetActive(true);
-        fadeOrb.SetActive(false);
+
         tutorialIsland.SetActive(true);
         postCrashTutorialObjects.SetActive(false);
         mainOcean.SetActive(true);
@@ -498,6 +508,7 @@ add phase shift into onenable, not the set state!
     public void SetTutorialIslandFinishedEndState()
     {
 
+        God.interfaceTutorial.SetBGFade(0);
 
         hasCrashed = true;
         flightFinished = true;
@@ -511,7 +522,7 @@ add phase shift into onenable, not the set state!
         }
 
         introFull.SetActive(true);
-        fadeOrb.SetActive(false);
+
         tutorialIsland.SetActive(true);
         postCrashTutorialObjects.SetActive(false);
         mainOcean.SetActive(true);
@@ -557,6 +568,7 @@ add phase shift into onenable, not the set state!
     public void SetIslandReachedState()
     {
 
+        God.interfaceTutorial.SetBGFade(0);
         //print("setting island reached state");
         hasCrashed = true;
         flightFinished = true;
@@ -571,7 +583,7 @@ add phase shift into onenable, not the set state!
             God.wren.PhaseShift(God.state.lastPosition);
         }*/
 
-        fadeOrb.SetActive(false);
+
         tutorialIsland.SetActive(false);
         postCrashTutorialObjects.SetActive(false);
         mainOcean.SetActive(true);
@@ -614,6 +626,7 @@ add phase shift into onenable, not the set state!
     public void SetFullGameStartedState()
     {
 
+        God.interfaceTutorial.SetBGFade(0);
         print("setting island reached state");
         hasCrashed = true;
         flightFinished = true;
@@ -628,7 +641,7 @@ add phase shift into onenable, not the set state!
             God.wren.PhaseShift(God.state.lastPosition);
         }*/
 
-        fadeOrb.SetActive(false);
+
         tutorialIsland.SetActive(false);
         postCrashTutorialObjects.SetActive(false);
         mainOcean.SetActive(true);

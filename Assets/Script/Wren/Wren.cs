@@ -418,6 +418,8 @@ public class Wren : MonoBehaviour
 
                 if (input.o_ex < .5 && input.ex > .5 && physics.onGround == true && state.inInterface == false && state.canTakeOff)
                 {
+
+                    print("HIII");
                     God.audio.Play(God.sounds.takeoffClip);
                     state.TakeOff();
                 }

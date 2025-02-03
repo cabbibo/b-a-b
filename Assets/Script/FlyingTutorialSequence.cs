@@ -177,43 +177,31 @@ public class FlyingTutorialSequence : TutorialCoroutine
         yield return BeginningWait();
 
 
-
         DoTutorialSequenceSetup();
 
-
-
-        while (debug)
-        {
-            //cinematicCamera.tutorialCameraIdx = debugCamIdx;
-            yield return null;
-        }
 
 
 
         //        cinematicCamera.tutorialCameraIdx = (float)Camera.Closeup;
 
-        God.interfaceTutorial.groupSticks.SetActive(true);
-        God.interfaceTutorial.controllerText.text = "test";
-
-
-        God.postController.SetPostParameters(preSplosionPostParameters);
         OnFirstShot();
-        yield return God.interfaceTutorial.WaitWithCheat(10);
-
-        yield return God.interfaceTutorial.FadeGroup(God.interfaceTutorial.groupContainer, 0, 1);
-        yield return God.interfaceTutorial.WaitWithCheat(5);
-
+        yield return God.interfaceTutorial.WaitWithCheat(1);
+        print("fade start);");
+        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+        yield return God.interfaceTutorial.WaitWithCheat(1);
         yield return God.interfaceTutorial.WaitForXToContinue();
-        God.interfaceTutorial.TutorialSectionComplete();
 
-        God.interfaceTutorial.groupSticks.SetActive(false);
+
 
         God.postController.WormHole(OnBirdBackShown);
 
 
-        yield return God.interfaceTutorial.WaitWithCheat(10);
+        yield return God.interfaceTutorial.WaitWithCheat(11);
         yield return God.interfaceTutorial.WaitForXToContinue();
+
         God.interfaceTutorial.TutorialSectionComplete();
+
+
         OnBirdZoomOutStart();
         yield return God.interfaceTutorial.LerpCamera(cameraCloseBack, cameraFarBack, 10);
         OnBirdZoomOutEnd();
@@ -320,7 +308,7 @@ public class FlyingTutorialSequence : TutorialCoroutine
         //yield return God.interfaceTutorial.ControllerHintSequence(hint);
 
         God.interfaceTutorial.ShowProgress(0);
-        StartCoroutine(God.interfaceTutorial.FadeGroup(God.interfaceTutorial.groupContainer, 1, 0));
+        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
 
         God.postController.WormHole(OnFlightTutorialEnd);
 
@@ -350,8 +338,6 @@ ___) |  __/ (__| |_| | (_) | | | | |  _  |  __/ | |_) |  __/ |  \__ \
         while (God.wren == null)
             yield return null;
 
-        God.cameraManager.cinematicManager.SetCamera(cameraInsideCloseup.info, 1);
-
         while (God.wren.physics.onGround) // wait for takeoff ro we should just set this ourselves?
             yield return null;
 
@@ -364,26 +350,21 @@ ___) |  __/ (__| |_| | (_) | | | | |  _  |  __/ | |_) |  __/ |  \__ \
 
 
 
+        God.cameraManager.cinematicManager.SetCamera(cameraInsideCloseup.info, 1);
+
         stateManager.SetCinematicFlightTutorialState();
 
         God.postController.FadeIn();
 
-        God.interfaceTutorial.groupContainer.alpha = 0;
         God.interfaceTutorial.ShowContinue(false);
         God.interfaceTutorial.ShowText();
 
         God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.None);
         God.interfaceTutorial.ShowProgress(0);
-
-
-        //cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
-
-        float bgT = 1f;
         God.interfaceTutorial.SetBGFade(0);
 
         God.wren.bird.featherMaterial = featherStartMaterial;
         God.wren.bird.ResetFeatherValues();
-
 
         God.wren.bird.drawSkeleton = false;
         God.wren.canMove = false;
@@ -392,12 +373,18 @@ ___) |  __/ (__| |_| | (_) | | | | |  _  |  __/ | |_) |  __/ |  \__ \
         God.wren.interfaceUtils.showForces = false;
 
 
-
         // set up weather manager so we get sun in right direction!
         weatherManager.sunManager.auto = false;
         weatherManager.sunManager.rawTimeInCycle = weatherManager.sunManager.daySpeed * .98f;
 
 
+
+
+        God.interfaceTutorial.groupSticks.SetActive(true);
+        God.interfaceTutorial.controllerText.text = "test";
+
+
+        God.postController.SetPostParameters(preSplosionPostParameters);
 
 
         OnBirdAllSetUp();
@@ -474,7 +461,8 @@ _   _          ___         ____                        ____
 
 
         God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Forward);
-        StartCoroutine(God.interfaceTutorial.FadeGroup(God.interfaceTutorial.groupContainer, 0, 1));
+        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+
 
         PlaceHitTarget();
         // ActivatePointer();
@@ -579,7 +567,6 @@ _   _          ___         ____                        ____
         DeactivatePointer();
         targetManager.EraseAllTargets();
         God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
-        //StartCoroutine(God.interfaceTutorial.FadeGroup(God.interfaceTutorial.groupContainer, 1, 0));
 
         //hitTarget.SetActive(false);
         // after wee have completed
@@ -1362,6 +1349,8 @@ _______     _______ _   _ _____ ____
     public void OnFirstShot() { }
     public void OnBirdBackShown()
     {
+        God.interfaceTutorial.TutorialSectionComplete();
+        God.interfaceTutorial.groupSticks.SetActive(false);
         God.cameraManager.cinematicManager.SetCamera(cameraCloseBack.info, 1);
     }
     public void OnBirdZoomOutStart() { }
