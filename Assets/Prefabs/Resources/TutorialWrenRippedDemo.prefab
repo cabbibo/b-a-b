@@ -17929,6 +17929,7 @@ MonoBehaviour:
   _CenterOrbFalloff: 1
   _CenterOrbFalloffSharpness: 1
   _CenterOrbImportance: 0.1
+  _DeltaStepSize: 0.1
 --- !u!1 &5102224230578975710
 GameObject:
   m_ObjectHideFlags: 0

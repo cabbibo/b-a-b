@@ -362,6 +362,7 @@ MonoBehaviour:
   _CenterOrbFalloff: 1
   _CenterOrbFalloffSharpness: 1
   _CenterOrbImportance: 0.1
+  _DeltaStepSize: 0.1
 --- !u!1 &344630836724289603
 GameObject:
   m_ObjectHideFlags: 0
@@ -2642,6 +2643,7 @@ MonoBehaviour:
   _CenterOrbFalloff: 1
   _CenterOrbFalloffSharpness: 1
   _CenterOrbImportance: 0.1
+  _DeltaStepSize: 0.1
 --- !u!1 &1418729127448067054
 GameObject:
   m_ObjectHideFlags: 0
@@ -20041,6 +20043,7 @@ MonoBehaviour:
   _CenterOrbFalloff: 1
   _CenterOrbFalloffSharpness: 1
   _CenterOrbImportance: 0.1
+  _DeltaStepSize: 0.1
 --- !u!1 &6269323994461936869
 GameObject:
   m_ObjectHideFlags: 0
@@ -30404,6 +30407,7 @@ MonoBehaviour:
   _CenterOrbFalloff: 1
   _CenterOrbFalloffSharpness: 1
   _CenterOrbImportance: 0.1
+  _DeltaStepSize: 0.1
 --- !u!1001 &375056077050512013
 PrefabInstance:
   m_ObjectHideFlags: 0

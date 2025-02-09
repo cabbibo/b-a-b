@@ -7,17 +7,19 @@ using UnityEngine;
 public class ShardShaderValues : MonoBehaviour
 {
 
-    public float hueStart;
-    public float hueSize;
-    public float noiseSpeed;
-    public float noiseSize;
-    public float saturation;
-    public float lightness;
-    public float contrast;
-    public float _ColorMultiplier;
-    public float _CenterOrbFalloff;
-    public float _CenterOrbFalloffSharpness;
-    public float _CenterOrbImportance;
+    public float hueStart = 1;
+    public float hueSize = 1;
+    public float noiseSpeed = 1;
+    public float noiseSize = 10;
+    public float saturation = .8f;
+    public float lightness = 1;
+    public float contrast = 1;
+    public float _ColorMultiplier = 1;
+    public float _CenterOrbFalloff = .5f;
+    public float _CenterOrbFalloffSharpness = .5f;
+    public float _CenterOrbImportance = 1;
+
+    public float _DeltaStepSize = .1f;
 
     private Renderer renderer;
     private MaterialPropertyBlock mpb;
@@ -25,29 +27,38 @@ public class ShardShaderValues : MonoBehaviour
     void Update()
     {
 
+
+
         if (renderer == null)
         {
             renderer = GetComponent<Renderer>();
         }
 
-        if (mpb == null)
+        // dont *NEED* to have a renderer attached!
+        if (renderer != null)
         {
-            mpb = new MaterialPropertyBlock();
-        }
+            if (mpb == null)
+            {
+                mpb = new MaterialPropertyBlock();
+            }
 
-        renderer.GetPropertyBlock(mpb);
-        mpb.SetFloat("_HueStart", hueStart);
-        mpb.SetFloat("_HueSize", hueSize);
-        mpb.SetFloat("_NoiseSpeed", noiseSpeed);
-        mpb.SetFloat("_NoiseSize", noiseSize);
-        mpb.SetFloat("_Saturation", saturation);
-        mpb.SetFloat("_Lightness", lightness);
-        mpb.SetFloat("_Contrast", contrast);
-        mpb.SetFloat("_ColorMultiplier", _ColorMultiplier);
-        mpb.SetFloat("_CenterOrbFalloff", _CenterOrbFalloff);
-        mpb.SetFloat("_CenterOrbFalloffSharpness", _CenterOrbFalloffSharpness);
-        mpb.SetFloat("_CenterOrbImportance", _CenterOrbImportance);
-        renderer.SetPropertyBlock(mpb);
+
+
+            renderer.GetPropertyBlock(mpb);
+            mpb.SetFloat("_HueStart", hueStart);
+            mpb.SetFloat("_HueSize", hueSize);
+            mpb.SetFloat("_NoiseSpeed", noiseSpeed);
+            mpb.SetFloat("_NoiseSize", noiseSize);
+            mpb.SetFloat("_Saturation", saturation);
+            mpb.SetFloat("_Lightness", lightness);
+            mpb.SetFloat("_Contrast", contrast);
+            mpb.SetFloat("_ColorMultiplier", _ColorMultiplier);
+            mpb.SetFloat("_CenterOrbFalloff", _CenterOrbFalloff);
+            mpb.SetFloat("_CenterOrbFalloffSharpness", _CenterOrbFalloffSharpness);
+            mpb.SetFloat("_CenterOrbImportance", _CenterOrbImportance);
+            mpb.SetFloat("_DeltaStepSize", _DeltaStepSize);
+            renderer.SetPropertyBlock(mpb);
+        }
 
     }
 }
