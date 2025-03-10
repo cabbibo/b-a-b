@@ -27,7 +27,6 @@ Material:
   - _SUBSURFACESCATTERING_ON
   - _SUBSURFACESHALLOWCOLOUR_ON
   - _TRANSPARENCY_ON
-  - _UNDERWATER_ON
   m_InvalidKeywords:
   - _DEBUGMULTIPLYBYLIGHT0COLOR_ON
   - _PROJECTION_BOTH
@@ -170,8 +169,8 @@ Material:
     - _StartLevel: 0.157
     - _StencilFunction: 0
     - _SubSurfaceBase: 0
-    - _SubSurfaceDepthMax: 33.1
-    - _SubSurfaceDepthPower: 8.88
+    - _SubSurfaceDepthMax: 25.2
+    - _SubSurfaceDepthPower: 8.81
     - _SubSurfaceHeightLerp: 1
     - _SubSurfaceHeightMax: 24.9
     - _SubSurfaceHeightPower: 1.68
@@ -182,7 +181,7 @@ Material:
     - _TexelSize: 0.125
     - _TextureRes: 1024
     - _Transparency: 1
-    - _Underwater: 1
+    - _Underwater: 0
     - _Update: 0.083
     - _WaveFoamBubblesCoverage: 5
     - _WaveFoamBubblesFeather: 0.32

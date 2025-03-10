@@ -215,6 +215,7 @@ public class PostParameters : ScriptableObject
         vignette_Reference.rounded.value = vignetteRounded;
 
         fogEffect_Reference.intensity.value = fogIntensity;
+        fogEffect_Reference._FogMultiplier.value = fogIntensity;
         fogEffect_Reference._FogHeightMultiplier.value = fogHeightMultiplier;
         fogEffect_Reference._FogHeightPower.value = fogHeightPower;
 

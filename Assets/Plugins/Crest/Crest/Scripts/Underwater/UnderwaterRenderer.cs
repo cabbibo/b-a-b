@@ -69,7 +69,7 @@ namespace Crest
         internal bool _meniscus = true;
         public bool IsMeniscusEnabled => _meniscus;
 
-        [SerializeField, Range(0.01f, 1f)]
+        [SerializeField, Range(0.0001f, 1f)]
         [Tooltip("Scales the depth fog density. Useful to reduce the intensity of the depth fog when underwater water only.")]
         float _depthFogDensityFactor = 1f;
         public static float DepthFogDensityFactor

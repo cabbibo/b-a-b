@@ -18,6 +18,7 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
     public ComputeShader shader;
     public int kernel;
 
+    public float splatSpeed;
     public Camera camera;
 
     public Material material;
@@ -43,6 +44,10 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
     public float particleSize;
     public float particleSpawnSpeed;
     public float particleMatchAmount;
+
+    public float normalForce;
+    public float curlForce;
+    public float curlSize;
 
 
     void OnEnable()
@@ -149,6 +154,10 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
         shader.SetBuffer(kernel, "_VertBuffer", _VertBuffer);
         shader.SetInt("_VertBuffer_COUNT", count);
+        shader.SetFloat("_SplatSpeed", splatSpeed);
+        shader.SetFloat("_NormalForce", normalForce);
+        shader.SetFloat("_CurlForce", curlForce);
+        shader.SetFloat("_CurlSize", curlSize);
 
         shader.Dispatch(kernel, numGroups, 1, 1);
 
@@ -159,6 +168,8 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
         mpb.SetBuffer("_VertBuffer", _VertBuffer);
         mpb.SetInt("_Count", count);
+        mpb.SetFloat("_Size", particleSize);
+        mpb.SetFloat("_NormalMatch", particleMatchAmount);
 
         Graphics.DrawProcedural(material, new Bounds(transform.position, Vector3.one * 500000), MeshTopology.Triangles, count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Splats"));
 

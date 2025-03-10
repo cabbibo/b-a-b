@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 
 [Serializable]
-[PostProcess(typeof(FogEffectRenderer), PostProcessEvent.AfterStack, "Custom/FogEffect")]
+[PostProcess(typeof(FogEffectRenderer), PostProcessEvent.BeforeStack, "Custom/FogEffect")]
 public sealed class FogEffect : PostProcessEffectSettings
 {
     [Range(0f, 1f), Tooltip("size")]
@@ -15,7 +15,7 @@ public sealed class FogEffect : PostProcessEffectSettings
     [Tooltip("The size of the map")]
     public Vector3Parameter mapSize = new Vector3Parameter { value = Vector3.zero };
 
-    
+
     [Tooltip("The offset of the map")]
     public Vector3Parameter mapOffset = new Vector3Parameter { value = Vector3.zero };
 

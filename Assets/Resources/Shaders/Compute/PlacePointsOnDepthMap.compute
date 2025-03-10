@@ -77,6 +77,8 @@ RWStructuredBuffer<Wren> _WrenBuffer;
 
 int _NumWrens;
 
+float _SplatSpeed;
+
 float3 getWorldPos( float2 coordinates ){
 
     float depthSample = _DepthTexture.SampleLevel(sampler_DepthTexture,coordinates, 0).r;
@@ -112,6 +114,10 @@ float2 hashwithoutsine21(float p)
 }
 
 
+
+float _CurlSize;
+float _CurlForce;
+float _NormalForce;
 
 #define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
@@ -161,6 +167,7 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
             if( depth  < -1){
                 v.uv.y = -1;
                 
+                v.color =  _ColorTexture.SampleLevel(sampler_ColorTexture,coordinates, 0).rgb;
                 }else{
 
                 v.pos = getWorldPos( coordinates );//worldPos.xyz;
@@ -180,6 +187,8 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
                     v.life = -1;
                     v.pos = 100000;
                     
+                    v.color =  _ColorTexture.SampleLevel(sampler_ColorTexture,coordinates, 0).rgb;
+                    
                     }else{
 
                     v.color =  _ColorTexture.SampleLevel(sampler_ColorTexture,coordinates, 0).rgb;
@@ -191,13 +200,24 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
                 }
 
             }
+
+            //v.color = 1;
             
 
+            }else{
+
+            float3 force = float3(0,0,0);
+            force += curlNoise(v.pos * _CurlSize) * _CurlForce;
+            force += v.nor *_NormalForce;
+            v.vel += force * .001;
+
+            v.pos += v.vel;
+            v.vel *= .95;
         }
 
-        v.life  -= .001 * (hash11( float(pID * 31)  )+ .3);
-        v.life  -= .001 * (hash11( float(pID * 51)  )+ .3);
-        v.life  -= .001 * (hash11( float(pID * 91)  )+ .3);
+        v.life  -= _SplatSpeed*.001 * (hash11( float(pID * 31)  )+ .3);
+        v.life  -= _SplatSpeed*.001 * (hash11( float(pID * 51)  )+ .3);
+        v.life  -= _SplatSpeed*.001 * (hash11( float(pID * 91)  )+ .3);
         
 
         _VertBuffer[sID] = v;

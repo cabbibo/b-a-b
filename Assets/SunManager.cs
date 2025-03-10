@@ -94,10 +94,11 @@ public class SunManager : MonoBehaviour
 
 
 
-
+        //        print("rotating");
 
         sunRotator.localRotation = Quaternion.Euler(new Vector3(200 * timeInDay + 170, 0, 0));
         sun.transform.localPosition = new Vector3(0, 0, sunRadius);
+        //sun.transform.LookAt(new Vector3(-2048, 0, -2048));
 
         sun.color = dayColor.Evaluate(timeInDay);
 

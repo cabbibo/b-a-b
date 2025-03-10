@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
+
+[ExecuteAlways]
 public class ScenePostSettings : MonoBehaviour
 {
 
@@ -18,12 +20,15 @@ public class ScenePostSettings : MonoBehaviour
 
     public PostParameters postParameters;
 
+    public bool setOnEnable;
 
 
-    // Start is called before the first frame update
-    void Start()
+    public void OnEnable()
     {
-
+        if (setOnEnable)
+        {
+            Set();
+        }
     }
 
 
