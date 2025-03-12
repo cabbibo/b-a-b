@@ -1,4 +1,4 @@
-Shader "Unlit/RayRendererSolid"
+Shader "Unlit/RayRendererSolid2"
 {
     Properties
     {
@@ -10,8 +10,10 @@ Shader "Unlit/RayRendererSolid"
 
         Cull Off
         Blend One One
-        //ZTest Always
-        //ZWrite Off
+        ZTest Always
+        ZWrite Off
+
+        Blend SrcAlpha OneMinusSrcAlpha
         Tags { "RenderType"="Transparent" }
         LOD 100
 
@@ -126,6 +128,7 @@ Shader "Unlit/RayRendererSolid"
                 fixed4 col = _Color * .1;
 
                 col *= v.uv.y * (.5-abs(v.uv.x - .5)) *10;//  * .01;
+                col.a = .1;
                 return col;
             }
             ENDCG

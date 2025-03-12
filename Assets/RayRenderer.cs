@@ -9,6 +9,7 @@ public class RayRenderer : MonoBehaviour
 {
 
     public Material material;
+    public Transform center;
 
     public float rayLength = 1000;
     public float rayWidth = 0.1f;
@@ -34,6 +35,7 @@ public class RayRenderer : MonoBehaviour
         mpb.SetFloat("_Length", rayLength);
         mpb.SetFloat("_Width", rayWidth);
         mpb.SetMatrix("_LocalToWorld", transform.localToWorldMatrix);
+        mpb.SetVector("_Center", center.position);
 
         //print("rendeerrrr)");
         Graphics.DrawProcedural(material, new Bounds(Vector3.zero, Vector3.one * 10000), MeshTopology.Triangles, numRays * 3, 1, null, mpb, ShadowCastingMode.Off, false, 0);

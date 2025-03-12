@@ -138,6 +138,7 @@ Shader "Hidden/Custom/SpaterPost"
         float4 bg = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord  );
         float2 distortionAmount = (1-frameVal) * dir;
 
+
         float4 color = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.1 * aCol.xz * _AudioDistort  );
         color.g = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.2 * aCol.xz * _AudioDistort  ).g;
         color.b = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.3 * aCol.xz * _AudioDistort  ).b;
@@ -146,16 +147,22 @@ Shader "Hidden/Custom/SpaterPost"
         color.rgb = lerp(color.rgb, color.rgb * _Color.xyz, _Blend.xxx);
 
 
+        float3 tCol = color.rgb;
+
         color.rgb = lerp( color.rgb , color.rgb * _Color.xyz * 2 , _Fade);
 
         color.rgb *= _AudioBase + _AudioPower * aCol.xyz * _Color.xyz * (1-frameVal);//lookup * lookup*lookup * lookup*10;// * (1-frameVal);
         color.rgb *= 1;
 
+        
+
+        
+
 
         
         color.rgb *= saturate(frameVal * 4 - 0);
 
-    //    color.rgb = aCol;
+        //    color.rgb = aCol;
 
         
 
@@ -180,6 +187,16 @@ Shader "Hidden/Custom/SpaterPost"
         color.xyz = generic_desaturate(color.xyz, _Desaturate);
         color *= _OverallMultiplier;
         color = saturate(color);
+
+
+        color = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.0    );
+        color.g = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.1   ).g;
+        color.b = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.2 ).b;
+        color += (1-frameVal) * .5;
+        
+        // gentle side;
+        // color.xyz = tCol;
+        //color += 1-frameVal;
         return color;
     }
 

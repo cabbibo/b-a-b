@@ -8,9 +8,30 @@ using UnityEditor;
 [CustomEditor(typeof(Waterfall))]
 public class WaterfallEditor : Editor
 {
+    void OnEnable()
+    {
+        SceneView.duringSceneGui += OnSceneGUI2;
+    }
 
+
+    void OnDisable()
+    {
+        SceneView.duringSceneGui -= OnSceneGUI2;
+    }
+
+
+    void OnSceneGUI2(SceneView sceneView)
+    {
+
+        // Debug.Log("hellllo");
+
+    }
     public void OnSceneGUI()
     {
+
+        // Event e = Event.current;
+        //  Debug.Log(e);
+
 
         /*Vector2 dpi = DPIHelper.GetSystemDPI();
         Debug.Log($"System DPI: X = {dpi.x}, Y = {dpi.y}");
@@ -20,6 +41,8 @@ public class WaterfallEditor : Editor
 
         Waterfall placer = (Waterfall)target;
 
+        Debug.Log(Event.current.type);
+
 
         // What is this?
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
@@ -27,12 +50,16 @@ public class WaterfallEditor : Editor
         if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
         {
 
+            Debug.Log("HIII");
             Vector2 mousePos = Event.current.mousePosition * placer.displayScale;
             mousePos.y = Camera.current.pixelHeight - mousePos.y;
             Ray ray = Camera.current.ScreenPointToRay(mousePos);
             placer.MouseDown(ray);
 
+            // Event.current.Use();
+
         }
+
 
 
     }

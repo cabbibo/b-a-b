@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: RayRenderer 1
-  m_Shader: {fileID: 4800000, guid: 6b2ea25073b38e243ba7f77b26a8be40, type: 3}
+  m_Name: RayRenderer 2
+  m_Shader: {fileID: 4800000, guid: 5b07fb43163524c428f748c0e43af3f2, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -78,6 +78,6 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 1, g: 0.7544358, b: 0.4764151, a: 1}
+    - _Color: {r: 0, g: 0.94509804, b: 0.80870867, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

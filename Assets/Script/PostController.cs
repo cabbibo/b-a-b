@@ -22,7 +22,7 @@ public class PostControllerEditor : Editor
     {
 
         PostController myScript = (PostController)target;
-        
+
         if (GUILayout.Button("Fade Out"))
         {
             myScript.FadeOut();
@@ -38,7 +38,7 @@ public class PostControllerEditor : Editor
             myScript.GlitchHit();
         }
 
-        if(GUILayout.Button("Worm Hole"))
+        if (GUILayout.Button("Worm Hole"))
         {
             myScript.WormHole();
         }
@@ -94,6 +94,7 @@ public class PostController : MonoBehaviour
 
     public PlaceParticlesOnDepthMap placeParticlesOnDepthMap;
 
+    public bool updateOnValidate = true;
 
     void OnEnable()
     {
@@ -173,12 +174,15 @@ public class PostController : MonoBehaviour
     }
 
 
+    public PostParameters currentPostParameterRef;
+
     public void SetPostParameters(string name)
     {
         foreach (PostParameters p in postParameters)
         {
             if (p.name == name)
             {
+                currentPostParameterRef = p;
                 p.CopyTo(tmpPostParameters);
                 return;
             }
@@ -187,6 +191,29 @@ public class PostController : MonoBehaviour
 
     public void SetPostParameters(PostParameters p)
     {
+        currentPostParameterRef = p;
+        p.CopyTo(tmpPostParameters);
+    }
+
+
+    public void OnPostParametersValidate(PostParameters p)
+    {
+        if (!updateOnValidate)
+        {
+            return;
+        }
+
+        if (p == null)
+        {
+            return;
+        }
+
+        if (p != currentPostParameterRef)
+        {
+            return;
+        }
+
+        print("Made it here");
         p.CopyTo(tmpPostParameters);
     }
 

@@ -358,4 +358,12 @@ public class PostParameters : ScriptableObject
     }
 
 
+    public void OnValidate()
+    {
+        Debug.Log("HIII");
+
+        God.postController.OnPostParametersValidate(this);
+    }
+
+
 }

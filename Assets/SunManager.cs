@@ -7,6 +7,7 @@ using WrenUtils;
 public class SunManager : MonoBehaviour
 {
 
+    public bool osscilate;
 
     public bool auto;
     public Light sun;
@@ -48,6 +49,10 @@ public class SunManager : MonoBehaviour
     public AnimationCurve dayRemapper;
     public AnimationCurve nightRemapper;
 
+    public float osscilateBase;
+    public float osscilateSize;
+    public float osscilateSpeed;
+
 
 
 
@@ -76,6 +81,11 @@ public class SunManager : MonoBehaviour
         else
         {
             rawTimeInCycle = rawTimeInCycle % totalCycleLength;
+        }
+
+        if (osscilate)
+        {
+            rawTimeInCycle = osscilateBase + Mathf.Sin(Time.time * osscilateSpeed) * osscilateSize;
         }
 
         float normalizedTimeInCycle = rawTimeInCycle / totalCycleLength;

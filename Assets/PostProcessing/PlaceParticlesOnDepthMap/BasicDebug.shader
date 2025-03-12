@@ -6,6 +6,7 @@ Shader "Unlit/BasicDebug"
         _MainTex("Texture", 2D) = "white" {}
         _ColorMultiplier("Color Multiplier", Range(0, 100)) = 1
         _NormalOffset("Normal Offset", Range(0, 10)) = 0
+        _TileSize("Tile Size", Range(1, 100)) = 1
     }
     SubShader
     {
@@ -36,7 +37,7 @@ Shader "Unlit/BasicDebug"
                 float debug;
             };
 
-
+            int _TileSize;
 
             int _Count;
             float _Size;
@@ -55,6 +56,7 @@ Shader "Unlit/BasicDebug"
                 float3 color : TEXCOORD2;
                 float life : TEXCOORD3;
                 float id :TEXCOORD4;
+                float2 uv2 : TEXCOORD6;
                 float lifeSize : TEXCOORD5;
             };
 
@@ -129,6 +131,13 @@ Shader "Unlit/BasicDebug"
                         extra = p3;
                         uv = float2(0,1);
                     }
+
+                    int randomX = base % _TileSize;
+                    int randomY = base * 1213 % _TileSize;
+
+                    float x = randomX / (float)_TileSize;
+                    float y = randomY / (float)_TileSize;
+                    o.uv2  = uv / (float)_TileSize + float2(x,y);
 
                     float3 eye = _WorldSpaceCameraPos - basePos;
                     float3 eyeDir = normalize(eye);
@@ -209,7 +218,7 @@ Shader "Unlit/BasicDebug"
             }
             //Pixel function returns a solid color for each point.
             float4 frag (varyings v) : COLOR {      
-                float4 col = tex2D(_MainTex, v.uv);
+                float4 col = tex2D(_MainTex, v.uv2);
 
                 
                 float val = col.x;

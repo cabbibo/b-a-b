@@ -7,16 +7,16 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: RayRenderer 1
-  m_Shader: {fileID: 4800000, guid: 6b2ea25073b38e243ba7f77b26a8be40, type: 3}
+  m_Name: new Quill Test 3
+  m_Shader: {fileID: 4800000, guid: c9d440262b9bf8948bb55a5728d7c104, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2003
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -44,6 +44,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
+        m_Texture: {fileID: 2800000, guid: ce657e914339bd3439bb762549f19097, type: 3}
+        m_Scale: {x: 11, y: 11}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex2:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -51,11 +55,23 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 2800000, guid: 78e71b9e097c52e4cba00d81ed4dbe74, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _PainterlyLightMap:
+        m_Texture: {fileID: 2800000, guid: 5e5563419aacdf84aa143633b53f0223, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TextureTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -65,19 +81,35 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _Fade: 1.1111111e+10
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
+    - _OutlineAmount: 4.78
+    - _PainterlyLightImportance: 0.65
     - _Parallax: 0.02
+    - _ShadowStrength: 1
+    - _Size: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _TriplanarNormalWeight: 1
+    - _TriplanarSharpness: 111
     - _UVSec: 0
+    - _WindAmount: 0.74
+    - _WindChangeSize: 0.001
+    - _WindChangeSpeed: 5
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 1, g: 0.7544358, b: 0.4764151, a: 1}
+    - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 0.7735849, g: 0.47528687, b: 0.44152722, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _TextureShadingWeights: {r: 11, g: 111, b: 11, a: 11}
+    - _TriplanarMultiplier: {r: 1, g: 1, b: 1, a: 1}
+    - _WindDirection: {r: 11, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
