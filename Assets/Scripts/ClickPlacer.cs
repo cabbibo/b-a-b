@@ -24,6 +24,7 @@ public class ClickPlacer : MonoBehaviour
     public Vector3 offsetRandomness;
 
     public Vector2 normalMatchRange;
+    public float upImportance;
 
 
 
@@ -47,6 +48,8 @@ public class ClickPlacer : MonoBehaviour
 
 
             Vector3 upVector = Vector3.Lerp(Vector3.up, hit.normal, Random.Range(normalMatchRange.x, normalMatchRange.y));
+
+            upVector = Vector3.Lerp(upVector, Vector3.up,upImportance);
             Vector3 lookVector = Vector3.Scale(Random.onUnitSphere, new Vector3(1, 0, 1));
 
             go.transform.rotation = Quaternion.LookRotation(lookVector, upVector);
