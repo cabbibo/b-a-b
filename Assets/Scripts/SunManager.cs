@@ -10,6 +10,11 @@ public class SunManager : MonoBehaviour
     public bool osscilate;
 
     public bool auto;
+    public bool useLookTarget;
+
+    
+    public Transform lookTarget;
+    public Transform targetPosition;
     public Light sun;
     public Material sky;
 
@@ -52,6 +57,7 @@ public class SunManager : MonoBehaviour
     public float osscilateBase;
     public float osscilateSize;
     public float osscilateSpeed;
+
 
 
 
@@ -112,6 +118,15 @@ public class SunManager : MonoBehaviour
 
         sun.color = dayColor.Evaluate(timeInDay);
 
+
+if( useLookTarget   ){
+    sun.transform.position = targetPosition.position;
+    sun.transform.LookAt(lookTarget.position);
+
+
+
+
+}
 
 
 

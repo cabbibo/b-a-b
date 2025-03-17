@@ -81,7 +81,7 @@ public class WindTunnel : MonoBehaviour
 
         if (debug)
         {
-            print(valueAlongCurve);
+//            print(valueAlongCurve);
         }
 
 

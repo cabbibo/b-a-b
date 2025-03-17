@@ -78,9 +78,22 @@ public class PostParameters : ScriptableObject
 
 
     [Header("Fog Settings")]
-    public float fogIntensity;
-    public float fogHeightPower;
-    public float fogHeightMultiplier;
+    public float fogIntensity=1;
+    public float fogHeightPower=1;
+    public float fogHeightMultiplier=30;
+
+    public int fogSteps = 50;
+    public float fogStepSize= 10;
+    public float maxFog = 1;
+    public Color fogNear = Color.white;
+    public Color fogFar = Color.white;
+    public Color fogDistant = Color.white;
+    public float fogOceanHeight = 1;
+
+    public float fogDensityNear = 1;
+    public float fogDensityFar = 1;
+
+    public float fogLightColorImportance = 1;
 
     [Header("Depth Of Field Settings")]
     public float depthOfFieldAperture;
@@ -102,10 +115,17 @@ public class PostParameters : ScriptableObject
 
     [Header("Splat Settings")]
     public bool renderBackground;
-    public float splatsAmount;
+    public int splatAmount;
     public float splatSize;
 
     public float splatSpeed;
+    public float splatMatchAmount;
+    public float normalForce;
+    public float curlForce;
+    public float curlSize;
+    public float normalOffset;
+
+
 
     [Header("Ambient Occlusion Settings")]
     public float ambientOcclusionIntensity;
@@ -142,8 +162,7 @@ public class PostParameters : ScriptableObject
     )
     {
 
-
-
+//Debug.Log("Setting Post Parameters");
 
         /*if (God.wren != null)
                 {
@@ -219,6 +238,18 @@ public class PostParameters : ScriptableObject
         fogEffect_Reference._FogHeightMultiplier.value = fogHeightMultiplier;
         fogEffect_Reference._FogHeightPower.value = fogHeightPower;
 
+        fogEffect_Reference._FogDensityAtFar.value = fogDensityFar;
+        fogEffect_Reference._FogDensityAtNear.value = fogDensityNear;
+        fogEffect_Reference._FogStepSize.value = fogStepSize;
+        fogEffect_Reference._MaxFogTotal.value = maxFog;
+        fogEffect_Reference._FogSamples.value = fogSteps;
+        fogEffect_Reference._FogColorNear.value = fogNear;
+        fogEffect_Reference._FogColorFar.value = fogFar;
+        fogEffect_Reference._FogColorDistant.value = fogDistant;
+        fogEffect_Reference._OceanHeight.value = fogOceanHeight;
+
+        fogEffect_Reference._LightColorImportance.value = fogLightColorImportance;
+
 
         lensDistortion_Reference.intensity.value = lensDistortionIntensity;
         lensDistortion_Reference.scale.value = lensDistortionScale;
@@ -232,6 +263,26 @@ public class PostParameters : ScriptableObject
         glitchEffect_Reference.split.value = glitchSplit;
 
         spaterPost_Reference.fade.value = spaterPostFade;
+
+        if( splatAmount<1 )
+        {
+            splatAmount = 1;
+        }
+        if( splatAmount != placeParticlesOnDepthMap.splatAmount )
+        {
+            placeParticlesOnDepthMap.Reset();
+        }
+
+        placeParticlesOnDepthMap.renderBackground = renderBackground;
+        placeParticlesOnDepthMap.splatAmount = splatAmount;
+        placeParticlesOnDepthMap.splatSize = splatSize;
+        placeParticlesOnDepthMap.splatSpeed = splatSpeed;
+        placeParticlesOnDepthMap.splatMatchAmount = splatMatchAmount;
+        placeParticlesOnDepthMap.normalForce = normalForce;
+        placeParticlesOnDepthMap.curlForce = curlForce;
+        placeParticlesOnDepthMap.curlSize = curlSize;
+        placeParticlesOnDepthMap.normalOffset = normalOffset;
+
 
 
     }
@@ -323,6 +374,19 @@ public class PostParameters : ScriptableObject
         p.fogIntensity = fogIntensity;
         p.fogHeightPower = fogHeightPower;
         p.fogHeightMultiplier = fogHeightMultiplier;
+        p.fogSteps = fogSteps;
+        p.fogStepSize = fogStepSize;
+        p.maxFog = maxFog;
+        p.fogNear = fogNear;
+        p.fogFar = fogFar;
+        p.fogDistant = fogDistant;
+        p.fogOceanHeight = fogOceanHeight;
+        p.fogDensityNear = fogDensityNear;
+        p.fogDensityFar = fogDensityFar;
+        p.fogLightColorImportance = fogLightColorImportance;
+
+
+
 
         p.depthOfFieldAperture = depthOfFieldAperture;
         p.depthOfFieldFocalLength = depthOfFieldFocalLength;
@@ -337,9 +401,14 @@ public class PostParameters : ScriptableObject
         p.glitchSplit = glitchSplit;
 
         p.renderBackground = renderBackground;
-        p.splatsAmount = splatsAmount;
+        p.splatAmount = splatAmount;
         p.splatSize = splatSize;
         p.splatSpeed = splatSpeed;
+        p.normalForce = normalForce;
+        p.curlForce = curlForce;
+        p.curlSize = curlSize;
+        p.splatMatchAmount = splatMatchAmount;
+        p.normalOffset = normalOffset;
 
         p.ambientOcclusionIntensity = ambientOcclusionIntensity;
         p.ambientOcclusionColor = ambientOcclusionColor;
@@ -360,7 +429,7 @@ public class PostParameters : ScriptableObject
 
     public void OnValidate()
     {
-        Debug.Log("HIII");
+//        Debug.Log("HIII");
 
         God.postController.OnPostParametersValidate(this);
     }

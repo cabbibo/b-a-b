@@ -13,12 +13,11 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 {
 
 
-    public int count;
+    public int splatAmount;
     public ComputeBuffer _VertBuffer;
     public ComputeShader shader;
     public int kernel;
 
-    public float splatSpeed;
     public Camera camera;
 
     public Material material;
@@ -41,18 +40,25 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
     public MeshRenderer debugDepthRenderer;
 
-    public float particleSize;
-    public float particleSpawnSpeed;
-    public float particleMatchAmount;
+    public float splatSize;
+    public float splatSpeed;
+    public float splatMatchAmount;
 
     public float normalForce;
     public float curlForce;
     public float curlSize;
 
+    public float normalOffset;
+    public bool renderBackground;
+
+    
+
 
     void OnEnable()
     {
-
+ if( splatAmount < 1 ){
+            splatAmount = 1;
+        }
 
         /*textureDescriptor = new RenderTextureDescriptor((int)renderSize.x, (int)renderSize.y, RenderTextureFormat.Depth, 24);
         texture = RenderTexture.GetTemporary(textureDescriptor);
@@ -72,7 +78,7 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
 
 
-        _VertBuffer = new ComputeBuffer(count, sizeof(float) * structSize);
+        _VertBuffer = new ComputeBuffer(splatAmount, sizeof(float) * structSize);
         kernel = shader.FindKernel(kernelName);
         GetNumThreads();
         GetNumGroups();
@@ -100,8 +106,8 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
     public void GetNumGroups()
     {
-        //numGroups = ((int)count + ((int)numThreads - 1)) / (int)numThreads;
-        numGroups = ((int)count) / (int)numThreads;
+        //numGroups = ((int)splatAmount + ((int)numThreads - 1)) / (int)numThreads;
+        numGroups = ((int)splatAmount) / (int)numThreads;
     }
 
 
@@ -153,11 +159,12 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
         shader.SetFloat("_Time", Time.time);
 
         shader.SetBuffer(kernel, "_VertBuffer", _VertBuffer);
-        shader.SetInt("_VertBuffer_COUNT", count);
+        shader.SetInt("_VertBuffer_COUNT", splatAmount);
         shader.SetFloat("_SplatSpeed", splatSpeed);
         shader.SetFloat("_NormalForce", normalForce);
         shader.SetFloat("_CurlForce", curlForce);
         shader.SetFloat("_CurlSize", curlSize);
+        shader.SetFloat("_NormalOffset", normalOffset);
 
         shader.Dispatch(kernel, numGroups, 1, 1);
 
@@ -167,12 +174,25 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
         }
 
         mpb.SetBuffer("_VertBuffer", _VertBuffer);
-        mpb.SetInt("_Count", count);
-        mpb.SetFloat("_Size", particleSize);
-        mpb.SetFloat("_NormalMatch", particleMatchAmount);
+        mpb.SetInt("_Count", splatAmount);
+        mpb.SetFloat("_Size", splatSize);
+        mpb.SetFloat("_NormalMatch", splatMatchAmount);
 
-        Graphics.DrawProcedural(material, new Bounds(transform.position, Vector3.one * 500000), MeshTopology.Triangles, count * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Splats"));
+        Graphics.DrawProcedural(material, new Bounds(transform.position, Vector3.one * 500000), MeshTopology.Triangles, splatAmount * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Splats"));
 
+    }
+
+    public void Reset(){
+
+        if( _VertBuffer != null ){
+            _VertBuffer.Release();
+        }   
+
+
+        if( splatAmount < 1 ){
+            splatAmount = 1;
+        }
+            _VertBuffer = new ComputeBuffer(splatAmount, sizeof(float) * structSize);
     }
 
 }

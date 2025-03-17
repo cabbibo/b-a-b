@@ -35,6 +35,8 @@ public sealed class FogEffect : PostProcessEffectSettings
     public FloatParameter _FogDensityAtNear = new FloatParameter { value = 0f };
     public FloatParameter _FogStepSize = new FloatParameter { value = 80f };
     public FloatParameter _MaxFogTotal = new FloatParameter { value = 1f };
+
+    public FloatParameter _LightColorImportance = new FloatParameter { value = 1f };
     public IntParameter _FogSamples = new IntParameter { value = 50 };
 
     public FloatParameter _OceanHeight = new FloatParameter { value = 240f };
@@ -98,6 +100,7 @@ public sealed class FogEffectRenderer : PostProcessEffectRenderer<FogEffect>
         sheet.properties.SetColor("_FogColorFar", settings._FogColorFar);
         sheet.properties.SetColor("_FogColorDistant", settings._FogColorDistant);
         sheet.properties.SetFloat("_OceanHeight", settings._OceanHeight);
+        sheet.properties.SetFloat("_LightColorImportance",settings._LightColorImportance);
 
         context.command.BlitFullscreenTriangle(context.source, context.destination, sheet, 0);
     }

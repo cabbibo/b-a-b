@@ -36,6 +36,15 @@ public class CameraShotManager : MonoBehaviour
     public Transform currentLocation;
 
 
+    public bool oscillate;
+
+
+    public float oscillateSize;
+    public float oscillateSpeed;
+
+    public float lookForward;
+
+
     public void NextShot()
     {
 
@@ -57,5 +66,11 @@ public class CameraShotManager : MonoBehaviour
 
         God.camera.transform.position = currentLocation.position;
         God.camera.transform.rotation = currentLocation.rotation;
+
+        if (oscillate)
+        {
+            God.camera.transform.position = currentLocation.position+ God.camera.transform.right * Mathf.Sin(Time.time * oscillateSpeed) * oscillateSize;
+            God.camera.transform.LookAt(currentLocation.position + currentLocation.forward * lookForward);
+        }
     }
 }

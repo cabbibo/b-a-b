@@ -59,8 +59,8 @@ public class PostController : MonoBehaviour
 {
 
 
+    public PostParameters currentPostParameterRef;
     public PostParameters tmpPostParameters;
-    public PostParameters basePostParameters;
     public PostParameters[] postParameters;
 
 
@@ -130,6 +130,8 @@ public class PostController : MonoBehaviour
     {
 
 
+//        print(placeParticlesOnDepthMap);
+
         tmpPostParameters.SetValues(
              mainPost_Reference,
              bloom_Reference,
@@ -174,7 +176,6 @@ public class PostController : MonoBehaviour
     }
 
 
-    public PostParameters currentPostParameterRef;
 
     public void SetPostParameters(string name)
     {
@@ -213,7 +214,7 @@ public class PostController : MonoBehaviour
             return;
         }
 
-        print("Made it here");
+//        print("Made it here");
         p.CopyTo(tmpPostParameters);
     }
 

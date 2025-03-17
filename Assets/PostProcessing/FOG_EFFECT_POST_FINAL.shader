@@ -80,6 +80,8 @@ float4 _FogColorNear;
 float4 _FogColorFar;
 float4 _FogColorDistant;
 float _OceanHeight;
+
+float _LightColorImportance;
 #define _FogSamples 40
 
 const float e = 2.7182818284590452353602874713527;
@@ -198,6 +200,7 @@ float2 TransformTriangleVertexToUV(float2 vertex)
         float currentStepSize=0;
 
         float oSVal = 1;
+
         for( int i = 0; i < _FogSamples; i++ ){
 
             float ni = float(i)/ float(_FogSamples);
@@ -246,14 +249,23 @@ float2 TransformTriangleVertexToUV(float2 vertex)
            // fogValue *= n * .5 + .5;
           //  totalFog += fogValue;
             
+            float fogDensity = lerp(_FogDensityAtNear, _FogDensityAtFar, ni);
           //  totalFogColor += lerp( _FogColorNear, _FogColorFar,ni ) * fogValue;
 
           //totalFog += sVal *(noise(p * .01)+1)* 1/(pow( d+3, _FogHeightPower));// GetSunShadowsAttenuation_PCF5x5(p,1,0);
         //  totalFog += ni*sVal * .1;//* _FogHeightMultiplier/(pow( d+2, _FogHeightPower))* lerp(_FogDensityAtNear, _FogDensityAtFar, ni);;// GetSunShadowsAttenuation_PCF5x5(p,1,0);
-           
-          totalFog += clamp(deltaSVal,0,1) * (3/(ni*2+1)) *_FogHeightMultiplier/(pow( d+2, _FogHeightPower));
-          totalFog += ni * sVal  *_FogHeightMultiplier/(pow( d+2, _FogHeightPower));
-          totalFog += .1 * offsetN*_FogHeightMultiplier/(pow( d+2, _FogHeightPower));
+           float fogAmountThisStep = clamp(deltaSVal,0,1) * (3/(ni*2+1)) *_FogHeightMultiplier/(pow( d+2, _FogHeightPower));
+              fogAmountThisStep +=   fogDensity*sVal  *_FogHeightMultiplier/(pow( d+2, _FogHeightPower));
+                fogAmountThisStep += .1 * offsetN*_FogHeightMultiplier/(pow( d+2, _FogHeightPower));
+
+
+            totalFog += fogAmountThisStep;//* fogDensity;
+            totalFogColor += lerp( _FogColorNear, _FogColorFar,ni ) *fogDensity;
+
+
+
+
+
 
 
             if( totalFog > _MaxFogTotal){
@@ -272,7 +284,10 @@ float2 TransformTriangleVertexToUV(float2 vertex)
         }
 
 
-        color = lerp(min(bgCol,_LightColor0) ,  bgCol+_LightColor0 ,3*totalFog/10);//
+        totalFogColor = lerp(totalFogColor, _LightColor0*3*totalFog/10, _LightColorImportance);
+
+        color =bgCol+totalFogColor;// lerp(min(bgCol,totalFogColor) ,  bgCol+totalFogColor ,3*totalFog/10);//
+      //  color = totalFogColor;
        // color = lerp(0, _LightColor0 ,3*totalFog/10);//
         
 

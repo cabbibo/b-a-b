@@ -78,6 +78,7 @@ RWStructuredBuffer<Wren> _WrenBuffer;
 int _NumWrens;
 
 float _SplatSpeed;
+float _NormalOffset;
 
 float3 getWorldPos( float2 coordinates ){
 
@@ -180,6 +181,7 @@ void PlaceOnDepth (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) 
                 float3 dY = getWorldPos( coordinates + float2(0,.001) ) - getWorldPos( coordinates - float2(0,.001) );
 
                 v.nor = -normalize(cross(dX*100 ,dY*100));
+                v.pos += v.nor * _NormalOffset;
 
                 // todo do we need to do this?
                 
