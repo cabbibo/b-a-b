@@ -3707,6 +3707,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 3
+  speedVector: {x: 1, y: 1, z: 1}
 --- !u!1 &1834910607210570925
 GameObject:
   m_ObjectHideFlags: 0

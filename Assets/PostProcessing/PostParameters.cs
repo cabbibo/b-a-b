@@ -124,6 +124,10 @@ public class PostParameters : ScriptableObject
     public float curlForce;
     public float curlSize;
     public float normalOffset;
+    public float splatHueRandomness;
+    public float splatSaturationRandomness;
+    public float splatLightnessRandomness;
+    public float splatColorMultiplier;
 
 
 
@@ -282,6 +286,10 @@ public class PostParameters : ScriptableObject
         placeParticlesOnDepthMap.curlForce = curlForce;
         placeParticlesOnDepthMap.curlSize = curlSize;
         placeParticlesOnDepthMap.normalOffset = normalOffset;
+        placeParticlesOnDepthMap.hueRandomness = splatHueRandomness;
+        placeParticlesOnDepthMap.saturationRandomness = splatSaturationRandomness;
+        placeParticlesOnDepthMap.lightnessRandomness = splatLightnessRandomness;
+        placeParticlesOnDepthMap.colorMultiplier = splatColorMultiplier;
 
 
 
@@ -409,6 +417,11 @@ public class PostParameters : ScriptableObject
         p.curlSize = curlSize;
         p.splatMatchAmount = splatMatchAmount;
         p.normalOffset = normalOffset;
+        p.splatHueRandomness = splatHueRandomness;
+        p.splatSaturationRandomness = splatSaturationRandomness;
+        p.splatLightnessRandomness = splatLightnessRandomness;
+        p.splatColorMultiplier = splatColorMultiplier;
+
 
         p.ambientOcclusionIntensity = ambientOcclusionIntensity;
         p.ambientOcclusionColor = ambientOcclusionColor;

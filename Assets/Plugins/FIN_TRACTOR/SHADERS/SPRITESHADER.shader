@@ -9,7 +9,10 @@ Shader "Lit/SpriteCutout" {
         _CutoutCutoff("CutoutCutoff", Range(0,1)) = .5
         _UseAlpha("UseAlpha", Float) = 0
         _MainTex ("Base (RGB) Trans (A)", 2D) = "white" {}
+        _MainTex2  ("Base (RGB) Trans (A)", 2D) = "white" {}
         _Color("Color", Color) = (1,1,1,1)
+        _OverallMultiplier("OverallMultiplier", Range(0,10)) = 1
+        _ShadowStrength("ShadowStrength", Range(0,1)) = 1
 
     }
 
@@ -118,6 +121,8 @@ Shader "Lit/SpriteCutout" {
 
     }
 
+
+
     UNITY_INSTANCING_BUFFER_START(Props)
     UNITY_INSTANCING_BUFFER_END(Props)
     
@@ -172,7 +177,7 @@ Shader "Lit/SpriteCutout" {
 
             float3 _FadeLocation;
             
-            
+            float _OverallMultiplier;
 
 
 
@@ -206,7 +211,7 @@ Shader "Lit/SpriteCutout" {
 
             }
 
-
+            
 
             float _ShadowStrength;
 
@@ -219,14 +224,17 @@ Shader "Lit/SpriteCutout" {
                 fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos);// * .5 + .5;
 
                 shadow = shadow * _ShadowStrength + (1-_ShadowStrength);
+
+         
                 
                 col = tex2D(_MainTex, v.uv).rgb * shadow;
 
                 if( getDiscard(v.uv) < .5){
                     discard;
                 }
-
+                
                 col *= _Color;
+                col *= _OverallMultiplier;
                
                 return float4(col,1);
             }

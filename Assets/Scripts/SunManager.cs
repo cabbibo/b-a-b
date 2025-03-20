@@ -123,6 +123,9 @@ if( useLookTarget   ){
     sun.transform.position = targetPosition.position;
     sun.transform.LookAt(lookTarget.position);
 
+    moon.transform.position = targetPosition.position;
+    moon.transform.LookAt(lookTarget.position);
+
 
 
 
@@ -164,6 +167,8 @@ if( useLookTarget   ){
             God.sun.transform.rotation = moon.transform.rotation;
             God.sun.color = moon.color;
             God.sun.enabled = true;
+
+
         }
 
         Shader.SetGlobalFloat("_DayNess", dayNess);

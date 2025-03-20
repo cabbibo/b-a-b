@@ -51,6 +51,11 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
     public float normalOffset;
     public bool renderBackground;
 
+    public float hueRandomness;
+    public float saturationRandomness;
+    public float lightnessRandomness;
+    public float colorMultiplier;
+
     
 
 
@@ -177,6 +182,10 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
         mpb.SetInt("_Count", splatAmount);
         mpb.SetFloat("_Size", splatSize);
         mpb.SetFloat("_NormalMatch", splatMatchAmount);
+        mpb.SetFloat("_HueRandomness", hueRandomness);
+        mpb.SetFloat("_SaturationRandomness", saturationRandomness);
+        mpb.SetFloat("_LightnessRandomness", lightnessRandomness);
+        mpb.SetFloat("_ColorMultiplier", colorMultiplier);
 
         Graphics.DrawProcedural(material, new Bounds(transform.position, Vector3.one * 500000), MeshTopology.Triangles, splatAmount * 3 * 2, 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Splats"));
 

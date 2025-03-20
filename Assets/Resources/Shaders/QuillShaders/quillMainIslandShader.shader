@@ -35,6 +35,7 @@ Shader "Quill/quillMainIslandShader" {
 
         _PainterlyLightImportance("PainterlyLightImportance", float) = 1
 
+        _OverallMultiplier("OverallMultiplier", float) = 1
         
 
 
@@ -371,6 +372,7 @@ Shader "Quill/quillMainIslandShader" {
 
             float _PainterlyLightImportance;
 
+        float _OverallMultiplier;
 
 
             //Our vertex function simply fetches a point from the buffer corresponding to the vertex index
@@ -588,6 +590,7 @@ Shader "Quill/quillMainIslandShader" {
                 col *= lerp(float3(.1,.1,.2),float3(1,.9,.9),shadow * (.4+floor(lightMatch*5)/5));
 
                 col *= _LightColor0;
+                col *= _OverallMultiplier;
                 //DoEdgeDiscard(lightingData,v.worldPos,v.eye);
                 DoWrenDiscard(v.worldPos);
 

@@ -315,7 +315,7 @@ Shader "FantasyCrystals/ShardShader"
         float4 bg = tex2D( _BackgroundTexture, v.grabPos.xy );
         // col = bg;
 
-        col = saturate(col * .8) / .8;
+        col = saturate(col * .4) / .4;
         return float4( col.xyz , 1);//saturate(float4(col,3*length(col) ));
 
 

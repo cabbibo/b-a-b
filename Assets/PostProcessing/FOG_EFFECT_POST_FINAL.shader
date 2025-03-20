@@ -82,6 +82,7 @@ float4 _FogColorDistant;
 float _OceanHeight;
 
 float _LightColorImportance;
+int _FogSamples;
 #define _FogSamples 40
 
 const float e = 2.7182818284590452353602874713527;
@@ -260,7 +261,7 @@ float2 TransformTriangleVertexToUV(float2 vertex)
 
 
             totalFog += fogAmountThisStep;//* fogDensity;
-            totalFogColor += lerp( _FogColorNear, _FogColorFar,ni ) *fogDensity;
+            totalFogColor += lerp( _FogColorNear, _FogColorFar,ni ) *fogAmountThisStep;
 
 
 

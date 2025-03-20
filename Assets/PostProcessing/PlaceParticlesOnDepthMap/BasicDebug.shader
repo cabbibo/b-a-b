@@ -216,6 +216,22 @@ Shader "Unlit/BasicDebug"
                 half cosAngle = cos(hueAdjust);
                 return col * cosAngle + cross(k, col) * sin(hueAdjust) + k * dot(k, col) * (1.0 - cosAngle);
             }
+
+            float3 ApplySaturation(float3 col, float saturationAdjust)
+            {
+                float3 gray = dot(col, float3(0.299, 0.587, 0.114));
+                return lerp(gray, col, saturationAdjust);
+            }
+
+            float3 ApplyLightness(float3 col, float lightnessAdjust)
+            {
+                return col * lightnessAdjust;// - dot(col, float3(0.299, 0.587, 0.114)) * lightnessAdjust;
+            }
+
+            float _SaturationRandomness;
+            float _HueRandomness;
+            float _LightnessRandomness;
+
             //Pixel function returns a solid color for each point.
             float4 frag (varyings v) : COLOR {      
                 float4 col = tex2D(_MainTex, v.uv2);
@@ -241,10 +257,13 @@ Shader "Unlit/BasicDebug"
                 //col.xyz = hsv(v.life+ val * .4 + v.debug,.5, 1);
                 //col.xyz *= hsv(val,.4,1); 
                 //col.xyz *= v.color;
-
+                float3 hsv = rgb2hsv(v.color);
                 float hue = rgb2hsv(v.color).x;
-                col.xyz = ApplyHue(v.color , sin(v.id) *.5);//hsv(hue,.5,1);
-                col.xyz *= (sin(v.id * 10)+1) * .5 + .5;
+                col.xyz = v.color.xyz;
+                col.xyz = ApplyHue(col.xyz, sin(v.id) * _HueRandomness);//hsv(hue,.5,1);
+               col.xyz = ApplySaturation(col.xyz, ((sin(v.id * 10))*_SaturationRandomness) + hsv.y);
+               col.xyz = ApplyLightness(col.xyz, ((sin(v.id * 10))*_LightnessRandomness) + hsv.z);
+             // col = hsv.z;
                 col.xyz *= v.lifeSize;
                 col *= 2;
                 col.xyz = ApplyHue( col.xyz , val * .4 );// hsv( val,1,1);

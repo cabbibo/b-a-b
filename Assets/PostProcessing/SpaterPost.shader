@@ -189,10 +189,10 @@ Shader "Hidden/Custom/SpaterPost"
         color = saturate(color);
 
 
-        color = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.0    );
-        color.g = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.1   ).g;
-        color.b = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.2 ).b;
-        color += (1-frameVal) * .5;
+        //color = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.0    );
+        //color.g = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.1   ).g;
+        //color.b = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.texcoord - distortionAmount * -.2 ).b;
+       // color += (1-frameVal) * .5;
         
         // gentle side;
         // color.xyz = tCol;

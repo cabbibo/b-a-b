@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: quillTriplanar 1
-  m_Shader: {fileID: 4800000, guid: 00783d82b4cfa0e4189b6428faf087c9, type: 3}
+  m_Name: ShardShader 1
+  m_Shader: {fileID: 4800000, guid: 74c0ece5093c5814da4250acd287d4ee, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -59,37 +59,56 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _TriplanarMap:
-        m_Texture: {fileID: 2800000, guid: 6d82457f96ba8449597922c106f17caa, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _TriplanarNormalMap:
-        m_Texture: {fileID: 2800000, guid: e08c295755c0885479ad19f518286ff2, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
+    - _CenterOrbFalloff: 0.67
+    - _CenterOrbFalloffSharpness: -5.43
+    - _CenterOrbImportance: 0.1
+    - _ColorMultiplier: 1
+    - _ColorSplit: 0.05
+    - _Contrast: 0.8
     - _Cutoff: 0.5
+    - _DeltaStepSize: 0.1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _HueEnd: 0.44
+    - _HueSize: 0
+    - _HueStart: 0.1
+    - _IndexOfRefraction: 0.8
+    - _Lightness: 1
     - _Metallic: 0
     - _Mode: 0
+    - _NoiseImportance: 2.35
+    - _NoiseSharpness: 1.25
+    - _NoiseSize: 6.31
+    - _NoiseSpeed: 2.01
+    - _NoiseSubtractor: 0.11
+    - _NumSteps: 4
     - _OcclusionStrength: 1
+    - _OffsetMultiplier: 5.94
+    - _Opaqueness: 1.27
     - _Parallax: 0.02
-    - _Size: 111
+    - _ReflectionMultiplier: 0.2
+    - _ReflectionSharpness: 1
+    - _RefractionBackgroundSampleExtraStep: 0
+    - _Saturation: 0.01
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TriplanarSharpness: 1
+    - _StepRefractionMultiplier: 0
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 1, g: 0.72980815, b: 0, a: 1}
+    - _BaseColor: {r: 0, g: 0, b: 0, a: 1}
+    - _CenterOrbColor: {r: 0.6415094, g: 0.6415094, b: 0.6415094, a: 1}
+    - _CenterOrbOffset: {r: 0, g: 0, b: 0, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _TriplanarMultiplier: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+    - _NoiseColor: {r: 0, g: 0, b: 0, a: 1}
+    - _NoiseOffset: {r: 0, g: 0, b: 0, a: 1}
+    - _ReflectionColor: {r: 1, g: 0.4198113, b: 0.4198113, a: 1}
   m_BuildTextureStacks: []

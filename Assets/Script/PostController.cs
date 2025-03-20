@@ -199,6 +199,7 @@ public class PostController : MonoBehaviour
 
     public void OnPostParametersValidate(PostParameters p)
     {
+        Debug.Log("OnPostParametersValidate");
         if (!updateOnValidate)
         {
             return;
@@ -214,7 +215,7 @@ public class PostController : MonoBehaviour
             return;
         }
 
-//        print("Made it here");
+   print("Made it here");
         p.CopyTo(tmpPostParameters);
     }
 

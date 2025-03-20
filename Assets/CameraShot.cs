@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
+using UnityEngine.Video;
 
 public class CameraShot : MonoBehaviour
 {
@@ -26,12 +27,35 @@ public class CameraShot : MonoBehaviour
     public SunManager sunManager;
 
     public PostParameters postParameters;
+    public bool isMovieShot;
+    public VideoPlayer player;
+    public TimelinePlayback timelinePlayback;
+
 
 
 
 
     public void Set(){
 
+  
+
+        SetValues();
+        if(isMovieShot){
+            
+            player.Prepare();
+            //player.StepForward(); // Show first frame
+            player.Pause();
+        }
+
+        God.postController.SetPostParameters(postParameters);
+        this.gameObject.SetActive(true);
+
+
+
+    }
+
+    public void SetValues(){
+        
         cameraManager.currentLocation = cameraTransform;
         cameraManager.oscillate = oscillate;
         cameraManager.oscillateSize = oscillateSize;
@@ -42,11 +66,19 @@ public class CameraShot : MonoBehaviour
         sunManager.lookTarget = lightLookTarget;
         sunManager.targetPosition = lightPosition;
 
+        if( isMovieShot ){
+            print( player.isPrepared);
+            player.Prepare();
+          // player.time = timelinePlayback.rawTime;// videoPlayer.time = playableDirector.time; // Sync Video and Timeline
+           player.frame = (long)(timelinePlayback.rawTime * 60) ; // Sync Video and Timeline
+           player.StepForward(); // If the timeline is played, we will also play the video
+           player.Play();
+                  
+        }
+    }
 
-        God.postController.SetPostParameters(postParameters);
-
-
-
+    public void Unset(){
+        this.gameObject.SetActive(false);
     }
 
     // Start is called before the first frame update
@@ -58,6 +90,7 @@ public class CameraShot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         
     }
 }
