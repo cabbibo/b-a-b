@@ -13,6 +13,7 @@ Shader "Lit/SpriteCutout" {
         _Color("Color", Color) = (1,1,1,1)
         _OverallMultiplier("OverallMultiplier", Range(0,10)) = 1
         _ShadowStrength("ShadowStrength", Range(0,1)) = 1
+        _Invert("Invert", Float) = 0
 
     }
 
@@ -179,6 +180,8 @@ Shader "Lit/SpriteCutout" {
             
             float _OverallMultiplier;
 
+            float _Invert;
+
 
 
 
@@ -224,16 +227,22 @@ Shader "Lit/SpriteCutout" {
                 fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos);// * .5 + .5;
 
                 shadow = shadow * _ShadowStrength + (1-_ShadowStrength);
-
-         
                 
-                col = tex2D(_MainTex, v.uv).rgb * shadow;
+                col = tex2D(_MainTex, v.uv).rgb;
+                
+                if( _Invert > .5){
+                    col = 1 - col;
+                }
+                
+               col*= shadow;
 
                 if( getDiscard(v.uv) < .5){
                     discard;
                 }
                 
                 col *= _Color;
+
+            
                 col *= _OverallMultiplier;
                
                 return float4(col,1);

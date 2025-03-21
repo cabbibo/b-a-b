@@ -33,7 +33,7 @@ while( transform.childCount > 0){
             go.transform.localPosition = pos;
             go.transform.localScale = Vector3.one * Random.Range(minScale, maxScale);
             go.transform.LookAt(lookTarget);
-            go.transform.Rotate(0, Random.Range(-rotationRandomnees, rotationRandomnees), 0);
+            go.transform.Rotate( Random.Range(-rotationRandomnees, rotationRandomnees), Random.Range(-rotationRandomnees, rotationRandomnees),  Random.Range(-rotationRandomnees, rotationRandomnees));
 
             go.transform.parent = transform;
 

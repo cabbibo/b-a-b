@@ -29,6 +29,8 @@ public class PostParameters : ScriptableObject
     public bool spaterPost;
     public bool astigma;
 
+    
+
 
 
     [Header("Main Post Settings")]
@@ -51,6 +53,10 @@ public class PostParameters : ScriptableObject
 
     [Header("Color Grading Settings")]
     public Color colorFilter;
+    public float hueShift;
+    public float contrast;
+    public float postExposure;
+    
 
 
 
@@ -274,6 +280,7 @@ public class PostParameters : ScriptableObject
         }
         if( splatAmount != placeParticlesOnDepthMap.splatAmount )
         {
+            placeParticlesOnDepthMap.splatAmount = splatAmount;
             placeParticlesOnDepthMap.Reset();
         }
 
