@@ -27,4 +27,19 @@ public class WeatherManager : MonoBehaviour
     {
 
     }
+
+
+    public void SetValues(WeatherSettings WS)
+    {
+        // WS.SetValues(this);
+
+        sunManager.auto = WS.sun_auto;
+        sunManager.timeInDay = WS.sun_timeInDay;
+        sunManager.showSunRenderer = WS.sun_showSunRenderer;
+        sunManager.daySpeed = WS.sun_daySpeed;
+        sunManager.nightSpeed = WS.sun_nightSpeed;
+
+    }
+
+
 }

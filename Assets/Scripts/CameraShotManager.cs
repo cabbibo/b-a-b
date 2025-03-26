@@ -65,6 +65,8 @@ public class CameraShotManager : MonoBehaviour
     public TimelinePlayback timelinePlayback;
 
 
+    public AudioSource audio;
+
 
     public void NextShot()
     {
@@ -179,6 +181,12 @@ public class CameraShotManager : MonoBehaviour
             }
         }
 
+    }
 
+    public void PlayAudio()
+    {
+        if( audio != null ){
+            audio.Play();
+        }
     }
 }

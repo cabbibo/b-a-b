@@ -18,7 +18,7 @@ using UnityEditor;
 
 #endif
 
-public class FlyingTutorialSequence : TutorialCoroutine
+public class FlyingTutorial : TutorialCoroutine
 {
 
     public bool speedRun;
@@ -29,13 +29,16 @@ public class FlyingTutorialSequence : TutorialCoroutine
     public float waitTimeInFlightSpace = .1f;
     public float cameraLerpTime = 1f;
 
+
+    public float diveCutoff = .8f;
+    public float diveMultiplier;
+
+
     public float minWaitTimeForXPress;
 
-    public TutorialStateManager stateManager;
-
-    public static UnityAction OnTutorialStart;
-    public static UnityAction OnTutorialDiveFinished;
-    public static UnityAction OnFreeFlightStarted;
+    public UnityAction OnTutorialStart;
+    public UnityAction OnTutorialDiveFinished;
+    public UnityAction OnFreeFlightStarted;
 
 
     //  public CinematicCameraHandler cinematicCamera;
@@ -78,21 +81,16 @@ public class FlyingTutorialSequence : TutorialCoroutine
 
     [Header("Ending")]
     public CanvasGroup groupEnd;
-
-
-    Coroutine tutSequence;
     //float _lastSequenceTime;
 
 
     public WeatherManager weatherManager;
-    public TargetManager targetManager;
     public Material featherStartMaterial;
     public Material featherMainMaterial;
 
 
 
 
-    public int shardsPerTargetHit = 30;
 
     public GameObject hitTarget;
     public float hitTargetRadius = 20;
@@ -104,13 +102,13 @@ public class FlyingTutorialSequence : TutorialCoroutine
 
 
 
-    static FlyingTutorialSequence _instance;
-    public static FlyingTutorialSequence Instance
+    static FlyingTutorial _instance;
+    public static FlyingTutorial Instance
     {
         get
         {
             if (!_instance)
-                _instance = FindObjectOfType<FlyingTutorialSequence>();
+                _instance = FindObjectOfType<FlyingTutorial>();
             return _instance;
         }
     }
@@ -169,36 +167,68 @@ public class FlyingTutorialSequence : TutorialCoroutine
 
 
     // STATE MACHINE FOR TUTORIAL
-    IEnumerator TutorialSequence()
+    public override IEnumerator TutorialSequence()
     {
 
+        // auto takeoff
+        if (God.wren)
+        {
+            God.wren.state.TakeOff();
+            God.wren.shards.SetToBodyShards();
+        }
 
 
         yield return BeginningWait();
 
-
         DoTutorialSequenceSetup();
 
+        print("TUTORIAL SEQUENCE START");
 
 
 
         //        cinematicCamera.tutorialCameraIdx = (float)Camera.Closeup;
 
         OnFirstShot();
-        yield return God.interfaceTutorial.WaitWithCheat(1);
-        print("fade start);");
+
+
+        print("AFterFirstShot");
+
+
+        yield return God.interfaceTutorial.WaitWithCheat(3);
+
+
         God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+
+
+        print("AFTER FADE FULL GROUP");
+
+
         yield return God.interfaceTutorial.WaitWithCheat(1);
+
+
+        print("WAITING");
+
+        God.interfaceTutorial.SetControllerHint(
+            InterfaceTutorial.ControllerHint.Wiggle,
+            "it feels strange to be something new"
+            );
+
         yield return God.interfaceTutorial.WaitForXToContinue();
+        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.None);
+        print("AFTER X TO CONTINUE");
 
 
 
         God.postController.WormHole(OnBirdBackShown);
 
 
-        yield return God.interfaceTutorial.WaitWithCheat(11);
+        yield return God.interfaceTutorial.WaitWithCheat(3);
+
+        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Wiggle);
+        God.interfaceTutorial.controllerText.text = "your feathers light as air";
         yield return God.interfaceTutorial.WaitForXToContinue();
 
+        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.None);
         God.interfaceTutorial.TutorialSectionComplete();
 
 
@@ -206,8 +236,13 @@ public class FlyingTutorialSequence : TutorialCoroutine
         yield return God.interfaceTutorial.LerpCamera(cameraCloseBack, cameraFarBack, 10);
         OnBirdZoomOutEnd();
 
+        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Wiggle);
+        God.interfaceTutorial.controllerText.text = "wiggle your crystalline wings small bird";
+
         // yield return WaitWithCheat(waitTimeInFirstShots);
         yield return God.interfaceTutorial.WaitForXToContinue();
+
+        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.None);
         God.interfaceTutorial.TutorialSectionComplete();
 
         God.postController.WormHole(DoWrenSplosition, PostSplosion);
@@ -216,7 +251,8 @@ public class FlyingTutorialSequence : TutorialCoroutine
 
 
         yield return God.interfaceTutorial.WaitWithCheat(3);
-
+        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Wiggle);
+        God.interfaceTutorial.controllerText.text = "even at your core, you are still a bird now";
         yield return God.interfaceTutorial.WaitForXToContinue();
         God.interfaceTutorial.TutorialSectionComplete();
         God.cameraManager.cinematicManager.ReleasePriority(.1f);
@@ -238,6 +274,10 @@ public class FlyingTutorialSequence : TutorialCoroutine
         God.interfaceTutorial.SetBGFade(0);
 
         God.wren.physics.rb.isKinematic = false;
+        God.wren.physics.rb.velocity = Vector3.zero;
+        God.wren.physics.rb.angularVelocity = Vector3.zero;
+        God.wren.physics.rb.rotation = Quaternion.identity;
+        God.wren.transform.rotation = Quaternion.identity;
         God.wren.canMove = true;
 
 
@@ -246,7 +286,7 @@ public class FlyingTutorialSequence : TutorialCoroutine
 
 
         God.interfaceTutorial.TutorialSectionComplete();
-        stateManager.StartFreeFlight();
+
 
         God.interfaceTutorial.SetBGFade(0);
 
@@ -285,7 +325,7 @@ public class FlyingTutorialSequence : TutorialCoroutine
         God.interfaceTutorial.TutorialSectionComplete();
 
 
-        OnFreeFlightStarted();
+
         God.interfaceTutorial.SetBGFade(0);
 
         yield return God.interfaceTutorial.WaitWithCheat(3);
@@ -301,11 +341,12 @@ public class FlyingTutorialSequence : TutorialCoroutine
         God.interfaceTutorial.TutorialSectionComplete();
 
         OnDiveInstructions();
+        yield return God.interfaceTutorial.WaitWithCheat(3);
 
         God.interfaceTutorial.SetBGFade(0);
-        // Dive
-        //God.interfaceTutorial.ControllerHint hint = God.interfaceTutorial.ControllerHint.Dive;
-        //yield return God.interfaceTutorial.ControllerHintSequence(hint);
+
+        // DIVe
+        yield return DiveSequence();
 
         God.interfaceTutorial.ShowProgress(0);
         God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
@@ -352,16 +393,22 @@ ___) |  __/ (__| |_| | (_) | | | | |  _  |  __/ | |_) |  __/ |  \__ \
 
         God.cameraManager.cinematicManager.SetCamera(cameraInsideCloseup.info, 1);
 
-        stateManager.SetCinematicFlightTutorialState();
+        //stateManager.SetCinematicFlightTutorialState();
 
         God.postController.FadeIn();
 
         God.interfaceTutorial.ShowContinue(false);
         God.interfaceTutorial.ShowText();
 
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.None);
         God.interfaceTutorial.ShowProgress(0);
         God.interfaceTutorial.SetBGFade(0);
+
+        //God.interfaceTutorial.groupSticks.SetActive(true);
+        //God.interfaceTutorial.controllerText.text = "test";
+
+
+
+
 
         God.wren.bird.featherMaterial = featherStartMaterial;
         God.wren.bird.ResetFeatherValues();
@@ -371,17 +418,6 @@ ___) |  __/ (__| |_| | (_) | | | | |  _  |  __/ | |_) |  __/ |  \__ \
         God.wren.physics.rb.isKinematic = true;
         God.wren.interfaceUtils.showStaminaRing = false;
         God.wren.interfaceUtils.showForces = false;
-
-
-        // set up weather manager so we get sun in right direction!
-        weatherManager.sunManager.auto = false;
-        weatherManager.sunManager.rawTimeInCycle = weatherManager.sunManager.daySpeed * .98f;
-
-
-
-
-        God.interfaceTutorial.groupSticks.SetActive(true);
-        God.interfaceTutorial.controllerText.text = "test";
 
 
         God.postController.SetPostParameters(preSplosionPostParameters);
@@ -484,7 +520,6 @@ _   _          ___         ____                        ____
 
 
             God.wren.physics.AddForce(God.wren.transform.right * leftOrRight * moveTowardsTargetForwardMultiplier, God.wren.transform.position + God.wren.transform.forward);
-
 
 
 
@@ -930,7 +965,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
             {
 
                 print("htittt");
-                t += .1f;
+                t += amountProgressPerHit;
 
                 OnTargetHit();
                 PlaceFreeFlightTarget();
@@ -953,6 +988,8 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
             God.interfaceTutorial.ShowProgress(t);
 
 
+            if (Input.GetKeyDown(KeyCode.Space))
+                break;
 
             yield return null;
 
@@ -1159,6 +1196,53 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
 
 
+    /**
+      ____ _____     _______   ____  _____ ____ _____ ___ ___  _   _ 
+     |  _ \_ _\ \   / / ____| / ___|| ____/ ___|_   _|_ _/ _ \| \ | |
+     | | | | | \ \ / /|  _|   \___ \|  _|| |     | |  | | | | |  \| |
+     | |_| | |  \ V / | |___   ___) | |__| |___  | |  | | |_| | |\  |
+     |____/___|  \_/  |_____| |____/|_____\____| |_| |___\___/|_| \_|
+
+    */
+
+
+
+
+    IEnumerator DiveSequence()
+    {
+
+        float t = 0;
+
+        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Dive);
+        //StartCoroutine(FadeGroup(groupContainer, 0, 1));
+        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+
+        while (t < 1)
+        {
+
+            float v = Mathf.Abs(Vector3.Dot(God.wren.physics.rb.velocity, Vector3.up));
+
+            if (v > diveCutoff)
+            {
+
+                t += diveMultiplier * Mathf.Pow((v - diveCutoff), 2);
+            }
+
+            God.interfaceTutorial.ShowProgress(t);
+            if (Input.GetKeyDown(KeyCode.Space))
+                break;
+            yield return null;
+        }
+
+
+        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
+
+        DeactivatePointer();
+        targetManager.EraseAllTargets();
+        God.interfaceTutorial.ShowProgress(0);
+
+
+    }
 
 
 
@@ -1194,32 +1278,10 @@ _     _ _   _   _      _
 
 
 
-    public void StartTutorial()
-    {
-        tutSequence = StartCoroutine(TutorialSequence());
-    }
 
 
 
 
-
-    public void ActivatePointer()
-    {
-        //hitTarget.SetActive(true);
-        God.wren.interfaceUtils.interfacePointer.AddPointer(targetManager.currentTarget.transform, 0, new Vector4(0, 0, 0, 1));
-        God.wren.interfaceUtils.interfacePointer.TurnOnPointer(targetManager.currentTarget.transform);
-    }
-
-
-    public void DeactivatePointer()
-    {
-        if (targetManager.currentTarget != null)
-        {
-            God.wren.interfaceUtils.RemovePointer(targetManager.currentTarget.transform);
-        }
-        targetManager.EraseCurrentTarget();
-        // hitTarget.SetActive(false);
-    }
 
 
 
@@ -1234,21 +1296,6 @@ _     _ _   _   _      _
     }
 
 
-
-    public void OnTargetHit()
-    {
-        God.audio.PlayBasedOnWrenSpeed(God.sounds.texturalHitClips[Random.Range(0, God.sounds.texturalHitClips.Length)]);
-        God.wren.shards.CollectShards(shardsPerTargetHit, Random.Range(0, 10f), hitTarget.transform.position);
-
-        print("TARGET HIT");
-        God.particleSystems.Emit(God.particleSystems.smallSuccessParticleSystem, God.wren.transform.position + God.wren.transform.forward * 5f, 100);
-        DeactivatePointer();
-        targetManager.HitTarget(God.wren.physics.speed);
-        //God.particleSystems.transform.position = God.wren.transform.position + God.wren.transform.forward * 5;
-        //God.particleSystems.smallSuccessParticleSystem.Play();
-
-
-    }
 
 
 
@@ -1279,7 +1326,9 @@ _     _ _   _   _      _
 
     void PlaceHitTarget()
     {
-        targetManager.SetTarget(God.wren.transform.position + Vector3.forward * 100 + Vector3.up * (placeUpOrDown ? 10 : -10), 1);
+
+        float forwardOrBack = Vector3.Dot(God.wren.transform.forward, Vector3.forward) > 0 ? 1 : -1;
+        targetManager.SetTarget(God.wren.transform.position + Vector3.forward * 100 * forwardOrBack + Vector3.up * (placeUpOrDown ? 10 : -10), 1);
         placeUpOrDown = !placeUpOrDown;
         ActivatePointer();
     }
@@ -1350,7 +1399,7 @@ _______     _______ _   _ _____ ____
     public void OnBirdBackShown()
     {
         God.interfaceTutorial.TutorialSectionComplete();
-        God.interfaceTutorial.groupSticks.SetActive(false);
+        //God.interfaceTutorial.groupSticks.SetActive(false);
         God.cameraManager.cinematicManager.SetCamera(cameraCloseBack.info, 1);
     }
     public void OnBirdZoomOutStart() { }
@@ -1387,7 +1436,7 @@ _______     _______ _   _ _____ ____
 
     public void OnFlightTutorialEnd()
     {
-        stateManager.StartTransition();
+        stateManager.OnTutorialEnd(this);
     }
 
 
@@ -1773,10 +1822,8 @@ _______     _______ _   _ _____ ____
             if (tutSequence != null && Input.GetKeyDown(KeyCode.Tab))
             {
                 StopCoroutine(tutSequence);
-
-                stateManager.StartTransition();
-
-                God.wren.PhaseShift(ender.transform.position + Vector3.down * 180);
+                OnFlightTutorialEnd();
+                //God.wren.PhaseShift(ender.transform.position + Vector3.down * 180);
             }
 
             if (Input.GetKeyDown(KeyCode.LeftAlt))

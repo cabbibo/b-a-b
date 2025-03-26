@@ -52,8 +52,7 @@ public class IslandController : MonoBehaviour
     public Vector2[] islandUVs;
 
 
-
-    public TutorialStateManager tutorialStateManager;
+    public WeatherSettings weatherSettings;
 
 
     /*
@@ -84,6 +83,12 @@ public class IslandController : MonoBehaviour
 
         God.SetIslandController(this);
         God.SetPlayableDirector(playableDirector);
+
+
+        God.weatherManager.SetValues(weatherSettings);
+
+
+
         islandDistances = new Vector2[islands.Length];
         islandUVs = new Vector2[islands.Length];
 

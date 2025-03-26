@@ -57,7 +57,7 @@ public class TutorialTakeoffCard : TutorialCardTrigger
 
         OnTriggered();
 
-        stateManager.OnFirstCrashStart();
+        // stateManager.OnFirstCrashStart();
         God.wren.shards.SpendAllShards();
         enabled = false; // dont try and trigger again
 
@@ -76,7 +76,7 @@ public class TutorialTakeoffCard : TutorialCardTrigger
     public void OnCutSceneFinished()
     {
 
-        FlyingTutorialSequence.Instance.OnTutorialCardTriggered(cardType, target: lookAt ? transform : null, pause: pause);
+        FlyingTutorial.Instance.OnTutorialCardTriggered(cardType, target: lookAt ? transform : null, pause: pause);
 
         //print("CutScene Finished");
         //islandEnder.hasCrashed = true;

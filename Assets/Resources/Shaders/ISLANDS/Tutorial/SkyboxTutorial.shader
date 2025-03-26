@@ -267,7 +267,9 @@ Shader "Islands/Tutorial/Skybox"
         col += pow(texCUBE(_CubeMap, rd).xyz ,1).x * pow(abs(rd.y),2)*2;//* 1;
 
         //col *= 10;
-        col = saturate(col);  
+       // col = saturate(col);  
+
+       //col = float3(1,0,0);
 
 
         

@@ -141,7 +141,7 @@ public class Wren : MonoBehaviour
     public void PhaseShift(Vector3 p)
     {
 
-        print("PHASE SHIFT CALLED");
+//        print("PHASE SHIFT CALLED");
 
         // teleport bird
         // teleport camera

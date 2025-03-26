@@ -19,11 +19,18 @@ public class Shard : MonoBehaviour
 
     public float type;
 
+    public float timeCollected;
+    public float respawnTime = 10;
+    public float timeHit;
+
+    public bool respawnAfterTime;
+
 
 
     // Start is called before the first frame update
     void Start()
     {
+
 
     }
 
@@ -31,19 +38,45 @@ public class Shard : MonoBehaviour
     void Update()
     {
 
+        float timeSinceHit = God.state.totalTimeInGame - timeHit;
+        if (timeSinceHit > respawnTime && collected && respawnAfterTime)
+        {
+            Respawn();
+        }
+
+    }
+
+    public void Respawn()
+    {
+
+        collected = false;
+        if (Collected != null) Collected.SetActive(false);
+        if (Uncollected != null) Uncollected.SetActive(true);
+
+
     }
 
     void OnEnable()
     {
-        if (collected)
+
+        if (respawnAfterTime)
         {
-            if (Collected != null) Collected.SetActive(true);
-            if (Uncollected != null) Uncollected.SetActive(false);
+            timeHit = God.state.totalTimeInGame;
+            Respawn();
         }
         else
         {
-            if (Collected != null) Collected.SetActive(false);
-            if (Uncollected != null) Uncollected.SetActive(true);
+
+            if (collected)
+            {
+                if (Collected != null) Collected.SetActive(true);
+                if (Uncollected != null) Uncollected.SetActive(false);
+            }
+            else
+            {
+                if (Collected != null) Collected.SetActive(false);
+                if (Uncollected != null) Uncollected.SetActive(true);
+            }
         }
     }
 
@@ -65,11 +98,18 @@ public class Shard : MonoBehaviour
             if (Collected != null) Collected.SetActive(true);
             if (Uncollected != null) Uncollected.SetActive(false);
 
+            timeHit = God.state.totalTimeInGame;
+
 
             if (destroyOnCollect)
             {
                 Destroy(gameObject);
             }
+
+
+
+
+
         }
 
     }

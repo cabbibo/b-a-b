@@ -376,6 +376,17 @@ public class FullState : MonoBehaviour
     }
 
 
+    public void SetQuestState(int i, bool discovered, bool started, bool completed)
+    {
+        questsDiscovered[i] = discovered;
+        questsStarted[i] = started;
+        questsCompleted[i] = completed;
+        UpdateState();
+    }
+
+
+
+
     public void OnActivityDiscovered(int i)
     {
         activitiesDiscovered[i] = true;

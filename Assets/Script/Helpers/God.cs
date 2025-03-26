@@ -195,6 +195,8 @@ namespace WrenUtils
         {
             instance._islandController = ic;
         }
+
+
         public static SceneController sceneController
         {
             get { return instance._sceneController; }

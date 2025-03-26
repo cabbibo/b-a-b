@@ -26403,7 +26403,7 @@ MonoBehaviour:
   stats: {fileID: 8384076030520376333}
   hurtCollisionMultiplier: 0
   hurtCollisionCutoff: 0
-  flapStaminaSubtractor: 0.3
+  flapStaminaSubtractor: 0.1
   flapStaminaSubtractorMin: 0
   flapStaminaSubtractorMax: 0
   staminaCooldownTime: 0.5
@@ -26575,6 +26575,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1391225e0280b3740ae3132d66a7c81a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  takeOff: 0
   hover: 0
   boost: 0
   ping: 0
@@ -26584,6 +26585,17 @@ MonoBehaviour:
   placeBeacon: 0
   rewind: 0
   carry: 0
+  hasLearnedFlight: 0
+  hasLearnedTakeOff: 0
+  hasLearnedHover: 0
+  hasLearnedBoost: 0
+  hasLearnedPing: 0
+  hasLearnedDisintegrate: 0
+  hasLearnedCall: 0
+  hasLearnedMagnitize: 0
+  hasLearnedPlaceBeacon: 0
+  hasLearnedRewind: 0
+  hasLearnedCarry: 0
 --- !u!1 &6924367461183544387
 GameObject:
   m_ObjectHideFlags: 0

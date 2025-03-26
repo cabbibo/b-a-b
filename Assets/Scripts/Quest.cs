@@ -3,6 +3,85 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
+
+
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(Quest))]
+public class QuestEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
+
+        Quest myScript = (Quest)target;
+
+
+        if(GUILayout.Button("Set State")){
+            
+        }
+
+
+        if (GUILayout.Button("Discover Quest"))
+        {
+            myScript.DiscoverQuest();
+        }
+
+        if (GUILayout.Button("Start Quest"))
+        {
+            myScript.StartQuest();
+        }
+
+        if (GUILayout.Button("Complete Quest"))
+        {
+            myScript.CompleteQuest();
+        }
+
+        if (GUILayout.Button("Reset Quest"))
+        {
+            myScript.Reset();
+        }
+
+        if(GUILayout.Button("Initialize Quest"))
+        {
+            myScript.Initialize();
+        }
+
+        if(GUILayout.Button("Enter Quest"))
+        {
+            myScript.OnEnterQuest();
+        }
+
+        if(GUILayout.Button("Exit Quest"))
+        {
+            myScript.OnExitQuest();
+        }
+
+        if(GUILayout.Button("Complete Animation Finished"))
+        {
+            myScript.OnCompletedAnimationFinished();
+        }
+
+        if(GUILayout.Button("Add to Completion"))
+        {
+            myScript.AddToCompletion(0.1f);
+        }
+
+        if(GUILayout.Button("Set Completion"))
+        {
+            myScript.SetCompletion(0.5f);
+        }
+
+        
+
+    }
+}
+
+#endif
+
+
+
 public class Quest : MonoBehaviour
 {
 
@@ -59,7 +138,7 @@ public class Quest : MonoBehaviour
             print("HELLOOO111");
             discovered = true;
             God.state.OnQuestDiscovered(id);
-            discoveredAnimation.Play();
+            if (discoveredAnimation != null) { discoveredAnimation.Play(); }
         }
 
     }
@@ -72,7 +151,7 @@ public class Quest : MonoBehaviour
 
             completed = true;
             portal.OpenPortal();
-            completedAnimation.Play();
+            if (completedAnimation != null) { completedAnimation.Play(); }
         }
         else
         {
@@ -89,7 +168,7 @@ public class Quest : MonoBehaviour
         {
             started = true;
             God.state.OnQuestStarted(id);
-            startedAnimation.Play();
+            if (startedAnimation != null) { startedAnimation.Play(); }
         }
         else
         {
@@ -106,9 +185,9 @@ public class Quest : MonoBehaviour
         completed = God.state.questsCompleted[id];
 
 
-        completedAnimation.SetStartValues();
-        startedAnimation.SetStartValues();
-        discoveredAnimation.SetStartValues();
+        if (completedAnimation != null) { completedAnimation.SetStartValues(); }
+        if (startedAnimation != null) { startedAnimation.SetStartValues(); }
+        if (discoveredAnimation != null) { discoveredAnimation.SetStartValues(); }
 
 
         print(gameObject.name + " " + discovered + " " + started + " " + completed);
@@ -117,30 +196,30 @@ public class Quest : MonoBehaviour
         if (!discovered)
         {
             //            print("HELLO I AM NOT DISCOVERED");
-            discoveredAnimation.SetStartValues();
+            if (discoveredAnimation != null) { discoveredAnimation.SetStartValues(); }
         }
 
         if (discovered && !started)
         {
             print("discovered not started");
-            discoveredAnimation.SetEndValues();
-            startedAnimation.SetStartValues();
+            if (discoveredAnimation != null) { discoveredAnimation.SetEndValues(); }
+            if (startedAnimation != null) { startedAnimation.SetStartValues(); }
         }
 
         if (discovered && started && !completed)
         {
             print("discovered started not completed");
-            discoveredAnimation.SetEndValues();
-            startedAnimation.SetEndValues();
-            completedAnimation.SetStartValues();
+            if (discoveredAnimation != null) { discoveredAnimation.SetEndValues(); }
+            if (startedAnimation != null) { startedAnimation.SetEndValues(); }
+            if (completedAnimation != null) { completedAnimation.SetStartValues(); }
         }
 
         if (discovered && started && completed)
         {
             //print("Setting All End Values");
-            discoveredAnimation.SetEndValues();
-            startedAnimation.SetEndValues();
-            completedAnimation.SetEndValues();
+            if (discoveredAnimation != null) { discoveredAnimation.SetEndValues(); }
+            if (startedAnimation != null) { startedAnimation.SetEndValues(); }
+            if (completedAnimation != null) { completedAnimation.SetEndValues(); }
         }
 
 
@@ -207,6 +286,11 @@ public class Quest : MonoBehaviour
         started = false;
         completed = false;
         God.state.ResetQuest(id);
+    }
+
+    public void SetState()
+    {
+        God.state.SetQuestState(id, discovered, started, completed);
     }
 
 }

@@ -14,7 +14,6 @@ public class AddToTargetingCamera : MonoBehaviour
     {
 
 
-
         God.cameraManager.targetingManager.AddTarget(transform, nearFar, distanceFromBird, FOV);
 
     }

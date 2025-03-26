@@ -11,6 +11,8 @@ public class InterfaceTutorial : MonoBehaviour
     public Renderer fade;
 
     public CanvasGroup groupContainer;
+
+    public CanvasGroup groupController;
     public CanvasGroup xToContinue;
 
     public TextMeshProUGUI controllerText;
@@ -29,17 +31,6 @@ public class InterfaceTutorial : MonoBehaviour
 
 
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 
     MaterialPropertyBlock bgMpr;
     public void SetBGFade(float t)
@@ -61,9 +52,12 @@ public class InterfaceTutorial : MonoBehaviour
         bool wait = true;
         var t = 0f;
         groupContainer.alpha = 1;
+        groupContainer.gameObject.SetActive(true);
+        print("waiting for X");
         ShowProgress(t);
-
         ShowContinue(true);
+
+
 
         //yield return WaitWithCheat(0.5f);
 
@@ -81,7 +75,7 @@ public class InterfaceTutorial : MonoBehaviour
 
         _lastSequenceTime = Time.unscaledTime;
 
-        groupContainer.alpha = 0;
+        //  groupContainer.alpha = 0;
         ShowContinue(false);
     }
 
@@ -90,11 +84,13 @@ public class InterfaceTutorial : MonoBehaviour
     public IEnumerator FadeGroup(CanvasGroup group, float from = 0, float to = 1, float delay = 0)
     {
 
+        group.gameObject.SetActive(true);
         float t = 0;
         float duration = 0.5f;
         float _ct = Time.unscaledTime;
         while (t < duration)
         {
+
 
             if (delay > 0 && Time.unscaledTime - _ct < delay)
             {
@@ -105,7 +101,11 @@ public class InterfaceTutorial : MonoBehaviour
             t += Time.unscaledDeltaTime;
             yield return null;
         }
+
+
+
         group.alpha = to;
+
     }
 
 
@@ -188,19 +188,24 @@ public class InterfaceTutorial : MonoBehaviour
 
     public void ShowProgress(float t = 0)
     {
+
+        //        print("ShowProgress: " + t);
         progressBar.transform.parent.gameObject.SetActive(t > 0);
-        progressBar.localScale = new Vector3(Mathf.Clamp01(t * t), 1, 1);
+        progressBar.localScale = new Vector3(Mathf.Clamp01(t), 1, 1);
+        progressBar.localPosition = new Vector3(-1 + t, 0, 0);
     }
 
 
     public void ShowText(string text = null)
     {
+        // print("ShowText: " + text);
         controllerText.transform.parent.gameObject.SetActive(!string.IsNullOrEmpty(text));
         controllerText.text = text;
     }
 
     public void ShowContinue(bool bShow)
     {
+        // print("ShowContinue: " + bShow);
         xToContinue.gameObject.SetActive(bShow);
     }
 
@@ -208,6 +213,7 @@ public class InterfaceTutorial : MonoBehaviour
 
     public void TutorialSectionComplete()
     {
+        print("TutorialSectionComplete");
         StartCoroutine(FadeGroup(groupContainer, 1, 0));
         ShowProgress(0);
         God.audio.Play(God.sounds.texturalHitClips);
@@ -230,7 +236,7 @@ public class InterfaceTutorial : MonoBehaviour
 */
 
 
-    public enum ControllerHint { None, Dive, Left, Right, Forward, Back, Hold, Takeoff, Flap, Swoop, Release, Release2, Gentle, Boost, Ping }
+    public enum ControllerHint { None, Dive, Left, Right, Forward, Back, Hold, Takeoff, Flap, Swoop, Release, Release2, Gentle, Boost, Ping, Wiggle, TakeOff }
 
     [Header("Controller")]
     public GameObject groupSticks;
@@ -248,6 +254,11 @@ public class InterfaceTutorial : MonoBehaviour
     public GameObject groupGentle;
     public GameObject groupBoost;
     public GameObject groupPing;
+    public GameObject groupWiggle;
+    public GameObject groupTakeOff;
+
+    public ControllerHint currentHint;
+    public string currentHintText;
 
     public IEnumerator ControllerHintSequence(ControllerHint hint)
     {
@@ -272,6 +283,8 @@ public class InterfaceTutorial : MonoBehaviour
         SetControllerHint(ControllerHint.None);
     }
 
+
+
     public bool TestControllerHint(ControllerHint hint)
     {
         switch (hint)
@@ -291,6 +304,9 @@ public class InterfaceTutorial : MonoBehaviour
         }
         return false;
     }
+
+
+
 
 
     public bool HandleSticksProgress(ref float t, float speed = 2f, bool gravity = true)
@@ -316,8 +332,21 @@ public class InterfaceTutorial : MonoBehaviour
 
 
 
-    public void SetControllerHint(ControllerHint hint)
+
+
+    public void SetControllerHint(ControllerHint hint, string text = null)
     {
+
+
+        currentHint = hint;
+        //      print("CONTROLLER HINT SET");
+
+        //        Debug.Log("CONTROLLER HINT SET: " + hint);
+
+
+        controllerText.transform.parent.gameObject.SetActive(hint != ControllerHint.None); // turns it off if we arent using any text
+        groupController.gameObject.SetActive(hint != ControllerHint.None); // turns off the sticks if we are not using any hints
+
         groupLeft.SetActive(hint == ControllerHint.Left);
         groupRight.SetActive(hint == ControllerHint.Right);
         groupUp.SetActive(hint == ControllerHint.Forward);
@@ -331,9 +360,17 @@ public class InterfaceTutorial : MonoBehaviour
         groupGentle.SetActive(hint == ControllerHint.Gentle);
         groupBoost.SetActive(hint == ControllerHint.Boost);
         groupPing.SetActive(hint == ControllerHint.Ping);
+        groupWiggle.SetActive(hint == ControllerHint.Wiggle); // this is the default state when we dont want any hints
+        groupTakeOff.SetActive(hint == ControllerHint.TakeOff); // this is the default state when we dont want any hints
 
-        controllerText.transform.parent.gameObject.SetActive(hint != ControllerHint.None); // turns it off if we arent using any text 
 
+        if (text != null)
+        {
+            controllerText.text = text;
+
+            currentHintText = controllerText.text;
+            return;
+        }
 
         switch (hint)
         {
@@ -376,6 +413,12 @@ public class InterfaceTutorial : MonoBehaviour
             case ControllerHint.Ping:
                 controllerText.text = "Press Triangle to PING";
                 break;
+            case ControllerHint.Wiggle:
+                controllerText.text = "Your Sticks Are Your Wings";
+                break;
+            case ControllerHint.TakeOff:
+                controllerText.text = "Takeoff";
+                break;
                 /* case ControllerHint.y:
                      controllerText.text = "PRESS sticks to HOLD";
                      break;*/
@@ -383,6 +426,11 @@ public class InterfaceTutorial : MonoBehaviour
                                 controllerText.text = "PRESS X to TAKE OFF";
                                 break;*/
         }
+
+
+        currentHintText = controllerText.text;
+
+
     }
 
 

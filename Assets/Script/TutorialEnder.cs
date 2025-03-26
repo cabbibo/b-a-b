@@ -17,11 +17,13 @@ public class TutorialEnder : MonoBehaviour
     public float timeBetweenSpawns = 10;
 
     float lastSpawnTime;
+
+    public FlyingTutorial flyingTutorial;
     public void OnEnable()
     {
 
-        FlyingTutorialSequence.OnTutorialStart += StartTutorial;
-        FlyingTutorialSequence.OnTutorialDiveFinished += EndTutorial;
+        flyingTutorial.OnTutorialStart += StartTutorial;
+        flyingTutorial.OnTutorialDiveFinished += EndTutorial;
         //ended = false;
         //lastSpawnTime = Time.time;
         // StartTutorial();
@@ -30,8 +32,8 @@ public class TutorialEnder : MonoBehaviour
     public void OnDisable()
     {
 
-        FlyingTutorialSequence.OnTutorialStart -= StartTutorial;
-        FlyingTutorialSequence.OnTutorialDiveFinished -= EndTutorial;
+        flyingTutorial.OnTutorialStart -= StartTutorial;
+        flyingTutorial.OnTutorialDiveFinished -= EndTutorial;
     }
 
 

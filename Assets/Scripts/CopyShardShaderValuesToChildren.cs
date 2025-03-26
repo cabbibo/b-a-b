@@ -14,7 +14,7 @@ public class CopyShardShaderValuesToChildren : MonoBehaviour
 
         for (int i = 0; i < clickPlacer.placedGameObjects.Count; i++)
         {
-            print(clickPlacer.placedGameObjects.Count);
+//            print(clickPlacer.placedGameObjects.Count);
             var shard = clickPlacer.placedGameObjects[i].GetComponent<ShardShaderValues>();
             if (shard != null)
             {

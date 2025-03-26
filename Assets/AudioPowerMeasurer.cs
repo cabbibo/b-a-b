@@ -61,6 +61,8 @@ public class AudioPowerMeasurer : MonoBehaviour
     void OnAudioFilterRead(float[] data, int channels)
     {
 
+            Debug.Log("this is happenign");
+            Debug.Log(data.Length);
   
             totalChannels = channels;
             totalCount = data.Length / channels;

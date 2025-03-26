@@ -79,7 +79,6 @@ public class TargetManager : MonoBehaviour
     public void SetTarget(Vector3 position, int faceDirection)
     {
 
-        print("SEETTT 2");
 
         currentTargetIndex++;
         if (currentTargetIndex >= targetPoolCount)
@@ -135,6 +134,8 @@ public class TargetManager : MonoBehaviour
     public void OnTargetChange()
     {
 
+        print("hmmm");
+
         if (oClosestTarget != null)
         {
             God.wren.interfaceUtils.RemovePointer(oClosestTarget.gameObject.transform);
@@ -165,6 +166,7 @@ public class TargetManager : MonoBehaviour
 
     public void HitTarget(float speed)
     {
+        print("hit");
         if (currentTarget != null)
         {
             currentTarget.OnHit(speed);
@@ -173,6 +175,8 @@ public class TargetManager : MonoBehaviour
 
     public void EraseCurrentTarget()
     {
+
+        print("erase");
         if (currentTarget != null)
         {
             currentTarget.Erase();

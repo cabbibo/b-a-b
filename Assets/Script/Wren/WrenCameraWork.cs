@@ -113,7 +113,14 @@ public class WrenCameraWork : MonoBehaviour
     transform.up = endUp;
     transform.right = endRight;
 
+
     transform.position = endingTransform.position;
+
+    tmpUp = transform.up;
+    tmpRight = transform.right;
+    tmpForward = transform.forward;
+    wrenTmpUp = wren.transform.up;
+
 
     lookTarget = endingTransform.position;
     SnapLookTarget();

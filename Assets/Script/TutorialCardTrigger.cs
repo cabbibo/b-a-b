@@ -9,7 +9,7 @@ using WrenUtils;
 
 public class TutorialCardTrigger : MonoBehaviour
 {
-    public FlyingTutorialSequence.CardType cardType;
+    public FlyingTutorial.CardType cardType;
 
     public Transform followTransform;
     public float radius = 1;
@@ -19,7 +19,7 @@ public class TutorialCardTrigger : MonoBehaviour
     public virtual void _OnTriggered()
     {
         OnTriggered();
-        FlyingTutorialSequence.Instance.OnTutorialCardTriggered(cardType, target: lookAt ? transform : null, pause: pause);
+        FlyingTutorial.Instance.OnTutorialCardTriggered(cardType, target: lookAt ? transform : null, pause: pause);
         enabled = false;
     }
 
