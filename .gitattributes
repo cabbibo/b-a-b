@@ -15,3 +15,4 @@ Assets/Terrain/Terrain_0_0_52a8fd58-b089-4bea-a0fd-f7a1cdbc6890.asset filter=lfs
 *.blend1 filter=lfs diff=lfs merge=lfs -text
 *.mp4 filter=lfs diff=lfs merge=lfs -text
 *mp4 filter=lfs diff=lfs merge=lfs -text
+*.exr filter=lfs diff=lfs merge=lfs -text
