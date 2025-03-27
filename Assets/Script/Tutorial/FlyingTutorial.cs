@@ -1436,6 +1436,7 @@ _______     _______ _   _ _____ ____
 
     public void OnFlightTutorialEnd()
     {
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence");
         stateManager.OnTutorialEnd(this);
     }
 

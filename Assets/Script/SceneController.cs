@@ -131,12 +131,15 @@ public class SceneController : MonoBehaviour
     public void LoadSceneFromPortal(Portal portal)
     {
 
+
+        print("hiii");
         // make it so we dont hurt ourselves
         God.wren.inEther = true;
         God.wren.Crash(portal.collisionPoint.position);
 
         God.wren.canMove = false;
-        Camera.main.gameObject.GetComponent<LerpTo>().enabled = false;
+        God.cameraManager.lerpManager.enabled = false;
+
 
         loadedFromPortal = true;
         // Lerps out of scene via a portal
@@ -541,6 +544,7 @@ public class SceneController : MonoBehaviour
         God.wren.canMove = false;
         Camera.main.gameObject.GetComponent<LerpTo>().enabled = false;
 
+        God.cameraManager.lerpManager.enabled = false;
         StartCoroutine(DemoAnimationOut(portal));
 
     }

@@ -103,6 +103,7 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
 
         pingTutorial.StartTutorial();
+        takeOffTutorial.StartTutorial();
 
     }
 

@@ -39,6 +39,8 @@ namespace WrenUtils
             God.wren.state.inInterface = false;
             God.wren.airInterface.Toggle(false);
             God.wren.fullInterface.Toggle(false);
+            God.cameraManager.lerpManager.enabled = true;
+
 
             if (newScene == 0)
             {
