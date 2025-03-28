@@ -6,20 +6,31 @@ using WrenUtils;
 public class EtherStateController : MonoBehaviour
 {
 
-    public Portal[] portals;
+    public Scene scene;
+    public bool allOn;
 
     public void OnEnable()
     {
-        for (int i = 0; i < portals.Length; i++)
+        for (int i = 0; i < scene.portals.Length; i++)
         {
 
-            if (God.state.questsCompleted[i])
+            if (allOn)
             {
-                portals[i].SetPortalFull();
+                scene.portals[i].SetPortalFull();
             }
             else
             {
-                portals[i].SetPortalOff();
+
+                /*if (God.state.questsCompleted[i])
+                {
+                    scene.portals[i].SetPortalFull();
+                }
+                else
+                {
+                    scene.portals[i].SetPortalOff();
+                }*/
+
+
             }
         }
     }

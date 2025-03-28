@@ -388,6 +388,7 @@ public class InterfacePointer : MonoBehaviour
     {
         AddAllQuests();
         AddAllActivities();
+        AddAllPortals();
 
     }
 
@@ -402,6 +403,15 @@ public class InterfacePointer : MonoBehaviour
         }
     }
 
+
+    public void AddAllPortals()
+    {
+        GameObject[] gameObjects = getAllOfTag("Portal");
+        foreach (GameObject portal in gameObjects)
+        {
+            AddPointer(portal.transform, 2, new Vector4(0, 0, 0, 0));
+        }
+    }
 
     public void AddAllActivities()
     {

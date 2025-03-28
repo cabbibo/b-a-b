@@ -50,11 +50,15 @@ public class TakeOffTutorial : TutorialCoroutine
             wrenOnGround = God.wren.physics.onGround;
 
 
+
+
             if (oWrenOnGround == false && wrenOnGround == true)
             {
                 tmpHint = God.interfaceTutorial.currentHint;
                 tmpHintText = God.interfaceTutorial.currentHintText;
 
+
+                God.interfaceTutorial.FadeInIfOff();
                 //   yield return God.interfaceTutorial.WaitWithCheat(3);
                 God.interfaceTutorial.SetControllerHint(
                           InterfaceTutorial.ControllerHint.TakeOff,
@@ -74,11 +78,17 @@ public class TakeOffTutorial : TutorialCoroutine
                             tmpHintText
                         );
 
+
+
                 print("TAKING OFF");
 
                 numTimesTakenOff++;
+                God.interfaceTutorial.ShowProgress((float)numTimesTakenOff / (float)numTimesTakenOffToComplete);
             }
 
+
+
+            God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);//StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
             yield return null;
         }

@@ -441,6 +441,18 @@ public class InterfaceTutorial : MonoBehaviour
     }
 
 
+    public void FadeInIfOff()
+    {
+
+        // This function is used to ensure that the groupContainer is faded in if it is currently off. 
+        // This can be useful when you want to make sure the tutorial hints are visible to the player.
+
+        if (groupContainer.alpha <= 0)
+        {
+            StartCoroutine(FadeGroup(groupContainer, 0, 1)); // Fading in the groupContainer from 0 to 1.
+        }
+    }
+
 
 
 }
