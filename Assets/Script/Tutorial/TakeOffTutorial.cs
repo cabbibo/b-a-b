@@ -79,8 +79,7 @@ public class TakeOffTutorial : TutorialCoroutine
                         );
 
 
-
-                print("TAKING OFF");
+                stateManager.OnProgress(this, (float)numTimesTakenOff / (float)numTimesTakenOffToComplete);
 
                 numTimesTakenOff++;
                 God.interfaceTutorial.ShowProgress((float)numTimesTakenOff / (float)numTimesTakenOffToComplete);

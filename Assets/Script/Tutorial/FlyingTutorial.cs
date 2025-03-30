@@ -282,7 +282,8 @@ public class FlyingTutorial : TutorialCoroutine
 
 
 
-        //God.wren.interface.showStaminaRing = true;
+
+        God.wren.interfaceUtils.showStaminaRing = true;
 
 
         God.interfaceTutorial.TutorialSectionComplete();
@@ -290,15 +291,19 @@ public class FlyingTutorial : TutorialCoroutine
 
         God.interfaceTutorial.SetBGFade(0);
 
-        /*  God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
-          yield return WaitWithCheat(1);
-          yield return FlapSequence();
-          TutorialSectionComplete();
-          yield return WaitWithCheat(1);
-          yield return StopSequence();
+        God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
 
-          God.wren.bird.featherMaterial = featherMainMaterial;
-  */
+        God.wren.bird.featherMaterial = featherMainMaterial;
+
+        yield return God.interfaceTutorial.WaitWithCheat(1);
+
+
+        yield return FlapSequence();
+        God.interfaceTutorial.TutorialSectionComplete();
+        yield return StopSequence();
+        God.interfaceTutorial.TutorialSectionComplete();
+
+
 
         God.wren.bird.featherMaterial = featherMainMaterial;
         God.wren.parameters.LoadParamSet("wrenTutorialSequence_Swoop");
@@ -306,6 +311,8 @@ public class FlyingTutorial : TutorialCoroutine
         yield return SwoopSequence();
 
         God.interfaceTutorial.TutorialSectionComplete();
+
+        yield return StopSequence();
 
         // up down feels bad
         //  God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
@@ -315,6 +322,8 @@ public class FlyingTutorial : TutorialCoroutine
         yield return UpDownSequence();
 
         God.interfaceTutorial.TutorialSectionComplete();
+
+        yield return StopSequence();
 
 
         yield return God.interfaceTutorial.WaitWithCheat(3);
@@ -352,6 +361,7 @@ public class FlyingTutorial : TutorialCoroutine
         God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
 
         God.postController.WormHole(OnFlightTutorialEnd);
+
 
     }
 
@@ -1203,7 +1213,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
      | |_| | |  \ V / | |___   ___) | |__| |___  | |  | | |_| | |\  |
      |____/___|  \_/  |_____| |____/|_____\____| |_| |___\___/|_| \_|
 
-    */
+*/
 
 
 

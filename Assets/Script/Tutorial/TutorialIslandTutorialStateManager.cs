@@ -123,18 +123,18 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
         God.wren.PhaseShift(windTunnelTeleportTarget);
 
+        takeOffTutorial.StartTutorial();
+
     }
 
     public void DoPingTutorialFinish()
     {
-        print("hiii");
         God.state.wrenCanDo.hasLearnedPing = true;
         God.state.UpdateState();
         for (int i = 0; i < postPingTutorialObjects.Count; i++)
         {
             postPingTutorialObjects[i].SetActive(true);
         }
-        print("PING TUTORIAL FINISH");
     }
 
 
@@ -143,7 +143,6 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
         God.state.wrenCanDo.hasLearnedTakeOff = true;
         God.state.UpdateState();
-        print("TAKEOFF TUTORIAL FINISH");
 
 
     }
@@ -175,6 +174,20 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
         {
             DoTakeoffTutorialFinish();
         }
+    }
+
+
+    /*
+
+        TODO 
+
+        Start the ping tutorial when the player first uses the take off 
+
+    */
+
+    public override void OnProgress(TutorialCoroutine tutorial, float progress)
+    {
+        //Debug.Log("Progress: " + progress);
     }
 
 

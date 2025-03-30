@@ -24,5 +24,10 @@ public class TutorialStateManager : MonoBehaviour
     }
 
 
+    public virtual void OnProgress(TutorialCoroutine tutorial, float progress)
+    {
+
+    }
+
 
 }
