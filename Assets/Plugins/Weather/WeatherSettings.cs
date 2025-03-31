@@ -10,7 +10,7 @@ public class WeatherSettings : ScriptableObject
 
 
     public bool sun_auto;
-    public float sun_timeInDay;
+    public float sun_rawTimeInCycle;
 
     public bool sun_showSunRenderer;
 
@@ -23,7 +23,7 @@ public class WeatherSettings : ScriptableObject
     public void SetValues(WeatherManager WM)
     {
         WM.sunManager.auto = sun_auto;
-        WM.sunManager.timeInDay = sun_timeInDay;
+        WM.sunManager.rawTimeInCycle = sun_rawTimeInCycle;
         WM.sunManager.showSunRenderer = sun_showSunRenderer;
         WM.sunManager.daySpeed = sun_daySpeed;
         WM.sunManager.nightSpeed = sun_nightSpeed;

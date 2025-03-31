@@ -85,6 +85,8 @@ public class IslandController : MonoBehaviour
         God.SetPlayableDirector(playableDirector);
 
 
+
+        print("SETTING WEATHER STUFF");
         God.weatherManager.SetValues(weatherSettings);
 
 

@@ -333,6 +333,9 @@ public class PlayCutScene : MonoBehaviour
             print("PLAYING FOR REAL");
             print(gameObject.name);
 
+            print(God.cameraManager.lerpManager);
+            lerpTo = God.cameraManager.lerpManager;
+
 
             God.instance.inCutScene = true;
             CutSceneStarted.Invoke();

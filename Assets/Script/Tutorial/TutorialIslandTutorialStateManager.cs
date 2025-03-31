@@ -150,11 +150,16 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
     public void SetPostPingState()
     {
+
         for (int i = 0; i < postPingTutorialObjects.Count; i++)
         {
             postPingTutorialObjects[i].SetActive(true);
         }
+
+
         portal.SetPortalFull();
+
+
     }
 
     public void DoPingTutorialFinish()
