@@ -83,11 +83,14 @@ public class TakeOffTutorial : TutorialCoroutine
 
                 numTimesTakenOff++;
                 God.interfaceTutorial.ShowProgress((float)numTimesTakenOff / (float)numTimesTakenOffToComplete);
+
             }
 
 
 
-            God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);//StartCoroutine(FadeGroup(groupContainer, 1, 0));
+
+
+            // God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);//StartCoroutine(FadeGroup(groupContainer, 1, 0));
 
             yield return null;
         }

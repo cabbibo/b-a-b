@@ -132,7 +132,8 @@ public class SceneController : MonoBehaviour
     {
 
 
-        print("hiii");
+
+        print("LOADING FROM PORTAL");
         // make it so we dont hurt ourselves
         God.wren.inEther = true;
         God.wren.Crash(portal.collisionPoint.position);

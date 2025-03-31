@@ -87,6 +87,7 @@ public class WrenCanDo : MonoBehaviour
         carry = PlayerPrefs.GetInt("carry", 0) == 1;
 
         hasLearnedFlight = PlayerPrefs.GetInt("hasLearnedFlight", 0) == 1;
+        hasLearnedTakeOff = PlayerPrefs.GetInt("hasLearnedTakeOff", 0) == 1;
         hasLearnedHover = PlayerPrefs.GetInt("hasLearnedHover", 0) == 1;
         hasLearnedBoost = PlayerPrefs.GetInt("hasLearnedBoost", 0) == 1;
         hasLearnedPing = PlayerPrefs.GetInt("hasLearnedPing", 0) == 1;

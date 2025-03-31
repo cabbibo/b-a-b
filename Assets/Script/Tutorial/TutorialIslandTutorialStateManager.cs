@@ -24,6 +24,8 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
 
 
+    public Portal portal;
+
 
 
 
@@ -39,10 +41,9 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
                 go.SetActive(false);
             }
 
-            for (int i = 0; i < postPingTutorialObjects.Count; i++)
-            {
-                postPingTutorialObjects[i].SetActive(false);
-            }
+
+            SetPreFlightState();
+            SetPrePingState();
         }
         else
         {
@@ -56,16 +57,8 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
                 God.wren.state.TakeOff();
                 pingTutorial.JumpStartTutorial();//StartPingTutorial(); 
 
-                foreach (GameObject go in postFlightTutorialObjects)
-                {
-                    go.SetActive(true);
-                }
-
-                foreach (GameObject go in postPingTutorialObjects)
-                {
-                    go.SetActive(false);
-                }
-
+                SetPostFlightState();
+                SetPrePingState();
                 if (God.state.wrenCanDo.hasLearnedTakeOff == false)
                 {
                     takeOffTutorial.StartTutorial();
@@ -76,6 +69,10 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
             {
 
                 God.state.wrenCanDo.ping = true;
+
+                SetPostFlightState();
+                SetPostPingState();
+
 
                 if (God.state.wrenCanDo.hasLearnedTakeOff == false)
                 {
@@ -102,7 +99,7 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
         print("STARTING HERE");
 
 
-        pingTutorial.StartTutorial();
+        //pingTutorial.StartTutorial();
         takeOffTutorial.StartTutorial();
 
     }
@@ -115,26 +112,57 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
         God.state.wrenCanDo.ping = true;
         God.state.UpdateState();
 
-
-        for (int i = 0; i < postFlightTutorialObjects.Count; i++)
-        {
-            postFlightTutorialObjects[i].SetActive(true);
-        }
-
+        SetPostFlightState();
         God.wren.PhaseShift(windTunnelTeleportTarget);
 
         takeOffTutorial.StartTutorial();
 
     }
 
-    public void DoPingTutorialFinish()
+
+    public void SetPreFlightState()
     {
-        God.state.wrenCanDo.hasLearnedPing = true;
-        God.state.UpdateState();
+        for (int i = 0; i < postFlightTutorialObjects.Count; i++)
+        {
+            postFlightTutorialObjects[i].SetActive(false);
+        }
+
+    }
+
+    public void SetPrePingState()
+    {
+        for (int i = 0; i < postPingTutorialObjects.Count; i++)
+        {
+            postPingTutorialObjects[i].SetActive(false);
+        }
+
+    }
+
+
+    public void SetPostFlightState()
+    {
+        for (int i = 0; i < postFlightTutorialObjects.Count; i++)
+        {
+            postFlightTutorialObjects[i].SetActive(true);
+        }
+
+    }
+
+    public void SetPostPingState()
+    {
         for (int i = 0; i < postPingTutorialObjects.Count; i++)
         {
             postPingTutorialObjects[i].SetActive(true);
         }
+        portal.SetPortalFull();
+    }
+
+    public void DoPingTutorialFinish()
+    {
+        God.state.wrenCanDo.hasLearnedPing = true;
+        God.state.UpdateState();
+
+        SetPostPingState();
     }
 
 
@@ -148,11 +176,20 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
     }
 
 
+
     public void TeleportToWindTunnel()
     {
 
         God.wren.PhaseShift(windTunnelTeleportTarget);
 
+    }
+
+
+    public void Update()
+    {
+        //        print(flyingTutorial.tutSequence);
+        //       print(pingTutorial.tutSequence);
+        //      print(takeOffTutorial.tutSequence);
     }
 
 
@@ -162,6 +199,8 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
     public override void OnTutorialEnd(TutorialCoroutine tutorial)
     {
 
+
+        print("OnTutorialEnd");
         if (tutorial is FlyingTutorial)
         {
             DoFlyingTutorialFinish();
@@ -187,7 +226,29 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
     public override void OnProgress(TutorialCoroutine tutorial, float progress)
     {
+
+        print("OnProgress: " + progress);
         //Debug.Log("Progress: " + progress);
+        if (tutorial is TakeOffTutorial)
+        {
+
+
+            if (pingTutorial.hasStarted == false && God.state.wrenCanDo.hasLearnedPing == false)
+            {
+                pingTutorial.StartTutorial();
+            }
+
+        }
+        else if (tutorial is PingTutorial)
+        {
+            //Debug.Log("Ping Progress: " + progress);
+            if (progress >= 1f)
+            {
+                //Debug.Log("Ping Complete!");
+                // Do something when the ping tutorial is complete
+            }
+        }
+
     }
 
 

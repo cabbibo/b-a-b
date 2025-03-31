@@ -14,10 +14,12 @@ public class TutorialCoroutine : MonoBehaviour
 
 
     public bool debug;
+    public bool hasStarted;
+    public bool hasFinished;
 
     public TargetManager targetManager;
 
-    protected Coroutine tutSequence;
+    public Coroutine tutSequence;
 
     public int shardsPerTargetHit = 10;
 
@@ -26,26 +28,30 @@ public class TutorialCoroutine : MonoBehaviour
     public TutorialStateManager stateManager;
 
 
-    public virtual void JumpStartTutorial()
+    public void JumpStartTutorial()
     {
 
         print("JumpSTarting");
         God.wren.PhaseShift(startPosition);
+        hasStarted = true;
         tutSequence = StartCoroutine(TutorialSequence());
     }
 
 
 
-    public virtual void StartTutorial()
+    public void StartTutorial()
     {
+        hasStarted = true;
         tutSequence = StartCoroutine(TutorialSequence());
     }
 
 
     public virtual IEnumerator TutorialSequence()
     {
-
         yield return null;
+
+        hasFinished = true;
+
     }
 
 
