@@ -7,10 +7,45 @@ public class PingTutorial : TutorialCoroutine
 {
 
     public List<GameObject> tutorialTargets;
+
+    public List<GameObject> tutorialTargets2;
     public int currentTargetIndex = 0;
 
     public float hitRadius;
 
+
+
+
+
+    public override void SetStartState()
+    {
+        base.SetStartState();
+        targetManager = FindObjectOfType<TargetManager>();
+        targetManager.gameObject.SetActive(false);
+        targetManager.gameObject.SetActive(true);
+    }
+
+    public override void SetPreState()
+    {
+        base.SetPreState();
+        targetManager.gameObject.SetActive(false);
+        targetManager.gameObject.SetActive(true);
+    }
+
+
+    public override void SetPostState()
+    {
+        base.SetPostState();
+        targetManager.gameObject.SetActive(false);
+        targetManager.gameObject.SetActive(true);
+    }
+
+
+
+    public override bool ConditionsForCompleted()
+    {
+        return God.wrenCanDo.hasLearnedPing;
+    }
 
 
 
@@ -44,11 +79,19 @@ public class PingTutorial : TutorialCoroutine
 
         print("POST PING");
 
+
+
+        OnComplete();
+
+
+
+    }
+
+    public override void OnComplete()
+    {
+        base.OnComplete();
         God.interfaceTutorial.TutorialSectionComplete();
         stateManager.OnTutorialEnd(this);
-
-
-
     }
 
 
@@ -76,6 +119,8 @@ public class PingTutorial : TutorialCoroutine
 
 
     }
+    public bool allConnected = false;
+
 
     IEnumerator CheckForPingTarget()
     {
@@ -121,21 +166,105 @@ public class PingTutorial : TutorialCoroutine
         }
 
 
-        print("WE DONE NOW");
+        // Swap to all of them
+
+        God.wren.interfaceUtils.ClearPointers();
+        targetManager.EraseAllTargets();
+        God.interfaceTutorial.TutorialSectionComplete();
 
 
 
-        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);//StartCoroutine(FadeGroup(groupContainer, 0, 1));
+        God.interfaceTutorial.SetControllerHint(
+                   InterfaceTutorial.ControllerHint.Ping,
+                   "Connect to the crystals to complete the tutorial"
+        );
+
+
+        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);//StartCoroutine(FadeGroup(groupContainer, 0, 1));
+        SetSecondTargets();
+
+
+        while (allConnected != true)
+        {
+
+            //  print("WAITING FOR CONNECTED");
+            // In the big section
+            yield return null;
+        }
+
+
+        God.wren.interfaceUtils.ClearPointers();
 
 
 
+        //  print("WE DONE NOW");
+
+
+
+        // God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);//StartCoroutine(FadeGroup(groupContainer, 0, 1));
+
+
+
+    }
+
+
+    public void SetSecondTargets()
+    {
+        for (int i = 0; i < tutorialTargets2.Count; i++)
+        {
+            God.wren.interfaceUtils.interfacePointer.AddPointer(tutorialTargets2[i].transform, 0, new Vector4(0, 0, 0, 1));
+        }
     }
 
     public void SelectTarget()
     {
         print("SelectingTarget");
         targetManager.SetTarget(tutorialTargets[currentTargetIndex].transform.position);
-        God.wren.interfaceUtils.interfacePointer.AddPointer(targetManager.currentTarget.transform, 0, new Vector4(0, 0, 0, 1));
+        targetManager.OnTargetChange();
+        //God.wren.interfaceUtils.AddPointer(targetManager.currentTarget.transform, 0, new Vector4(0, 0, 0, 1));
+
+        //   God.wren.interfaceUtils.ClearPointers();
+        //     God.wren.interfaceUtils.interfacePointer.AddPointer(targetManager.currentTarget.transform, 0, new Vector4(0, 0, 0, 1));
     }
+
+
+    public void OnSelect(GameObject crystal, GameObject lerpTarget)
+    {
+
+        int id = -1;
+        for (int i = 0; i < tutorialTargets2.Count; i++)
+        {
+            if (tutorialTargets2[i] == crystal)
+            {
+                id = i;
+                break;
+            }
+        }
+
+        if (id == -1)
+        {
+            Debug.LogError("Object not found in objectsToConnect array.");
+            return;
+        }
+        else
+        {
+            print("ID IS " + id);
+        }
+
+        God.wren.interfaceUtils.interfacePointer.AddPointer(tutorialTargets2[id].transform, 0, new Vector4(1, 0, 0, 1));
+        God.cameraManager.pointOfInterestManager.SetPointOfInterestForTime(lerpTarget.transform, 2, 20, 80, .03f);
+    }
+
+
+    public void OnAllConnected(ConnectToCenter centerConnector)
+    {
+
+        print("ALL CONNECTED");
+        God.particleSystems.EmitForTime(God.particleSystems.fountainParticleSystem, centerConnector.transform.position, 10000, 2);
+        God.cameraManager.pointOfInterestManager.SetPointOfInterestForTime(centerConnector.transform, 10, 20, 80, .03f);
+        allConnected = true;
+
+    }
+
 
 }

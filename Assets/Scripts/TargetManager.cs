@@ -143,7 +143,7 @@ public class TargetManager : MonoBehaviour
 
         if (closestTarget != null)
         {
-            God.wren.interfaceUtils.AddPointer(closestTarget.gameObject.transform);
+            God.wren.interfaceUtils.AddPointer(closestTarget.gameObject.transform, 0, new Vector4(0, 0, 0, 1));
         }
     }
 
@@ -187,8 +187,11 @@ public class TargetManager : MonoBehaviour
     {
         for (int i = 0; i < targetPoolCount; i++)
         {
+            God.wren.interfaceUtils.RemovePointer(targetPool[i].gameObject.transform);
             targetPool[i].Erase();
         }
+
+
     }
 
 

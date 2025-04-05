@@ -22,6 +22,16 @@ public static class Helpers
 
 
   [System.Serializable]
+  public class Vector3Event : UnityEvent<Vector3> { }
+
+  [System.Serializable]
+  public class TransformEvent : UnityEvent<Transform> { }
+
+  [System.Serializable]
+  public class GameObjectEvent : UnityEvent<GameObject> { }
+
+
+  [System.Serializable]
   public class PositionGameObjectEvent : UnityEvent<Vector3, GameObject> { }
 
 

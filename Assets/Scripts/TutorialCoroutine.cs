@@ -9,6 +9,7 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using WrenUtils;
 
+
 public class TutorialCoroutine : MonoBehaviour
 {
 
@@ -27,6 +28,128 @@ public class TutorialCoroutine : MonoBehaviour
 
     public TutorialStateManager stateManager;
 
+    public List<GameObject> preObjects = new List<GameObject>();
+    public List<GameObject> postObjects = new List<GameObject>();
+    public List<GameObject> duringObjects = new List<GameObject>();
+
+    public UnityEvent preEvent = new UnityEvent();
+    public UnityEvent duringEvent = new UnityEvent();
+    public UnityEvent postEvent = new UnityEvent();
+
+    public void CheckState()
+    {
+
+        if (ConditionsForCompleted())
+        {
+            hasFinished = true;
+            hasStarted = true;
+            SetPostState();
+        }
+        else
+        {
+            hasFinished = false;
+            hasStarted = false;
+            SetPreState();
+        }
+
+    }
+
+    public virtual bool ConditionsForCompleted()
+    {
+        return hasFinished;
+    }
+
+
+    public virtual void SetStartState()
+    {
+
+
+        foreach (GameObject go in preObjects)
+        {
+            go.SetActive(true);
+        }
+
+        foreach (GameObject go in duringObjects)
+        {
+            go.SetActive(true);
+        }
+
+        foreach (GameObject go in postObjects)
+        {
+            go.SetActive(false);
+        }
+
+        duringEvent.Invoke();
+
+    }
+
+    public virtual void SetPreState()
+    {
+
+
+        foreach (GameObject go in preObjects)
+        {
+            go.SetActive(true);
+        }
+
+        foreach (GameObject go in duringObjects)
+        {
+            go.SetActive(false);
+        }
+
+
+
+        foreach (GameObject go in postObjects)
+        {
+            go.SetActive(false);
+        }
+
+        preEvent.Invoke();
+
+    }
+
+    public virtual void SetPostState()
+    {
+
+        foreach (GameObject go in duringObjects)
+        {
+            go.SetActive(false);
+        }
+
+        foreach (GameObject go in preObjects)
+        {
+            go.SetActive(true);
+        }
+
+        foreach (GameObject go in postObjects)
+        {
+            go.SetActive(true);
+        }
+
+        postEvent.Invoke();
+
+
+    }
+
+
+
+
+    public virtual void OnComplete()
+    {
+        if (tutSequence != null)
+        {
+            StopCoroutine(tutSequence);
+            tutSequence = null;
+        }
+
+        hasFinished = true;
+        hasStarted = true;
+        SetPostState();
+
+
+    }
+
+
 
     public void JumpStartTutorial()
     {
@@ -34,6 +157,7 @@ public class TutorialCoroutine : MonoBehaviour
         print("JumpSTarting");
         God.wren.PhaseShift(startPosition);
         hasStarted = true;
+        hasFinished = false;
         tutSequence = StartCoroutine(TutorialSequence());
     }
 

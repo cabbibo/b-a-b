@@ -171,6 +171,12 @@ public class WrenInterfaceUtils : MonoBehaviour
         interfacePointer.AddPointer(t); // makes sure we arent adding!
     }
 
+    public void AddPointer(Transform t, int type, Vector4 tc)
+    {
+        interfacePointer.AddPointer(t, type, tc);
+    }
+
+
     public void RemovePointer(Transform t)
     {
         interfacePointer.RemovePointer(t);
@@ -181,6 +187,28 @@ public class WrenInterfaceUtils : MonoBehaviour
     {
         interfacePointer.ClearPointers();
     }
+
+    public void SetSinglePointer(Transform t, int type, Vector4 tc)
+    {
+        interfacePointer.SetSinglePointer(t, type, tc);
+    }
+
+    public void ShowSinglePointer(Transform t, int type, Vector4 tc)
+    {
+        interfacePointer.ShowSinglePointer(t, type, tc);
+    }
+
+    public void SetObjectOfInterest(Transform t)
+    {
+        interfacePointer.SetObjectOfInterest(t);
+    }
+
+    public void ReleaseObjectOfInterest()
+    {
+        interfacePointer.ReleaseObjectOfInterest();
+    }
+
+
 
 
     public void PingPointer(Transform t)

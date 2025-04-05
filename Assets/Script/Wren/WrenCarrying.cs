@@ -17,6 +17,9 @@ public class WrenCarrying : MonoBehaviour
 
     public List<int> FeetCarriedItems = new List<int>();
 
+    public LineRenderer lineRendererL;
+    public LineRenderer lineRendererR;
+
     // TODO: don't use God, use info from Wren
     public int GetNormalClientId()
     {
@@ -156,6 +159,51 @@ public class WrenCarrying : MonoBehaviour
         }
 
     }
+
+    public void LateUpdate()
+    {
+        UpdateLineRenderers();
+    }
+
+    public void UpdateLineRenderers()
+    {
+
+        List<Vector3> leftFootPositions = new List<Vector3>();
+        List<Vector3> rightFootPositions = new List<Vector3>();
+
+        for (var i = 0; i < CarriedItems.Count; i++)
+        {
+            if (FeetCarriedItems[i] == 0)
+            {
+                leftFootPositions.Add(CarriedItems[i].transform.position);
+            }
+            else
+            {
+                rightFootPositions.Add(CarriedItems[i].transform.position);
+            }
+        }
+
+
+        lineRendererL.positionCount = leftFootPositions.Count + 1;
+        lineRendererR.positionCount = rightFootPositions.Count + 1;
+
+        lineRendererL.SetPosition(0, wren.bird.leftFoot.position);
+        lineRendererR.SetPosition(0, wren.bird.rightFoot.position);
+
+        for (var i = 0; i < leftFootPositions.Count; i++)
+        {
+            lineRendererL.SetPosition(i + 1, leftFootPositions[i]);
+        }
+        for (var i = 0; i < rightFootPositions.Count; i++)
+        {
+            lineRendererR.SetPosition(i + 1, rightFootPositions[i]);
+        }
+
+
+    }
+
+
+
 
 
     public int CheckIfCarryingItem(Carryable carryable)

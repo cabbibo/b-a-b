@@ -25,9 +25,24 @@ public class TakeOffTutorial : TutorialCoroutine
 
         stateManager.OnTutorialEnd(this);
 
+        OnComplete();
+
 
     }
 
+    public override bool ConditionsForCompleted()
+    {
+        return God.wrenCanDo.hasLearnedTakeOff;
+    }
+
+
+
+    public override void OnComplete()
+    {
+        base.OnComplete();
+        God.interfaceTutorial.TutorialSectionComplete();
+        stateManager.OnTutorialEnd(this);
+    }
 
 
 

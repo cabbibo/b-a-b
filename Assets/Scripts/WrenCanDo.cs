@@ -122,6 +122,7 @@ public class WrenCanDo : MonoBehaviour
         carry = false;
 
         hasLearnedFlight = false;
+        hasLearnedTakeOff = false;
 
         hasLearnedHover = false;
         hasLearnedBoost = false;

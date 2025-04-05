@@ -29,6 +29,8 @@ public class FlyingTutorial : TutorialCoroutine
     public float waitTimeInFlightSpace = .1f;
     public float cameraLerpTime = 1f;
 
+    public float staminaCutoff = .5f;
+
 
     public float diveCutoff = .8f;
     public float diveMultiplier;
@@ -132,8 +134,10 @@ public class FlyingTutorial : TutorialCoroutine
 
 
 
-
-
+    public override bool ConditionsForCompleted()
+    {
+        return God.wrenCanDo.hasLearnedFlight;
+    }
 
 
 
@@ -319,6 +323,7 @@ public class FlyingTutorial : TutorialCoroutine
 
         God.wren.parameters.LoadParamSet("wrenTutorialSequence_Swoop");
         yield return God.interfaceTutorial.WaitWithCheat(3);
+        yield return FlapQuickSequence();
         yield return UpDownSequence();
 
         God.interfaceTutorial.TutorialSectionComplete();
@@ -328,6 +333,7 @@ public class FlyingTutorial : TutorialCoroutine
 
         yield return God.interfaceTutorial.WaitWithCheat(3);
         God.wren.parameters.LoadParamSet("wrenTutorialSequence_LeftRight");
+        yield return FlapQuickSequence();
         yield return LeftRightSequence();
 
 
@@ -360,7 +366,7 @@ public class FlyingTutorial : TutorialCoroutine
         God.interfaceTutorial.ShowProgress(0);
         God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
 
-        God.postController.WormHole(OnFlightTutorialEnd);
+        God.postController.WormHole(OnComplete);
 
 
     }
@@ -1084,11 +1090,11 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
                 God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Flap);
             }
 
-            if (God.wren.stats.stamina < .3f)
+            if (God.wren.stats.stamina < staminaCutoff)
             {
                 if (staminaLowHit == false)
                 {
-                    t += .3f;
+                    t += .5f;
                     staminaLowHit = true;
                 }
             }
@@ -1097,8 +1103,6 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
             {
                 staminaLowHit = false;
             }
-
-
 
 
 
@@ -1129,6 +1133,48 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
 
             God.interfaceTutorial.ShowProgress(t);
+            if (Input.GetKeyDown(KeyCode.Space))
+                break;
+            yield return null;
+
+
+        }
+
+
+        DeactivatePointer();
+        targetManager.EraseAllTargets();
+        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
+
+    }
+
+
+
+    IEnumerator FlapQuickSequence()
+    {
+
+
+        float t = 0;
+
+        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Flap, "Flap To Gain Speed!");
+        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+
+        bool flapStart = false;
+
+        while (t < 1)
+        {
+
+            //            print(flapStart);
+
+
+            if (God.wren.stats.stamina < staminaCutoff)
+            {
+
+                t += 2;
+            }
+
+
+
+
             if (Input.GetKeyDown(KeyCode.Space))
                 break;
             yield return null;
@@ -1444,13 +1490,14 @@ _______     _______ _   _ _____ ____
 
 
 
-    public void OnFlightTutorialEnd()
+
+    public override void OnComplete()
     {
+        base.OnComplete();
         God.wren.parameters.LoadParamSet("wrenTutorialSequence");
+        God.interfaceTutorial.TutorialSectionComplete();
         stateManager.OnTutorialEnd(this);
     }
-
-
 
 
 
@@ -1833,7 +1880,7 @@ _______     _______ _   _ _____ ____
             if (tutSequence != null && Input.GetKeyDown(KeyCode.Tab))
             {
                 StopCoroutine(tutSequence);
-                OnFlightTutorialEnd();
+                OnComplete();
                 //God.wren.PhaseShift(ender.transform.position + Vector3.down * 180);
             }
 

@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
+using UnityEngine.Events;
+[System.Serializable]
+public class ShardEvent : UnityEvent<Shard> { }
 
 public class Shard : MonoBehaviour
 {
@@ -10,6 +13,10 @@ public class Shard : MonoBehaviour
     public bool destroyOnCollect = true;
 
     public bool collected = false;
+    public bool firstCollect = false;
+
+
+
 
     public GameObject Uncollected;
     public GameObject Collected;
@@ -24,6 +31,9 @@ public class Shard : MonoBehaviour
     public float timeHit;
 
     public bool respawnAfterTime;
+
+    public Helpers.GameObjectEvent onCollectEvent;
+    public Helpers.GameObjectEvent onFirstCollectEvent;
 
 
 
@@ -93,6 +103,14 @@ public class Shard : MonoBehaviour
             if (collectionPosition != null) collectPosition = collectionPosition.position;
             God.wren.shards.CollectShards(ShardsToAdd, type, collectPosition);
             God.particleSystems.Emit(God.particleSystems.shardCollect, collectPosition, ShardsToAdd);
+
+            if (firstCollect == false)
+            {
+                firstCollect = true;
+                if (onFirstCollectEvent != null) onFirstCollectEvent.Invoke(this.gameObject);
+            }
+
+            if (onCollectEvent != null) onCollectEvent.Invoke(this.gameObject);
             collected = true;
 
             if (Collected != null) Collected.SetActive(true);
@@ -105,7 +123,6 @@ public class Shard : MonoBehaviour
             {
                 Destroy(gameObject);
             }
-
 
 
 

@@ -236,6 +236,10 @@ Shader "Debug/PointerSkyColumnProcShader1" {
 
         fCol *= n;
 
+        if( v.type > 9){
+          fCol *= 10 *sin(_Time.y * 100);
+        }
+
         //fCol = baseTri;
         //fCol = v.uv.y;
         return float4( fCol , length(fCol));

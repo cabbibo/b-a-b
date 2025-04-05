@@ -12,6 +12,8 @@ public class OverallCameraManager : MonoBehaviour
 
     public CinematicCameraManager cinematicManager;
 
+    public PointOfInterestCameraController pointOfInterestManager;
+
     public BaseCameraManager[] cameraManagers;
 
     public float[] normalizedWeights;

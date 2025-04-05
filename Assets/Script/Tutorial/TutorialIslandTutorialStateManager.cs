@@ -13,18 +13,18 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
     public TakeOffTutorial takeOffTutorial;
 
+    public CarryTutorial carryTutorial;
+
     // public TakeOffTutorial takeOffTutorial;
 
-    public List<GameObject> postFlightTutorialObjects;
-    public List<GameObject> postPingTutorialObjects;
 
+    public Portal portal;
 
 
     public Transform windTunnelTeleportTarget;
 
 
 
-    public Portal portal;
 
 
 
@@ -33,17 +33,18 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
     {
 
 
+        flyingTutorial.CheckState();
+        pingTutorial.CheckState();
+        takeOffTutorial.CheckState();
+        carryTutorial.CheckState();
+
+
+
         if (God.state.wrenCanDo.hasLearnedFlight == false)
         {
             flyingTutorial.JumpStartTutorial();
-            foreach (GameObject go in postFlightTutorialObjects)
-            {
-                go.SetActive(false);
-            }
 
 
-            SetPreFlightState();
-            SetPrePingState();
         }
         else
         {
@@ -57,8 +58,6 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
                 God.wren.state.TakeOff();
                 pingTutorial.JumpStartTutorial();//StartPingTutorial(); 
 
-                SetPostFlightState();
-                SetPrePingState();
                 if (God.state.wrenCanDo.hasLearnedTakeOff == false)
                 {
                     takeOffTutorial.StartTutorial();
@@ -70,9 +69,6 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
                 God.state.wrenCanDo.ping = true;
 
-                SetPostFlightState();
-                SetPostPingState();
-
 
                 if (God.state.wrenCanDo.hasLearnedTakeOff == false)
                 {
@@ -81,7 +77,15 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
                 else
                 {
 
-                    //StartFullGame();
+
+                    if (God.state.wrenCanDo.hasLearnedCarry == false)
+                    {
+                        carryTutorial.JumpStartTutorial();
+                    }
+                    else
+                    {
+                        SetPostCarryState();
+                    }
                 }
             }
 
@@ -113,6 +117,7 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
         God.state.UpdateState();
 
         SetPostFlightState();
+
         God.wren.PhaseShift(windTunnelTeleportTarget);
 
         takeOffTutorial.StartTutorial();
@@ -122,45 +127,43 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
     public void SetPreFlightState()
     {
-        for (int i = 0; i < postFlightTutorialObjects.Count; i++)
-        {
-            postFlightTutorialObjects[i].SetActive(false);
-        }
+
 
     }
 
     public void SetPrePingState()
     {
-        for (int i = 0; i < postPingTutorialObjects.Count; i++)
-        {
-            postPingTutorialObjects[i].SetActive(false);
-        }
+
 
     }
 
 
     public void SetPostFlightState()
     {
-        for (int i = 0; i < postFlightTutorialObjects.Count; i++)
-        {
-            postFlightTutorialObjects[i].SetActive(true);
-        }
+
 
     }
 
     public void SetPostPingState()
     {
 
-        for (int i = 0; i < postPingTutorialObjects.Count; i++)
-        {
-            postPingTutorialObjects[i].SetActive(true);
-        }
-
-
-        portal.SetPortalFull();
+        portal.SetPortalOff();
 
 
     }
+
+
+    public void SetPreCarryState()
+    {
+        //carryTutorial.gameObject.SetActive(false);
+    }
+
+    public void SetPostCarryState()
+    {
+        carryTutorial.gameObject.SetActive(true);
+        portal.SetPortalFull();
+    }
+
 
     public void DoPingTutorialFinish()
     {
@@ -168,6 +171,16 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
         God.state.UpdateState();
 
         SetPostPingState();
+
+
+        if (God.state.wrenCanDo.hasLearnedCarry == false)
+        {
+            carryTutorial.StartTutorial();
+        }
+        else
+        {
+            carryTutorial.CheckState();
+        }
     }
 
 
@@ -177,9 +190,33 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
         God.state.wrenCanDo.hasLearnedTakeOff = true;
         God.state.UpdateState();
 
+        if (God.state.wrenCanDo.hasLearnedCarry == false && God.state.wrenCanDo.hasLearnedPing == true)
+        {
+            carryTutorial.JumpStartTutorial();
+        }
+        else
+        {
+            carryTutorial.CheckState();
+        }
+
 
     }
 
+
+    public void DoCarryTutorialFinish()
+    {
+
+        print("DOING CARRY TUTORIAL FINISH");
+
+        /*
+        God.state.wrenCanDo.hasLearnedCarry = true;
+        God.state.UpdateState();
+
+        SetPostCarryState();
+        */
+
+
+    }
 
 
     public void TeleportToWindTunnel()
@@ -217,6 +254,11 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
         else if (tutorial is TakeOffTutorial)
         {
             DoTakeoffTutorialFinish();
+        }
+        else if (tutorial is CarryTutorial)
+        {
+            DoCarryTutorialFinish();
+            //SetPostCarryState();
         }
     }
 

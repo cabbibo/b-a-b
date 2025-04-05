@@ -624,6 +624,8 @@ Shader "Islands/Tutorial/TutorialIslandModel" {
                 col += shadowCol * .2 * (1-shadow);
                 col *= v.color  * 2.;
 
+                col *= _Color;
+
                 
 
                 // col += lightMatch;

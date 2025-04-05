@@ -236,7 +236,7 @@ public class InterfaceTutorial : MonoBehaviour
 */
 
 
-    public enum ControllerHint { None, Dive, Left, Right, Forward, Back, Hold, Takeoff, Flap, Swoop, Release, Release2, Gentle, Boost, Ping, Wiggle, TakeOff }
+    public enum ControllerHint { None, Dive, Left, Right, Forward, Back, Hold, Takeoff, Flap, Swoop, Release, Release2, Gentle, Boost, Ping, Wiggle, TakeOff, Carry }
 
     [Header("Controller")]
     public GameObject groupSticks;
@@ -256,6 +256,8 @@ public class InterfaceTutorial : MonoBehaviour
     public GameObject groupPing;
     public GameObject groupWiggle;
     public GameObject groupTakeOff;
+
+    public GameObject groupCarry;
 
     public ControllerHint currentHint;
     public string currentHintText;
@@ -362,6 +364,7 @@ public class InterfaceTutorial : MonoBehaviour
         groupPing.SetActive(hint == ControllerHint.Ping);
         groupWiggle.SetActive(hint == ControllerHint.Wiggle); // this is the default state when we dont want any hints
         groupTakeOff.SetActive(hint == ControllerHint.TakeOff); // this is the default state when we dont want any hints
+        groupCarry.SetActive(hint == ControllerHint.Carry); // this is the default state when we dont want any hints
 
 
         if (text != null)
@@ -419,6 +422,9 @@ public class InterfaceTutorial : MonoBehaviour
             case ControllerHint.TakeOff:
                 controllerText.text = "Takeoff";
                 break;
+            case ControllerHint.Carry:
+                controllerText.text = "L1 & R1 to CARRY";
+                break;
                 /* case ControllerHint.y:
                      controllerText.text = "PRESS sticks to HOLD";
                      break;*/
@@ -452,6 +458,8 @@ public class InterfaceTutorial : MonoBehaviour
             StartCoroutine(FadeGroup(groupContainer, 0, 1)); // Fading in the groupContainer from 0 to 1.
         }
     }
+
+
 
 
 

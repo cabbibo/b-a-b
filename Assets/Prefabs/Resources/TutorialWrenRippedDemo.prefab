@@ -28303,6 +28303,8 @@ MonoBehaviour:
   backDistCarrying: -1.4
   CarriedItems: []
   FeetCarriedItems: 
+  lineRendererL: {fileID: 0}
+  lineRendererR: {fileID: 0}
 --- !u!114 &7282418919974470726
 MonoBehaviour:
   m_ObjectHideFlags: 0

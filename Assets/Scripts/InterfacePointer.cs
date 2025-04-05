@@ -191,9 +191,24 @@ public class InterfacePointer : MonoBehaviour
 
 
             _buffer.SetData(pointerPositions);
-            _typeBuffer.SetData(pointerTypes.ToArray());
+
+            float[] pointerTypeArray = pointerTypes.ToArray();
+
+
+
+            // Set object of interest just in the render buffer not anywhere else!
+            if (objectOfInterest != null)
+            {
+                // if we have an object of interest, set its type to 0.5f
+                pointerTypeArray[pointerList.IndexOf(objectOfInterest)] = 10f;
+
+            }
+
+            _typeBuffer.SetData(pointerTypeArray);
             _fadeBuffer.SetData(fades.ToArray());
             _extraDataBuffer.SetData(extraData.ToArray());
+
+
 
             if (mpb == null)
             {
@@ -253,10 +268,37 @@ public class InterfacePointer : MonoBehaviour
 
         if (pointerList.Contains(pointer))
         {
+
+
+
             print("HAS POINTER");
 
-            fades[pointerList.IndexOf(pointer)] = 1;
-            targetFades[pointerList.IndexOf(pointer)] = 0;
+            if (objectOfInterest != null)
+            {
+
+                // Only ping object of interest if thats what weve got!
+                if (pointer == objectOfInterest)
+                {
+
+                    //print("OBJECT OF INTEREST");
+
+                    fades[pointerList.IndexOf(pointer)] = 1;
+                    targetFades[pointerList.IndexOf(pointer)] = 0;
+                }
+                else
+                {
+                    fades[pointerList.IndexOf(pointer)] = 0;
+                    targetFades[pointerList.IndexOf(pointer)] = 0;
+                    // print("NOT OBJECT OF INTEREST");
+                }
+            }
+            else
+            {
+
+                //                print("NO OBJECT OF INTEREST");
+                fades[pointerList.IndexOf(pointer)] = 1;
+                targetFades[pointerList.IndexOf(pointer)] = 0;
+            }
         }
         else
         {
@@ -304,14 +346,23 @@ public class InterfacePointer : MonoBehaviour
         if (!pointerList.Contains(t))
         {
             pointerList.Add(t);
+            if (type < 0)
+            {
+                type = 0;
+            }
+
             pointerTypes.Add((float)type);
+
             targetFades.Add(0);
             fades.Add(0);
             extraData.Add(new Vector4(0, 0, 0, 0));
         }
         else
         {
-            pointerTypes[pointerList.IndexOf(t)] = (float)type;
+            if (type >= null)
+            {
+                pointerTypes[pointerList.IndexOf(t)] = (float)type;
+            }
         }
 
     }
@@ -321,34 +372,106 @@ public class InterfacePointer : MonoBehaviour
         if (!pointerList.Contains(t))
         {
             pointerList.Add(t);
+
+            if (type < 0)
+            {
+                type = 0;
+            }
+
             pointerTypes.Add((float)type);
+
+
             targetFades.Add(0);
             fades.Add(0);
             extraData.Add(new Vector4(tc, 0, 0, 0)); // adding to our extra data!
         }
         else
         {
-            pointerTypes[pointerList.IndexOf(t)] = (float)type;
+
+            if (type >= 0)
+            {
+                pointerTypes[pointerList.IndexOf(t)] = (float)type;
+            }
+
+
             extraData[pointerList.IndexOf(t)] = new Vector4(tc, 0, 0, 0);
         }
     }
+
+
 
     public void AddPointer(Transform t, int type, Vector4 tc)
     {
         if (!pointerList.Contains(t))
         {
             pointerList.Add(t);
+            if (type < 0)
+            {
+                type = 0;
+            }
+
             pointerTypes.Add((float)type);
+
             targetFades.Add(0);
             fades.Add(0);
             extraData.Add(tc); // adding to our extra data!
         }
         else
         {
-            pointerTypes[pointerList.IndexOf(t)] = (float)type;
+            if (type >= 0)
+            {
+                pointerTypes[pointerList.IndexOf(t)] = (float)type;
+            }
+
             extraData[pointerList.IndexOf(t)] = tc;
         }
     }
+
+
+
+    public void ShowSinglePointer(Transform t, int type, Vector4 tc)
+    {
+
+        ClearPointers();
+        AddPointer(t, type, tc);
+        TurnOnPointer(t);
+
+    }
+
+    public void SetSinglePointer(Transform t, int type, Vector4 tc)
+    {
+
+        ClearPointers();
+        AddPointer(t, type, tc);
+
+
+    }
+
+
+
+    public Transform objectOfInterest;
+
+    public void SetObjectOfInterest(Transform t)
+    {
+        objectOfInterest = t;
+        AddPointer(t, -1, new Vector4(0, 0, 0, 0)); // add it to the list so we can ping it!
+
+
+    }
+
+    public void ReleaseObjectOfInterest()
+    {
+        if (objectOfInterest != null)
+        {
+            objectOfInterest = null;
+        }
+
+        RemovePointer(objectOfInterest); // remove it from the list so we can ping it!
+    }
+
+
+
+
 
     public void RemovePointer(Transform t)
     {
@@ -377,6 +500,34 @@ public class InterfacePointer : MonoBehaviour
         ReleaseBuffers();
 
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public GameObject[] getAllOfTag(string tag)
     {
         return GameObject.FindGameObjectsWithTag(tag);

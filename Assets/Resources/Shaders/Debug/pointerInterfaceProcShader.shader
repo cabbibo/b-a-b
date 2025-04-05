@@ -135,8 +135,14 @@ varyings vert (uint id : SV_VertexID){
 
       float3 basePos = pos +  centerDir * 1;
 
+      int intType = _TypeBuffer[base];
 
-      float sizeMultiplier = _TypeSizeMultiplier[int(_TypeBuffer[base])];//+ 1;
+
+      float sizeMultiplier = _TypeSizeMultiplier[intType];//+ 1;
+
+      if( intType == 10 ){
+        sizeMultiplier = 10;
+      }
 
 
       // if we are close to the place we are going, connect completely ( longer )
@@ -312,6 +318,9 @@ float4 frag (varyings v) : COLOR {
 
  
 
+  if( v.type > 9.5 && v.type < 10.5 ){
+   fCol *= 10 *sin( _Time.y * 100);
+  }
 
 
   
