@@ -18,8 +18,9 @@ public class WrenPhysics : MonoBehaviour
 
     */
 
-    public WrenInput input;
-    public Wren      wren;
+    public WrenInput     input;
+    public Wren          wren;
+    public PhysicsParams currentParams;
 
 
     public Transform leftWing;
@@ -29,15 +30,23 @@ public class WrenPhysics : MonoBehaviour
     public Transform rightWingPivot;
 
 
-    [HideInInspector] public Rigidbody rb;
-    [HideInInspector] public Collider  terrainCollider;
-    [HideInInspector] public Terrain   terrain;
+    [HideInInspector]
+    public Rigidbody rb;
+
+    [HideInInspector]
+    public Collider terrainCollider;
+
+    [HideInInspector]
+    public Terrain terrain;
 
 
     public bool   showDebugForces;
     public string name;
 
-    [Space( 10 )] [Header( "Parameters" )] [Space( 10 )] [Header( "Toggles" )]
+    [Space( 10 )]
+    [Header( "Parameters" )]
+    [Space( 10 )]
+    [Header( "Toggles" )]
     public bool swapLR;
 
     public bool invert; // TODO
@@ -45,20 +54,24 @@ public class WrenPhysics : MonoBehaviour
     public bool lockY;
 
 
-    [Header( "Input Changers" )] public float reduceFlapOnStaminaStart; // when do we start reducing the flap
-    public                              float reduceFlapOnStaminaMax; // what is the max reduction ( 1 = 100% )
+    [Header( "Input Changers" )]
+    public float reduceFlapOnStaminaStart; // when do we start reducing the flap
+
+    public float reduceFlapOnStaminaMax; // what is the max reduction ( 1 = 100% )
 
     public float maxAngleForY; // start
     public float maxAngleForYMax; // end
     public float maxAngleForYMaxReduction; // reduction amount
 
 
-    [Header( "GRAVITY" )] public float gravityForce;
+    [Header( "GRAVITY" )]
+    public float gravityForce;
 
 
-    [Header( "Angle Info" )] public float slowestTwistAngle;
-    public                          float fastestTwistAngle;
+    [Header( "Angle Info" )]
+    public float slowestTwistAngle;
 
+    public float fastestTwistAngle;
     public float slowestBendAngle;
     public float fastestBendAngle;
 
@@ -71,9 +84,11 @@ public class WrenPhysics : MonoBehaviour
     public float twistForceVal;
 
 
-    [Header( "Speed & Dampening" )] public float allFeathersMaxSpeed;
-    public                                 float noFeathersMaxSpeed;
-    public                                 float maxSpeed;
+    [Header( "Speed & Dampening" )]
+    public float allFeathersMaxSpeed;
+
+    public float noFeathersMaxSpeed;
+    public float maxSpeed;
 
     public float maxSpeedDamper;
 
@@ -81,7 +96,8 @@ public class WrenPhysics : MonoBehaviour
     public float baseSpeedDamper;
 
 
-    [Space( 10 )] [Header( "Default Forces" )]
+    [Space( 10 )]
+    [Header( "Default Forces" )]
     public float closeForwardBoostVal;
 
     public float thrustForceMultiplier;
@@ -92,7 +108,8 @@ public class WrenPhysics : MonoBehaviour
     public float velMatchMultiplier; // turns towards velocity
 
 
-    [Header( "Tuck Info" )] public float tuckAddToGravityVal;
+    [Header( "Tuck Info" )]
+    public float tuckAddToGravityVal;
 
     public float tuckReduceLiftVal;
 
@@ -149,9 +166,11 @@ public class WrenPhysics : MonoBehaviour
 
     */
 
-    [Header( "Ground Forces" )] public float groundPower     = 1;
-    public                             float groundOut       = 4;
-    public                             float groundDampening = .95f;
+    [Header( "Ground Forces" )]
+    public float groundPower = 1;
+
+    public float groundOut       = 4;
+    public float groundDampening = .95f;
 
     public float rotateTowardsTargetOnGround = 1;
 
@@ -160,19 +179,26 @@ public class WrenPhysics : MonoBehaviour
     public float groundUpVal   = 10;
 
 
-    [Space( 10 )] [Header( "Event Forces" )] [Space( 10 )] [Header( "Flap Info" )]
+    [Space( 10 )]
+    [Header( "Event Forces" )]
+    [Space( 10 )]
+    [Header( "Flap Info" )]
     public float flapToSide;
 
     public float flapPowerUp;
     public float flapPowerForward;
 
 
-    [Header( "Bumper Forces" )] public float bumperForce;
-    public                             float bumperTorqueForce;
+    [Header( "Bumper Forces" )]
+    public float bumperForce;
+
+    public float bumperTorqueForce;
 
 
-    [Header( "Take Off" )] public float takeOffForwardForce = 10;
-    public                        float takeOffUpForce      = 10;
+    [Header( "Take Off" )]
+    public float takeOffForwardForce = 10;
+
+    public float takeOffUpForce = 10;
 
 
     /*
@@ -181,8 +207,10 @@ public class WrenPhysics : MonoBehaviour
         Carrying Stuff
 
     */
-    [Header( "Carrying Forces" )] public float carryingForceMultiplier;
-    public                               float carryingDragMultiplier;
+    [Header( "Carrying Forces" )]
+    public float carryingForceMultiplier;
+
+    public float carryingDragMultiplier;
 
 
     /*
@@ -190,19 +218,23 @@ public class WrenPhysics : MonoBehaviour
     Painted Wind Force
 
     */
-    [Header( "Painted Wind Forces" )] public float paintedWindForceMultiplier = 10;
+    [Header( "Painted Wind Forces" )]
+    public float paintedWindForceMultiplier = 10;
 
 
     /*
     SKIM
     */
-    [Header( "Skim Forces" )] public float skimForceUp           = 50;
-    public                           float skimForceForward      = 50;
-    public                           float skimImpulseMulitplier = 1;
+    [Header( "Skim Forces" )]
+    public float skimForceUp = 50;
+
+    public float skimForceForward      = 50;
+    public float skimImpulseMulitplier = 1;
 
 
     /*Boost*/
-    [Header( "Boost Forces" )] public float boostMultiplier = 100;
+    [Header( "Boost Forces" )]
+    public float boostMultiplier = 100;
 
 
     [Space( 10 )]
@@ -241,7 +273,9 @@ public class WrenPhysics : MonoBehaviour
 
 
     // DATA
-    [Space( 30 )] [Header( "DATA" )] public bool onGround;
+    [Space( 30 )]
+    [Header( "DATA" )]
+    public bool onGround;
 
     public string     closestTag;
     public GameObject closestObject;
@@ -261,15 +295,17 @@ public class WrenPhysics : MonoBehaviour
     public bool reset; //TODO : is this used anywhere?
 
 
-    [Header( "Data" )] public float   distToGround;
-    public                    float   rawDistToGround;
-    public                    Vector3 rawGroundPoint;
-    public                    Vector3 groundPoint;
-    public                    Vector3 groundNormal;
-    public                    Vector3 groundDirection;
-    public                    Vector3 vel;
-    public                    Vector3 oVel;
-    public                    Vector3 inertiaTensor;
+    [Header( "Data" )]
+    public float distToGround;
+
+    public float   rawDistToGround;
+    public Vector3 rawGroundPoint;
+    public Vector3 groundPoint;
+    public Vector3 groundNormal;
+    public Vector3 groundDirection;
+    public Vector3 vel;
+    public Vector3 oVel;
+    public Vector3 inertiaTensor;
 
     public Vector3 leftWingLiftForce;
     public Vector3 leftWingLiftForcePosition;
@@ -445,10 +481,10 @@ public class WrenPhysics : MonoBehaviour
     public void ResetToOther( GameObject other )
     {
         var otherRb = other.GetComponent<Rigidbody>();
+
         if ( otherRb ) {
             rb.velocity = otherRb.velocity;
-        }
-        else {
+        } else {
             rb.velocity = Vector3.zero;
         }
 
@@ -567,13 +603,11 @@ public class WrenPhysics : MonoBehaviour
 
                 CarryingForces();
                 ApplyForces();
-            }
-            else {
+            } else {
                 Hovering();
             }
 
-        }
-        else {
+        } else {
 
             GetGroundDistanceInfo();
             RotationValues();
@@ -709,6 +743,7 @@ public class WrenPhysics : MonoBehaviour
         float fAngle = Mathf.Lerp( slowestTwistAngle , fastestTwistAngle , normalizedSpeed );
 
         float lr = input.leftY;
+
         if ( swapLR ) {
             lr = input.rightY;
         }
@@ -730,6 +765,7 @@ public class WrenPhysics : MonoBehaviour
 
 
         lr = input.rightY;
+
         if ( swapLR ) {
             lr = input.leftY;
         }
@@ -980,6 +1016,7 @@ public class WrenPhysics : MonoBehaviour
         RaycastHit hit;
 
         tmpDist = 1000000;
+
         if ( Physics.Raycast( transform.position , -Vector3.up , out hit ) ) {
             tmpDist = hit.distance;
             tmpNorm = hit.normal;
@@ -1011,12 +1048,14 @@ public class WrenPhysics : MonoBehaviour
 
                 ray.origin = transform.position;
                 ray.direction = dir;
+
                 //terrainCollider.Raycast....
                 if ( Physics.Raycast( ray , out hit , 500 ) ) {
 
                     //debugger.SetLine( i + 2 + j * 10 , transform.position , transform.position + dir * hit.distance );
 
                     hitVal = true;
+
                     if ( hit.distance < tmpDist ) {
                         tmpDist = hit.distance;
                         tmpNorm = hit.normal;
@@ -1027,8 +1066,7 @@ public class WrenPhysics : MonoBehaviour
                     }
 
 
-                }
-                else {
+                } else {
                     //debugger.SetLine( i + 2 + j * 10 , transform.position , transform.position  );
                 }
 
@@ -1345,6 +1383,7 @@ public class WrenPhysics : MonoBehaviour
 
         int totalCarriedLeft = 0;
         int totalCarriedRight = 0;
+
         for ( int i = 0; i < c.Count; i++ ) {
 
             if ( f[i] == 0 ) {
@@ -1363,8 +1402,7 @@ public class WrenPhysics : MonoBehaviour
             carryingForceL = Vector3.down * totalCarriedLeft * carryingForceMultiplier;
             carryingForcePositionL = transform.position - transform.right * 2;
 
-        }
-        else {
+        } else {
             carryingForceL = Vector3.zero;
         }
 
@@ -1374,8 +1412,7 @@ public class WrenPhysics : MonoBehaviour
             carryingForceR = Vector3.down * totalCarriedRight * carryingForceMultiplier;
             carryingForcePositionR = transform.position + transform.right * 2;
 
-        }
-        else {
+        } else {
             carryingForceR = Vector3.zero;
         }
 
@@ -1581,12 +1618,10 @@ public class WrenPhysics : MonoBehaviour
             maxUpRightingForce = -transform.up * maxUpAngleForceRightingMultiplier;
             maxUpRightingForcePosition = transform.position + transform.forward;
 
-        }
-        else if ( Vector3.Dot( vel.normalized , Vector3.up ) < -maxUpAngle ) {
+        } else if ( Vector3.Dot( vel.normalized , Vector3.up ) < -maxUpAngle ) {
             maxUpRightingForce = transform.up * maxUpAngleForceRightingMultiplier;
             maxUpRightingForcePosition = transform.position + transform.forward;
-        }
-        else {
+        } else {
             maxUpRightingForce = Vector3.zero;
         }
 
@@ -1694,8 +1729,7 @@ public class WrenPhysics : MonoBehaviour
         if ( doBasicGroundControls ) {
             DoBasicGroundControlForces();
 
-        }
-        else {
+        } else {
 
 
             var forward = new Vector3( transform.forward.x , 0 , transform.forward.z ).normalized;

@@ -1,21 +1,20 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Normal.Realtime;
 using UnityEngine.UI;
-
 using WrenUtils;
 
 public class WrenCarrying : MonoBehaviour
 {
+    public Wren            wren;
+    public float           upDistCarrying   = .1f;
+    public float           backDistCarrying = .4f;
+    public List<Carryable> CarriedItems     = new();
 
-    public Wren wren;
-    public float upDistCarrying = .1f;
-    public float backDistCarrying = .4f;
-    public List<Carryable> CarriedItems = new List<Carryable>();
-
-    public List<int> FeetCarriedItems = new List<int>();
+    public List<int> FeetCarriedItems = new();
 
     public LineRenderer lineRendererL;
     public LineRenderer lineRendererR;
@@ -26,36 +25,34 @@ public class WrenCarrying : MonoBehaviour
         return God.wrenMaker.GetNormalClientId();
     }
 
-    public bool PickUpItem(GameObject g, int footID)
+    public bool PickUpItem( GameObject g , int footID )
     {
         Carryable carryable;
-        if (g.TryGetComponent(out carryable))
-        {
-            return PickUpItem(carryable, footID);
+
+        if ( g.TryGetComponent( out carryable ) ) {
+            return PickUpItem( carryable , footID );
+        } else {
+            Debug.LogWarning(
+                $"Trying to pick up Object {g.name}, but it doesn't have a Carryable component attached." );
         }
-        else
-        {
-            Debug.LogWarning($"Trying to pick up Object {g.name}, but it doesn't have a Carryable component attached.");
-        }
+
         return false;
     }
 
-    public bool PickUpItem(Carryable c, int footID)
+    public bool PickUpItem( Carryable c , int footID )
     {
         var targetPosition = transform.position - transform.up * upDistCarrying - transform.forward * backDistCarrying;
-        if (c.TryToCarry(this, targetPosition))
-        {
 
-            God.audio.Play(God.sounds.collectablePickedUpSounds);
-            CarriedItems.Add(c);
-            FeetCarriedItems.Add(footID);
+        if ( c.TryToCarry( this , targetPosition ) ) {
 
-            print(CarriedItems.Count);
-        }
-        else
-        {
+            God.audio.Play( God.sounds.collectablePickedUpSounds );
+            CarriedItems.Add( c );
+            FeetCarriedItems.Add( footID );
 
-            print("no picky");
+            print( CarriedItems.Count );
+        } else {
+
+            print( "no picky" );
 
         }
 
@@ -69,13 +66,10 @@ public class WrenCarrying : MonoBehaviour
     }
 
 
-
-    public void DropAllCarriedItems(Carryable.DropSettings dropSettings = null)
+    public void DropAllCarriedItems( Carryable.DropSettings dropSettings = null )
     {
-        for (var i = 0; i < CarriedItems.Count; i++)
-        {
-            if (DropCarriedItemAtIndex(i, dropSettings))
-            {
+        for ( int i = 0; i < CarriedItems.Count; i++ ) {
+            if ( DropCarriedItemAtIndex( i , dropSettings ) ) {
                 i--;
             }
         }
@@ -84,12 +78,9 @@ public class WrenCarrying : MonoBehaviour
 
     public void DropLeftFootItems()
     {
-        for (var i = 0; i < CarriedItems.Count; i++)
-        {
-            if (FeetCarriedItems[i] == 0)
-            {
-                if (DropCarriedItemAtIndex(i))
-                {
+        for ( int i = 0; i < CarriedItems.Count; i++ ) {
+            if ( FeetCarriedItems[i] == 0 ) {
+                if ( DropCarriedItemAtIndex( i ) ) {
                     i--;
                 }
             }
@@ -98,62 +89,56 @@ public class WrenCarrying : MonoBehaviour
 
     public void DropRightFootItems()
     {
-        for (var i = 0; i < CarriedItems.Count; i++)
-        {
-            if (FeetCarriedItems[i] == 1)
-            {
-                if (DropCarriedItemAtIndex(i))
-                {
+        for ( int i = 0; i < CarriedItems.Count; i++ ) {
+            if ( FeetCarriedItems[i] == 1 ) {
+                if ( DropCarriedItemAtIndex( i ) ) {
                     i--;
                 }
             }
         }
     }
 
-    public bool DropFirstCarriedItem(Carryable.DropSettings dropSettings = null)
+    public bool DropFirstCarriedItem( Carryable.DropSettings dropSettings = null )
     {
-        return DropCarriedItemAtIndex(0, dropSettings);
+        return DropCarriedItemAtIndex( 0 , dropSettings );
     }
 
-    public bool DropLastCarriedItem(Carryable.DropSettings dropSettings = null)
+    public bool DropLastCarriedItem( Carryable.DropSettings dropSettings = null )
     {
-        return DropCarriedItemAtIndex(CarriedItems.Count - 1, dropSettings);
+        return DropCarriedItemAtIndex( CarriedItems.Count - 1 , dropSettings );
     }
 
-    public bool DropCarriedItemAtIndex(int index, Carryable.DropSettings dropSettings = null)
+    public bool DropCarriedItemAtIndex( int index , Carryable.DropSettings dropSettings = null )
     {
-        if (CarriedItems.IsIndexValid(index) && CarriedItems[index].TryToDrop(this, dropSettings))
-        {
-            God.audio.Play(God.sounds.collectableDroppedSounds);
-            CarriedItems.RemoveAt(index);
-            FeetCarriedItems.RemoveAt(index);
+        if ( CarriedItems.IsIndexValid( index ) && CarriedItems[index].TryToDrop( this , dropSettings ) ) {
+            God.audio.Play( God.sounds.collectableDroppedSounds );
+            CarriedItems.RemoveAt( index );
+            FeetCarriedItems.RemoveAt( index );
             return true;
         }
+
         return false;
     }
 
 
-
     public void UpdateCarriedItems()
     {
-        Vector3 targetPosition = transform.position;
+        var targetPosition = transform.position;
         int index = 0;
-        foreach (var c in CarriedItems)
-        {
+
+        foreach (var c in CarriedItems) {
 
             int id = FeetCarriedItems[index];
-            if (id == 0)
-            {
+
+            if ( id == 0 ) {
                 targetPosition = wren.bird.leftFoot.position;
-            }
-            else
-            {
+            } else {
                 targetPosition = wren.bird.rightFoot.position;
             }
 
 
             // targetPosition -= transform.up * c.carryUpDistance - transform.forward * c.carryBackDistance;
-            c.UpdateCarriedPosition(this, targetPosition);
+            c.UpdateCarriedPosition( this , targetPosition );
 
 
         }
@@ -165,21 +150,20 @@ public class WrenCarrying : MonoBehaviour
         UpdateLineRenderers();
     }
 
+    public int carryingLineResolution = 30;
+
+
     public void UpdateLineRenderers()
     {
 
-        List<Vector3> leftFootPositions = new List<Vector3>();
-        List<Vector3> rightFootPositions = new List<Vector3>();
+        var leftFootPositions = new List<Vector3>();
+        var rightFootPositions = new List<Vector3>();
 
-        for (var i = 0; i < CarriedItems.Count; i++)
-        {
-            if (FeetCarriedItems[i] == 0)
-            {
-                leftFootPositions.Add(CarriedItems[i].transform.position);
-            }
-            else
-            {
-                rightFootPositions.Add(CarriedItems[i].transform.position);
+        for ( int i = 0; i < CarriedItems.Count; i++ ) {
+            if ( FeetCarriedItems[i] == 0 ) {
+                leftFootPositions.Add( CarriedItems[i].transform.position );
+            } else {
+                rightFootPositions.Add( CarriedItems[i].transform.position );
             }
         }
 
@@ -187,36 +171,65 @@ public class WrenCarrying : MonoBehaviour
         lineRendererL.positionCount = leftFootPositions.Count + 1;
         lineRendererR.positionCount = rightFootPositions.Count + 1;
 
-        lineRendererL.SetPosition(0, wren.bird.leftFoot.position);
-        lineRendererR.SetPosition(0, wren.bird.rightFoot.position);
+        lineRendererL.SetPosition( 0 , wren.bird.leftFoot.position );
+        lineRendererR.SetPosition( 0 , wren.bird.rightFoot.position );
 
-        for (var i = 0; i < leftFootPositions.Count; i++)
-        {
-            lineRendererL.SetPosition(i + 1, leftFootPositions[i]);
+
+        Vector3 t1;
+        Vector3 t2;
+
+
+        if ( leftFootPositions.Count > 0 ) {
+
+            lineRendererL.positionCount = carryingLineResolution + 1;
+            t1 = -(wren.bird.leftFoot.position - leftFootPositions[0]); // dir
+
+
+            for ( int i = 0; i < carryingLineResolution; i++ ) {
+                float t = ((float)i + 1) / (carryingLineResolution + 1);
+                t2 = wren.bird.leftFoot.position + t * t1;
+
+                float lineOut = HELP.SmoothMin( t * 3 , 1 - t ) + .3f; //.5f - Mathf.Abs( t - .5f );
+
+                //lineOut = 0;
+                t2 += -wren.transform.right * lineOut * 1;
+                lineRendererL.SetPosition( i + 1 , t2 );
+            }
         }
-        for (var i = 0; i < rightFootPositions.Count; i++)
-        {
-            lineRendererR.SetPosition(i + 1, rightFootPositions[i]);
+
+        if ( rightFootPositions.Count > 0 ) {
+
+            lineRendererL.positionCount = carryingLineResolution + 1;
+            t1 = -(wren.bird.rightFoot.position - rightFootPositions[0]); // dir
+
+
+            for ( int i = 0; i < carryingLineResolution; i++ ) {
+                float t = ((float)i + 1) / (carryingLineResolution + 1);
+                t2 = wren.bird.rightFoot.position + t * t1;
+
+                float lineOut = HELP.SmoothMin( t * 3 , 1 - t ) + .3f; //.5f - Mathf.Abs( t - .5f );
+
+                //lineOut = 0;
+                t2 += wren.transform.right * lineOut * 1;
+                lineRendererL.SetPosition( i + 1 , t2 );
+            }
         }
 
 
     }
 
 
-
-
-
-    public int CheckIfCarryingItem(Carryable carryable)
+    public int CheckIfCarryingItem( Carryable carryable )
     {
         int id = -1;
 
         int index = 0;
-        foreach (var c in CarriedItems)
-        {
-            if (c == carryable)
-            {
+
+        foreach (var c in CarriedItems) {
+            if ( c == carryable ) {
                 id = index;
             }
+
             index++;
         }
 
@@ -224,19 +237,18 @@ public class WrenCarrying : MonoBehaviour
 
     }
 
-    public void DropIfCarrying(Carryable c)
+    public void DropIfCarrying( Carryable c )
     {
-        int id = CheckIfCarryingItem(c);
+        int id = CheckIfCarryingItem( c );
 
-        print(id);
+        print( id );
 
-        if (id >= 0)
-        {
-            DropCarriedItemAtIndex(id);
+        if ( id >= 0 ) {
+            DropCarriedItemAtIndex( id );
         }
     }
 
-    public void GroundHit(Carryable.DropSettings dropSettings = null)
+    public void GroundHit( Carryable.DropSettings dropSettings = null )
     {
 
         /*int index = 0;
@@ -250,16 +262,12 @@ public class WrenCarrying : MonoBehaviour
         }*/
 
 
-        for (var i = 0; i < CarriedItems.Count; i++)
-        {
-            if (CarriedItems[i].dropOnGroundHit)
-            {
-                if (DropCarriedItemAtIndex(i, dropSettings))
-                {
+        for ( int i = 0; i < CarriedItems.Count; i++ ) {
+            if ( CarriedItems[i].dropOnGroundHit ) {
+                if ( DropCarriedItemAtIndex( i , dropSettings ) ) {
                     i--;
                 }
             }
         }
     }
-
 }

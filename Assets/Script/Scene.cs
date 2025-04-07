@@ -55,7 +55,7 @@ namespace WrenUtils
 
             if ( God.wren != null ) {
 
-                God.wren.parameters.Load( physicsParams );
+                God.wren.parameters.LoadPhysics( physicsParams );
 
                 SetWrenStartPosition( loadedFromPortal );
 

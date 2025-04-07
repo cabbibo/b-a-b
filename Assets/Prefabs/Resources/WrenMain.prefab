@@ -1393,13 +1393,31 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0
         inSlope: 0
         outSlope: 0
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.13785374
+        value: 0.26050317
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.99223304
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
@@ -20154,13 +20172,31 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0
         inSlope: 0
         outSlope: 0
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.13785374
+        value: 0.26050317
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.99223304
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
@@ -26222,6 +26258,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   input: {fileID: 6084063050993218892}
   wren: {fileID: 6951865465235407638}
+  currentParams: {fileID: 0}
   leftWing: {fileID: 319042053071235700}
   rightWing: {fileID: 1491813302948919549}
   leftWingPivot: {fileID: 452547206930341306}
@@ -26230,6 +26267,7 @@ MonoBehaviour:
   terrainCollider: {fileID: 0}
   terrain: {fileID: 0}
   showDebugForces: 0
+  name: 
   swapLR: 0
   invert: 0
   lockX: 0
@@ -26561,6 +26599,7 @@ MonoBehaviour:
   FeetCarriedItems: 
   lineRendererL: {fileID: 8915306664602239703}
   lineRendererR: {fileID: 270965686109484110}
+  carryingLineResolution: 30
 --- !u!114 &7513889539506830256
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26617,17 +26656,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wren: {fileID: 6951865465235407638}
-  paramFiles:
-  - fullTest1
-  - fullTest2
-  - fullTestLessTwistNoRighting
-  - fullTestNoRighting
-  - wrenTutorialIsland
-  - wrenTutorialSequence
-  - wrenTutorialSequence_LeftRight
-  - wrenTutorialSequence_Swoop
-  - wrenTutorialSequence_UpDown
-  paramSetName: wrenTutorialSequence_LeftRight
+  physicsParams:
+  - {fileID: 11400000, guid: 364a6cf182b73b742b43cc85da48e940, type: 2}
+  - {fileID: 11400000, guid: 9830e1b31e4db484d9c49daf65aa689e, type: 2}
+  - {fileID: 11400000, guid: d25a511ed504ade4cbd36b2331731b61, type: 2}
+  - {fileID: 11400000, guid: 12299ed50282b3c499f5915b368d91bc, type: 2}
+  - {fileID: 11400000, guid: c25c265d98685de4db0abb14ac24f6aa, type: 2}
+  - {fileID: 11400000, guid: cde529205f443b343a449b1053ca5581, type: 2}
+  - {fileID: 11400000, guid: 15bcb5533f9f7004199e52f26af1dcb0, type: 2}
+  - {fileID: 11400000, guid: eb0508cd701708d4693c4ddf255eec6d, type: 2}
+  physicsParamsID: 0
+  physicsParamsSetName: 
+  currentPhysicsParams: {fileID: 0}
 --- !u!114 &742813609323488648
 MonoBehaviour:
   m_ObjectHideFlags: 0

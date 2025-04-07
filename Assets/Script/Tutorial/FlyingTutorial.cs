@@ -263,7 +263,7 @@ public class FlyingTutorial : TutorialCoroutine
 
 
         God.interfaceTutorial.SetBGFade( 0 );
-        God.wren.parameters.Load( upDownPhysics );
+        God.wren.parameters.LoadPhysics( upDownPhysics );
 
 
         God.wren.bird.featherMaterial = featherMainMaterial;
@@ -278,7 +278,7 @@ public class FlyingTutorial : TutorialCoroutine
 
 
         God.wren.bird.featherMaterial = featherMainMaterial;
-        God.wren.parameters.Load( swoopPhysics );
+        God.wren.parameters.LoadPhysics( swoopPhysics );
 
         yield return SwoopSequence();
 
@@ -287,9 +287,9 @@ public class FlyingTutorial : TutorialCoroutine
         yield return StopSequence();
 
         // up down feels bad
-        //  God.wren.parameters.Load("wrenTutorialSequence_UpDown");
+        //  God.wren.parameters.LoadPhysics("wrenTutorialSequence_UpDown");
 
-        God.wren.parameters.Load( swoopPhysics );
+        God.wren.parameters.LoadPhysics( swoopPhysics );
         yield return God.interfaceTutorial.WaitWithCheat( 3 );
         yield return FlapQuickSequence();
         yield return UpDownSequence();
@@ -300,7 +300,7 @@ public class FlyingTutorial : TutorialCoroutine
 
 
         yield return God.interfaceTutorial.WaitWithCheat( 3 );
-        God.wren.parameters.Load( leftRightPhysics );
+        God.wren.parameters.LoadPhysics( leftRightPhysics );
         yield return FlapQuickSequence();
         yield return LeftRightSequence();
 
@@ -312,7 +312,7 @@ public class FlyingTutorial : TutorialCoroutine
 
         yield return God.interfaceTutorial.WaitWithCheat( 3 );
 
-        God.wren.parameters.Load( fullPhysics );
+        God.wren.parameters.LoadPhysics( fullPhysics );
         God.wren.interfaceUtils.showForces = true;
 
         yield return FreeFlightSection();
@@ -1190,7 +1190,7 @@ _______     _______ _   _ _____ ____
     public override void OnComplete()
     {
         base.OnComplete();
-        God.wren.parameters.Load( fullPhysics );
+        God.wren.parameters.LoadPhysics( fullPhysics );
         God.interfaceTutorial.TutorialSectionComplete();
         stateManager.OnTutorialEnd( this );
     }

@@ -27966,6 +27966,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   input: {fileID: 6676056819307743982}
   wren: {fileID: 9160943688313912041}
+  currentParams: {fileID: 0}
   leftWing: {fileID: 9160943687160614091}
   rightWing: {fileID: 9160943686986551155}
   leftWingPivot: {fileID: 9160943687083677970}
@@ -27974,6 +27975,7 @@ MonoBehaviour:
   terrainCollider: {fileID: 0}
   terrain: {fileID: 0}
   showDebugForces: 0
+  name: 
   swapLR: 1
   invert: 0
   lockX: 0
@@ -28305,6 +28307,7 @@ MonoBehaviour:
   FeetCarriedItems: 
   lineRendererL: {fileID: 0}
   lineRendererR: {fileID: 0}
+  carryingLineResolution: 30
 --- !u!114 &7282418919974470726
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28361,18 +28364,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wren: {fileID: 9160943688313912041}
-  paramFiles:
-  - controlSet34861
-  - controlSet45938
-  - FerController1
-  - FriendlyBird
-  - NoGravity
-  - NoGravity2
-  - SmallBird
-  - Superflight1
-  - Tutorial1
-  - TutorialWrenRippedDemo(Clone)
-  paramSetName: FerController1
+  physicsParams: []
+  physicsParamsID: 0
+  physicsParamsSetName: 
+  currentPhysicsParams: {fileID: 0}
 --- !u!114 &3856516255870990745
 MonoBehaviour:
   m_ObjectHideFlags: 0

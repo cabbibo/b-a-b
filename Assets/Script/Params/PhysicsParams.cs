@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using WrenUtils;
 
 
 [CreateAssetMenu( fileName = "PhysicsParams" , menuName = "WREN/PhysicsParams" , order = 1 )]
@@ -149,6 +150,16 @@ public class PhysicsParams : ScriptableObject
 
     public void CopyParamsFromWrenPamPam()
     {
+
+    }
+
+    public void OnValidate()
+    {
+        Debug.Log( "HIII" );
+
+        if ( God.wren != null ) {
+            God.wren.parameters.OnPhysicsParamsValidate( this );
+        }
 
     }
 }
