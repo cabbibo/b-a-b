@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-[CreateAssetMenu(fileName = "PhysicsParams", menuName = "WREN/PhysicsParams", order = 1)]
+[CreateAssetMenu( fileName = "PhysicsParams" , menuName = "WREN/PhysicsParams" , order = 1 )]
 public class PhysicsParams : ScriptableObject
 {
+    public string name;
+
     public bool swapLR;
     public bool invert;
     public bool lockX;
@@ -18,9 +20,7 @@ public class PhysicsParams : ScriptableObject
     public float maxAngleForYMax;
     public float maxAngleForYMaxReduction;
 
-
     public float gravityForce;
-
 
     public float slowestTwistAngle;
     public float fastestTwistAngle;
@@ -47,8 +47,6 @@ public class PhysicsParams : ScriptableObject
     public float baseSpeedDamper;
 
 
-
-
     public float closeForwardBoostVal;
     public float thrustForceMultiplier;
 
@@ -56,8 +54,6 @@ public class PhysicsParams : ScriptableObject
     public float straightLiftForce;
 
     public float velMatchMultiplier;
-
-
 
 
     public float tuckAddToGravityVal;
@@ -79,8 +75,6 @@ public class PhysicsParams : ScriptableObject
     public float tuckReduceUpdraftVal;
 
 
-
-
     public float horizonRightingForceVal;
     public float rightingForce;
     public float rightingDependentOnNotTouchingVal;
@@ -91,7 +85,6 @@ public class PhysicsParams : ScriptableObject
 
 
     public float pushingBackThrustForceCorrector;
-
 
 
     public float closestHeight;
@@ -129,7 +122,6 @@ public class PhysicsParams : ScriptableObject
     public float carryingDragMultiplier;
 
 
-
     public float paintedWindForceMultiplier;
 
 
@@ -159,6 +151,4 @@ public class PhysicsParams : ScriptableObject
     {
 
     }
-
-
 }

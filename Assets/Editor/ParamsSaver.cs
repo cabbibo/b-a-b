@@ -44,5 +44,10 @@ public class ParamsSaver : Editor
         {
             myScript.NextParam();
         }
+
+        if (GUILayout.Button("Save As ScriptableOBject"))
+        {
+            myScript.SaveCurrentAsScriptableObject();
+        }
     }
 }

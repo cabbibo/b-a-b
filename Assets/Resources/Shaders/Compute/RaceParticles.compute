@@ -36,7 +36,8 @@ int _RingBufferCount;
 
 
 
-float3 cubicFromRings( float val , int id){   
+float3 cubicFromRings( float val , int id){
+    
             float3 p1 = _RingBuffer[id].pos;
             float3 f1 = _RingBuffer[id].fwd;
             float3 p2 = _RingBuffer[id+1].pos;

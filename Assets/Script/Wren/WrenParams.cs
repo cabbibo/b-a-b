@@ -1,22 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
-
 using System.Reflection;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 
 [ExecuteAlways]
 public class WrenParams : MonoBehaviour
 {
-
-
-    public Wren wren;
-    public string[] paramFiles;
-    int paramID;
+    public  Wren     wren;
+    public  string[] paramFiles;
+    private int      paramID;
 
     public string paramSetName;
 
@@ -25,29 +25,26 @@ public class WrenParams : MonoBehaviour
     {
         //print("enabled");
         paramFiles = allNames();
-        for (int i = 0; i < paramFiles.Length; i++)
-        {
-            if (paramFiles[i] == paramSetName)
-            {
+        for ( int i = 0; i < paramFiles.Length; i++ ) {
+            if ( paramFiles[i] == paramSetName ) {
                 paramID = i;
             }
         }
 
     }
+
     public void Reset()
     {
 
         paramFiles = allNames();
 
-        for (int i = 0; i < paramFiles.Length; i++)
-        {
-            if (paramFiles[i] == paramSetName)
-            {
+        for ( int i = 0; i < paramFiles.Length; i++ ) {
+            if ( paramFiles[i] == paramSetName ) {
                 paramID = i;
             }
         }
 
-        loadParams(paramID);
+        loadParams( paramID );
 
     }
 
@@ -55,81 +52,79 @@ public class WrenParams : MonoBehaviour
     public void NextParam()
     {
         paramID += 1;
-        if (paramID >= paramFiles.Length) { paramID = 0; }
+        if ( paramID >= paramFiles.Length ) {
+            paramID = 0;
+        }
+
         paramSetName = paramFiles[paramID];
-        loadParams(paramID);
+        loadParams( paramID );
     }
 
     public void PrevParam()
     {
         paramID -= 1;
-        if (paramID < 0) { paramID = paramFiles.Length - 1; }
+        if ( paramID < 0 ) {
+            paramID = paramFiles.Length - 1;
+        }
+
         paramSetName = paramFiles[paramID];
-        loadParams(paramID);
+        loadParams( paramID );
     }
 
-    public virtual void loadParams(int id)
+    public virtual void loadParams( int id )
     {
-        Load(paramFiles[id]);
+        Load( paramFiles[id] );
     }
-
-
 
 
     public void SaveNewParamSet()
     {
         paramID = paramFiles.Length;
-        for (int i = 0; i < paramFiles.Length; i++)
-        {
-            if (paramFiles[i] == paramSetName)
-            {
+        for ( int i = 0; i < paramFiles.Length; i++ ) {
+            if ( paramFiles[i] == paramSetName ) {
                 return;
             }
         }
-        Save(paramSetName);
+
+        Save( paramSetName );
         paramFiles = allNames();
     }
 
-    public void LoadParamSet(string name)
+    public void LoadParamSet( string name )
     {
-        print("LOADING");
+        print( "LOADING" );
         paramSetName = name;
         Load();
     }
 
 
-
-
     public void Load()
     {
-        for (int i = 0; i < paramFiles.Length; i++)
-        {
-            if (paramFiles[i] == paramSetName)
-            {
+        for ( int i = 0; i < paramFiles.Length; i++ ) {
+            if ( paramFiles[i] == paramSetName ) {
                 paramID = i;
             }
         }
 
-        Load(paramFiles[paramID]);
+        Load( paramFiles[paramID] );
     }
 
     public void Save()
     {
-        Save(paramSetName);
+        Save( paramSetName );
     }
 
 
-
-    public MechanicParams GetWrenMechanics()
+    public PhysicsParams GetWrenMechanics()
     {
 
-        MechanicParams PamPam;
-        PamPam = new MechanicParams();
+        PhysicsParams PamPam;
+        PamPam = new PhysicsParams();
 
         // loop through every parameter in MechanicsParams and set it to the corresponding value in WrenPhysics
-        for (int i = 0; i < PamPam.GetType().GetFields().Length; i++)
-        {
-            PamPam.GetType().GetField(PamPam.GetType().GetFields()[i].Name).SetValue(PamPam, wren.physics.GetType().GetField(PamPam.GetType().GetFields()[i].Name).GetValue(wren.physics));
+        for ( int i = 0; i < PamPam.GetType().GetFields().Length; i++ ) {
+            PamPam.GetType().GetField( PamPam.GetType().GetFields()[i].Name ).SetValue( PamPam ,
+                wren.physics.GetType().GetField( PamPam.GetType().GetFields()[i].Name ).GetValue( wren.physics ) );
         }
 
 
@@ -138,85 +133,142 @@ public class WrenParams : MonoBehaviour
     }
 
 
-
-    public void SetWrenMechanics(MechanicParams PamPam)
+    public void SetWrenMechanics( PhysicsParams PamPam )
     {
 
 
         // loop through every parameter in MechanicsParams and set it to the corresponding value in WrenPhysics
-        for (int i = 0; i < PamPam.GetType().GetFields().Length; i++)
-        {
+        for ( int i = 0; i < PamPam.GetType().GetFields().Length; i++ ) {
             //print(PamPam.GetType().GetFields()[i].Name);
-            if (PamPam.GetType().GetFields()[i].Name == "lockX")
-            {
+            if ( PamPam.GetType().GetFields()[i].Name == "lockX" ) {
                 //                print("print lockX");
                 //print(PamPam.GetType().GetFields()[i].GetValue(PamPam));
 
             }
 
             //print(PamPam.GetType().GetFields()[i].Name);
-            if (PamPam.GetType().GetFields()[i].Name == "lockY")
-            {
+            if ( PamPam.GetType().GetFields()[i].Name == "lockY" ) {
                 // print("print lockY");
                 //print(PamPam.GetType().GetFields()[i].GetValue(PamPam));
 
             }
 
-            wren.physics.GetType().GetField(PamPam.GetType().GetFields()[i].Name).SetValue(wren.physics, PamPam.GetType().GetFields()[i].GetValue(PamPam));
+            print( wren );
+            print( wren.physics );
+
+            print( PamPam.GetType().GetFields()[i].Name );
+
+            wren.physics.GetType().GetField( PamPam.GetType().GetFields()[i].Name ).SetValue( wren.physics ,
+                PamPam.GetType().GetFields()[i].GetValue( PamPam ) );
         }
 
 
     }
 
-    public void Save(string name)
+    public void SetWrenMechanicsFromOld( MechanicParams PamPam )
     {
 
-        MechanicParams PamPam = GetWrenMechanics();
+
+        // loop through every parameter in MechanicsParams and set it to the corresponding value in WrenPhysics
+        for ( int i = 0; i < PamPam.GetType().GetFields().Length; i++ ) {
+            //print(PamPam.GetType().GetFields()[i].Name);
+            if ( PamPam.GetType().GetFields()[i].Name == "lockX" ) {
+                //                print("print lockX");
+                //print(PamPam.GetType().GetFields()[i].GetValue(PamPam));
+
+            }
+
+            //print(PamPam.GetType().GetFields()[i].Name);
+            if ( PamPam.GetType().GetFields()[i].Name == "lockY" ) {
+                // print("print lockY");
+                //print(PamPam.GetType().GetFields()[i].GetValue(PamPam));
+
+            }
+
+            wren.physics.GetType().GetField( PamPam.GetType().GetFields()[i].Name ).SetValue( wren.physics ,
+                PamPam.GetType().GetFields()[i].GetValue( PamPam ) );
+        }
 
 
-        BinaryFormatter bf = new BinaryFormatter();
-        FileStream file = File.Create(fullName(name));
-        bf.Serialize(file, PamPam);
+    }
+
+    public void Save( string name )
+    {
+
+        var PamPam = GetWrenMechanics();
+
+
+        var bf = new BinaryFormatter();
+        var file = File.Create( fullName( name ) );
+        bf.Serialize( file , PamPam );
         file.Close();
 
     }
 
-    public void Load(string name)
+
+    public void SaveCurrentAsScriptableObject()
     {
-        if (File.Exists(fullName(name)))
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Open(fullName(name), FileMode.Open);
-            MechanicParams PamPam = (MechanicParams)bf.Deserialize(file);
+
+
+        var PamPam = GetWrenMechanics();
+
+#if UNITY_EDITOR
+
+        AssetDatabase.CreateAsset( PamPam , "Assets/Resources/Parameters/Physics/" + paramSetName + ".asset" );
+        AssetDatabase.SaveAssets();
+
+#endif
+        /* BinaryFormatter bf = new BinaryFormatter();
+         FileStream file = File.Create(fullName(name));
+         bf.Serialize(file, PamPam);
+         file.Close();*/
+
+    }
+
+
+    public void LoadPhysicsParams( PhysicsParams pamPam )
+    {
+        paramSetName = pamPam.name;
+        Load( pamPam );
+    }
+
+    public void Load( PhysicsParams pamPam )
+    {
+        paramSetName = pamPam.name;
+        SetWrenMechanics( pamPam );
+    }
+
+    public void Load( string name )
+    {
+        if ( File.Exists( fullName( name ) ) ) {
+            var bf = new BinaryFormatter();
+            var file = File.Open( fullName( name ) , FileMode.Open );
+            var PamPam_M = (MechanicParams)bf.Deserialize( file );
             file.Close();
-            SetWrenMechanics(PamPam);
+            SetWrenMechanicsFromOld( PamPam_M );
 
 
             paramSetName = name;
 
             paramFiles = allNames();
             bool found = false;
-            for (int i = 0; i < paramFiles.Length; i++)
-            {
-                if (paramFiles[i] == name)
-                {
+            for ( int i = 0; i < paramFiles.Length; i++ ) {
+                if ( paramFiles[i] == name ) {
                     //                    print("FOUND");
                     paramID = i;
                     found = true;
                 }
             }
 
-            if (!found)
-            {
-                print("NOT FOUND");
-                print(name);
-                Debug.LogError("paramID not found   ");
+            if ( !found ) {
+                print( "NOT FOUND" );
+                print( name );
+                Debug.LogError( "paramID not found   " );
             }
         }
-        else
-        {
+        else {
 
-            print("NO FILE");
+            print( "NO FILE" );
 
         }
 
@@ -227,7 +279,7 @@ public class WrenParams : MonoBehaviour
         return Application.streamingAssetsPath + "/mechanics/";
     }
 
-    public string fullName(string n)
+    public string fullName( string n )
     {
         return baseName() + n + ".wren";
     }
@@ -235,40 +287,51 @@ public class WrenParams : MonoBehaviour
     public string[] allNames()
     {
         //        print("LOADING111");
-        DirectoryInfo dir = new DirectoryInfo(baseName());
-        FileInfo[] info = dir.GetFiles("*.*");
-        List<string> paramNames = new List<string>();///sting paramNames = new string[ info.Length ];
+        var dir = new DirectoryInfo( baseName() );
+        var info = dir.GetFiles( "*.*" );
+        var paramNames = new List<string>(); ///sting paramNames = new string[ info.Length ];
 
         //      print("LOADING");
 
 
-        foreach (FileInfo f in info)
-        {
+        foreach (var f in info) {
 
-            string[] s = f.Name.Split(new string[] { ".wren" }, System.StringSplitOptions.None);//);//, StringSplitOptions.None));
-            string[] s2 = f.Name.Split(new string[] { ".meta" }, System.StringSplitOptions.None);//);//, StringSplitOptions.None));
-                                                                                                 //print( f.Name );
-                                                                                                 //print( s.Length );
-                                                                                                 //print(s2.Length);
-                                                                                                 //print( s[0]);
+            string[] s = f.Name.Split( new string[] { ".wren" } ,
+                System.StringSplitOptions.None ); //);//, StringSplitOptions.None));
+            string[] s2 = f.Name.Split( new string[] { ".meta" } ,
+                System.StringSplitOptions.None ); //);//, StringSplitOptions.None));
+            //print( f.Name );
+            //print( s.Length );
+            //print(s2.Length);
+            //print( s[0]);
 
 
-
-            if (s2.Length == 1)
-            {
-                paramNames.Add(s[0]);
+            if ( s2.Length == 1 ) {
+                paramNames.Add( s[0] );
             }
         }
 
         //        print(paramNames.Count);
 
-        return paramNames.ToArray();//new string[ info.Length ];
+        return paramNames.ToArray(); //new string[ info.Length ];
+
+
+    }
+
+
+    public void CopyParamsToScriptableObjects()
+    {
+        //print("Copying params to scriptable objects");
+
+        string[] names = allNames();
+        for ( int i = 0; i < names.Length; i++ ) {
+            Load( names[i] );
+            //CopyToScriptableObject();
+        }
 
 
     }
 }
-
-
 
 
 [System.Serializable]
@@ -315,8 +378,6 @@ public class MechanicParams
     public float baseSpeedDamper;
 
 
-
-
     public float closeForwardBoostVal;
     public float thrustForceMultiplier;
 
@@ -324,8 +385,6 @@ public class MechanicParams
     public float straightLiftForce;
 
     public float velMatchMultiplier;
-
-
 
 
     public float tuckAddToGravityVal;
@@ -347,8 +406,6 @@ public class MechanicParams
     public float tuckReduceUpdraftVal;
 
 
-
-
     public float horizonRightingForceVal;
     public float rightingForce;
     public float rightingDependentOnNotTouchingVal;
@@ -359,7 +416,6 @@ public class MechanicParams
 
 
     public float pushingBackThrustForceCorrector;
-
 
 
     public float closestHeight;
@@ -397,7 +453,6 @@ public class MechanicParams
     public float carryingDragMultiplier;
 
 
-
     public float paintedWindForceMultiplier;
 
 
@@ -422,16 +477,12 @@ public class MechanicParams
     public float waveLiftForceMultiplier;
     public float oceanToFlatOnExit;
     public float velocityReductionOnEnterWater;
-
-
-
 }
 
 
 [System.Serializable]
 public class GeneralWrenParams
 {
-
     public bool canHover;
     public bool canBoost;
     public bool canPing;
@@ -443,15 +494,12 @@ public class GeneralWrenParams
     public bool canRewind;
 
     public bool canCarry;
-
 }
-
 
 
 [System.Serializable]
 public class GrowthParams
 {
-
     public float staminaCooldownTime;
     public float staminaRefillSpeed;
 
@@ -464,5 +512,4 @@ public class GrowthParams
     public int crystalsLostPerRewind;
 
     public int crystalsLostWhileCarrying;
-
 }

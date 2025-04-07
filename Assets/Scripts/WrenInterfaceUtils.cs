@@ -36,6 +36,7 @@ public class WrenInterfaceUtils : MonoBehaviour
     public InterfacePointer interfacePointer;
 
     public WrenCompass wrenCompass;
+    public StaminaBar staminaBar;
 
     public int crystalsSpentPerPing = 10;
 
@@ -100,14 +101,14 @@ public class WrenInterfaceUtils : MonoBehaviour
     public void PingAll()
     {
 
-        for (int i = 0; i < interfaceRings.Length; i++)
+        /*for (int i = 0; i < interfaceRings.Length; i++)
         {
             PingRing(i);
-        }
+        }*/
 
         interfacePointer.PingAll();
 
-        PingCompass();
+        // PingCompass();
     }
 
     public void TurnOnRing(int ring)

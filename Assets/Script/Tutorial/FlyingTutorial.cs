@@ -10,24 +10,20 @@ using UnityEngine.UI;
 using WrenUtils;
 
 #if UNITY_EDITOR
-
 using UnityEditor;
-
-
 
 
 #endif
 
 public class FlyingTutorial : TutorialCoroutine
 {
-
     public bool speedRun;
 
     public float timeBetweenStates = 1f;
 
-    public float waitTimeInFirstShots = .1f;
+    public float waitTimeInFirstShots  = .1f;
     public float waitTimeInFlightSpace = .1f;
-    public float cameraLerpTime = 1f;
+    public float cameraLerpTime        = 1f;
 
     public float staminaCutoff = .5f;
 
@@ -41,6 +37,12 @@ public class FlyingTutorial : TutorialCoroutine
     public UnityAction OnTutorialStart;
     public UnityAction OnTutorialDiveFinished;
     public UnityAction OnFreeFlightStarted;
+
+
+    public PhysicsParams upDownPhysics;
+    public PhysicsParams swoopPhysics;
+    public PhysicsParams leftRightPhysics;
+    public PhysicsParams fullPhysics;
 
 
     //  public CinematicCameraHandler cinematicCamera;
@@ -60,70 +62,59 @@ public class FlyingTutorial : TutorialCoroutine
 
     public TutorialEnder ender;
 
-    [Header("Start")]
-    public GameObject activeInTutorial;
-    public GameObject activeAfterTutorial;
-    public GameObject cloudParticles;
+    [Header( "Start" )] public GameObject activeInTutorial;
+    public                     GameObject activeAfterTutorial;
+    public                     GameObject cloudParticles;
 
 
-
-    [Header("Cameras")]
-    public CinematicCamera cameraInsideCloseup;
-    public CinematicCamera cameraCloseBack;
-    public CinematicCamera cameraFarBack;
+    [Header( "Cameras" )] public CinematicCamera cameraInsideCloseup;
+    public                       CinematicCamera cameraCloseBack;
+    public                       CinematicCamera cameraFarBack;
 
 
+    [Header( "Tooltip Cards" )] public CanvasGroup     groupCard;
+    public                             CanvasGroup     groupXToContinue;
+    public                             TextMeshProUGUI cardTitle;
+    public                             TextMeshProUGUI cardText;
+    public                             GameObject      cardFlyOnGround;
 
-    [Header("Tooltip Cards")]
-    public CanvasGroup groupCard;
-    public CanvasGroup groupXToContinue;
-    public TextMeshProUGUI cardTitle;
-    public TextMeshProUGUI cardText;
-    public GameObject cardFlyOnGround;
-
-    [Header("Ending")]
-    public CanvasGroup groupEnd;
+    [Header( "Ending" )] public CanvasGroup groupEnd;
     //float _lastSequenceTime;
 
 
     public WeatherManager weatherManager;
-    public Material featherStartMaterial;
-    public Material featherMainMaterial;
-
-
-
+    public Material       featherStartMaterial;
+    public Material       featherMainMaterial;
 
 
     public GameObject hitTarget;
-    public float hitTargetRadius = 20;
-    public float moveTowardsTargetForwardMultiplier = 100;
-
+    public float      hitTargetRadius                    = 20;
+    public float      moveTowardsTargetForwardMultiplier = 100;
 
 
     public float amountProgressPerHit = .3f;
 
 
+    private static FlyingTutorial _instance;
 
-    static FlyingTutorial _instance;
     public static FlyingTutorial Instance
     {
         get
         {
-            if (!_instance)
+            if ( !_instance ) {
                 _instance = FindObjectOfType<FlyingTutorial>();
+            }
+
             return _instance;
         }
     }
-
-
-
 
 
     public PostParameters preSplosionPostParameters;
     public PostParameters postSplosionPostParameters;
 
 
-    void Update()
+    private void Update()
     {
 
         God.interfaceTutorial.fade.transform.position = God.camera.transform.position;
@@ -132,51 +123,35 @@ public class FlyingTutorial : TutorialCoroutine
     }
 
 
-
-
     public override bool ConditionsForCompleted()
     {
         return God.wrenCanDo.hasLearnedFlight;
     }
 
 
-
-
-
-
-
-
-
-
-
     /**
-          _____ _   _ _____                              
-         |_   _| | | | ____|                             
-           | | | |_| |  _|                               
-           | | |  _  | |___                              
-           |_| |_|_|_|_____| _   _   _    _              
-            / \  / ___|_   _| | | | / \  | |             
-           / _ \| |     | | | | | |/ _ \ | |             
-          / ___ \ |___  | | | |_| / ___ \| |___          
-         /_/__ \_\____|_|_|_ \___/_/__ \_\_____|__ _____ 
+          _____ _   _ _____
+         |_   _| | | | ____|
+           | | | |_| |  _|
+           | | |  _  | |___
+           |_| |_|_|_|_____| _   _   _    _
+            / \  / ___|_   _| | | | / \  | |
+           / _ \| |     | | | | | |/ _ \ | |
+          / ___ \ |___  | | | |_| / ___ \| |___
+         /_/__ \_\____|_|_|_ \___/_/__ \_\_____|__ _____
          / ___|| ____/ _ \| | | | ____| \ | |/ ___| ____|
-         \___ \|  _|| | | | | | |  _| |  \| | |   |  _|  
-          ___) | |__| |_| | |_| | |___| |\  | |___| |___ 
+         \___ \|  _|| | | | | | |  _| |  \| | |   |  _|
+          ___) | |__| |_| | |_| | |___| |\  | |___| |___
          |____/|_____\__\_\\___/|_____|_| \_|\____|_____|
-                                                         
+
 */
-
-
-
-
 
     // STATE MACHINE FOR TUTORIAL
     public override IEnumerator TutorialSequence()
     {
 
         // auto takeoff
-        if (God.wren)
-        {
+        if ( God.wren ) {
             God.wren.state.TakeOff();
             God.wren.shards.SetToBodyShards();
         }
@@ -186,8 +161,7 @@ public class FlyingTutorial : TutorialCoroutine
 
         DoTutorialSequenceSetup();
 
-        print("TUTORIAL SEQUENCE START");
-
+        print( "TUTORIAL SEQUENCE START" );
 
 
         //        cinematicCamera.tutorialCameraIdx = (float)Camera.Closeup;
@@ -195,71 +169,69 @@ public class FlyingTutorial : TutorialCoroutine
         OnFirstShot();
 
 
-        print("AFterFirstShot");
+        print( "AFterFirstShot" );
 
 
-        yield return God.interfaceTutorial.WaitWithCheat(3);
+        yield return God.interfaceTutorial.WaitWithCheat( 3 );
 
 
-        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
 
 
-        print("AFTER FADE FULL GROUP");
+        print( "AFTER FADE FULL GROUP" );
 
 
-        yield return God.interfaceTutorial.WaitWithCheat(1);
+        yield return God.interfaceTutorial.WaitWithCheat( 1 );
 
 
-        print("WAITING");
+        print( "WAITING" );
 
         God.interfaceTutorial.SetControllerHint(
-            InterfaceTutorial.ControllerHint.Wiggle,
+            InterfaceTutorial.ControllerHint.Wiggle ,
             "it feels strange to be something new"
-            );
+        );
 
         yield return God.interfaceTutorial.WaitForXToContinue();
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.None);
-        print("AFTER X TO CONTINUE");
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.None );
+        print( "AFTER X TO CONTINUE" );
 
 
+        God.postController.WormHole( OnBirdBackShown );
 
-        God.postController.WormHole(OnBirdBackShown);
 
+        yield return God.interfaceTutorial.WaitWithCheat( 3 );
 
-        yield return God.interfaceTutorial.WaitWithCheat(3);
-
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Wiggle);
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Wiggle );
         God.interfaceTutorial.controllerText.text = "your feathers light as air";
         yield return God.interfaceTutorial.WaitForXToContinue();
 
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.None);
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.None );
         God.interfaceTutorial.TutorialSectionComplete();
 
 
         OnBirdZoomOutStart();
-        yield return God.interfaceTutorial.LerpCamera(cameraCloseBack, cameraFarBack, 10);
+        yield return God.interfaceTutorial.LerpCamera( cameraCloseBack , cameraFarBack , 10 );
         OnBirdZoomOutEnd();
 
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Wiggle);
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Wiggle );
         God.interfaceTutorial.controllerText.text = "wiggle your crystalline wings small bird";
 
         // yield return WaitWithCheat(waitTimeInFirstShots);
         yield return God.interfaceTutorial.WaitForXToContinue();
 
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.None);
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.None );
         God.interfaceTutorial.TutorialSectionComplete();
 
-        God.postController.WormHole(DoWrenSplosition, PostSplosion);
+        God.postController.WormHole( DoWrenSplosition , PostSplosion );
         //DoWrenSplosition();
 
 
-
-        yield return God.interfaceTutorial.WaitWithCheat(3);
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Wiggle);
+        yield return God.interfaceTutorial.WaitWithCheat( 3 );
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Wiggle );
         God.interfaceTutorial.controllerText.text = "even at your core, you are still a bird now";
         yield return God.interfaceTutorial.WaitForXToContinue();
         God.interfaceTutorial.TutorialSectionComplete();
-        God.cameraManager.cinematicManager.ReleasePriority(.1f);
+        God.cameraManager.cinematicManager.ReleasePriority( .1f );
 
         // OnRotateToFrontStart();
         //cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
@@ -274,8 +246,7 @@ public class FlyingTutorial : TutorialCoroutine
         // yield return WaitWithCheat(waitTimeInFlightSpace);
 
 
-
-        God.interfaceTutorial.SetBGFade(0);
+        God.interfaceTutorial.SetBGFade( 0 );
 
         God.wren.physics.rb.isKinematic = false;
         God.wren.physics.rb.velocity = Vector3.zero;
@@ -285,21 +256,19 @@ public class FlyingTutorial : TutorialCoroutine
         God.wren.canMove = true;
 
 
-
-
         God.wren.interfaceUtils.showStaminaRing = true;
 
 
         God.interfaceTutorial.TutorialSectionComplete();
 
 
-        God.interfaceTutorial.SetBGFade(0);
+        God.interfaceTutorial.SetBGFade( 0 );
+        God.wren.parameters.Load( upDownPhysics );
 
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
 
         God.wren.bird.featherMaterial = featherMainMaterial;
 
-        yield return God.interfaceTutorial.WaitWithCheat(1);
+        yield return God.interfaceTutorial.WaitWithCheat( 1 );
 
 
         yield return FlapSequence();
@@ -308,9 +277,8 @@ public class FlyingTutorial : TutorialCoroutine
         God.interfaceTutorial.TutorialSectionComplete();
 
 
-
         God.wren.bird.featherMaterial = featherMainMaterial;
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence_Swoop");
+        God.wren.parameters.Load( swoopPhysics );
 
         yield return SwoopSequence();
 
@@ -319,10 +287,10 @@ public class FlyingTutorial : TutorialCoroutine
         yield return StopSequence();
 
         // up down feels bad
-        //  God.wren.parameters.LoadParamSet("wrenTutorialSequence_UpDown");
+        //  God.wren.parameters.Load("wrenTutorialSequence_UpDown");
 
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence_Swoop");
-        yield return God.interfaceTutorial.WaitWithCheat(3);
+        God.wren.parameters.Load( swoopPhysics );
+        yield return God.interfaceTutorial.WaitWithCheat( 3 );
         yield return FlapQuickSequence();
         yield return UpDownSequence();
 
@@ -331,8 +299,8 @@ public class FlyingTutorial : TutorialCoroutine
         yield return StopSequence();
 
 
-        yield return God.interfaceTutorial.WaitWithCheat(3);
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence_LeftRight");
+        yield return God.interfaceTutorial.WaitWithCheat( 3 );
+        God.wren.parameters.Load( leftRightPhysics );
         yield return FlapQuickSequence();
         yield return LeftRightSequence();
 
@@ -340,55 +308,44 @@ public class FlyingTutorial : TutorialCoroutine
         God.interfaceTutorial.TutorialSectionComplete();
 
 
+        God.interfaceTutorial.SetBGFade( 0 );
 
-        God.interfaceTutorial.SetBGFade(0);
+        yield return God.interfaceTutorial.WaitWithCheat( 3 );
 
-        yield return God.interfaceTutorial.WaitWithCheat(3);
-
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence");
+        God.wren.parameters.Load( fullPhysics );
         God.wren.interfaceUtils.showForces = true;
 
         yield return FreeFlightSection();
-
 
 
         // Start free flight
         God.interfaceTutorial.TutorialSectionComplete();
 
         OnDiveInstructions();
-        yield return God.interfaceTutorial.WaitWithCheat(3);
+        yield return God.interfaceTutorial.WaitWithCheat( 3 );
 
-        God.interfaceTutorial.SetBGFade(0);
+        God.interfaceTutorial.SetBGFade( 0 );
 
         // DIVe
         yield return DiveSequence();
 
-        God.interfaceTutorial.ShowProgress(0);
-        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
+        God.interfaceTutorial.ShowProgress( 0 );
+        God.interfaceTutorial.FadeFullGroupCoroutine( 1 , 0 );
 
-        God.postController.WormHole(OnComplete);
+        God.postController.WormHole( OnComplete );
 
 
     }
 
 
-
-
-
-
-
-
-
-
     /**
-____            _   _               _   _      _                     
-/ ___|  ___  ___| |_(_) ___  _ __   | | | | ___| |_ __   ___ _ __ ___ 
+____            _   _               _   _      _
+/ ___|  ___  ___| |_(_) ___  _ __   | | | | ___| |_ __   ___ _ __ ___
 \___ \ / _ \/ __| __| |/ _ \| '_ \  | |_| |/ _ \ | '_ \ / _ \ '__/ __|
 ___) |  __/ (__| |_| | (_) | | | | |  _  |  __/ | |_) |  __/ |  \__ \
 |____/ \___|\___|\__|_|\___/|_| |_| |_| |_|\___|_| .__/ \___|_|  |___/
-                                                  |_|                  
+                                                  |_|
 */
-
     public IEnumerator BeginningWait()
     {
         yield return null;
@@ -406,24 +363,20 @@ ___) |  __/ (__| |_| | (_) | | | | |  _  |  __/ | |_) |  __/ |  \__ \
     {
 
 
-
-        God.cameraManager.cinematicManager.SetCamera(cameraInsideCloseup.info, 1);
+        God.cameraManager.cinematicManager.SetCamera( cameraInsideCloseup.info , 1 );
 
         //stateManager.SetCinematicFlightTutorialState();
 
         God.postController.FadeIn();
 
-        God.interfaceTutorial.ShowContinue(false);
+        God.interfaceTutorial.ShowContinue( false );
         God.interfaceTutorial.ShowText();
 
-        God.interfaceTutorial.ShowProgress(0);
-        God.interfaceTutorial.SetBGFade(0);
+        God.interfaceTutorial.ShowProgress( 0 );
+        God.interfaceTutorial.SetBGFade( 0 );
 
         //God.interfaceTutorial.groupSticks.SetActive(true);
         //God.interfaceTutorial.controllerText.text = "test";
-
-
-
 
 
         God.wren.bird.featherMaterial = featherStartMaterial;
@@ -436,93 +389,42 @@ ___) |  __/ (__| |_| | (_) | | | | |  _  |  __/ | |_) |  __/ |  \__ \
         God.wren.interfaceUtils.showForces = false;
 
 
-        God.postController.SetPostParameters(preSplosionPostParameters);
+        God.postController.SetPostParameters( preSplosionPostParameters );
 
 
         OnBirdAllSetUp();
 
 
-
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    Vector3 tv1;
-
-
-
-
-
-
+    private Vector3 tv1;
 
 
     /**
-_   _          ___         ____                        ____                                       
-| | | |_ __    / _ \ _ __  |  _ \  _____      ___ __   / ___|  ___  __ _ _   _  ___ _ __   ___ ___ 
+_   _          ___         ____                        ____
+| | | |_ __    / _ \ _ __  |  _ \  _____      ___ __   / ___|  ___  __ _ _   _  ___ _ __   ___ ___
 | | | | '_ \  | | | | '__| | | | |/ _ \ \ /\ / / '_ \  \___ \ / _ \/ _` | | | |/ _ \ '_ \ / __/ _ \
 | |_| | |_) | | |_| | |    | |_| | (_) \ V  V /| | | |  ___) |  __/ (_| | |_| |  __/ | | | (_|  __/
 \___/| .__/   \___/|_|    |____/ \___/ \_/\_/ |_| |_| |____/ \___|\__, |\__,_|\___|_| |_|\___\___|
-       |_|                                                             |_|                          
+       |_|                                                             |_|
 */
-
-
     public bool placeUpOrDown;
-    IEnumerator UpDownSequence()
+
+    private IEnumerator UpDownSequence()
     {
         float t = 0;
 
 
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Forward);
-        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Forward );
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
 
 
         PlaceHitTarget();
         // ActivatePointer();
         //  hitTarget.SetActive(true);
 
-        while (t < 1)
-        {
-
+        while (t < 1) {
 
 
             // hitTarget.transform.LookAt(hitTarget.transform.position + Vector3.forward);
@@ -531,68 +433,57 @@ _   _          ___         ____                        ____
             tv1 = God.wren.transform.position - targetManager.currentTarget.transform.position;
 
             // turn wren towards target in xz plane
-            float upOrDown = Vector3.Dot(God.wren.transform.up, tv1);
-            float leftOrRight = Vector3.Dot(God.wren.transform.right, Vector3.forward);
+            float upOrDown = Vector3.Dot( God.wren.transform.up , tv1 );
+            float leftOrRight = Vector3.Dot( God.wren.transform.right , Vector3.forward );
 
 
-            God.wren.physics.AddForce(God.wren.transform.right * leftOrRight * moveTowardsTargetForwardMultiplier, God.wren.transform.position + God.wren.transform.forward);
+            God.wren.physics.AddForce( God.wren.transform.right * leftOrRight * moveTowardsTargetForwardMultiplier ,
+                God.wren.transform.position + God.wren.transform.forward );
 
 
-
-            if (upOrDown > 0)
-            {
-                God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Forward);
+            if ( upOrDown > 0 ) {
+                God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Forward );
             }
-            else
-            {
-                God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Back);
+            else {
+                God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Back );
             }
 
 
-            if (tv1.magnitude < hitTargetRadius)
-            {
+            if ( tv1.magnitude < hitTargetRadius ) {
                 t += amountProgressPerHit;
 
 
                 // only place new if not finished
-                if (t < 1)
-                {
+                if ( t < 1 ) {
 
                     // place next target
                     OnTargetHit();
 
                     // canHit = true;
 
-                    if (upOrDown > 0)
-                    {
+                    if ( upOrDown > 0 ) {
                         PlaceHitTarget();
                     }
-                    else
-                    {
+                    else {
                         PlaceHitTarget();
                     }
 
                 }
-                else
-                {
+                else {
                     DeactivatePointer();
                     targetManager.EraseAllTargets();
                 }
 
             }
-            else
-            {
+            else {
 
-                if (Vector3.Dot(God.wren.transform.forward, tv1) > 0)
-                {
+                if ( Vector3.Dot( God.wren.transform.forward , tv1 ) > 0 ) {
 
-                    if (upOrDown > 0)
-                    {
+                    if ( upOrDown > 0 ) {
                         DeactivatePointer();
                         PlaceHitTarget();
                     }
-                    else
-                    {
+                    else {
 
                         DeactivatePointer();
                         PlaceHitTarget();
@@ -603,11 +494,12 @@ _   _          ___         ____                        ____
                 //t = Mathf.Clamp01(t - Time.unscaledDeltaTime * 1.25f);
             }
 
-            God.interfaceTutorial.ShowProgress(t);
+            God.interfaceTutorial.ShowProgress( t );
             // Set back to normal;
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
                 break;
+            }
 
             yield return null;
 
@@ -617,7 +509,7 @@ _   _          ___         ____                        ____
 
         DeactivatePointer();
         targetManager.EraseAllTargets();
-        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
+        God.interfaceTutorial.FadeFullGroupCoroutine( 1 , 0 );
 
         //hitTarget.SetActive(false);
         // after wee have completed
@@ -625,34 +517,24 @@ _   _          ___         ____                        ____
     }
 
 
-
-
-
-
-
-
-
-
     /**
-______        _____   ___  ____    ____  _____ ___  _   _ _____ _   _  ____ _____ 
+______        _____   ___  ____    ____  _____ ___  _   _ _____ _   _  ____ _____
 / ___\ \      / / _ \ / _ \|  _ \  / ___|| ____/ _ \| | | | ____| \ | |/ ___| ____|
-\___ \\ \ /\ / / | | | | | | |_) | \___ \|  _|| | | | | | |  _| |  \| | |   |  _|  
-___) |\ V  V /| |_| | |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |___ 
+\___ \\ \ /\ / / | | | | | | |_) | \___ \|  _|| | | | | | |  _| |  \| | |   |  _|
+___) |\ V  V /| |_| | |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |___
 |____/  \_/\_/  \___/ \___/|_|     |____/|_____\__\_\\___/|_____|_| \_|\____|_____|
-                                                                                      
+
 */
-
-
-
     /// top
-
     public bool divingOrNot;
+
     public float hitTime;
 
     public bool canPlace;
 
     public float maxHeightAboveBelow = 4f;
-    IEnumerator SwoopSequence()
+
+    private IEnumerator SwoopSequence()
     {
         float t = 0;
 
@@ -660,93 +542,82 @@ ___) |\ V  V /| |_| | |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |__
         canPlace = true;
         divingOrNot = true;
 
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Swoop);
-        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);//StartCoroutine(FadeGroup(groupContainer, 0, 1));
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Swoop );
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 ); //StartCoroutine(FadeGroup(groupContainer, 0, 1));
 
         // ActivatePointer();
 
         divingOrNot = true;
 
-        float heightDiff = 10;//God.wren.transform.position.y - targetManager.currentTarget.transform.position.y;
-        float oHeightDiff = 10;//heightDiff;
+        float heightDiff = 10; //God.wren.transform.position.y - targetManager.currentTarget.transform.position.y;
+        float oHeightDiff = 10; //heightDiff;
 
 
-        while (t < 1)
-        {
+        while (t < 1) {
 
 
             //  hitTarget.transform.LookAt(hitTarget.transform.position + Vector3.up);
 
             // turn wren towards target in xz plane
             // float upOrDown = Vector3.Dot(God.wren.transform.up, tv1);
-            float leftOrRight = Vector3.Dot(God.wren.transform.right, Vector3.forward);
+            float leftOrRight = Vector3.Dot( God.wren.transform.right , Vector3.forward );
 
 
-            God.wren.physics.AddForce(God.wren.transform.right * leftOrRight * moveTowardsTargetForwardMultiplier, God.wren.transform.position + God.wren.transform.forward);
-
+            God.wren.physics.AddForce( God.wren.transform.right * leftOrRight * moveTowardsTargetForwardMultiplier ,
+                God.wren.transform.position + God.wren.transform.forward );
 
 
             // cant connect if not placed!
-            if (!canPlace)
-            {
+            if ( !canPlace ) {
 
 
                 tv1 = God.wren.transform.position - targetManager.currentTarget.transform.position;
                 oHeightDiff = heightDiff;
                 heightDiff = God.wren.transform.position.y - targetManager.currentTarget.transform.position.y;
 
-                if (heightDiff > 0)
-                {
-                    God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Swoop);
+                if ( heightDiff > 0 ) {
+                    God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Swoop );
                 }
-                else
-                {
-                    God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Back);
+                else {
+                    God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Back );
                 }
 
                 // make sure we arent *too* high up or *too* low
 
                 float fHeight = targetManager.currentTarget.transform.position.y;
 
-                if (fHeight > God.wren.transform.position.y + maxHeightAboveBelow)
-                {
-                    fHeight = Mathf.Lerp(fHeight, God.wren.transform.position.y + maxHeightAboveBelow, .1f);
+                if ( fHeight > God.wren.transform.position.y + maxHeightAboveBelow ) {
+                    fHeight = Mathf.Lerp( fHeight , God.wren.transform.position.y + maxHeightAboveBelow , .1f );
                 }
-                else if (fHeight < God.wren.transform.position.y - maxHeightAboveBelow)
-                {
-                    fHeight = Mathf.Lerp(fHeight, God.wren.transform.position.y - maxHeightAboveBelow, .1f);
+                else if ( fHeight < God.wren.transform.position.y - maxHeightAboveBelow ) {
+                    fHeight = Mathf.Lerp( fHeight , God.wren.transform.position.y - maxHeightAboveBelow , .1f );
                 }
 
 
                 // if (divingOrNot)
                 // {
                 targetManager.currentTarget.transform.position = new Vector3(
-                    God.wren.transform.position.x,
-                   fHeight,
+                    God.wren.transform.position.x ,
+                    fHeight ,
                     God.wren.transform.position.z
                 );
 
 
-
-
-
-
-                targetManager.currentTarget.transform.position += Vector3.Scale(God.wren.transform.forward, new Vector3(1, 0, 1)).normalized * 1.2f * Mathf.Abs(targetManager.currentTarget.transform.position.y - God.wren.transform.position.y);
+                targetManager.currentTarget.transform.position +=
+                    Vector3.Scale( God.wren.transform.forward , new Vector3( 1 , 0 , 1 ) ).normalized * 1.2f *
+                    Mathf.Abs( targetManager.currentTarget.transform.position.y - God.wren.transform.position.y );
 
                 //}
 
 
-
-                if (heightDiff < 0 && oHeightDiff > 0)
-                {
+                if ( heightDiff < 0 && oHeightDiff > 0 ) {
                     OnTargetHit();
                     t += amountProgressPerHit;
                     canPlace = true;
                     divingOrNot = false;
 
                 }
-                else if (heightDiff > 0 && oHeightDiff < 0)
-                {
+                else if ( heightDiff > 0 && oHeightDiff < 0 ) {
                     OnTargetHit();
                     t += amountProgressPerHit;
                     canPlace = true;
@@ -756,29 +627,27 @@ ___) |\ V  V /| |_| | |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |__
             }
 
 
-            if (canPlace)
-            {
-                if (Vector3.Dot(God.wren.transform.forward, Vector3.up) > .4f && !divingOrNot)
-                {
+            if ( canPlace ) {
+                if ( Vector3.Dot( God.wren.transform.forward , Vector3.up ) > .4f && !divingOrNot ) {
 
-                    PlaceSwoopTarget(1);
+                    PlaceSwoopTarget( 1 );
                     canPlace = false;
                 }
 
-                if (Vector3.Dot(God.wren.transform.forward, Vector3.up) < -.4f && divingOrNot)
-                {
-                    PlaceSwoopTarget(-1);
+                if ( Vector3.Dot( God.wren.transform.forward , Vector3.up ) < -.4f && divingOrNot ) {
+                    PlaceSwoopTarget( -1 );
                     canPlace = false;
                 }
 
             }
 
-            God.interfaceTutorial.ShowProgress(t);
+            God.interfaceTutorial.ShowProgress( t );
             // Set back to normal;
 
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
                 break;
+            }
 
 
             yield return null;
@@ -789,8 +658,7 @@ ___) |\ V  V /| |_| | |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |__
 
         DeactivatePointer();
         targetManager.EraseAllTargets();
-        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
-
+        God.interfaceTutorial.FadeFullGroupCoroutine( 1 , 0 );
 
 
         // after wee have completed
@@ -798,79 +666,53 @@ ___) |\ V  V /| |_| | |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |__
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
-_     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____ ___  _   _ _____ _   _  ____ _____ 
+_     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____ ___  _   _ _____ _   _  ____ _____
 | |   | ____|  ___|_   _|  / _ \|  _ \  |  _ \|_ _/ ___| | | |_   _| / ___|| ____/ _ \| | | | ____| \ | |/ ___| ____|
-| |   |  _| | |_    | |   | | | | |_) | | |_) || | |  _| |_| | | |   \___ \|  _|| | | | | | |  _| |  \| | |   |  _|  
-| |___| |___|  _|   | |   | |_| |  _ <  |  _ < | | |_| |  _  | | |    ___) | |__| |_| | |_| | |___| |\  | |___| |___ 
+| |   |  _| | |_    | |   | | | | |_) | | |_) || | |  _| |_| | | |   \___ \|  _|| | | | | | |  _| |  \| | |   |  _|
+| |___| |___|  _|   | |   | |_| |  _ <  |  _ < | | |_| |  _  | | |    ___) | |__| |_| | |_| | |___| |\  | |___| |___
 |_____|_____|_|     |_|    \___/|_| \_\ |_| \_\___\____|_| |_| |_|   |____/|_____\__\_\\___/|_____|_| \_|\____|_____|
-                                                                                                                    
+
 */
-
-
-
-
-
     public bool placeLeftOrRight;
-    IEnumerator LeftRightSequence()
+
+    private IEnumerator LeftRightSequence()
     {
         float t = 0;
 
 
-
-
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Forward);
-        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Forward );
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
 
 
         PlaceLRHitTarget();
 
 
-        while (t < 1)
-        {
-
+        while (t < 1) {
 
 
             tv1 = God.wren.transform.position - targetManager.currentTarget.transform.position;
 
-            targetManager.currentTarget.transform.position = new Vector3(targetManager.currentTarget.transform.position.x, God.wren.transform.position.y, targetManager.currentTarget.transform.position.z);
+            targetManager.currentTarget.transform.position = new Vector3(
+                targetManager.currentTarget.transform.position.x , God.wren.transform.position.y ,
+                targetManager.currentTarget.transform.position.z );
 
             // turn wren towards target in xz plane
-            float upOrDown = Vector3.Dot(God.wren.transform.up, tv1);
-            float leftOrRight = Vector3.Dot(God.wren.transform.right, tv1);
+            float upOrDown = Vector3.Dot( God.wren.transform.up , tv1 );
+            float leftOrRight = Vector3.Dot( God.wren.transform.right , tv1 );
 
-            if (leftOrRight > 0)
-            {
-                God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Left);
+            if ( leftOrRight > 0 ) {
+                God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Left );
             }
-            else
-            {
-                God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Right);
+            else {
+                God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Right );
             }
 
 
-            if (tv1.magnitude < hitTargetRadius)
-            {
+            if ( tv1.magnitude < hitTargetRadius ) {
                 t += amountProgressPerHit;
 
-                if (t < 1)
-                {
+                if ( t < 1 ) {
                     OnTargetHit();
                     PlaceLRHitTarget();
 
@@ -878,15 +720,13 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
 
             }
-            else
-            {
+            else {
 
 
                 // maybe need some new way here?
-                if (Vector3.Dot(God.wren.transform.forward, tv1.normalized) > .4f)
-                {
+                if ( Vector3.Dot( God.wren.transform.forward , tv1.normalized ) > .4f ) {
 
-                    print("PLACING");
+                    print( "PLACING" );
                     DeactivatePointer();
                     PlaceLRHitTarget();
                 }
@@ -894,11 +734,13 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
             }
 
-            God.interfaceTutorial.ShowProgress(t);
+            God.interfaceTutorial.ShowProgress( t );
 
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
                 break;
+            }
+
             yield return null;
 
 
@@ -907,7 +749,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
         DeactivatePointer();
         targetManager.EraseAllTargets();
 
-        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
+        God.interfaceTutorial.FadeFullGroupCoroutine( 1 , 0 );
 
 
         //  hitTarget.SetActive(false);
@@ -917,41 +759,18 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
     // set back to normal params
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
-          _____ ____  _____ _____   _____ _     ___ ____ _   _ _____   ____  _____ ____ _____ ___ ___  _   _ 
+          _____ ____  _____ _____   _____ _     ___ ____ _   _ _____   ____  _____ ____ _____ ___ ___  _   _
          |  ___|  _ \| ____| ____| |  ___| |   |_ _/ ___| | | |_   _| / ___|| ____/ ___|_   _|_ _/ _ \| \ | |
          | |_  | |_) |  _| |  _|   | |_  | |    | | |  _| |_| | | |   \___ \|  _|| |     | |  | | | | |  \| |
          |  _| |  _ <| |___| |___  |  _| | |___ | | |_| |  _  | | |    ___) | |__| |___  | |  | | |_| | |\  |
          |_|   |_| \_\_____|_____| |_|   |_____|___\____|_| |_| |_|   |____/|_____\____| |_| |___\___/|_| \_|
-                                                                                                             
+
 */
-
-
     public float maxDistanceFreeflightFromTarget = 50;
 
 
-    IEnumerator FreeFlightSection()
+    private IEnumerator FreeFlightSection()
     {
         float t = 0;
 
@@ -959,39 +778,34 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
         God.wren.physics.showDebugForces = true;
 
 
-
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Gentle);
-        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Gentle );
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
 
         PlaceFreeFlightTarget();
         // ActivatePointer();
 
-        while (t < 1)
-        {
+        while (t < 1) {
 
 
             tv1 = God.wren.transform.position - targetManager.currentTarget.transform.position;
 
-            if (tv1.magnitude > maxDistanceFreeflightFromTarget)
-            {
-                targetManager.currentTarget.transform.position = God.wren.transform.position - tv1.normalized * maxDistanceFreeflightFromTarget;
+            if ( tv1.magnitude > maxDistanceFreeflightFromTarget ) {
+                targetManager.currentTarget.transform.position =
+                    God.wren.transform.position - tv1.normalized * maxDistanceFreeflightFromTarget;
             }
 
-            if (tv1.magnitude < hitTargetRadius)
-            {
+            if ( tv1.magnitude < hitTargetRadius ) {
 
-                print("htittt");
+                print( "htittt" );
                 t += amountProgressPerHit;
 
                 OnTargetHit();
                 PlaceFreeFlightTarget();
 
             }
-            else
-            {
+            else {
 
-                if (Vector3.Dot(God.wren.transform.forward, tv1) > .4f)
-                {
+                if ( Vector3.Dot( God.wren.transform.forward , tv1 ) > .4f ) {
                     DeactivatePointer();
                     PlaceFreeFlightTarget();
                 }
@@ -1001,11 +815,12 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
                 //if (Vector3.Dot(God.wren.transform.forward, tv1) > .4f) { PlaceLRHitTarget(); }
             }
 
-            God.interfaceTutorial.ShowProgress(t);
+            God.interfaceTutorial.ShowProgress( t );
 
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
                 break;
+            }
 
             yield return null;
 
@@ -1016,8 +831,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
         DeactivatePointer();
         targetManager.EraseAllTargets();
 
-        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
-
+        God.interfaceTutorial.FadeFullGroupCoroutine( 1 , 0 );
 
 
     }
@@ -1025,116 +839,78 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
     // set back to normal params
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
-          _____ _        _    ____    ____  _____ ___  _   _ _____ _   _  ____ _____ 
+          _____ _        _    ____    ____  _____ ___  _   _ _____ _   _  ____ _____
          |  ___| |      / \  |  _ \  / ___|| ____/ _ \| | | | ____| \ | |/ ___| ____|
-         | |_  | |     / _ \ | |_) | \___ \|  _|| | | | | | |  _| |  \| | |   |  _|  
-         |  _| | |___ / ___ \|  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |___ 
+         | |_  | |     / _ \ | |_) | \___ \|  _|| | | | | | |  _| |  \| | |   |  _|
+         |  _| | |___ / ___ \|  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |___
          |_|   |_____/_/   \_\_|     |____/|_____\__\_\\___/|_____|_| \_|\____|_____|
-                                                                                     
+
 */
 
-
-
-
     // Only tells you to stop once you are out of stamina 
-
-
     public bool staminaLowHit;
-    IEnumerator FlapSequence()
+
+    private IEnumerator FlapSequence()
     {
 
 
         float t = 0;
 
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Flap);
-        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Flap );
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
 
         bool flapStart = false;
 
-        while (t < 1)
-        {
+        while (t < 1) {
 
             //            print(flapStart);
 
-            if (staminaLowHit)
-            {
+            if ( staminaLowHit ) {
 
-                God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Release2);
+                God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Release2 );
             }
-            else
-            {
-                God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Flap);
+            else {
+                God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Flap );
             }
 
-            if (God.wren.stats.stamina < staminaCutoff)
-            {
-                if (staminaLowHit == false)
-                {
+            if ( God.wren.stats.stamina < staminaCutoff ) {
+                if ( staminaLowHit == false ) {
                     t += .5f;
                     staminaLowHit = true;
                 }
             }
 
-            if (God.wren.stats.stamina > .95f)
-            {
+            if ( God.wren.stats.stamina > .95f ) {
                 staminaLowHit = false;
             }
 
 
-
             // print(flapStart);
 
-            if (God.input.l2 > .5f && God.input.r2 > .5f)
-            {
-                if (flapStart == false)
-                {
-                    God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
+            if ( God.input.l2 > .5f && God.input.r2 > .5f ) {
+                if ( flapStart == false ) {
+                    God.interfaceTutorial.FadeFullGroupCoroutine( 1 , 0 );
                     flapStart = true;
                 }
             }
-            else
-            {
+            else {
 
-                if (flapStart)
-                {
+                if ( flapStart ) {
                     // t += .1f;
                     // DO GOOD FLAP FEEDBACK here
 
-                    God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+                    God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
                     flapStart = false;
                 }
             }
 
 
-
-
-            God.interfaceTutorial.ShowProgress(t);
-            if (Input.GetKeyDown(KeyCode.Space))
+            God.interfaceTutorial.ShowProgress( t );
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
                 break;
+            }
+
             yield return null;
 
 
@@ -1143,40 +919,37 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
         DeactivatePointer();
         targetManager.EraseAllTargets();
-        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
+        God.interfaceTutorial.FadeFullGroupCoroutine( 1 , 0 );
 
     }
 
 
-
-    IEnumerator FlapQuickSequence()
+    private IEnumerator FlapQuickSequence()
     {
 
 
         float t = 0;
 
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Flap, "Flap To Gain Speed!");
-        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Flap , "Flap To Gain Speed!" );
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
 
         bool flapStart = false;
 
-        while (t < 1)
-        {
+        while (t < 1) {
 
             //            print(flapStart);
 
 
-            if (God.wren.stats.stamina < staminaCutoff)
-            {
+            if ( God.wren.stats.stamina < staminaCutoff ) {
 
                 t += 2;
             }
 
 
-
-
-            if (Input.GetKeyDown(KeyCode.Space))
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
                 break;
+            }
+
             yield return null;
 
 
@@ -1185,225 +958,148 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
         DeactivatePointer();
         targetManager.EraseAllTargets();
-        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
+        God.interfaceTutorial.FadeFullGroupCoroutine( 1 , 0 );
 
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
-          ____ _____ ___  ____    ____  _____ ___  _   _ _____ _   _  ____ _____ 
+          ____ _____ ___  ____    ____  _____ ___  _   _ _____ _   _  ____ _____
          / ___|_   _/ _ \|  _ \  / ___|| ____/ _ \| | | | ____| \ | |/ ___| ____|
-         \___ \ | || | | | |_) | \___ \|  _|| | | | | | |  _| |  \| | |   |  _|  
-          ___) || || |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |___ 
+         \___ \ | || | | | |_) | \___ \|  _|| | | | | | |  _| |  \| | |   |  _|
+          ___) || || |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |___
          |____/ |_| \___/|_|     |____/|_____\__\_\\___/|_____|_| \_|\____|_____|
-                                                                                 
+
 */
-
-
-
-
-
-
-    IEnumerator StopSequence()
+    private IEnumerator StopSequence()
     {
         float t = 0;
 
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Hold);
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Hold );
         //StartCoroutine(FadeGroup(groupContainer, 0, 1));
-        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
 
-        while (t < 1)
-        {
-            if (God.wren.physics.rb.velocity.magnitude < 2)
-            {
+        while (t < 1) {
+            if ( God.wren.physics.rb.velocity.magnitude < 2 ) {
                 t += .01f;
             }
 
-            God.interfaceTutorial.ShowProgress(t);
-            if (Input.GetKeyDown(KeyCode.Space))
+            God.interfaceTutorial.ShowProgress( t );
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
                 break;
+            }
+
             yield return null;
         }
 
-        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
+        God.interfaceTutorial.FadeFullGroupCoroutine( 1 , 0 );
 
         DeactivatePointer();
         targetManager.EraseAllTargets();
-        God.interfaceTutorial.ShowProgress(0);
+        God.interfaceTutorial.ShowProgress( 0 );
     }
 
 
-
-
-
-
-
     /**
-      ____ _____     _______   ____  _____ ____ _____ ___ ___  _   _ 
+      ____ _____     _______   ____  _____ ____ _____ ___ ___  _   _
      |  _ \_ _\ \   / / ____| / ___|| ____/ ___|_   _|_ _/ _ \| \ | |
      | | | | | \ \ / /|  _|   \___ \|  _|| |     | |  | | | | |  \| |
      | |_| | |  \ V / | |___   ___) | |__| |___  | |  | | |_| | |\  |
      |____/___|  \_/  |_____| |____/|_____\____| |_| |___\___/|_| \_|
 
 */
-
-
-
-
-    IEnumerator DiveSequence()
+    private IEnumerator DiveSequence()
     {
 
         float t = 0;
 
-        God.interfaceTutorial.SetControllerHint(InterfaceTutorial.ControllerHint.Dive);
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Dive );
         //StartCoroutine(FadeGroup(groupContainer, 0, 1));
-        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
 
-        while (t < 1)
-        {
+        while (t < 1) {
 
-            float v = Mathf.Abs(Vector3.Dot(God.wren.physics.rb.velocity, Vector3.up));
+            float v = Mathf.Abs( Vector3.Dot( God.wren.physics.rb.velocity , Vector3.up ) );
 
-            if (v > diveCutoff)
-            {
+            if ( v > diveCutoff ) {
 
-                t += diveMultiplier * Mathf.Pow((v - diveCutoff), 2);
+                t += diveMultiplier * Mathf.Pow( v - diveCutoff , 2 );
             }
 
-            God.interfaceTutorial.ShowProgress(t);
-            if (Input.GetKeyDown(KeyCode.Space))
+            God.interfaceTutorial.ShowProgress( t );
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
                 break;
+            }
+
             yield return null;
         }
 
 
-        God.interfaceTutorial.FadeFullGroupCoroutine(1, 0);
+        God.interfaceTutorial.FadeFullGroupCoroutine( 1 , 0 );
 
         DeactivatePointer();
         targetManager.EraseAllTargets();
-        God.interfaceTutorial.ShowProgress(0);
+        God.interfaceTutorial.ShowProgress( 0 );
 
 
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
-_     _ _   _   _      _                     
-| |   (_) | | | | | ___| |_ __   ___ _ __ ___ 
+_     _ _   _   _      _
+| |   (_) | | | | | ___| |_ __   ___ _ __ ___
 | |   | | | | |_| |/ _ \ | '_ \ / _ \ '__/ __|
 | |___| | | |  _  |  __/ | |_) |  __/ |  \__ \
 |_____|_|_| |_| |_|\___|_| .__/ \___|_|  |___/
-                          |_|                  
+                          |_|
 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    void OnBirdAllSetUp()
+    private void OnBirdAllSetUp()
     {
         God.wren.canMove = false;
-        God.audio.Play(God.sounds.smallSuccessSound);
+        God.audio.Play( God.sounds.smallSuccessSound );
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
     /**
-          ____  _        _    ____ _____   _____  _    ____   ____ _____ _____   _   _ _____ _     ____  _____ ____  ____  
-         |  _ \| |      / \  / ___| ____| |_   _|/ \  |  _ \ / ___| ____|_   _| | | | | ____| |   |  _ \| ____|  _ \/ ___| 
-         | |_) | |     / _ \| |   |  _|     | | / _ \ | |_) | |  _|  _|   | |   | |_| |  _| | |   | |_) |  _| | |_) \___ \ 
+          ____  _        _    ____ _____   _____  _    ____   ____ _____ _____   _   _ _____ _     ____  _____ ____  ____
+         |  _ \| |      / \  / ___| ____| |_   _|/ \  |  _ \ / ___| ____|_   _| | | | | ____| |   |  _ \| ____|  _ \/ ___|
+         | |_) | |     / _ \| |   |  _|     | | / _ \ | |_) | |  _|  _|   | |   | |_| |  _| | |   | |_) |  _| | |_) \___ \
          |  __/| |___ / ___ \ |___| |___    | |/ ___ \|  _ <| |_| | |___  | |   |  _  | |___| |___|  __/| |___|  _ < ___) |
-         |_|   |_____/_/   \_\____|_____|   |_/_/   \_\_| \_\\____|_____| |_|   |_| |_|_____|_____|_|   |_____|_| \_\____/ 
-                                                                                                                           
-*/
+         |_|   |_____/_/   \_\____|_____|   |_/_/   \_\_| \_\\____|_____| |_|   |_| |_|_____|_____|_|   |_____|_| \_\____/
 
-    void PlaceSwoopTarget(int upDown)
+*/
+    private void PlaceSwoopTarget( int upDown )
     {
-        targetManager.SetTarget(God.wren.transform.position + Vector3.forward * 50 + Vector3.up * (float)upDown * 20, 2);
+        targetManager.SetTarget( God.wren.transform.position + Vector3.forward * 50 + Vector3.up * (float)upDown * 20 ,
+            2 );
         ActivatePointer();
     }
 
 
-
-    void PlaceHitTarget()
+    private void PlaceHitTarget()
     {
 
-        float forwardOrBack = Vector3.Dot(God.wren.transform.forward, Vector3.forward) > 0 ? 1 : -1;
-        targetManager.SetTarget(God.wren.transform.position + Vector3.forward * 100 * forwardOrBack + Vector3.up * (placeUpOrDown ? 10 : -10), 1);
+        float forwardOrBack = Vector3.Dot( God.wren.transform.forward , Vector3.forward ) > 0 ? 1 : -1;
+        targetManager.SetTarget(
+            God.wren.transform.position + Vector3.forward * 100 * forwardOrBack +
+            Vector3.up * (placeUpOrDown ? 10 : -10) , 1 );
         placeUpOrDown = !placeUpOrDown;
         ActivatePointer();
     }
 
 
-    void PlaceLRHitTarget()
+    private void PlaceLRHitTarget()
     {
-        Vector3 flatWrenForward = Vector3.Scale(God.wren.transform.forward, new Vector3(1, 0, 1));
-        Vector3 flatWrenRight = Vector3.Scale(God.wren.transform.right, new Vector3(1, 0, 1));
+        var flatWrenForward = Vector3.Scale( God.wren.transform.forward , new Vector3( 1 , 0 , 1 ) );
+        var flatWrenRight = Vector3.Scale( God.wren.transform.right , new Vector3( 1 , 0 , 1 ) );
 
-        float leftOrRight = Vector3.Dot(flatWrenForward, Vector3.right);
+        float leftOrRight = Vector3.Dot( flatWrenForward , Vector3.right );
 
-        if (leftOrRight > 0)
-        {
-            targetManager.SetTarget(God.wren.transform.position + flatWrenForward * 100 + flatWrenRight * -20, 0);
+        if ( leftOrRight > 0 ) {
+            targetManager.SetTarget( God.wren.transform.position + flatWrenForward * 100 + flatWrenRight * -20 , 0 );
         }
-        else
-        {
-            targetManager.SetTarget(God.wren.transform.position + flatWrenForward * 100 + flatWrenRight * 20, 0);
+        else {
+            targetManager.SetTarget( God.wren.transform.position + flatWrenForward * 100 + flatWrenRight * 20 , 0 );
         }
 
 
@@ -1413,63 +1109,65 @@ _     _ _   _   _      _
     }
 
 
-
-    void PlaceFreeFlightTarget()
+    private void PlaceFreeFlightTarget()
     {
-        targetManager.SetTarget(God.wren.transform.position + 100 * (Vector3.Scale(God.wren.transform.forward * 3 + Random.onUnitSphere, new Vector3(1f, .2f, 1f))), 0);
+        targetManager.SetTarget(
+            God.wren.transform.position + 100 * Vector3.Scale( God.wren.transform.forward * 3 + Random.onUnitSphere ,
+                new Vector3( 1f , .2f , 1f ) ) , 0 );
         ActivatePointer();
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
-_______     _______ _   _ _____ ____  
-| ____\ \   / / ____| \ | |_   _/ ___| 
-|  _|  \ \ / /|  _| |  \| | | | \___ \ 
+_______     _______ _   _ _____ ____
+| ____\ \   / / ____| \ | |_   _/ ___|
+|  _|  \ \ / /|  _| |  \| | | | \___ \
 | |___  \ V / | |___| |\  | | |  ___) |
-|_____|  \_/  |_____|_| \_| |_| |____/ 
-                                        
+|_____|  \_/  |_____|_| \_| |_| |____/
+
 */
+    public void OnFirstShot()
+    {
+    }
 
-
-    public void OnFirstShot() { }
     public void OnBirdBackShown()
     {
         God.interfaceTutorial.TutorialSectionComplete();
         //God.interfaceTutorial.groupSticks.SetActive(false);
-        God.cameraManager.cinematicManager.SetCamera(cameraCloseBack.info, 1);
+        God.cameraManager.cinematicManager.SetCamera( cameraCloseBack.info , 1 );
     }
-    public void OnBirdZoomOutStart() { }
-    public void OnBirdZoomOutEnd() { }
-    public void OnRotateToFrontStart() { }
-    public void OnRotateToFrontEnd() { }
 
-    public void OnPushLeftInstructions() { }
-    public void OnPushRightInstructions() { }
-    public void OnHoldInstructions() { }
-    public void OnDiveInstructions() { }
+    public void OnBirdZoomOutStart()
+    {
+    }
 
+    public void OnBirdZoomOutEnd()
+    {
+    }
 
+    public void OnRotateToFrontStart()
+    {
+    }
 
+    public void OnRotateToFrontEnd()
+    {
+    }
+
+    public void OnPushLeftInstructions()
+    {
+    }
+
+    public void OnPushRightInstructions()
+    {
+    }
+
+    public void OnHoldInstructions()
+    {
+    }
+
+    public void OnDiveInstructions()
+    {
+    }
 
 
     public void DoWrenSplosition()
@@ -1478,86 +1176,24 @@ _______     _______ _   _ _____ ____
         God.wren.bird.Explode();
         God.wren.shards.SpendAllShards();
         God.wren.bird.drawSkeleton = true;
-        God.audio.Play(God.sounds.texturalHitClips);
+        God.audio.Play( God.sounds.texturalHitClips );
 
     }
 
     public void PostSplosion()
     {
 
-        God.postController.SetPostParameters(postSplosionPostParameters);
+        God.postController.SetPostParameters( postSplosionPostParameters );
     }
-
-
 
 
     public override void OnComplete()
     {
         base.OnComplete();
-        God.wren.parameters.LoadParamSet("wrenTutorialSequence");
+        God.wren.parameters.Load( fullPhysics );
         God.interfaceTutorial.TutorialSectionComplete();
-        stateManager.OnTutorialEnd(this);
+        stateManager.OnTutorialEnd( this );
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     /*
@@ -1574,37 +1210,40 @@ _______     _______ _   _ _____ ____
     // Cards
 
     // public static bool 
-    public void OnTutorialCardTriggered(CardType cardType, Transform target = null, bool pause = true)
+    public void OnTutorialCardTriggered( CardType cardType , Transform target = null , bool pause = true )
     {
-        TryShowCard(cardType, target: target, pause: pause);
+        TryShowCard( cardType , target: target , pause: pause );
     }
 
     public enum CardType
     {
-        None,
+        None ,
 
-        RevealIsland,
-        FlyCloseToGround,
+        RevealIsland ,
+        FlyCloseToGround ,
 
         // activities
-        ActivityRings, ActivityWindTunnel, ActivitySpeedGate, ActivityButterflies, ActivityBigBird,
+        ActivityRings ,
+        ActivityWindTunnel ,
+        ActivitySpeedGate ,
+        ActivityButterflies ,
+        ActivityBigBird ,
 
         // takeoff
-        TakeOff,
+        TakeOff ,
 
         // custom
-        CycleThroughTriggers = 100,
-        TutorialEnd = 101
+        CycleThroughTriggers = 100 ,
+        TutorialEnd          = 101
     }
 
-    private Dictionary<CardType, bool> _cardShown = new Dictionary<CardType, bool>();
+    private Dictionary<CardType , bool> _cardShown = new();
 
-    public void GetCardInfo(CardType type, out string title, out string text)
+    public void GetCardInfo( CardType type , out string title , out string text )
     {
         title = "";
         text = "";
-        switch (type)
-        {
+        switch (type) {
             case CardType.RevealIsland:
                 title = "Bird Island";
                 text = "Welcome to Bird Island. Fly around freely and explore.";
@@ -1649,34 +1288,40 @@ _______     _______ _   _ _____ ____
                 break;
         }
     }
-    public void TryShowCard(CardType cardType, float delay = 0, Transform target = null, bool pause = false)
+
+    public void TryShowCard( CardType cardType , float delay = 0 , Transform target = null , bool pause = false )
     {
-        if (_cardShown == null)
-            _cardShown = new Dictionary<CardType, bool>();
+        if ( _cardShown == null ) {
+            _cardShown = new Dictionary<CardType , bool>();
+        }
 
-        if (_showingCard || _cardShown.ContainsKey(cardType) && _cardShown[cardType])
+        if ( _showingCard || (_cardShown.ContainsKey( cardType ) && _cardShown[cardType]) ) {
             return;
+        }
 
-        SetCardInfo(cardType);
+        SetCardInfo( cardType );
 
         _cardShown[cardType] = true;
 
-        if (cardType == CardType.RevealIsland)
-            StartCoroutine(ShowTutorialStartCardSequence());
-        else
-            StartCoroutine(ShowCardSequence(delay, target, pause));
+        if ( cardType == CardType.RevealIsland ) {
+            StartCoroutine( ShowTutorialStartCardSequence() );
+        }
+        else {
+            StartCoroutine( ShowCardSequence( delay , target , pause ) );
+        }
     }
 
-    void SetCardInfo(CardType type)
+    private void SetCardInfo( CardType type )
     {
-        GetCardInfo(type, out string title, out string text);
+        GetCardInfo( type , out string title , out string text );
         cardTitle.text = title;
         cardText.text = text;
-        cardFlyOnGround.SetActive(type == CardType.FlyCloseToGround);
+        cardFlyOnGround.SetActive( type == CardType.FlyCloseToGround );
     }
 
-    bool _showingCard = false;
-    IEnumerator ShowCardSequence(float delay = 0, Transform target = null, bool pause = false)
+    private bool _showingCard = false;
+
+    private IEnumerator ShowCardSequence( float delay = 0 , Transform target = null , bool pause = false )
     {
         const float TIMESCALE_LOW = 0.001f;
 
@@ -1686,53 +1331,55 @@ _______     _______ _   _ _____ ____
         groupCard.alpha = 0;
         groupXToContinue.alpha = 0;
 
-        groupCard.gameObject.SetActive(true);
-        groupXToContinue.gameObject.SetActive(true);
+        groupCard.gameObject.SetActive( true );
+        groupXToContinue.gameObject.SetActive( true );
 
-        if (target)
+        if ( target ) {
             God.wren.cameraWork.objectTargeted = target;
+        }
 
-        if (delay > 0)
-            yield return God.interfaceTutorial.WaitWithCheat(delay);
+        if ( delay > 0 ) {
+            yield return God.interfaceTutorial.WaitWithCheat( delay );
+        }
 
-        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
 
         float t = 1;
-        var prevTimescale = Time.timeScale;
-        while (pause && t > 0)
-        {
+        float prevTimescale = Time.timeScale;
+        while (pause && t > 0) {
             t -= Time.unscaledDeltaTime * 1.2f;
-            Time.timeScale = Mathf.Lerp(TIMESCALE_LOW, prevTimescale, t);
+            Time.timeScale = Mathf.Lerp( TIMESCALE_LOW , prevTimescale , t );
 
             yield return null;
         }
 
         groupXToContinue.alpha = 1;
 
-        yield return God.interfaceTutorial.WaitWithCheat(0.4f);
+        yield return God.interfaceTutorial.WaitWithCheat( 0.4f );
 
         bool lastX = God.input.x;
         wait = true;
-        while (wait)
-        {
-            if (!lastX && God.input.x)
+        while (wait) {
+            if ( !lastX && God.input.x ) {
                 wait = false;
+            }
+
             lastX = God.input.x;
             yield return null;
         }
 
         t = 0;
-        while (pause && t < 1)
-        {
+        while (pause && t < 1) {
             t += Time.unscaledDeltaTime * .5f;
             groupCard.alpha = 1 - t;
-            Time.timeScale = Mathf.Lerp(TIMESCALE_LOW, prevTimescale, Mathf.Clamp01(t));
+            Time.timeScale = Mathf.Lerp( TIMESCALE_LOW , prevTimescale , Mathf.Clamp01( t ) );
 
             yield return null;
         }
 
-        if (target)
+        if ( target ) {
             God.wren.cameraWork.objectTargeted = null;
+        }
 
         Time.timeScale = 1;
         groupCard.alpha = 0;
@@ -1741,82 +1388,86 @@ _______     _______ _   _ _____ ____
         _showingCard = false;
     }
 
-    IEnumerator ShowTutorialStartCardSequence()
+    private IEnumerator ShowTutorialStartCardSequence()
     {
         _showingCard = true;
 
         groupCard.alpha = 0;
         groupXToContinue.alpha = 0;
         // cinematicCamera.mode = CinematicCameraHandler.Mode.Disabled;
-        groupXToContinue.gameObject.SetActive(true);
+        groupXToContinue.gameObject.SetActive( true );
 
-        SetCardInfo(CardType.RevealIsland);
+        SetCardInfo( CardType.RevealIsland );
 
-        groupCard.gameObject.SetActive(true);
-        groupXToContinue.gameObject.SetActive(true);
+        groupCard.gameObject.SetActive( true );
+        groupXToContinue.gameObject.SetActive( true );
 
         God.wren.physics.rb.isKinematic = true;
 
-        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1);
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
 
-        yield return God.interfaceTutorial.WaitWithCheat(2.5f);
+        yield return God.interfaceTutorial.WaitWithCheat( 2.5f );
 
         groupXToContinue.alpha = 1;
 
-        bool wait = true, lastX = God.input.x;
-        while (wait)
-        {
-            if (!lastX && God.input.x)
+        bool wait = true , lastX = God.input.x;
+        while (wait) {
+            if ( !lastX && God.input.x ) {
                 wait = false;
+            }
+
             lastX = God.input.x;
             yield return null;
         }
 
-        SetCardInfo(CardType.CycleThroughTriggers);
+        SetCardInfo( CardType.CycleThroughTriggers );
 
         //   cinematicCamera.mode = CinematicCameraHandler.Mode.Activities;
 
         groupXToContinue.alpha = 0;
-        yield return God.interfaceTutorial.WaitWithCheat(2.5f);
+        yield return God.interfaceTutorial.WaitWithCheat( 2.5f );
         groupXToContinue.alpha = 1;
 
         wait = true;
-        while (wait)
-        {
-            if (!lastX && God.input.x)
+        while (wait) {
+            if ( !lastX && God.input.x ) {
                 wait = false;
+            }
+
             lastX = God.input.x;
             yield return null;
         }
 
-        SetCardInfo(CardType.FlyCloseToGround);
+        SetCardInfo( CardType.FlyCloseToGround );
 
         groupXToContinue.alpha = 0;
-        yield return God.interfaceTutorial.WaitWithCheat(2.5f);
+        yield return God.interfaceTutorial.WaitWithCheat( 2.5f );
         groupXToContinue.alpha = 1;
 
         wait = true;
-        while (wait)
-        {
-            if (!lastX && God.input.x)
+        while (wait) {
+            if ( !lastX && God.input.x ) {
                 wait = false;
+            }
+
             lastX = God.input.x;
             yield return null;
         }
 
-        SetCardInfo(CardType.TutorialEnd);
+        SetCardInfo( CardType.TutorialEnd );
 
         //   cinematicCamera.mode = CinematicCameraHandler.Mode.TutorialEnd;
 
         groupXToContinue.alpha = 0;
-        yield return God.interfaceTutorial.WaitWithCheat(1.5f);
+        yield return God.interfaceTutorial.WaitWithCheat( 1.5f );
         groupXToContinue.alpha = 1;
 
         wait = true;
-        while (wait)
-        {
-            if (!lastX && God.input.x)
+        while (wait) {
+            if ( !lastX && God.input.x ) {
                 wait = false;
+            }
+
             lastX = God.input.x;
             yield return null;
         }
@@ -1830,34 +1481,35 @@ _______     _______ _   _ _____ ____
         _showingCard = false;
     }
 
-    public void TryEndDemo(System.Action<bool> cb = null)
+    public void TryEndDemo( System.Action<bool> cb = null )
     {
-        StartCoroutine(EndDemoSequence(cb));
+        StartCoroutine( EndDemoSequence( cb ) );
     }
-    IEnumerator EndDemoSequence(System.Action<bool> cb = null)
+
+    private IEnumerator EndDemoSequence( System.Action<bool> cb = null )
     {
         groupEnd.alpha = 1;
 
         God.wren.physics.rb.isKinematic = true;
 
         bool wait = true;
-        while (wait)
-        {
-            if (God.input.squarePressed)
-            {
+        while (wait) {
+            if ( God.input.squarePressed ) {
                 wait = false;
             }
-            if (God.input.xPressed)
-            {
+
+            if ( God.input.xPressed ) {
                 wait = false;
-                cb?.Invoke(true);
+                cb?.Invoke( true );
             }
+
             yield return null;
         }
+
         // cancel
         God.wren.physics.rb.isKinematic = false;
         groupEnd.alpha = 0;
-        cb?.Invoke(false);
+        cb?.Invoke( false );
     }
 
 
@@ -1870,51 +1522,41 @@ _______     _______ _   _ _____ ____
     */
 
 
-
     public void CheckCheats()
     {
-        if (Application.isEditor)
-        {
+        if ( Application.isEditor ) {
 
             // tab to autocomplete
-            if (tutSequence != null && Input.GetKeyDown(KeyCode.Tab))
-            {
-                StopCoroutine(tutSequence);
+            if ( tutSequence != null && Input.GetKeyDown( KeyCode.Tab ) ) {
+                StopCoroutine( tutSequence );
                 OnComplete();
                 //God.wren.PhaseShift(ender.transform.position + Vector3.down * 180);
             }
 
-            if (Input.GetKeyDown(KeyCode.LeftAlt))
-            {
+            if ( Input.GetKeyDown( KeyCode.LeftAlt ) ) {
                 // wind tunnel 1
-                if (Input.GetKeyDown(KeyCode.Alpha1))
-                {
-                    God.wren.PhaseShift(new Vector3(-5012, 183, -544));
+                if ( Input.GetKeyDown( KeyCode.Alpha1 ) ) {
+                    God.wren.PhaseShift( new Vector3( -5012 , 183 , -544 ) );
                 }
+
                 // wind tunnel 2
-                if (Input.GetKeyDown(KeyCode.Alpha2))
-                {
-                    God.wren.PhaseShift(new Vector3(-3859, 287, -1337));
+                if ( Input.GetKeyDown( KeyCode.Alpha2 ) ) {
+                    God.wren.PhaseShift( new Vector3( -3859 , 287 , -1337 ) );
                 }
+
                 // portal
-                if (Input.GetKeyDown(KeyCode.Alpha3))
-                {
-                    God.wren.PhaseShift(new Vector3(-5150, 507, -659));
+                if ( Input.GetKeyDown( KeyCode.Alpha3 ) ) {
+                    God.wren.PhaseShift( new Vector3( -5150 , 507 , -659 ) );
                 }
             }
-            if (Input.GetKeyDown(KeyCode.O))
-            {
-                TryShowCard(CardType.ActivityRings);
+
+            if ( Input.GetKeyDown( KeyCode.O ) ) {
+                TryShowCard( CardType.ActivityRings );
             }
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                _cardShown = new Dictionary<CardType, bool>();
+
+            if ( Input.GetKeyDown( KeyCode.P ) ) {
+                _cardShown = new Dictionary<CardType , bool>();
             }
         }
     }
-
 }
-
-
-
-

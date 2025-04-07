@@ -1,106 +1,99 @@
 ﻿#pragma kernel Lines
 #pragma kernel Feathers
 
-float4x4 transform; 
+float4x4 transform;
 
 RWStructuredBuffer<float3> _LineBuffer;
 
-#include "../Chunks/safeID.cginc" 
+#include "../Chunks/safeID.cginc"
 #include "../Chunks/Matrix.cginc"
 
 float3 _WrenVel;
 
-float3 cubicCurve( float t , float3  c0 , float3 c1 , float3 c2 , float3 c3 ){
+#include "../Chunks/cubicCurve.cginc"
 
-  float s  = 1 - t;
-
-  float3 v1 = c0 * ( s * s * s );
-  float3 v2 = 3 * c1 * ( s * s ) * t;
-  float3 v3 = 3 * c2 * s * ( t * t );
-  float3 v4 = c3 * ( t * t * t );
-
-  float3 value = v1 + v2 + v3 + v4;
-
-  return value;
-
+float3 cubicFromValue6(float val, float3 points[6])
+{
+    float vPP = 6;
+    #include "../Chunks/CubicInclude.cginc"
 }
 
-float3 cubicFromValue6(float val  , float3 points[6]  ){
-  float vPP = 6;
-  #include "../Chunks/CubicInclude.cginc"
+float3 cubicFromValue7(float val, float3 points[7])
+{
+    float vPP = 7;
+    #include "../Chunks/CubicInclude.cginc"
 }
 
-float3 cubicFromValue7(float val  , float3 points[7]  ){
-  float vPP = 7;
-  #include "../Chunks/CubicInclude.cginc"
+float3 cubicFromValue8(float val, float3 points[8])
+{
+    float vPP = 8;
+    #include "../Chunks/CubicInclude.cginc"
 }
 
-float3 cubicFromValue8(float val  , float3 points[8]  ){
-  float vPP = 8;
-  #include "../Chunks/CubicInclude.cginc"
-}
-
-float3 cubicFromValue9(float val  , float3 points[9]  ){
-  float vPP = 9;
-  #include "../Chunks/CubicInclude.cginc"
+float3 cubicFromValue9(float val, float3 points[9])
+{
+    float vPP = 9;
+    #include "../Chunks/CubicInclude.cginc"
 }
 
 
-float3 cubicFromValue5(float val  , float3 points[5]  ){
-  float vPP = 5;
-  #include "../Chunks/CubicInclude.cginc"
+float3 cubicFromValue5(float val, float3 points[5])
+{
+    float vPP = 5;
+    #include "../Chunks/CubicInclude.cginc"
 }
 
 
-float3 cubicFromValue3(float val  , float3 points[3]  ){
-  float vPP = 3;
-  #include "../Chunks/CubicInclude.cginc"
+float3 cubicFromValue3(float val, float3 points[3])
+{
+    float vPP = 3;
+    #include "../Chunks/CubicInclude.cginc"
 }
 
-float3 cubicLoop8( float val ,float3 points[8]){
-  float vPP = 8;
+float3 cubicLoop8(float val, float3 points[8])
+{
+    float vPP = 8;
 
-  float baseVal = val * (vPP);
-  int baseUp   = floor( baseVal );
-  int baseDown = ceil(baseVal );
-  float amount = baseVal - float(baseUp);
+    float baseVal = val * (vPP);
+    int baseUp = floor(baseVal);
+    int baseDown = ceil(baseVal);
+    float amount = baseVal - float(baseUp);
 
-  int id1 = baseUp;
-  int id3 = baseUp-1;
-  if( id3 < 0 ){ id3 += int(vPP);}
-  if( id1 < 0 ){ id1 += int(vPP);}
-
-
-  int id2 = baseDown;
-  int id4 = (baseDown +1);
-
-  id2 %= int(vPP);
-  id4 %= int(vPP);
-
-  float3 p0 = points[ id1];
-  float3 pMinus = points[id3];
-
-  float3 p1 = points[ id2];
-  float3 p2 = points[id4];
-
-  float3 v1 = .5 * ( p2 - p0 );
-  float3 v0 = .5 * ( p1 - pMinus );
-
-  
-
-  float3 c0 = p0;
-  float3 c1 = p0 + v0/3;
-  float3 c2 = p1 - v1/3;
-  float3 c3 = p1;
-
-  float3 pos = cubicCurve( amount , c0 , c1 , c2 , c3 );
-  
-  if( baseUp == baseDown ){
-    pos = points[ baseUp];
-  }
-  return pos;
+    int id1 = baseUp;
+    int id3 = baseUp - 1;
+    if (id3 < 0) { id3 += int(vPP); }
+    if (id1 < 0) { id1 += int(vPP); }
 
 
+    int id2 = baseDown;
+    int id4 = (baseDown + 1);
+
+    id2 %= int(vPP);
+    id4 %= int(vPP);
+
+
+    float3 p0 = points[id1];
+    float3 pMinus = points[id3];
+
+    float3 p1 = points[id2];
+    float3 p2 = points[id4];
+
+    float3 v1 = .5 * (p2 - p0);
+    float3 v0 = .5 * (p1 - pMinus);
+
+
+    float3 c0 = p0;
+    float3 c1 = p0 + v0 / 3;
+    float3 c2 = p1 - v1 / 3;
+    float3 c3 = p1;
+
+    float3 pos = cubicCurve(amount, c0, c1, c2, c3);
+
+    if (baseUp == baseDown)
+    {
+        pos = points[baseUp];
+    }
+    return pos;
 }
 
 int _NumScapularRows;
@@ -122,240 +115,246 @@ float4x4 _TailRight;
 
 float _ScaleMultiplier;
 
-float3 head; float3 headU; float3 headR; float3 headF;
-float3 neck; float3 neckU; float3 neckR; float3 neckF;
-float3 chest; float3 chestU; float3 chestR; float3 chestF;
-float3 spine; float3 spineU; float3 spineR; float3 spineF;
-float3 hip; float3 hipU; float3 hipR; float3 hipF;
-float3 tailBase; float3 tailBaseU; float3 tailBaseR; float3 tailBaseF;
-float3 tailLeft; float3 tailLeftU; float3 tailLeftR; float3 tailLeftF;
-float3 tailRight; float3 tailRightU; float3 tailRightR; float3 tailRightF;
-float3 tailCenter; float3 tailCenterU; float3 tailCenterR; float3 tailCenterF;
-float3 wingLeft; float3 wingLeftU; float3 wingLeftR; float3 wingLeftF;
-float3 wingRight; float3 wingRightU; float3 wingRightR; float3 wingRightF;
+float3 head;
+float3 headU;
+float3 headR;
+float3 headF;
+float3 neck;
+float3 neckU;
+float3 neckR;
+float3 neckF;
+float3 chest;
+float3 chestU;
+float3 chestR;
+float3 chestF;
+float3 spine;
+float3 spineU;
+float3 spineR;
+float3 spineF;
+float3 hip;
+float3 hipU;
+float3 hipR;
+float3 hipF;
+float3 tailBase;
+float3 tailBaseU;
+float3 tailBaseR;
+float3 tailBaseF;
+float3 tailLeft;
+float3 tailLeftU;
+float3 tailLeftR;
+float3 tailLeftF;
+float3 tailRight;
+float3 tailRightU;
+float3 tailRightR;
+float3 tailRightF;
+float3 tailCenter;
+float3 tailCenterU;
+float3 tailCenterR;
+float3 tailCenterF;
+float3 wingLeft;
+float3 wingLeftU;
+float3 wingLeftR;
+float3 wingLeftF;
+float3 wingRight;
+float3 wingRightU;
+float3 wingRightR;
+float3 wingRightF;
 
-void setFromMatrix( float4x4 mat , out float3 p , out float3 r, out float3 u  , out float3 f){
-  p = mul( mat , float4( 0, 0, 0, 1)).xyz;
-  r = _ScaleMultiplier * normalize(mul( mat , float4( 1, 0, 0, 0)).xyz);
-  u = _ScaleMultiplier * normalize(mul( mat , float4( 0, 1, 0, 0)).xyz);
-  f = _ScaleMultiplier * normalize(mul( mat , float4( 0, 0, 1, 0)).xyz);
-} 
-
-
-void SetUpValues(){
-
-  setFromMatrix(_Head,head,headR,headU,headF);
-  setFromMatrix(_Neck,neck,neckR,neckU,neckF);
-  setFromMatrix(_Chest,chest,chestR,chestU,chestF);
-  setFromMatrix(_Spine,spine,spineR,spineU,spineF);
-  setFromMatrix(_Hip,hip,hipR,hipU,hipF);
-  setFromMatrix(_TailBase,tailBase,tailBaseR,tailBaseU,tailBaseF);
-  setFromMatrix(_WingLeft,wingLeft,wingLeftR,wingLeftU,wingLeftF);
-  setFromMatrix(_WingRight,wingRight,wingRightR,wingRightU,wingRightF);
-  setFromMatrix(_TailLeft,tailLeft,tailLeftR,tailLeftU,tailLeftF);
-  setFromMatrix(_TailCenter,tailCenter,tailCenterR,tailCenterU,tailCenterF);
-  setFromMatrix(_TailRight,tailRight,tailRightR,tailRightU,tailRightF);
-
+void setFromMatrix(float4x4 mat, out float3 p, out float3 r, out float3 u, out float3 f)
+{
+    p = mul(mat, float4(0, 0, 0, 1)).xyz;
+    r = _ScaleMultiplier * normalize(mul(mat, float4(1, 0, 0, 0)).xyz);
+    u = _ScaleMultiplier * normalize(mul(mat, float4(0, 1, 0, 0)).xyz);
+    f = _ScaleMultiplier * normalize(mul(mat, float4(0, 0, 1, 0)).xyz);
 }
 
 
-float3 line1(float val ){
-
-  float3 positions[7] = {
-    head + headF * .9 - headR * .2 - headU * .3,
-    head + headF * .3 - headR * .5,
-    neck - neckR * 1 - neckF * .2,
-    wingLeft - wingLeftR * .5 + wingLeftF + wingLeftU * .2,
-    wingLeft - wingLeftR * .5 - wingLeftF + wingLeftU * .1,
-    tailBase - tailBaseR * .7,
-    tailBase - tailLeftF * 1.2 - tailLeftR * .3
-  };
-
-  return cubicFromValue7( val , positions);
-
-}
-
-float3 line2(float val ){
-
-  float3 positions[7] = {
-    head + headF * 1 - headR * .1 - headU * .13,
-    head + headF * .3 - headR * .5 + headU * .4,
-    neck - neckR * .8+ neckU * .5 - neckF * .0,
-    wingLeft - wingLeftR * .1 + wingLeftF * .6 + wingLeftU * .7,
-    wingLeft - wingLeftR * .1 - wingLeftF + wingLeftU * .6,
-    tailBase - tailBaseR * .4 + tailBaseU * .3,
-    tailBase - tailLeftF * 1.4 + tailLeftU * .1
-  };
-
-  return cubicFromValue7( val , positions);
-
-}
-
-float3 line3(float val ){
-
-  float3 positions[7] = {
-    head + headF *1.3 - headU * .2,
-    head + headF * .3 + headU * .5,
-    neck - neckF * .4+ neckU * .8,
-    chest + chestU * .8,
-    spine + spineU * .7,
-    tailBase + tailBaseU * .4,
-    tailBase - tailCenterF * 2  + tailCenterU * .2
-  };
-
-  return cubicFromValue7( val , positions);
-
-}
-
-float3 line4(float val ){
-
-  float3 positions[7] = {
-    
-    head + headF + headR * .1 - headU * .13,
-    head + headF * .3 + headR * .5 + headU * .4,
-    neck + neckR * .8+ neckU * .5 - neckF * .0,
-    wingRight + wingRightR * .1 + wingRightF* .6 + wingRightU * .7,
-    wingRight + wingRightR * .1 - wingRightF + wingRightU * .6,
-    
-    tailBase + tailBaseR * .4 + tailBaseU * .3,
-    tailBase - tailRightF * 1.4 + tailRightU * .1
-  };
-
-  return cubicFromValue7( val , positions);
-
+void SetUpValues()
+{
+    setFromMatrix(_Head, head, headR, headU, headF);
+    setFromMatrix(_Neck, neck, neckR, neckU, neckF);
+    setFromMatrix(_Chest, chest, chestR, chestU, chestF);
+    setFromMatrix(_Spine, spine, spineR, spineU, spineF);
+    setFromMatrix(_Hip, hip, hipR, hipU, hipF);
+    setFromMatrix(_TailBase, tailBase, tailBaseR, tailBaseU, tailBaseF);
+    setFromMatrix(_WingLeft, wingLeft, wingLeftR, wingLeftU, wingLeftF);
+    setFromMatrix(_WingRight, wingRight, wingRightR, wingRightU, wingRightF);
+    setFromMatrix(_TailLeft, tailLeft, tailLeftR, tailLeftU, tailLeftF);
+    setFromMatrix(_TailCenter, tailCenter, tailCenterR, tailCenterU, tailCenterF);
+    setFromMatrix(_TailRight, tailRight, tailRightR, tailRightU, tailRightF);
 }
 
 
-float3 line5(float val ){
+float3 line1(float val)
+{
+    float3 positions[7] = {
+        head + headF * .9 - headR * .2 - headU * .3,
+        head + headF * .3 - headR * .5,
+        neck - neckR * 1 - neckF * .2,
+        wingLeft - wingLeftR * .5 + wingLeftF + wingLeftU * .2,
+        wingLeft - wingLeftR * .5 - wingLeftF + wingLeftU * .1,
+        tailBase - tailBaseR * .7,
+        tailBase - tailLeftF * 1.2 - tailLeftR * .3
+    };
 
-  float3 positions[7] = {
-    head + headF +headR * .2 - headU * .2,
-    head + headF * .3 + headR * .5,
-    neck + neckR * 1  - neckF * .2,
-    wingRight +wingRightR * .5 + wingRightF + wingRightU * .2,
-    wingRight +wingRightR * .5 - wingRightF + wingRightU * .4,
-    
-    tailBase + tailBaseR * .7,
-    tailBase - tailRightF * 1.2 + tailRightR * .3
-  };
-
-  return cubicFromValue7( val , positions);
-
+    return cubicFromValue7(val, positions);
 }
 
-float3 line6(float val ){
+float3 line2(float val)
+{
+    float3 positions[7] = {
+        head + headF * 1 - headR * .1 - headU * .13,
+        head + headF * .3 - headR * .5 + headU * .4,
+        neck - neckR * .8 + neckU * .5 - neckF * .0,
+        wingLeft - wingLeftR * .1 + wingLeftF * .6 + wingLeftU * .7,
+        wingLeft - wingLeftR * .1 - wingLeftF + wingLeftU * .6,
+        tailBase - tailBaseR * .4 + tailBaseU * .3,
+        tailBase - tailLeftF * 1.4 + tailLeftU * .1
+    };
 
-  float3 positions[7] = {
-    head + headF -headU * .5 - headR * .1 ,
-    head  - headR * .6 - neckU * .5,
-    neck - neckR * .8 - neckF * .2 - neckU * .7,
-    wingLeft - wingLeftR * .1 + wingLeftF * .6 - wingLeftU *  .5,
-    wingLeft - wingLeftR  * 0 - wingLeftF * 1.4 - wingLeftU * .6,
-    hip - hipR * .6 - hipU * .3,
-    tailBase - tailLeftF * 1.2 - tailLeftR * .1- tailRightU * .2
-  };
-
-  return cubicFromValue7( val , positions);
-
+    return cubicFromValue7(val, positions);
 }
 
+float3 line3(float val)
+{
+    float3 positions[7] = {
+        head + headF * 1.3 - headU * .2,
+        head + headF * .3 + headU * .5,
+        neck - neckF * .4 + neckU * .8,
+        chest + chestU * .8,
+        spine + spineU * .7,
+        tailBase + tailBaseU * .4,
+        tailBase - tailCenterF * 2 + tailCenterU * .2
+    };
 
-float3 line7(float val ){
-
-  float3 positions[7] = {
-    head + headF - headU * .75,
-    head - headU * .9,
-    neck - neckF * .4- neckU * 1.2,
-    chest - chestU * 1.2,
-    spine - spineU * 1,
-    tailBase - tailBaseU * .4,
-    tailBase - tailCenterF * 2  - tailCenterU * .2
-  };
-
-  return cubicFromValue7( val , positions);
-
+    return cubicFromValue7(val, positions);
 }
 
+float3 line4(float val)
+{
+    float3 positions[7] = {
 
-float3 line8(float val ){
+        head + headF + headR * .1 - headU * .13,
+        head + headF * .3 + headR * .5 + headU * .4,
+        neck + neckR * .8 + neckU * .5 - neckF * .0,
+        wingRight + wingRightR * .1 + wingRightF * .6 + wingRightU * .7,
+        wingRight + wingRightR * .1 - wingRightF + wingRightU * .6,
 
-  float3 positions[7] = {
-    
-    head + headF -headU * .5 + headR * .1 ,
-    head + headR * .6 - neckU * .5,
-    neck + neckR * .8 - neckF * .2 - neckU * .7,
-    wingRight  + wingRightR * .1 + wingRightF * .6 - wingRightU * .5,
-    wingRight  + wingRightR  * 0 - wingRightF * 1.4 - wingRightU * .6,
-    hip + hipR * .6 - hipU * .3,
-    tailBase - tailRightF * 1.2 + tailRightR * .1- tailRightU * .2
-  };
+        tailBase + tailBaseR * .4 + tailBaseU * .3,
+        tailBase - tailRightF * 1.4 + tailRightU * .1
+    };
 
-  return cubicFromValue7( val , positions);
-
+    return cubicFromValue7(val, positions);
 }
 
 
+float3 line5(float val)
+{
+    float3 positions[7] = {
+        head + headF + headR * .2 - headU * .2,
+        head + headF * .3 + headR * .5,
+        neck + neckR * 1 - neckF * .2,
+        wingRight + wingRightR * .5 + wingRightF + wingRightU * .2,
+        wingRight + wingRightR * .5 - wingRightF + wingRightU * .4,
+
+        tailBase + tailBaseR * .7,
+        tailBase - tailRightF * 1.2 + tailRightR * .3
+    };
+
+    return cubicFromValue7(val, positions);
+}
+
+float3 line6(float val)
+{
+    float3 positions[7] = {
+        head + headF - headU * .5 - headR * .1,
+        head - headR * .6 - neckU * .5,
+        neck - neckR * .8 - neckF * .2 - neckU * .7,
+        wingLeft - wingLeftR * .1 + wingLeftF * .6 - wingLeftU * .5,
+        wingLeft - wingLeftR * 0 - wingLeftF * 1.4 - wingLeftU * .6,
+        hip - hipR * .6 - hipU * .3,
+        tailBase - tailLeftF * 1.2 - tailLeftR * .1 - tailRightU * .2
+    };
+
+    return cubicFromValue7(val, positions);
+}
+
+
+float3 line7(float val)
+{
+    float3 positions[7] = {
+        head + headF - headU * .75,
+        head - headU * .9,
+        neck - neckF * .4 - neckU * 1.2,
+        chest - chestU * 1.2,
+        spine - spineU * 1,
+        tailBase - tailBaseU * .4,
+        tailBase - tailCenterF * 2 - tailCenterU * .2
+    };
+
+    return cubicFromValue7(val, positions);
+}
+
+
+float3 line8(float val)
+{
+    float3 positions[7] = {
+
+        head + headF - headU * .5 + headR * .1,
+        head + headR * .6 - neckU * .5,
+        neck + neckR * .8 - neckF * .2 - neckU * .7,
+        wingRight + wingRightR * .1 + wingRightF * .6 - wingRightU * .5,
+        wingRight + wingRightR * 0 - wingRightF * 1.4 - wingRightU * .6,
+        hip + hipR * .6 - hipU * .3,
+        tailBase - tailRightF * 1.2 + tailRightR * .1 - tailRightU * .2
+    };
+
+    return cubicFromValue7(val, positions);
+}
 
 
 #define NR_THREADS 128
+
 [numthreads(NR_THREADS,1,1)]
-void Lines(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID) {
+void Lines(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID)
+{
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int whichLine = floor(pID / _NumScapularRows);
+    int idInLine = pID % _NumScapularRows;
+    float rowVal = float(idInLine) / float(_NumScapularRows);
+
+    rowVal = rowVal * rowVal * (3 - 2 * rowVal);
+    SetUpValues();
+    float3 p1 = line1(rowVal);
+    float3 p2 = line2(rowVal);
+    float3 p3 = line3(rowVal);
+    float3 p4 = line4(rowVal);
+    float3 p5 = line5(rowVal);
+    float3 p6 = line6(rowVal);
+    float3 p7 = line7(rowVal);
+    float3 p8 = line8(rowVal);
+
+    float3 pos = 0;
+    if (whichLine == 0) { pos = p1; }
+    else if (whichLine == 1) { pos = p2; }
+    else if (whichLine == 2) { pos = p3; }
+    else if (whichLine == 3) { pos = p4; }
+    else if (whichLine == 4) { pos = p5; }
+    else if (whichLine == 5) { pos = p6; }
+    else if (whichLine == 6) { pos = p7; }
+    else { pos = p8; }
 
 
-  uint pID = threadID + u3GroupID.x * NR_THREADS;
-
-  int whichLine = floor( pID / _NumScapularRows);
-  int idInLine = pID % _NumScapularRows;
-  float rowVal = float( idInLine ) / float(_NumScapularRows);
-
-  rowVal = rowVal * rowVal * (3 - 2 * rowVal);
-  SetUpValues();
-  float3 p1 = line1( rowVal );
-  float3 p2 = line2( rowVal );
-  float3 p3 = line3( rowVal );
-  float3 p4 = line4( rowVal );
-  float3 p5 = line5( rowVal );
-  float3 p6 = line6( rowVal );
-  float3 p7 = line7( rowVal );
-  float3 p8 = line8( rowVal );
-
-  float3 pos = 0;
-  if( whichLine == 0 ){ pos = p1;}
-  else if( whichLine == 1 ){ pos = p2;}
-  else if( whichLine == 2 ){ pos = p3;}
-  else if( whichLine == 3 ){ pos = p4;}
-  else if( whichLine == 4 ){ pos = p5;}
-  else if( whichLine == 5 ){ pos = p6;}
-  else if( whichLine == 6 ){ pos = p7;}
-  else{ pos = p8;}
-
-
-
-  if( pID > _NumScapularRows * 8 ){
-    pos = 0;
-    }else{
-    _LineBuffer[safeID(pID,_NumScapularRows*8)] = pos;
-  }
-  
-  
+    if (pID > _NumScapularRows * 8)
+    {
+        pos = 0;
+    }
+    else
+    {
+        _LineBuffer[safeID(pID, _NumScapularRows * 8)] = pos;
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #include "../Chunks/rotationMatrix.cginc"
@@ -369,7 +368,6 @@ int _NumScapularColumns;
 int _NumTailFeathers;
 
 
-
 #include "Assets/Resources/Shaders/Chunks/FeatherStruct.cginc"
 RWStructuredBuffer<Feather> _FeatherBuffer;
 
@@ -379,8 +377,6 @@ RWStructuredBuffer<Feather> _FeatherBuffer;
 float _Time;
 float _DT;
 float _Locked;
-
-
 
 
 float _BackAmountOverlapping;
@@ -422,7 +418,6 @@ float _ExplosionUpForce;
 float _ExplosionVelForce;
 
 
-
 float _VortexInForce;
 float _VortexCurlForce;
 float _VortexNoiseForce;
@@ -436,193 +431,147 @@ float _GroundLockHeight;
 float _GroundLockForce;
 
 
-
-
-
-
-
-
 float _TotalShardsInBody;
 float _NumShards;
 float _TmpNumShards;
 float _ONumShards;
 
 
+void body(uint id, out float3 fPos, out float3 fFwd, out float3 fUp, out float3 fScale)
+{
+    int whichLine = floor(id / (_NumScapularRows));
+    int idInLine = id % _NumScapularRows;
+    float rowVal = float(idInLine) / float(_NumScapularRows);
+    float inRowVal = float(whichLine) / float(_NumScapularColumns);
+
+    inRowVal += float(idInLine) * .001; //618f;
+    inRowVal %= 1;
+
+    float3 pos1[8] = {
+        _LineBuffer[_NumScapularRows * 0 + idInLine],
+        _LineBuffer[_NumScapularRows * 1 + idInLine],
+        _LineBuffer[_NumScapularRows * 2 + idInLine],
+        _LineBuffer[_NumScapularRows * 3 + idInLine],
+        _LineBuffer[_NumScapularRows * 4 + idInLine],
+        _LineBuffer[_NumScapularRows * 7 + idInLine],
+        _LineBuffer[_NumScapularRows * 6 + idInLine],
+        _LineBuffer[_NumScapularRows * 5 + idInLine]
+    };
+
+    float3 pos2[8] = {
+        _LineBuffer[_NumScapularRows * 0 + idInLine + 1],
+        _LineBuffer[_NumScapularRows * 1 + idInLine + 1],
+        _LineBuffer[_NumScapularRows * 2 + idInLine + 1],
+        _LineBuffer[_NumScapularRows * 3 + idInLine + 1],
+        _LineBuffer[_NumScapularRows * 4 + idInLine + 1],
+        _LineBuffer[_NumScapularRows * 7 + idInLine + 1],
+        _LineBuffer[_NumScapularRows * 6 + idInLine + 1],
+        _LineBuffer[_NumScapularRows * 5 + idInLine + 1]
+    };
+
+    float3 p = cubicLoop8(inRowVal, pos1);
+    float3 p2 = cubicLoop8(inRowVal, pos2);
+
+    float3 p1 = cubicLoop8((inRowVal + .1), pos1);
+    float3 p3 = cubicLoop8((inRowVal - .1), pos2);
+
+    //p3 -= p1;
+    // p3 = cross( -normalize(p-p2) , normalize(p3) );
+
+    float3 backDirection = (p - p2) * 100;
+    float3 leftRight = (p1 - p3) * 100;
+
+    if (length(backDirection) < .001) { backDirection = float3(0, 0, .1); }
+    if (length(leftRight) < .001) { leftRight = float3(.1, 0, 0); }
+
+    backDirection = normalize(100 * backDirection);
+    leftRight = normalize(100 * leftRight);
 
 
+    float3 up = normalize(cross(leftRight, backDirection));
+
+    if (length(up) < 100) { up = float3(0, 1, 0); }
 
 
-void body( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out float3 fScale ){
-  
-  int whichLine = floor( id / (_NumScapularRows));
-  int idInLine = id %  _NumScapularRows;
-  float rowVal = float( idInLine ) / float(_NumScapularRows);
-  float inRowVal = float( whichLine )/ float( _NumScapularColumns);
-
-  inRowVal += float(idInLine)* .001;//618f;
-  inRowVal %= 1;
-  
-  float3 pos1[8] = {
-    _LineBuffer[ _NumScapularRows * 0 + idInLine],
-    _LineBuffer[ _NumScapularRows * 1 + idInLine],
-    _LineBuffer[ _NumScapularRows * 2 + idInLine],
-    _LineBuffer[ _NumScapularRows * 3 + idInLine],
-    _LineBuffer[ _NumScapularRows * 4 + idInLine],
-    _LineBuffer[ _NumScapularRows * 7 + idInLine],
-    _LineBuffer[ _NumScapularRows * 6 + idInLine],
-    _LineBuffer[ _NumScapularRows * 5 + idInLine]
-  };
-
-  float3 pos2[8] = {   
-    _LineBuffer[ _NumScapularRows * 0 + idInLine + 1],
-    _LineBuffer[ _NumScapularRows * 1 + idInLine + 1],
-    _LineBuffer[ _NumScapularRows * 2 + idInLine + 1],
-    _LineBuffer[ _NumScapularRows * 3 + idInLine + 1],
-    _LineBuffer[ _NumScapularRows * 4 + idInLine + 1],
-    _LineBuffer[ _NumScapularRows * 7 + idInLine + 1],
-    _LineBuffer[ _NumScapularRows * 6 + idInLine + 1],
-    _LineBuffer[ _NumScapularRows * 5 + idInLine + 1]
-  };
-
-  float3 p = cubicLoop8( inRowVal ,pos1);
-  float3 p2 = cubicLoop8( inRowVal ,pos2);
-
-  float3 p1 = cubicLoop8( (inRowVal+.1) ,pos1);
-  float3 p3 = cubicLoop8( (inRowVal-.1) ,pos2);
-
-  //p3 -= p1;
-  // p3 = cross( -normalize(p-p2) , normalize(p3) );
-
-  float3 backDirection = (p-p2) * 100;
-  float3 leftRight = (p1 - p3) * 100;
-
-  if( length(backDirection) < .001 ){ backDirection = float3(0,0,.1);}
-  if( length(leftRight) < .001 ){ leftRight = float3(.1,0,0);}
-
-  backDirection = normalize(100*backDirection);
-  leftRight = normalize(100*leftRight);
-
-  
-  float3 up = normalize(cross(leftRight,backDirection));
-
-  if( length(up) < 100 ){ up = float3(0,1,0);}
+    //up = float3(0,1,0);
+    //up = normalize(up);
 
 
-  //up = float3(0,1,0);
-  //up = normalize(up);
+    float3 newBackDir = backDirection; // normalize( backDirection );
+    float3 newUp = up; //normalize(cross(leftRight,newBackDir));
+
+    //newUp = normalize(1000*cross(newBackDir,newUp));
+    //newBackDir = normalize(1000*cross(newUp,newBackDir));
+    // newBackDir = -normalize(1000*cross(newUp,newBackDir));
 
 
+    float3 scale = 5 * (.5 - abs(rowVal - .5)); //*float3( sx, sy , sz)/1;
 
-  float3 newBackDir = backDirection;// normalize( backDirection );
-  float3 newUp = up;//normalize(cross(leftRight,newBackDir));
-
-  //newUp = normalize(1000*cross(newBackDir,newUp));
-  //newBackDir = normalize(1000*cross(newUp,newBackDir));
- // newBackDir = -normalize(1000*cross(newUp,newBackDir));
-
+    fFwd = newBackDir;
+    fUp = float3(0, 1, 0); //newUp;
+    fScale = scale;
+    fPos = p;
 
 
-  
-
-  float3 scale = 5* (.5-abs(rowVal -.5));//*float3( sx, sy , sz)/1;
-  
-  fFwd =newBackDir;
-  fUp = float3(0,1,0);//newUp;
-  fScale = scale;
-  fPos = p;    
+    //fFwd += cross( fUp , fFwd ) * _BaseDirectionLeftRightNoise * (hash(float(id * 10))-.5);
+    // fFwd += fUp  * _BaseDirectionUpNoise * ((hash(float(id * 30)))-.5);
+    // fFwd += fUp  * _BackAmountOverlapping;
 
 
-  
-
-  
-  
- //fFwd += cross( fUp , fFwd ) * _BaseDirectionLeftRightNoise * (hash(float(id * 10))-.5);
- // fFwd += fUp  * _BaseDirectionUpNoise * ((hash(float(id * 30)))-.5);
- // fFwd += fUp  * _BackAmountOverlapping;
+    //fUp = -normalize(1000*cross(1000*fFwd,1000*fUp));
+    // fUp = normalize(cross(fFwd,fUp));
 
 
-  //fUp = -normalize(1000*cross(1000*fFwd,1000*fUp));
- // fUp = normalize(cross(fFwd,fUp));
-
-
-
-  // flipping to right side
-  //fUp = -normalize(cross(fFwd,fUp));
-  fScale  = (.5-abs(rowVal-.5)) * _MiddleScapularFeatherScaleMultiplier + _BaseScapularFeatherScale;// (1  * (1-lerpVal) + 4 ) ;
-  fScale  += _BaseNoiseScale * (hash(float(int(id)* 50)) - .5);// snoise(fPos * _BaseNoiseSize);
-
-
-  
-
-
-  
+    // flipping to right side
+    //fUp = -normalize(cross(fFwd,fUp));
+    fScale = (.5 - abs(rowVal - .5)) * _MiddleScapularFeatherScaleMultiplier + _BaseScapularFeatherScale;
+    // (1  * (1-lerpVal) + 4 ) ;
+    fScale += _BaseNoiseScale * (hash(float(int(id) * 50)) - .5); // snoise(fPos * _BaseNoiseSize);
 }
 
 
+void tail(uint id, out float3 fPos, out float3 fFwd, out float3 fUp, out float3 fScale)
+{
+    int bID = id - _NumScapularRows * _NumScapularColumns;
+
+    float lerpVal = float(bID) / float(_NumTailFeathers);
+
+    fPos = tailBase;
+
+    float3 up[3] = {
+        tailLeftU,
+        tailCenterU,
+        tailRightU
+    };
+
+    float3 fwd[3] = {
+        tailLeftF,
+        tailCenterF,
+        tailRightF
+    };
 
 
+    fFwd = normalize(cubicFromValue3(lerpVal, fwd));
+    fUp = normalize(cubicFromValue3(lerpVal, up));
+
+    fScale = 10;
 
 
+    //fFwd += cross( fUp , fFwd ) * _BaseDirectionLeftRightNoise * (hash(float(id * 10))-.5);
+    //fFwd += fUp  * _BaseDirectionUpNoise * ((hash(float(id * 30)))-.5);
+    //fFwd += fUp  * _BackAmountOverlapping;
 
 
-
-
-
-
-
-
-
-
-void tail( uint id , out float3 fPos , out float3 fFwd , out float3 fUp , out float3 fScale ){
-
-  int bID = id - _NumScapularRows * _NumScapularColumns;
-
-  float lerpVal = float(bID)/float(_NumTailFeathers);
-  
-  fPos = tailBase; 
-
-  float3 up[3] = { 
-    tailLeftU,
-    tailCenterU,
-    tailRightU
-  };
-
-  float3 fwd[3] = { 
-    tailLeftF,
-    tailCenterF,
-    tailRightF
-  };
-
-
-  fFwd = normalize(cubicFromValue3( lerpVal , fwd));
-  fUp = normalize(cubicFromValue3( lerpVal , up));
-
-  fScale = 10;
-
-
-  //fFwd += cross( fUp , fFwd ) * _BaseDirectionLeftRightNoise * (hash(float(id * 10))-.5);
-  //fFwd += fUp  * _BaseDirectionUpNoise * ((hash(float(id * 30)))-.5);
-  //fFwd += fUp  * _BackAmountOverlapping;
-
-
-
-  // flipping to right side
-  //fUp = -normalize(cross(fFwd,fUp));
-  fScale  = (.5-abs(lerpVal-.5)) * _MiddleTailFeatherScaleMultiplier + _BaseTailFeatherScale;// (1  * (1-lerpVal) + 4 ) ;
-  fScale  += _BaseNoiseScale * (hash(float(int(id)* 50)) - .5);// snoise(fPos * _BaseNoiseSize);
-
+    // flipping to right side
+    //fUp = -normalize(cross(fFwd,fUp));
+    fScale = (.5 - abs(lerpVal - .5)) * _MiddleTailFeatherScaleMultiplier + _BaseTailFeatherScale;
+    // (1  * (1-lerpVal) + 4 ) ;
+    fScale += _BaseNoiseScale * (hash(float(int(id) * 50)) - .5); // snoise(fPos * _BaseNoiseSize);
 }
-
-
-
 
 
 float3 _CollectionPosition;
 float _CollectionType;
-
-
-
-
 
 
 float4x4 _SpecialTarget;
@@ -631,302 +580,298 @@ float3 _ResetLocation;
 
 #include "../Chunks/nanCheckFeather.cginc"
 #define NR_THREADS 128
+
 [numthreads(NR_THREADS,1,1)]
-void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID) {
+void Feathers(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id : SV_DispatchThreadID)
+{
+    SetUpValues();
 
-  SetUpValues();
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
 
-  uint pID = threadID + u3GroupID.x * NR_THREADS;
+    Feather feather = _FeatherBuffer[pID];
+    float3 forcePos = feather.pos;
+    float3 vel = feather.vel;
 
-  Feather feather = _FeatherBuffer[pID];
-  float3 forcePos = feather.pos;
-  float3 vel = feather.vel;
+    float3 lockPos;
+    float3 lockFwd;
+    float3 lockUp;
+    float3 lockScale;
 
-  float3 lockPos;
-  float3 lockFwd;
-  float3 lockUp;
-  float3 lockScale;
+    int whichFeatherType = 0;
+    int featherColor = 0;
 
-  int whichFeatherType = 0;
-  int featherColor = 0;
-
-  if( pID < _NumScapularRows * _NumScapularColumns ){
-    whichFeatherType = 0;
-    featherColor = 4;
-    body(pID,lockPos,lockFwd,lockUp,lockScale);
-    }else{
-    whichFeatherType = 1;
-    featherColor = 1;
-    tail( pID,lockPos,lockFwd,lockUp,lockScale);
-  }
-
-
-  float3 groundPos; float3 groundNor;
-
-
-  GetTerrainData( feather.pos , groundPos , groundNor );
-
-
-
-
-  if( feather.id < _NumShards && feather.id > _TmpNumShards ){
-    feather.locked = 0;
-    feather.pos = _CollectionPosition;
-    feather.type = _CollectionType;
-  }
-
-  if( feather.id > _NumShards ){
-    vel += curlNoise( feather.pos) * 1;
-    feather.locked = 0;
-  }
-
-  float3 dif = feather.pos - lockPos;
-
-  if( feather.id < _NumShards ){
-
-    
-
-    // vortex around center 
-    if( _Locked == 0  ){
-      // noise for prettiness
-      vel += curlNoise( forcePos * _VortexNoiseSize ) * _VortexNoiseForce;//
-
-      // Towards center force
-      vel += ( chest-forcePos ) *  _VortexInForce;
-
-      // Curls around normal
-      vel += cross( normalize( chest-forcePos) , normalize(groundNor) ) * _VortexCurlForce;
+    if (pID < _NumScapularRows * _NumScapularColumns)
+    {
+        whichFeatherType = 0;
+        featherColor = 4;
+        body(pID, lockPos, lockFwd, lockUp, lockScale);
+    }
+    else
+    {
+        whichFeatherType = 1;
+        featherColor = 1;
+        tail(pID, lockPos, lockFwd, lockUp, lockScale);
     }
 
 
-
-    // vortex around special target!
-    if( _Locked == -1){
-
-      float3 sp = mul(_SpecialTarget, float4(0,0,0,1)).xyz;
-      // noise for prettiness
-      vel += curlNoise( forcePos * _VortexNoiseSize ) * _VortexNoiseForce;//
-
-      // Towards center force
-      vel += ( sp-forcePos ) *  _VortexInForce * 100;
-
-      //vel += float3(0,1,0);
-
-      // Curls around normal
-      vel += cross( normalize( sp-forcePos) , normalize(groundNor) ) * _VortexCurlForce;
-
-      vel *= .9;
+    float3 groundPos;
+    float3 groundNor;
 
 
-    }
-    
-    
-    
+    GetTerrainData(feather.pos, groundPos, groundNor);
 
-    // EXPLOSITION
-    float3 c = curlNoise( forcePos * 1 );
 
-    if( _Explosion == 1 ){
-      //vel = 0;
-      // shoot forward more
-      vel *= float3(1,0,1);
-      // Goes BOOM
-      vel += (_ExplosionVector * _ExplosionUpForce * .4  + c * _ExplosionOutForce * .2);
+    if (feather.id < _NumShards && feather.id > _TmpNumShards)
+    {
+        feather.locked = 0;
+        feather.pos = _CollectionPosition;
+        feather.type = _CollectionType;
     }
 
-
-    // The longer after jumping off, the more force towards original location
-    // but only do it if we are collected!
-
-
-    // pulling towards our bird
-    if( length(dif) < 5 ){
-      
-      vel -= dif * _ReturnToLockForce * _Locked * pow( clamp((_Time - _LockStartTime ) * _ReturnToLockTimeMultiplier,0,100) , 2 );
-      }else{
-      vel -= normalize(dif) * _ReturnToLockForce * _Locked * pow( clamp((_Time - _LockStartTime ) * _ReturnToLockTimeMultiplier,0,100) , 2 );
-    }
-    
-    
-    vel -= c * .3;
-
-
-    /*if(_Time-_LockStartTime < 1 ){
-
-      // The longer after jumping off, the more force towards original location
-      vel -= dif * _ReturnToLockForce * _Locked * pow( clamp((_Time - _LockStartTime ) * _ReturnToLockTimeMultiplier,0,1000000) , 2 );
-      vel -= c * .3;
-      }else{
-      feather.pos = lerp(feather.pos , lockPos , 1);
-      vel = 0;
-      feather.pos = lockPos;
-      // feather.locked = 1;
-      
-
-
-      //vel += _WrenVel;
-      // we are trying to return collected shards
-      //vel -= dif * .5;
-      //vel *= .9;
-    }*/
-
-
-    
-    
-    }else{
-    
-    // unlocked
-    
-    vel += curlNoise( feather.pos) * 1;
-    feather.locked = 0;
-  }
-  
-
-  
-  vel *=  (hash(float(pID)) * .6 + .4);
-  
- // vel += _WrenVel;
- 
- 
-  if( length( vel ) > 1000 ){
-    vel = normalize(vel) * 1000;
-  }
-
-
-
-
-  // adding to our force position
-  forcePos += vel * _DT * .1 ;//.001;
-
-  if( length(forcePos - lockPos) > 50){
-    forcePos = lockPos + normalize(forcePos - lockPos) * 50;
-  }
-  
-  // dampening if locked vs not locked
-  vel *= .96 - .19 * clamp(_Locked,0,1);// - .1 * clamp( returnToLockValue, 0,1);
-
-
-
-
-
-  float3 fPos = forcePos;
-
-
-  float lerpVal = clamp( 1-max(length( dif )-_LockDistance,0) * _LockLerp , 0, 1);
-
-  float3 fFwd = lerp( normalize(vel) , lockFwd , lerpVal );
-  float3 fScale = lerp( .3 * lockScale , lockScale , lerpVal );
-  
-  float3 fUp = lockUp;
-
-
-  if( _Locked < .5 ){
-    feather.locked = 0;
-  }
-
-  if( length( dif ) < _LockDistance && _Locked >= 1 && feather.id < _NumShards ){
-    feather.locked = 1;
-  }
-  
-  if( feather.locked >= .5 && _Locked >= 1){
-    fPos = lockPos;
-    fFwd = lockFwd;
-    fScale = lockScale;
-  }
-
-
-
-  /*
-
-
-  Offsetting ground
-
-  */
-  
-
-  GetTerrainData( fPos , groundPos , groundNor );
-  if( groundPos.y + _GroundLockHeight > fPos.y ){
-
-    float lVal = clamp( (groundPos.y + _GroundLockHeight - fPos.y)/_GroundLockHeight , 0 , 1);
-
-    feather.touchingGround = 1;
-
-    // uncomment to make it go back off ground
-    //fPos.y += lVal * _GroundLockForce;
-    
-    }else{
-    feather.touchingGround = 0;
-  }
-  
-
-
-  if( _ResetValue > .5  && _ResetValue < 1.5 ){
-    
-    fPos = lockPos; 
-    fUp = lockUp;
-    fFwd = lockFwd;
-    fScale = lockScale;
-    feather.ogPos = fPos;
-    //    feather.ogNor = lockFwd;
-    feather.touchingGround = 0;
-    vel = 0;
-    
-  }
-
-  if( _ResetValue > 1.5 && _ResetValue < 2.5){
-
-    // reseting at position w/ a bit of offset to give it vortex
-    float3 centerPos = _ResetLocation;
-    
-    if( _Locked == -1  ){
-      centerPos = mul(_SpecialTarget, float4(0,0,0,1)).xyz;
+    if (feather.id > _NumShards)
+    {
+        vel += curlNoise(feather.pos) * 1;
+        feather.locked = 0;
     }
 
-    fPos = centerPos + lockUp + lockFwd;  
+    float3 dif = feather.pos - lockPos;
 
-    fUp =lockUp;
-    fFwd = lockFwd;
-    fScale = lockScale;
-    feather.ogPos = lockPos;
-    //    feather.ogNor = lockFwd;
-    feather.touchingGround = 0;
-    vel = 0;
-  }
+    if (feather.id < _NumShards)
+    {
+        // vortex around center 
+        if (_Locked == 0)
+        {
+            // noise for prettiness
+            vel += curlNoise(forcePos * _VortexNoiseSize) * _VortexNoiseForce; //
 
-  if( _ResetValue>2.5){
+            // Towards center force
+            vel += (chest - forcePos) * _VortexInForce;
 
-    feather.pos += _ResetLocation;
+            // Curls around normal
+            vel += cross(normalize(chest - forcePos), normalize(groundNor)) * _VortexCurlForce;
+        }
+
+
+        // vortex around special target!
+        if (_Locked == -1)
+        {
+            float3 sp = mul(_SpecialTarget, float4(0, 0, 0, 1)).xyz;
+            // noise for prettiness
+            vel += curlNoise(forcePos * _VortexNoiseSize) * _VortexNoiseForce; //
+
+            // Towards center force
+            vel += (sp - forcePos) * _VortexInForce * 100;
+
+            //vel += float3(0,1,0);
+
+            // Curls around normal
+            vel += cross(normalize(sp - forcePos), normalize(groundNor)) * _VortexCurlForce;
+
+            vel *= .9;
+        }
+
+
+        // EXPLOSITION
+        float3 c = curlNoise(forcePos * 1);
+
+        if (_Explosion == 1)
+        {
+            //vel = 0;
+            // shoot forward more
+            vel *= float3(1, 0, 1);
+            // Goes BOOM
+            vel += (_ExplosionVector * _ExplosionUpForce * .4 + c * _ExplosionOutForce * .2);
+        }
+
+
+        // The longer after jumping off, the more force towards original location
+        // but only do it if we are collected!
+
+
+        // pulling towards our bird
+        if (length(dif) < 5)
+        {
+            vel -= dif * _ReturnToLockForce * _Locked * pow(
+                clamp((_Time - _LockStartTime) * _ReturnToLockTimeMultiplier, 0, 100), 2);
+        }
+        else
+        {
+            vel -= normalize(dif) * _ReturnToLockForce * _Locked * pow(
+                clamp((_Time - _LockStartTime) * _ReturnToLockTimeMultiplier, 0, 100), 2);
+        }
+
+
+        vel -= c * .3;
+
+
+        /*if(_Time-_LockStartTime < 1 ){
     
-  }
+          // The longer after jumping off, the more force towards original location
+          vel -= dif * _ReturnToLockForce * _Locked * pow( clamp((_Time - _LockStartTime ) * _ReturnToLockTimeMultiplier,0,1000000) , 2 );
+          vel -= c * .3;
+          }else{
+          feather.pos = lerp(feather.pos , lockPos , 1);
+          vel = 0;
+          feather.pos = lockPos;
+          // feather.locked = 1;
+          
+    
+    
+          //vel += _WrenVel;
+          // we are trying to return collected shards
+          //vel -= dif * .5;
+          //vel *= .9;
+        }*/
+    }
+    else
+    {
+        // unlocked
+
+        vel += curlNoise(feather.pos) * 1;
+        feather.locked = 0;
+    }
 
 
-  //fPos = lockPos;
+    vel *= (hash(float(pID)) * .6 + .4);
 
-  float sNoiseSlow = snoise( feather.ogPos * _NoiseSizeForFlutter + _MinFlutterSpeed * _Time) * _MinFlutter;
-  float sNoiseFast = snoise( feather.ogPos * _NoiseSizeForFlutter + _MaxFlutterSpeed * _Time) * _MaxFlutter;
-
- fFwd += fUp *  lerp( sNoiseSlow, sNoiseFast , length(_Velocity)/400 );
-  fFwd = normalize(fFwd);
+    // vel += _WrenVel;
 
 
-  float4x4 t = translationMatrix(fPos);
-  float4x4 r = look_at_matrix(fFwd,fUp);
-  //float4x4 r = look_at_matrix(float3(10,0,0),float3(0,10,0));
-  float4x4 s = scaleMatrix(fScale);
+    if (length(vel) > 1000)
+    {
+        vel = normalize(vel) * 1000;
+    }
 
 
-  float4x4 rts =mul(t,mul(r,s));
+    // adding to our force position
+    forcePos += vel * _DT * .1; //.001;
 
+    if (length(forcePos - lockPos) > 50)
+    {
+        forcePos = lockPos + normalize(forcePos - lockPos) * 50;
+    }
+
+    // dampening if locked vs not locked
+    vel *= .96 - .19 * clamp(_Locked, 0, 1); // - .1 * clamp( returnToLockValue, 0,1);
+
+
+    float3 fPos = forcePos;
+
+
+    float lerpVal = clamp(1 - max(length(dif) - _LockDistance, 0) * _LockLerp, 0, 1);
+
+    float3 fFwd = lerp(normalize(vel), lockFwd, lerpVal);
+    float3 fScale = lerp(.3 * lockScale, lockScale, lerpVal);
+
+    float3 fUp = lockUp;
+
+
+    if (_Locked < .5)
+    {
+        feather.locked = 0;
+    }
+
+    if (length(dif) < _LockDistance && _Locked >= 1 && feather.id < _NumShards)
+    {
+        feather.locked = 1;
+    }
+
+    if (feather.locked >= .5 && _Locked >= 1)
+    {
+        fPos = lockPos;
+        fFwd = lockFwd;
+        fScale = lockScale;
+    }
+
+
+    /*
   
-  feather.pos = fPos;//fPos;
-  feather.vel = vel;
-  feather.featherType = float(whichFeatherType);
-  feather.featherColor = float(featherColor);
-  feather.ltw = rts;
-
-
-  nanCheck( feather );
-  _FeatherBuffer[pID] = feather;
   
+    Offsetting ground
+  
+    */
+
+
+    GetTerrainData(fPos, groundPos, groundNor);
+    if (groundPos.y + _GroundLockHeight > fPos.y)
+    {
+        float lVal = clamp((groundPos.y + _GroundLockHeight - fPos.y) / _GroundLockHeight, 0, 1);
+
+        feather.touchingGround = 1;
+
+        // uncomment to make it go back off ground
+        //fPos.y += lVal * _GroundLockForce;
+    }
+    else
+    {
+        feather.touchingGround = 0;
+    }
+
+
+    if (_ResetValue > .5 && _ResetValue < 1.5)
+    {
+        fPos = lockPos;
+        fUp = lockUp;
+        fFwd = lockFwd;
+        fScale = lockScale;
+        feather.ogPos = fPos;
+        //    feather.ogNor = lockFwd;
+        feather.touchingGround = 0;
+        vel = 0;
+    }
+
+    if (_ResetValue > 1.5 && _ResetValue < 2.5)
+    {
+        // reseting at position w/ a bit of offset to give it vortex
+        float3 centerPos = _ResetLocation;
+
+        if (_Locked == -1)
+        {
+            centerPos = mul(_SpecialTarget, float4(0, 0, 0, 1)).xyz;
+        }
+
+        fPos = centerPos + lockUp + lockFwd;
+
+        fUp = lockUp;
+        fFwd = lockFwd;
+        fScale = lockScale;
+        feather.ogPos = lockPos;
+        //    feather.ogNor = lockFwd;
+        feather.touchingGround = 0;
+        vel = 0;
+    }
+
+    if (_ResetValue > 2.5)
+    {
+        feather.pos += _ResetLocation;
+    }
+
+
+    //fPos = lockPos;
+
+    float sNoiseSlow = snoise(feather.ogPos * _NoiseSizeForFlutter + _MinFlutterSpeed * _Time) * _MinFlutter;
+    float sNoiseFast = snoise(feather.ogPos * _NoiseSizeForFlutter + _MaxFlutterSpeed * _Time) * _MaxFlutter;
+
+    fFwd += fUp * lerp(sNoiseSlow, sNoiseFast, length(_Velocity) / 400);
+    fFwd = normalize(fFwd);
+
+
+    float4x4 t = translationMatrix(fPos);
+    float4x4 r = look_at_matrix(fFwd, fUp);
+    //float4x4 r = look_at_matrix(float3(10,0,0),float3(0,10,0));
+    float4x4 s = scaleMatrix(fScale);
+
+
+    float4x4 rts = mul(t, mul(r, s));
+
+
+    feather.pos = fPos; //fPos;
+    feather.vel = vel;
+    feather.featherType = float(whichFeatherType);
+    feather.featherColor = float(featherColor);
+    feather.ltw = rts;
+
+
+    nanCheck(feather);
+    _FeatherBuffer[pID] = feather;
 }
-

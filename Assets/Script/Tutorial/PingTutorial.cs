@@ -219,12 +219,9 @@ public class PingTutorial : TutorialCoroutine
     public void SelectTarget()
     {
         print("SelectingTarget");
-        targetManager.SetTarget(tutorialTargets[currentTargetIndex].transform.position);
-        targetManager.OnTargetChange();
-        //God.wren.interfaceUtils.AddPointer(targetManager.currentTarget.transform, 0, new Vector4(0, 0, 0, 1));
-
-        //   God.wren.interfaceUtils.ClearPointers();
-        //     God.wren.interfaceUtils.interfacePointer.AddPointer(targetManager.currentTarget.transform, 0, new Vector4(0, 0, 0, 1));
+        //targetManager.SetTarget(tutorialTargets[currentTargetIndex].transform.position);
+        //targetManager.DestroyAllPointers();
+        targetManager.AddOnlyCurrentPointer(tutorialTargets[currentTargetIndex].transform.position);
     }
 
 

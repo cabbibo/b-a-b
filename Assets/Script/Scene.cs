@@ -5,18 +5,14 @@ using UnityEngine.Events;
 using Crest;
 
 
-
 namespace WrenUtils
 {
-
     public class Scene : MonoBehaviour
     {
-
-
         public UnityEvent OnLoadEvent;
 
-        public string name;
-        public string physicsParameters;
+        public string            name;
+        public PhysicsParams physicsParams;
 
         public Portal[] portals;
 
@@ -28,51 +24,42 @@ namespace WrenUtils
         public ScenePostSettings postSettings;
 
 
-
-
-        public void SceneLoaded(int newScene, bool loadedFromPortal)
+        public void SceneLoaded( int newScene , bool loadedFromPortal )
         {
-
 
 
             // Set WrenState
             God.wren.state.inInterface = false;
-            God.wren.airInterface.Toggle(false);
-            God.wren.fullInterface.Toggle(false);
+            God.wren.airInterface.Toggle( false );
+            God.wren.fullInterface.Toggle( false );
             God.cameraManager.lerpManager.enabled = true;
 
 
-            if (newScene == 0)
-            {
+            if ( newScene == 0 ) {
                 God.wren.inEther = true;
                 Camera.main.GetComponent<UnderwaterRenderer>().enabled = false;
             }
-            else
-            {
+            else {
                 God.wren.inEther = false;
                 Camera.main.GetComponent<UnderwaterRenderer>().enabled = true;
             }
 
 
-
             // Sets up our demo info
-            for (int i = 0; i < portals.Length; i++)
-            {
+            for ( int i = 0; i < portals.Length; i++ ) {
                 portals[i].demo = isDemo;
             }
 
 
-            Vector3 startPos = baseStartPosition.position;
+            var startPos = baseStartPosition.position;
 
-            if (God.wren != null)
-            {
+            if ( God.wren != null ) {
 
-                God.wren.parameters.Load(physicsParameters);
+                God.wren.parameters.Load( physicsParams );
 
-                SetWrenStartPosition(loadedFromPortal);
+                SetWrenStartPosition( loadedFromPortal );
 
-                if (startInFlight)
-                {
+                if ( startInFlight ) {
                     God.wren.state.TakeOff();
                 }
 
@@ -88,35 +75,29 @@ namespace WrenUtils
         }
 
 
-        public void SetWrenStartPosition(bool loadedFromPortal)
+        public void SetWrenStartPosition( bool loadedFromPortal )
         {
 
 
-            Vector3 startPos = new Vector3(1000, 0, 0);
-
+            var startPos = new Vector3( 1000 , 0 , 0 );
 
 
             // If we dont load from the portal, we grab the last saved position!
             // Otherwise we use the portal!
-            if (loadedFromPortal == false)
-            {
+            if ( loadedFromPortal == false ) {
                 //                print("loaded from portal false");
                 // loading from last position
                 startPos = God.state.lastPosition;
             }
-            else
-            {
-                if (God.state.currentQuestID >= 0)
-                {
-                    if (God.state.currentQuestID >= portals.Length)
-                    {
+            else {
+                if ( God.state.currentQuestID >= 0 ) {
+                    if ( God.state.currentQuestID >= portals.Length ) {
                         startPos = baseStartPosition.position;
-                        God.state.SetCurrentBiome(-1);
+                        God.state.SetCurrentBiome( -1 );
                     }
-                    else
-                    {
+                    else {
 
-                        God.state.SetLastPosition(portals[God.state.currentQuestID].startPoint.position);
+                        God.state.SetLastPosition( portals[God.state.currentQuestID].startPoint.position );
                         // return / spawn at gate that is our current biome!
                         // when bird dies, we respawn at our first starting position
                         startPos = portals[God.state.currentQuestID].startPoint.position;
@@ -124,8 +105,7 @@ namespace WrenUtils
                     }
 
                 }
-                else
-                {
+                else {
                     startPos = God.state.lastPosition;
 
                 }
@@ -134,13 +114,9 @@ namespace WrenUtils
 
             // print(startPos);
 
-            God.wren.SetFullPosition(startPos);
-
+            God.wren.SetFullPosition( startPos );
 
 
         }
-
-
-
     }
 }

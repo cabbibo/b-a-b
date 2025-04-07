@@ -175,8 +175,10 @@ public class WrenGrowthManager : MonoBehaviour
 
         if (Mathf.Abs(stats.stamina - oldStam) > 0 && wren.interfaceUtils.showStaminaRing)
         {
-            wren.interfaceUtils.SetRingValue(2, stats.stamina);
-            wren.interfaceUtils.PingRing(2);
+
+            wren.interfaceUtils.staminaBar.SetValue(stats.stamina / stats.maxStamina, 2);
+            // wren.interfaceUtils.SetRingValue(2, stats.stamina);
+            // wren.interfaceUtils.PingRing(2);
         }
 
 

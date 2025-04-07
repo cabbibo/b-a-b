@@ -22,14 +22,8 @@ public class CarryTutorial : TutorialCoroutine
     {
 
         //   yield return BeginningWait();
-
-
-
-
-
-
-
-
+        
+        
         print("DOING SEQUENCE");
 
         God.wren.interfaceUtils.ClearPointers();

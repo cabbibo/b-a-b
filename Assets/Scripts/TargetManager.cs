@@ -76,7 +76,7 @@ public class TargetManager : MonoBehaviour
         OnTargetPlace();
     }
 
-    public void SetTarget(Vector3 position, int faceDirection)
+    public void SetTarget(Vector3 position, int faceDirection = 0)
     {
 
 
@@ -158,6 +158,42 @@ public class TargetManager : MonoBehaviour
 
     }
 
+    public void AddCurrentPointer()
+    {
+        if (currentTarget != null)
+        {
+            God.wren.interfaceUtils.AddPointer(currentTarget.gameObject.transform, 0, new Vector4(0, 0, 0, 1));
+        }
+    }
+
+    public void AddOnlyCurrentPointer(Vector3 position)
+    {
+        DestroyAllPointers();
+        SetTarget(position);
+
+
+        if (currentTarget != null)
+        {
+            God.wren.interfaceUtils.AddPointer(currentTarget.gameObject.transform, 0, new Vector4(0, 0, 0, 1));
+        }
+    }
+
+    public void AddOnlyCurrentPointer(Vector3 position, int faceDirection)
+    {
+        DestroyAllPointers();
+        SetTarget(position, faceDirection);
+
+        if (currentTarget != null)
+        {
+            God.wren.interfaceUtils.AddPointer(currentTarget.gameObject.transform, 0, new Vector4(0, 0, 0, 1));
+        }
+    }
+
+
+    public void AddSingleTarget()
+    {
+
+    }
 
     public void OnTargetPlace()
     {
