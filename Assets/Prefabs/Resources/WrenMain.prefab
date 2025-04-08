@@ -3076,6 +3076,10 @@ MonoBehaviour:
   oPointerCount: 0
   updateRate: 10
   updateCounter: 0
+  instanceMesh: {fileID: -5495902117074765545, guid: a1dcddb2b4aedf54787f09b2bbc712e0,
+    type: 3}
+  instanceMaterial: {fileID: 2100000, guid: 73f5e4ae02dab6f479f3c9c546b26105, type: 2}
+  subMeshIndex: 0
   objectOfInterest: {fileID: 0}
 --- !u!1 &1525913051132150048
 GameObject:
