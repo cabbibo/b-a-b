@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 using UnityEngine.Events;
+
 [System.Serializable]
-public class ShardEvent : UnityEvent<Shard> { }
+public class ShardEvent : UnityEvent<Shard>
+{
+}
 
 public class Shard : MonoBehaviour
 {
-
-    public int ShardsToAdd;
+    public int  ShardsToAdd;
     public bool destroyOnCollect = true;
 
-    public bool collected = false;
+    public bool collected    = false;
     public bool firstCollect = false;
-
-
 
 
     public GameObject Uncollected;
@@ -34,23 +34,23 @@ public class Shard : MonoBehaviour
 
     public Helpers.GameObjectEvent onCollectEvent;
     public Helpers.GameObjectEvent onFirstCollectEvent;
-
+    public Helpers.GameObjectEvent respawnEvent;
 
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
 
 
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
         float timeSinceHit = God.state.totalTimeInGame - timeHit;
-        if (timeSinceHit > respawnTime && collected && respawnAfterTime)
-        {
+
+        if ( timeSinceHit > respawnTime && collected && respawnAfterTime ) {
             Respawn();
         }
 
@@ -60,71 +60,96 @@ public class Shard : MonoBehaviour
     {
 
         collected = false;
-        if (Collected != null) Collected.SetActive(false);
-        if (Uncollected != null) Uncollected.SetActive(true);
+
+        if ( Collected != null ) {
+            Collected.SetActive( false );
+        }
+
+        if ( Uncollected != null ) {
+            Uncollected.SetActive( true );
+        }
+
+        if ( respawnEvent != null ) {
+            respawnEvent.Invoke( gameObject );
+        }
 
 
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
 
-        if (respawnAfterTime)
-        {
+        if ( respawnAfterTime ) {
             timeHit = God.state.totalTimeInGame;
             Respawn();
-        }
-        else
-        {
+        } else {
 
-            if (collected)
-            {
-                if (Collected != null) Collected.SetActive(true);
-                if (Uncollected != null) Uncollected.SetActive(false);
-            }
-            else
-            {
-                if (Collected != null) Collected.SetActive(false);
-                if (Uncollected != null) Uncollected.SetActive(true);
+            if ( collected ) {
+                if ( Collected != null ) {
+                    Collected.SetActive( true );
+                }
+
+                if ( Uncollected != null ) {
+                    Uncollected.SetActive( false );
+                }
+            } else {
+                if ( Collected != null ) {
+                    Collected.SetActive( false );
+                }
+
+                if ( Uncollected != null ) {
+                    Uncollected.SetActive( true );
+                }
             }
         }
     }
 
+    public Vector3 collisionSpeed;
 
-    public void OnTriggerEnter(Collider c)
+    public void OnTriggerEnter( Collider c )
     {
 
-        if (God.IsOurWren(c))
-        {
+        if ( God.IsOurWren( c ) ) {
 
-            print("LFG");
+            print( "LFG" );
 
-            Vector3 collectPosition = transform.position;
-            if (collectionPosition != null) collectPosition = collectionPosition.position;
-            God.wren.shards.CollectShards(ShardsToAdd, type, collectPosition);
-            God.particleSystems.Emit(God.particleSystems.shardCollect, collectPosition, ShardsToAdd);
+            var collectPosition = transform.position;
 
-            if (firstCollect == false)
-            {
-                firstCollect = true;
-                if (onFirstCollectEvent != null) onFirstCollectEvent.Invoke(this.gameObject);
+            if ( collectionPosition != null ) {
+                collectPosition = collectionPosition.position;
             }
 
-            if (onCollectEvent != null) onCollectEvent.Invoke(this.gameObject);
+            God.wren.shards.CollectShards( ShardsToAdd , type , collectPosition );
+            God.particleSystems.Emit( God.particleSystems.shardCollect , collectPosition , ShardsToAdd );
+
+            if ( firstCollect == false ) {
+                firstCollect = true;
+
+                if ( onFirstCollectEvent != null ) {
+                    onFirstCollectEvent.Invoke( gameObject );
+                }
+            }
+
+            if ( onCollectEvent != null ) {
+                onCollectEvent.Invoke( gameObject );
+            }
+
             collected = true;
 
-            if (Collected != null) Collected.SetActive(true);
-            if (Uncollected != null) Uncollected.SetActive(false);
+            if ( Collected != null ) {
+                Collected.SetActive( true );
+            }
+
+            if ( Uncollected != null ) {
+                Uncollected.SetActive( false );
+            }
 
             timeHit = God.state.totalTimeInGame;
 
 
-            if (destroyOnCollect)
-            {
-                Destroy(gameObject);
+            if ( destroyOnCollect ) {
+                Destroy( gameObject );
             }
-
-
 
 
         }

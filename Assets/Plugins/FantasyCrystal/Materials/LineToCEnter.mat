@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ShardShader_Explosion
-  m_Shader: {fileID: 4800000, guid: e78a63199e6ec0848a29bf44ca14cac8, type: 3}
+  m_Name: LineToCEnter
+  m_Shader: {fileID: 4800000, guid: 496ea740bfea15541a2d46fa651715a5, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -39,12 +39,16 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _DiscardTex:
+        m_Texture: {fileID: 2800000, guid: f566294049c7c0945887c681b9596a12, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 612b65e0cd1576e4bbba0516d756a99d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -62,47 +66,44 @@ Material:
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
-    - _CenterOrbFalloff: 0.67
-    - _CenterOrbFalloffSharpness: -5.43
-    - _CenterOrbImportance: 0
-    - _ColorMultiplier: 1
+    - _CenterOrbFalloff: 1
+    - _CenterOrbFalloffSharpness: 1
+    - _CenterOrbImportance: 1
+    - _ColorMultiplier: 0.01
     - _ColorSplit: 0.05
-    - _Contrast: 0.8
+    - _Contrast: 1
     - _Cutoff: 0.5
-    - _DeltaStepSize: 0.3
+    - _DeltaStepSize: 0.03
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _ExplosionSize: 10
-    - _ExplosionType: 0
-    - _ExplosionValue: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _HueEnd: 0.44
-    - _HueSize: 0
-    - _HueStart: 0.1
+    - _HueSize: 4
+    - _HueStart: 0
     - _IndexOfRefraction: 0.8
-    - _Lightness: 1
+    - _Lightness: 0.6
     - _Metallic: 0
     - _Mode: 0
-    - _NoiseImportance: 1.03
+    - _NoiseImportance: 1
     - _NoiseSharpness: 1
-    - _NoiseSize: 4
-    - _NoiseSpeed: 2.01
-    - _NoiseSubtractor: 0.2
-    - _NumSteps: 3
+    - _NoiseSize: 2
+    - _NoiseSpeed: 10
+    - _NoiseSubtractor: 0.04
+    - _NumSteps: 5
     - _OcclusionStrength: 1
     - _OffsetMultiplier: 0
     - _Opaqueness: 1
     - _Parallax: 0.02
-    - _ReflectionMultiplier: 0.2
+    - _ReflectionMultiplier: 0
     - _ReflectionSharpness: 1
     - _RefractionBackgroundSampleExtraStep: 0
-    - _Saturation: 0.01
+    - _Saturation: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _StepRefractionMultiplier: 0
+    - _StepRefractionMultiplier: 1
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:

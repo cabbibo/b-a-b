@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ShardShader_Explosion
-  m_Shader: {fileID: 4800000, guid: e78a63199e6ec0848a29bf44ca14cac8, type: 3}
+  m_Name: ShardShader_NoCenter
+  m_Shader: {fileID: 4800000, guid: f9c0aeca3565c2d4ca496fd0029d0955, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -74,7 +74,7 @@ Material:
     - _DstBlend: 0
     - _ExplosionSize: 10
     - _ExplosionType: 0
-    - _ExplosionValue: 0
+    - _ExplosionValue: 0.3
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -89,7 +89,7 @@ Material:
     - _NoiseSharpness: 1
     - _NoiseSize: 4
     - _NoiseSpeed: 2.01
-    - _NoiseSubtractor: 0.2
+    - _NoiseSubtractor: 0
     - _NumSteps: 3
     - _OcclusionStrength: 1
     - _OffsetMultiplier: 0

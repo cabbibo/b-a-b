@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using WrenUtils;
 
 
 #if UNITY_EDITOR
@@ -13,6 +14,7 @@ public class ConnectToCenterEditor : Editor
     public override void OnInspectorGUI()
     {
         var connectToCenter = (ConnectToCenter)target;
+
         if ( GUILayout.Button( "Connect All" ) ) {
             connectToCenter.ConnectAll();
         }
@@ -50,6 +52,8 @@ public class ConnectToCenter : MonoBehaviour
 
     public UnityEvent<ConnectToCenter> OnAllConnected = new();
 
+    public AudioClip[] connectionClips;
+
 
     // public LineRendererPrefab linePrefab;
     // Start is called before the first frame update
@@ -74,6 +78,7 @@ public class ConnectToCenter : MonoBehaviour
     {
 
         print( "hello i am setting on" );
+
         for ( int i = 0; i < objectsToConnect.Length; i++ ) {
             lines[i].enabled = true;
             connectionPoints[i].SetActive( true );
@@ -112,9 +117,33 @@ public class ConnectToCenter : MonoBehaviour
     }
 
 
+    public void ToggleConnect( GameObject obj )
+    {
+        int id = -1;
+
+        for ( int i = 0; i < objectsToConnect.Length; i++ ) {
+            if ( objectsToConnect[i] == obj ) {
+                id = i;
+            }
+        }
+
+        if ( id == -1 ) {
+            Debug.LogError( "Object not found in objectsToConnect array." );
+            return;
+        }
+
+        if ( connected[id] == true ) {
+            UndoConnect( obj );
+        } else {
+            Connect( obj );
+        }
+
+    }
+
     public void Connect( GameObject obj )
     {
         int id = -1;
+
         for ( int i = 0; i < objectsToConnect.Length; i++ ) {
             if ( objectsToConnect[i] == obj ) {
                 id = i;
@@ -132,6 +161,9 @@ public class ConnectToCenter : MonoBehaviour
         }
 
 
+        God.audio.Play( connectionClips , Random.Range( .8f , 1.2f ) );
+        
+
         OnConnectEvent.Invoke( objectsToConnect[id] , connectionPoints[id] );
         StartCoroutine( ConnectCoroutine( id ) );
 
@@ -140,6 +172,7 @@ public class ConnectToCenter : MonoBehaviour
     public void UndoConnect( GameObject obj )
     {
         int id = -1;
+
         for ( int i = 0; i < objectsToConnect.Length; i++ ) {
             if ( objectsToConnect[i] == obj ) {
                 id = i;
@@ -156,6 +189,7 @@ public class ConnectToCenter : MonoBehaviour
             return;
         }
 
+        God.audio.Play( connectionClips , Random.Range( -.8f , -1.2f ) );
         OnDisconnectEvent.Invoke( objectsToConnect[id] , connectionPoints[id] );
 
         StartCoroutine( DisconnectCoroutine( id ) );
@@ -164,6 +198,7 @@ public class ConnectToCenter : MonoBehaviour
 
     public void OnConnectEnd( int id )
     {
+
         // Do something when the connection ends
         Debug.Log( "Connection ended." );
         connected[id] = true;

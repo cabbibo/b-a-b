@@ -283,6 +283,19 @@ public class AudioPlayer : MonoBehaviour
         BasePlay(clip);
     }
 
+    public void Play( AudioClip clip , float pitch , float volume , Vector3 location , float falloff )
+    {
+        Reset();
+        sources[playID].volume = volume;
+        sources[playID].pitch = pitch;
+        sources[playID].spatialize = true;
+        sources[playID].spatialBlend = 1;
+        sources[playID].maxDistance = falloff;
+        sources[playID].minDistance = falloff / 10;
+        objects[playID].transform.position = location;
+        BasePlay(clip);
+    }
+
 
 
     // plays random sound in array

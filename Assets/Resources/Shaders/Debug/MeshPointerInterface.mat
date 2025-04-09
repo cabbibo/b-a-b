@@ -61,25 +61,45 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AboveBirdOffset: 0.4
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _Forwards: 0.04
+    - _ExtraViewMultiplier: 1
+    - _Forwards: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _MaxSizeDistance: 500
+    - _MaxSizeMultiplier: 0.3
     - _Metallic: 0
+    - _MinSizeDistance: 30
+    - _MinSizeMultiplier: 1
     - _Mode: 0
     - _OcclusionStrength: 1
+    - _OffsetFromBirdCenter: 0
     - _Parallax: 0.02
-    - _Size: 2
+    - _PointerWidth: 0.1
+    - _ScaleFromWrenToCamera: 1
+    - _Size: 20
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
+    - _WrenToCameraForwardOffsetMax: -1
+    - _WrenToCameraForwardOffsetMin: -0.5
+    - _WrenToCameraMax: 50
+    - _WrenToCameraMin: 3
+    - _WrenToCameraOffsetMax: 20
+    - _WrenToCameraOffsetMin: 0.8
+    - _WrenToCameraScaleMax: 2
+    - _WrenToCameraScaleMin: 0.1
+    - _WrenToCameraUpOffsetMax: 0
+    - _WrenToCameraUpOffsetMin: 0.3
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _TypeSizeMultiplier: {r: 2, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

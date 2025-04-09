@@ -8,7 +8,8 @@ public class InterfacePointer : MonoBehaviour
 {
     //public float size;
 
-
+    public bool     renderQuad = false;
+    public bool     renderMesh = true;
     public Material pointerMaterial;
     public Material skyColumnMaterial;
 
@@ -252,9 +253,13 @@ public class InterfacePointer : MonoBehaviour
             mpb.SetVector( "_WrenPos" , God.wren.bird.head.position );
 
 
-            Graphics.DrawProcedural( pointerMaterial , new Bounds( transform.position , Vector3.one * 50000 ) ,
-                MeshTopology.Triangles , pointerList.Count * 3 * 2 , 1 , null , mpb , ShadowCastingMode.Off , true ,
-                LayerMask.NameToLayer( "Debug" ) );
+            if ( renderQuad ) {
+                Graphics.DrawProcedural( pointerMaterial , new Bounds( transform.position , Vector3.one * 50000 ) ,
+                    MeshTopology.Triangles , pointerList.Count * 3 * 2 , 1 , null , mpb , ShadowCastingMode.Off , true ,
+                    LayerMask.NameToLayer( "Debug" ) );
+
+            }
+
             Graphics.DrawProcedural( skyColumnMaterial , new Bounds( transform.position , Vector3.one * 50000 ) ,
                 MeshTopology.Triangles , pointerList.Count * 3 * 2 , 1 , null , mpb , ShadowCastingMode.Off , true ,
                 LayerMask.NameToLayer( "Debug" ) );
@@ -262,21 +267,22 @@ public class InterfacePointer : MonoBehaviour
 
             instanceCount = pointerList.Count;
 
-            if ( cachedInstanceCount != instanceCount || cachedSubMeshIndex != subMeshIndex ) {
+            if ( renderMesh ) {
+                if ( cachedInstanceCount != instanceCount || cachedSubMeshIndex != subMeshIndex ) {
+                    UpdateBuffers();
+                }
+
                 UpdateBuffers();
+
+                instanceMaterial.SetInt( "_Count" , pointerList.Count );
+                instanceMaterial.SetBuffer( "_PositionBuffer" , _buffer );
+                instanceMaterial.SetBuffer( "_TypeBuffer" , _typeBuffer );
+                instanceMaterial.SetBuffer( "_FadeBuffer" , _fadeBuffer );
+                instanceMaterial.SetBuffer( "_ExtraDataBuffer" , _extraDataBuffer );
+
+                Graphics.DrawMeshInstancedIndirect( instanceMesh , subMeshIndex , instanceMaterial ,
+                    new Bounds( Vector3.zero , new Vector3( 10000.0f , 10000.0f , 10000.0f ) ) , argsBuffer );
             }
-
-            UpdateBuffers();
-
-            instanceMaterial.SetInt( "_Count" , pointerList.Count );
-            instanceMaterial.SetBuffer( "_PositionBuffer" , _buffer );
-            instanceMaterial.SetBuffer( "_TypeBuffer" , _typeBuffer );
-            instanceMaterial.SetBuffer( "_FadeBuffer" , _fadeBuffer );
-            instanceMaterial.SetBuffer( "_ExtraDataBuffer" , _extraDataBuffer );
-
-            Graphics.DrawMeshInstancedIndirect( instanceMesh , subMeshIndex , instanceMaterial ,
-                new Bounds( Vector3.zero , new Vector3( 10000.0f , 10000.0f , 10000.0f ) ) , argsBuffer );
-
 
         }
 

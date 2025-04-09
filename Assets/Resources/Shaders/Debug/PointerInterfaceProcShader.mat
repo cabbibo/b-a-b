@@ -84,7 +84,7 @@ Material:
     - _OffsetFromBirdCenter: 5
     - _Parallax: 0.02
     - _PointerWidth: 0.04
-    - _Size: 3
+    - _Size: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
