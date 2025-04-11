@@ -6,1076 +6,1032 @@ using UnityEngine;
 [ExecuteAlways]
 public class FullBird : MonoBehaviour
 {
+    public float         eyeSize;
+    public float         beakSize;
+    public Wren          wren;
+    public ComputeShader bodyShader;
+    public ComputeShader wingShader;
 
+    public Material featherMaterial;
 
+    public Material wingDebugMaterial;
+    public Material bodyDebugMaterial;
 
 
-   public float eyeSize;
-   public float beakSize;
-   public Wren wren;
-   public ComputeShader bodyShader;
-   public ComputeShader wingShader;
+    public Material wingDebugLineMaterial;
+    public Material bodyDebugLineMaterial;
 
-   public Material featherMaterial;
+    public Transform specialTarget;
 
-   public Material wingDebugMaterial;
-   public Material bodyDebugMaterial;
+    public BirdSkeleton skeleton;
 
+    [Range( 0 , 1 )]
+    public float percentageRendered;
 
-   public Material wingDebugLineMaterial;
-   public Material bodyDebugLineMaterial;
 
-   public Transform specialTarget;
+    // Params for shaders
 
-   public BirdSkeleton skeleton;
+    public float _MiddleSecondaryFeatherScaleMultiplier;
+    public float _BaseSecondaryFeatherScale;
 
-   [Range(0, 1)]
-   public float percentageRendered;
+    public float _MiddlePrimaryFeatherScaleMultiplier;
+    public float _BasePrimaryFeatherScale;
 
+    public float _MiddleCovertsFeatherScaleMultiplier;
+    public float _BaseCovertsFeatherScale;
 
-   // Params for shaders
+    public float _MiddleScapularFeatherScaleMultiplier;
+    public float _BaseScapularFeatherScale;
 
-   public float _MiddleSecondaryFeatherScaleMultiplier;
-   public float _BaseSecondaryFeatherScale;
+    public float _MiddleTailFeatherScaleMultiplier;
+    public float _BaseTailFeatherScale;
 
-   public float _MiddlePrimaryFeatherScaleMultiplier;
-   public float _BasePrimaryFeatherScale;
 
-   public float _MiddleCovertsFeatherScaleMultiplier;
-   public float _BaseCovertsFeatherScale;
+    public float _BackAmountOverlapping;
+    public float _BaseDirectionLeftRightNoise;
+    public float _BaseDirectionUpNoise;
+    public float _BaseNoiseSize;
+    public float _BaseNoiseScale;
 
-   public float _MiddleScapularFeatherScaleMultiplier;
-   public float _BaseScapularFeatherScale;
+    public float _NoiseSizeForFlutter;
+    public float _MaxFlutter;
+    public float _MinFlutter;
+    public float _MaxFlutterSpeed;
+    public float _MinFlutterSpeed;
 
-   public float _MiddleTailFeatherScaleMultiplier;
-   public float _BaseTailFeatherScale;
 
+    public float _ReturnToLockTime;
+    public float _ReturnToLockForce;
+    public float _ReturnToLockTimeMultiplier;
 
+    public float _LockDistance;
+    public float _LockLerp;
 
-   public float _BackAmountOverlapping;
-   public float _BaseDirectionLeftRightNoise;
-   public float _BaseDirectionUpNoise;
-   public float _BaseNoiseSize;
-   public float _BaseNoiseScale;
 
-   public float _NoiseSizeForFlutter;
-   public float _MaxFlutter;
-   public float _MinFlutter;
-   public float _MaxFlutterSpeed;
-   public float _MinFlutterSpeed;
+    public float _GroundLockForce;
+    public float _GroundLockHeight;
+    public float _ExplosionOutForce;
+    public float _ExplosionUpForce;
+    public float _ExplosionVelForce;
 
 
-   public float _ReturnToLockTime;
-   public float _ReturnToLockForce;
-   public float _ReturnToLockTimeMultiplier;
+    public float _VortexInForce;
+    public float _VortexCurlForce;
+    public float _VortexNoiseForce;
+    public float _VortexNoiseSize;
 
-   public float _LockDistance;
-   public float _LockLerp;
 
+    public float _GroundVortexForce;
+    public float _GroundVortexHeight;
+    public float _ResetValue;
 
 
-   public float _GroundLockForce;
-   public float _GroundLockHeight;
-   public float _ExplosionOutForce;
-   public float _ExplosionUpForce;
-   public float _ExplosionVelForce;
+    public bool    _OnGround;
+    public float   _LockedValue;
+    public float   _ExplosionValue;
+    public Vector3 _ExplosionVector;
+    public float   _LockStartTime;
+    public Vector3 _Velocity;
 
 
+    public int _NumPrimaryFeathers;
+    public int _NumPrimaryCoverts;
+    public int _NumLesserCovertsRows;
+    public int _NumLesserCovertsCols;
 
-   public float _VortexInForce;
-   public float _VortexCurlForce;
-   public float _VortexNoiseForce;
-   public float _VortexNoiseSize;
 
+    public int _NumScapularRows;
+    public int _NumScapularColumns;
 
-   public float _GroundVortexForce;
-   public float _GroundVortexHeight;
-   public float _ResetValue;
+    public int _NumMantleRows;
+    public int _NumMantleColumns;
 
+    public int _NumTailFeathers;
 
-   public bool _OnGround;
-   public float _LockedValue;
-   public float _ExplosionValue;
-   public Vector3 _ExplosionVector;
-   public float _LockStartTime;
-   public Vector3 _Velocity;
+    public Mesh primaryFeather;
+    public Mesh secondaryFeather;
+    public Mesh primaryCovert;
+    public Mesh secondaryCovert;
+    public Mesh lesserCovert;
 
+    public Mesh tailFeather;
+    public Mesh scapularFeather;
 
-   public int _NumPrimaryFeathers;
-   public int _NumPrimaryCoverts;
-   public int _NumLesserCovertsRows;
-   public int _NumLesserCovertsCols;
+    public Pose pose;
 
 
-   public int _NumScapularRows;
-   public int _NumScapularColumns;
+    // wings now in charge of positioning, 
+    // but not the rendering
+    public Wing1   leftWing;
+    public Wing1   rightWing;
+    public GPUWing leftWing_gpu;
+    public GPUWing rightWing_gpu;
 
-   public int _NumMantleRows;
-   public int _NumMantleColumns;
 
-   public int _NumTailFeathers;
+    public GPUTrailFromFeathers leftWingTrailFromFeathers_gpu;
+    public GPUTrailFromFeathers rightWingTrailFromFeathers_gpu;
+    public GPUBody              body_gpu;
 
-   public Mesh primaryFeather;
-   public Mesh secondaryFeather;
-   public Mesh primaryCovert;
-   public Mesh secondaryCovert;
-   public Mesh lesserCovert;
+    // tail rendinger part of body now
+    public Tail tail;
 
-   public Mesh tailFeather;
-   public Mesh scapularFeather;
 
-   public Pose pose;
+    public Transform head;
+    public Transform neck;
+    public Transform shoulder;
+    public Transform spine;
+    public Transform hip;
 
+    public Transform leftHip;
+    public Transform leftKnee;
+    public Transform leftFoot;
 
-   // wings now in charge of positioning, 
-   // but not the rendering
-   public Wing1 leftWing;
-   public Wing1 rightWing;
-   public GPUWing leftWing_gpu;
-   public GPUWing rightWing_gpu;
 
+    public Transform rightHip;
+    public Transform rightKnee;
+    public Transform rightFoot;
 
-   public GPUTrailFromFeathers leftWingTrailFromFeathers_gpu;
-   public GPUTrailFromFeathers rightWingTrailFromFeathers_gpu;
-   public GPUBody body_gpu;
+    public float shoulderWidth;
 
-   // tail rendinger part of body now
-   public Tail tail;
+    public float hipToTail;
+    public float hipToSpine;
+    public float spineToShoulder;
+    public float shoulderToNeck;
+    public float neckToHead;
 
+    public float chestToShoulder;
+    public float shoulderToElbow;
+    public float elbowToHand;
+    public float handToFinger;
 
 
-   public Transform head;
-   public Transform neck;
-   public Transform shoulder;
-   public Transform spine;
-   public Transform hip;
+    public float hipSpread;
+    public float hipToKnee;
+    public float kneeToFoot;
 
-   public Transform leftHip;
-   public Transform leftKnee;
-   public Transform leftFoot;
 
+    public Transform leftEye;
+    public Transform rightEye;
+    public Transform beak;
 
-   public Transform rightHip;
-   public Transform rightKnee;
-   public Transform rightFoot;
 
-   public float shoulderWidth;
+    private Vector3 leftEyeOPos;
+    private Vector3 rightEyeOPos;
+    private Vector3 beakOPos;
 
-   public float hipToTail;
-   public float hipToSpine;
-   public float spineToShoulder;
-   public float shoulderToNeck;
-   public float neckToHead;
+    private Vector3 leftEyeOScale;
+    private Vector3 rightEyeOScale;
+    private Vector3 beakOScale;
 
-   public float chestToShoulder;
-   public float shoulderToElbow;
-   public float elbowToHand;
-   public float handToFinger;
 
+    private Quaternion leftEyeORot;
+    private Quaternion rightEyeORot;
+    private Quaternion beakORot;
 
+    private Transform leftEyeOParent;
+    private Transform rightEyeOParent;
+    private Transform beakOParent;
 
-   public float hipSpread;
-   public float hipToKnee;
-   public float kneeToFoot;
 
+    public Vector3 _ResetLocation;
 
+    public int totalShards;
 
+    public int featherStructSize = 36;
 
-   public Transform leftEye;
-   public Transform rightEye;
-   public Transform beak;
+    private void OnEnable()
+    {
 
+        // Gets our original position
+        leftEyeOPos = leftEye.localPosition;
+        rightEyeOPos = rightEye.localPosition;
+        beakOPos = beak.localPosition;
 
-   private Vector3 leftEyeOPos;
-   private Vector3 rightEyeOPos;
-   private Vector3 beakOPos;
+        leftEyeORot = leftEye.localRotation;
+        rightEyeORot = rightEye.localRotation;
+        beakORot = beak.localRotation;
 
-   private Vector3 leftEyeOScale;
-   private Vector3 rightEyeOScale;
-   private Vector3 beakOScale;
 
+        leftEyeOScale = new Vector3( 10 , 10 , 10 ); // leftEye.localScale;
+        rightEyeOScale = new Vector3( 10 , 10 , 10 ); //rightEye.localScale;
+        beakOScale = new Vector3( 10 , 10 , 10 ); ///beak.localScale;
 
-   private Quaternion leftEyeORot;
-   private Quaternion rightEyeORot;
-   private Quaternion beakORot;
 
-   private Transform leftEyeOParent;
-   private Transform rightEyeOParent;
-   private Transform beakOParent;
+        leftEyeOParent = leftEye.parent;
+        rightEyeOParent = rightEye.parent;
+        beakOParent = beak.parent;
 
+        PassAlongMaterialProperties();
 
-   public Vector3 _ResetLocation;
+        leftWing.Create();
+        rightWing.Create();
 
-   public int totalShards;
+        leftWingTrailFromFeathers_gpu.Create();
+        rightWingTrailFromFeathers_gpu.Create();
 
-   public int featherStructSize = 36;
+        leftWing_gpu.Create();
+        rightWing_gpu.Create();
 
-   void OnEnable()
-   {
+        body_gpu.Create();
 
-      // Gets our original position
-      leftEyeOPos = leftEye.localPosition;
-      rightEyeOPos = rightEye.localPosition;
-      beakOPos = beak.localPosition;
 
-      leftEyeORot = leftEye.localRotation;
-      rightEyeORot = rightEye.localRotation;
-      beakORot = beak.localRotation;
+        totalShards = body_gpu.totalFeatherPoints + leftWing_gpu.totalFeathers + rightWing_gpu.totalFeathers;
 
 
-      leftEyeOScale = new Vector3(10, 10, 10);// leftEye.localScale;
-      rightEyeOScale = new Vector3(10, 10, 10);//rightEye.localScale;
-      beakOScale = new Vector3(10, 10, 10);///beak.localScale;
+        SetRandomIDs();
+        ResetFeatherValues();
+        SetMaterialProperties();
 
 
-      leftEyeOParent = leftEye.parent;
-      rightEyeOParent = rightEye.parent;
-      beakOParent = beak.parent;
+    }
 
-      PassAlongMaterialProperties();
 
-      leftWing.Create();
-      rightWing.Create();
+    public void PassAlongMaterialProperties()
+    {
 
-      leftWingTrailFromFeathers_gpu.Create();
-      rightWingTrailFromFeathers_gpu.Create();
+        leftWing_gpu.shader = wingShader;
+        leftWing_gpu.featherDebugMaterial = wingDebugMaterial;
+        leftWing_gpu.featherDebugLineMaterial = wingDebugLineMaterial;
+        leftWing_gpu.featherMaterial = featherMaterial;
 
-      leftWing_gpu.Create();
-      rightWing_gpu.Create();
+        leftWing_gpu.primaryFeather = primaryFeather;
+        leftWing_gpu.secondaryFeather = secondaryFeather;
+        leftWing_gpu.primaryCovert = primaryCovert;
+        leftWing_gpu.secondaryCovert = secondaryCovert;
+        leftWing_gpu.lesserCovert = lesserCovert;
 
-      body_gpu.Create();
+        leftWing_gpu.numberPrimaryFeathers = _NumPrimaryFeathers;
+        leftWing_gpu.numberPrimaryCoverts = _NumPrimaryCoverts;
+        leftWing_gpu.numberLesserCovertsRows = _NumLesserCovertsRows;
+        leftWing_gpu.numberLesserCovertsCols = _NumLesserCovertsCols;
 
+        leftWing_gpu.wing = leftWing;
+        leftWing_gpu.bird = this;
 
 
-      totalShards = body_gpu.totalFeatherPoints + leftWing_gpu.totalFeathers + rightWing_gpu.totalFeathers;
+        rightWing_gpu.shader = wingShader;
+        rightWing_gpu.featherDebugMaterial = wingDebugMaterial;
+        rightWing_gpu.featherDebugLineMaterial = wingDebugLineMaterial;
+        rightWing_gpu.featherMaterial = featherMaterial;
 
+        rightWing_gpu.primaryFeather = primaryFeather;
+        rightWing_gpu.secondaryFeather = secondaryFeather;
+        rightWing_gpu.primaryCovert = primaryCovert;
+        rightWing_gpu.secondaryCovert = secondaryCovert;
+        rightWing_gpu.lesserCovert = lesserCovert;
 
-      SetRandomIDs();
-      ResetFeatherValues();
-      SetMaterialProperties();
+        rightWing_gpu.numberPrimaryFeathers = _NumPrimaryFeathers;
+        rightWing_gpu.numberPrimaryCoverts = _NumPrimaryCoverts;
+        rightWing_gpu.numberLesserCovertsRows = _NumLesserCovertsRows;
+        rightWing_gpu.numberLesserCovertsCols = _NumLesserCovertsCols;
 
+        rightWing_gpu.wing = rightWing;
+        rightWing_gpu.bird = this;
 
-   }
+        body_gpu.shader = bodyShader;
+        body_gpu.featherMaterial = featherMaterial;
+        body_gpu.featherDebugMaterial = bodyDebugMaterial;
+        body_gpu.featherDebugLineMaterial = bodyDebugLineMaterial;
 
+        body_gpu.scapularFeather = scapularFeather;
+        body_gpu.tailFeather = tailFeather;
 
-   public void PassAlongMaterialProperties()
-   {
+        body_gpu.numberScapularColumns = _NumScapularColumns;
+        body_gpu.numberScapularRows = _NumScapularRows;
+        body_gpu.numberTailFeathers = _NumTailFeathers;
 
-      leftWing_gpu.shader = wingShader;
-      leftWing_gpu.featherDebugMaterial = wingDebugMaterial;
-      leftWing_gpu.featherDebugLineMaterial = wingDebugLineMaterial;
-      leftWing_gpu.featherMaterial = featherMaterial;
+        body_gpu.bird = this;
 
-      leftWing_gpu.primaryFeather = primaryFeather;
-      leftWing_gpu.secondaryFeather = secondaryFeather;
-      leftWing_gpu.primaryCovert = primaryCovert;
-      leftWing_gpu.secondaryCovert = secondaryCovert;
-      leftWing_gpu.lesserCovert = lesserCovert;
+    }
 
-      leftWing_gpu.numberPrimaryFeathers = _NumPrimaryFeathers;
-      leftWing_gpu.numberPrimaryCoverts = _NumPrimaryCoverts;
-      leftWing_gpu.numberLesserCovertsRows = _NumLesserCovertsRows;
-      leftWing_gpu.numberLesserCovertsCols = _NumLesserCovertsCols;
 
-      leftWing_gpu.wing = leftWing;
-      leftWing_gpu.bird = this;
+    private void SetRandomIDs()
+    {
 
 
+        // Gets list of IDS
+        var idArray = new List<int>();
 
-      rightWing_gpu.shader = wingShader;
-      rightWing_gpu.featherDebugMaterial = wingDebugMaterial;
-      rightWing_gpu.featherDebugLineMaterial = wingDebugLineMaterial;
-      rightWing_gpu.featherMaterial = featherMaterial;
+        for ( int i = 0; i < totalShards; i++ ) {
+            idArray.Add( i );
+        }
 
-      rightWing_gpu.primaryFeather = primaryFeather;
-      rightWing_gpu.secondaryFeather = secondaryFeather;
-      rightWing_gpu.primaryCovert = primaryCovert;
-      rightWing_gpu.secondaryCovert = secondaryCovert;
-      rightWing_gpu.lesserCovert = lesserCovert;
 
-      rightWing_gpu.numberPrimaryFeathers = _NumPrimaryFeathers;
-      rightWing_gpu.numberPrimaryCoverts = _NumPrimaryCoverts;
-      rightWing_gpu.numberLesserCovertsRows = _NumLesserCovertsRows;
-      rightWing_gpu.numberLesserCovertsCols = _NumLesserCovertsCols;
+        float[] values = new float[featherStructSize * leftWing_gpu.totalFeathers];
 
-      rightWing_gpu.wing = rightWing;
-      rightWing_gpu.bird = this;
+        for ( int i = 0; i < leftWing_gpu.totalFeathers; i++ ) {
 
-      body_gpu.shader = bodyShader;
-      body_gpu.featherMaterial = featherMaterial;
-      body_gpu.featherDebugMaterial = bodyDebugMaterial;
-      body_gpu.featherDebugLineMaterial = bodyDebugLineMaterial;
+            int randomID = Random.Range( 0 , idArray.Count );
+            values[i * featherStructSize + 34] = (float)idArray[randomID];
+            idArray.RemoveAt( randomID );
 
-      body_gpu.scapularFeather = scapularFeather;
-      body_gpu.tailFeather = tailFeather;
+        }
 
-      body_gpu.numberScapularColumns = _NumScapularColumns;
-      body_gpu.numberScapularRows = _NumScapularRows;
-      body_gpu.numberTailFeathers = _NumTailFeathers;
+        leftWing_gpu.featherBuffer.SetData( values );
 
-      body_gpu.bird = this;
+        values = new float[featherStructSize * rightWing_gpu.totalFeathers];
 
-   }
+        for ( int i = 0; i < rightWing_gpu.totalFeathers; i++ ) {
 
+            int randomID = Random.Range( 0 , idArray.Count );
+            values[i * featherStructSize + 34] = (float)idArray[randomID];
+            idArray.RemoveAt( randomID );
+        }
 
-   void SetRandomIDs()
-   {
+        rightWing_gpu.featherBuffer.SetData( values );
 
 
-      // Gets list of IDS
-      List<int> idArray = new List<int>();
-      for (int i = 0; i < totalShards; i++)
-      {
-         idArray.Add(i);
-      }
+        values = new float[body_gpu.totalFeatherPoints * featherStructSize];
 
+        for ( int i = 0; i < body_gpu.totalFeatherPoints; i++ ) {
 
-      float[] values = new float[featherStructSize * leftWing_gpu.totalFeathers];
-      for (int i = 0; i < leftWing_gpu.totalFeathers; i++)
-      {
+            int randomID = Random.Range( 0 , idArray.Count );
+            values[i * featherStructSize + 34] = idArray[randomID];
+            idArray.RemoveAt( randomID );
+        }
 
-         int randomID = Random.Range(0, idArray.Count);
-         values[i * featherStructSize + 34] = (float)idArray[randomID];
-         idArray.RemoveAt(randomID);
+        body_gpu.featherBuffer.SetData( values );
 
-      }
 
-      leftWing_gpu.featherBuffer.SetData(values);
+    }
 
-      values = new float[featherStructSize * rightWing_gpu.totalFeathers];
-      for (int i = 0; i < rightWing_gpu.totalFeathers; i++)
-      {
 
-         int randomID = Random.Range(0, idArray.Count);
-         values[i * featherStructSize + 34] = (float)idArray[randomID];
-         idArray.RemoveAt(randomID);
-      }
+    private void OnDisable()
+    {
 
-      rightWing_gpu.featherBuffer.SetData(values);
+        leftWing.Destroy();
+        rightWing.Destroy();
+        leftWing_gpu.Destroy();
+        rightWing_gpu.Destroy();
+        body_gpu.Destroy();
 
 
-      values = new float[body_gpu.totalFeatherPoints * featherStructSize];
+        leftWingTrailFromFeathers_gpu.Destroy();
+        rightWingTrailFromFeathers_gpu.Destroy();
 
-      for (int i = 0; i < body_gpu.totalFeatherPoints; i++)
-      {
 
-         int randomID = Random.Range(0, idArray.Count);
-         values[i * featherStructSize + 34] = idArray[randomID];
-         idArray.RemoveAt(randomID);
-      }
+    }
 
-      body_gpu.featherBuffer.SetData(values);
+    private void OnDestroy()
+    {
+        OnDisable();
+    }
 
 
+    // Update is called once per frame
+    public void UpdateBody()
+    {
 
+        //      print("Updating Body");
+        leftWing.limbLengths[0] = wren._ScaleMultiplier * chestToShoulder;
+        leftWing.limbLengths[1] = wren._ScaleMultiplier * shoulderToElbow;
+        leftWing.limbLengths[2] = wren._ScaleMultiplier * elbowToHand;
+        leftWing.limbLengths[3] = wren._ScaleMultiplier * handToFinger;
 
-   }
+        leftWing.rots[0] = pose.wingRot1_L;
+        leftWing.rots[1] = pose.wingRot2_L;
+        leftWing.rots[2] = pose.wingRot3_L;
+        leftWing.rots[3] = pose.wingRot4_L;
 
+        rightWing.limbLengths[0] = wren._ScaleMultiplier * chestToShoulder;
+        rightWing.limbLengths[1] = wren._ScaleMultiplier * shoulderToElbow;
+        rightWing.limbLengths[2] = wren._ScaleMultiplier * elbowToHand;
+        rightWing.limbLengths[3] = wren._ScaleMultiplier * handToFinger;
 
+        rightWing.rots[0] = pose.wingRot1_R;
+        rightWing.rots[1] = pose.wingRot2_R;
+        rightWing.rots[2] = pose.wingRot3_R;
+        rightWing.rots[3] = pose.wingRot4_R;
 
-   void OnDisable()
-   {
+        tail.rots[0] = pose.tailRot1;
+        tail.rots[1] = pose.tailRot2;
+        tail.rots[2] = pose.tailRot3;
 
-      leftWing.Destroy();
-      rightWing.Destroy();
-      leftWing_gpu.Destroy();
-      rightWing_gpu.Destroy();
-      body_gpu.Destroy();
+        tail.transform.localRotation = Quaternion.Euler( pose.tailRot );
+        hip.localRotation = Quaternion.Euler( pose.hipRot );
+        spine.localRotation = Quaternion.Euler( pose.spineRot );
+        shoulder.localRotation = Quaternion.Euler( pose.shoulderRot );
+        neck.localRotation = Quaternion.Euler( pose.neckRot );
+        head.localRotation = Quaternion.Euler( pose.headRot );
 
+        spine.localPosition = Vector3.forward * wren._ScaleMultiplier * hipToSpine;
+        shoulder.localPosition = Vector3.forward * wren._ScaleMultiplier * spineToShoulder;
+        neck.localPosition = Vector3.forward * wren._ScaleMultiplier * shoulderToNeck;
+        head.localPosition = Vector3.forward * wren._ScaleMultiplier * neckToHead;
 
+        tail.transform.localPosition = Vector3.forward * wren._ScaleMultiplier * -hipToTail;
 
-      leftWingTrailFromFeathers_gpu.Destroy();
-      rightWingTrailFromFeathers_gpu.Destroy();
+        leftWing.transform.localPosition = -Vector3.right * wren._ScaleMultiplier * shoulderWidth;
+        rightWing.transform.localPosition = Vector3.right * wren._ScaleMultiplier * shoulderWidth;
 
 
-   }
+        leftHip.localPosition = Vector3.left * wren._ScaleMultiplier * hipSpread;
+        rightHip.localPosition = Vector3.right * wren._ScaleMultiplier * hipSpread;
 
-   void OnDestroy()
-   {
-      OnDisable();
-   }
+        leftKnee.localPosition = Vector3.down * wren._ScaleMultiplier * hipToKnee;
+        rightKnee.localPosition = Vector3.down * wren._ScaleMultiplier * hipToKnee;
 
+        leftFoot.localPosition = Vector3.down * wren._ScaleMultiplier * kneeToFoot;
+        rightFoot.localPosition = Vector3.down * wren._ScaleMultiplier * kneeToFoot;
 
+        leftHip.localRotation = Quaternion.Euler( pose.legRot1_L );
+        leftKnee.localRotation = Quaternion.Euler( pose.legRot2_L );
+        leftFoot.localRotation = Quaternion.Euler( pose.legRot3_L );
 
+        rightHip.localRotation = Quaternion.Euler( pose.legRot1_R );
+        rightKnee.localRotation = Quaternion.Euler( pose.legRot2_R );
+        rightFoot.localRotation = Quaternion.Euler( pose.legRot3_R );
 
-   // Update is called once per frame
-   public void UpdateBody()
-   {
 
-      //      print("Updating Body");
-      leftWing.limbLengths[0] = wren._ScaleMultiplier * chestToShoulder;
-      leftWing.limbLengths[1] = wren._ScaleMultiplier * shoulderToElbow;
-      leftWing.limbLengths[2] = wren._ScaleMultiplier * elbowToHand;
-      leftWing.limbLengths[3] = wren._ScaleMultiplier * handToFinger;
+        leftWing.UpdatePositions();
+        rightWing.UpdatePositions();
+        tail.UpdatePositions();
 
-      leftWing.rots[0] = pose.wingRot1_L;
-      leftWing.rots[1] = pose.wingRot2_L;
-      leftWing.rots[2] = pose.wingRot3_L;
-      leftWing.rots[3] = pose.wingRot4_L;
+        leftWing_gpu.lockedValue = _LockedValue;
+        rightWing_gpu.lockedValue = _LockedValue;
+        body_gpu.lockedValue = _LockedValue;
 
-      rightWing.limbLengths[0] = wren._ScaleMultiplier * chestToShoulder;
-      rightWing.limbLengths[1] = wren._ScaleMultiplier * shoulderToElbow;
-      rightWing.limbLengths[2] = wren._ScaleMultiplier * elbowToHand;
-      rightWing.limbLengths[3] = wren._ScaleMultiplier * handToFinger;
+        leftWing_gpu.UpdateFeathers();
+        rightWing_gpu.UpdateFeathers();
+        body_gpu.UpdateFeathers();
+        skeleton.UpdateBones();
 
-      rightWing.rots[0] = pose.wingRot1_R;
-      rightWing.rots[1] = pose.wingRot2_R;
-      rightWing.rots[2] = pose.wingRot3_R;
-      rightWing.rots[3] = pose.wingRot4_R;
+        leftWingTrailFromFeathers_gpu.UpdateFeathers();
+        rightWingTrailFromFeathers_gpu.UpdateFeathers();
 
-      tail.rots[0] = pose.tailRot1;
-      tail.rots[1] = pose.tailRot2;
-      tail.rots[2] = pose.tailRot3;
 
-      tail.transform.localRotation = Quaternion.Euler(pose.tailRot);
-      hip.localRotation = Quaternion.Euler(pose.hipRot);
-      spine.localRotation = Quaternion.Euler(pose.spineRot);
-      shoulder.localRotation = Quaternion.Euler(pose.shoulderRot);
-      neck.localRotation = Quaternion.Euler(pose.neckRot);
-      head.localRotation = Quaternion.Euler(pose.headRot);
+        if ( _OnGround ) {
+            //leftEye.position = Vector3.Lerp( leftEye.position , transform.position , .01f );
+            //rightEye.position = Vector3.Lerp( rightEye.position , transform.position , .01f );
+            //beak.position = Vector3.Lerp( beak.position , transform.position , .01f );
 
-      spine.localPosition = Vector3.forward * wren._ScaleMultiplier * hipToSpine;
-      shoulder.localPosition = Vector3.forward * wren._ScaleMultiplier * spineToShoulder;
-      neck.localPosition = Vector3.forward * wren._ScaleMultiplier * shoulderToNeck;
-      head.localPosition = Vector3.forward * wren._ScaleMultiplier * neckToHead;
+            leftEye.localScale = Vector3.Lerp( leftEye.localScale , Vector3.one * .00001f , .03f );
+            rightEye.localScale = Vector3.Lerp( rightEye.localScale , Vector3.one * .00001f , .03f );
+            beak.localScale = Vector3.Lerp( beak.localScale , Vector3.one * .00001f , .03f );
+        } else {
+            leftEye.localScale =
+                Vector3.Lerp( leftEye.localScale , wren._ScaleMultiplier * Vector3.one * eyeSize , .05f );
+            rightEye.localScale =
+                Vector3.Lerp( rightEye.localScale , wren._ScaleMultiplier * Vector3.one * eyeSize , .05f );
+            beak.localScale = Vector3.Lerp( beak.localScale , wren._ScaleMultiplier * Vector3.one * beakSize , .05f );
+        }
 
-      tail.transform.localPosition = Vector3.forward * wren._ScaleMultiplier * -hipToTail;
 
-      leftWing.transform.localPosition = -Vector3.right * wren._ScaleMultiplier * shoulderWidth;
-      rightWing.transform.localPosition = Vector3.right * wren._ScaleMultiplier * shoulderWidth;
+    }
 
+    public bool debug;
 
-      leftHip.localPosition = Vector3.left * wren._ScaleMultiplier * hipSpread;
-      rightHip.localPosition = Vector3.right * wren._ScaleMultiplier * hipSpread;
+    public void LateUpdate()
+    {
 
-      leftKnee.localPosition = Vector3.down * wren._ScaleMultiplier * hipToKnee;
-      rightKnee.localPosition = Vector3.down * wren._ScaleMultiplier * hipToKnee;
 
-      leftFoot.localPosition = Vector3.down * wren._ScaleMultiplier * kneeToFoot;
-      rightFoot.localPosition = Vector3.down * wren._ScaleMultiplier * kneeToFoot;
+        // leftWing.UpdatePositions();
+        //rightWing.UpdatePositions();
+        //tail.UpdatePositions();
 
-      leftHip.localRotation = Quaternion.Euler(pose.legRot1_L);
-      leftKnee.localRotation = Quaternion.Euler(pose.legRot2_L);
-      leftFoot.localRotation = Quaternion.Euler(pose.legRot3_L);
 
-      rightHip.localRotation = Quaternion.Euler(pose.legRot1_R);
-      rightKnee.localRotation = Quaternion.Euler(pose.legRot2_R);
-      rightFoot.localRotation = Quaternion.Euler(pose.legRot3_R);
+        //body_gpu.UpdateFeathers();
+        //leftWing_gpu.UpdateFeathers();
+        //rightWing_gpu.UpdateFeathers();
+        //skeleton.UpdateBones();
 
+        PassAlongMaterialProperties();
+        SetMaterialProperties();
 
+        if ( debug ) {
+            UpdateBody();
+        }
 
+        SetUpDebug();
+        SetUpDraw();
+        body_gpu.DrawFeathers();
+        leftWing_gpu.DrawFeathers();
+        rightWing_gpu.DrawFeathers();
 
 
+        //SetUpDebug();
+        //SetUpDraw();
+    }
 
 
-      leftWing.UpdatePositions();
-      rightWing.UpdatePositions();
-      tail.UpdatePositions();
+    public void TakeOff()
+    {
+        _LockedValue = 1;
+        _LockStartTime = Time.time;
 
-      leftWing_gpu.lockedValue = _LockedValue;
-      rightWing_gpu.lockedValue = _LockedValue;
-      body_gpu.lockedValue = _LockedValue;
+        _OnGround = false;
 
-      leftWing_gpu.UpdateFeathers();
-      rightWing_gpu.UpdateFeathers();
-      body_gpu.UpdateFeathers();
+        //leftEye.localPosition = leftEyeOPos;
+        //leftEye.localRotation = leftEyeORot;
+        //leftEye.parent = leftEyeOParent;
 
-      leftWingTrailFromFeathers_gpu.UpdateFeathers();
-      rightWingTrailFromFeathers_gpu.UpdateFeathers();
+        //rightEye.localPosition = rightEyeOPos;
+        //rightEye.localRotation = rightEyeORot;
+        //rightEye.parent = rightEyeOParent;
 
+        //beak.localPosition = beakOPos;
+        //beak.localRotation = beakORot;
+        //beak.parent = beakOParent;
 
-      if (_OnGround)
-      {
-         //leftEye.position = Vector3.Lerp( leftEye.position , transform.position , .01f );
-         //rightEye.position = Vector3.Lerp( rightEye.position , transform.position , .01f );
-         //beak.position = Vector3.Lerp( beak.position , transform.position , .01f );
 
-         leftEye.localScale = Vector3.Lerp(leftEye.localScale, Vector3.one * .00001f, .03f);
-         rightEye.localScale = Vector3.Lerp(rightEye.localScale, Vector3.one * .00001f, .03f);
-         beak.localScale = Vector3.Lerp(beak.localScale, Vector3.one * .00001f, .03f);
-      }
-      else
-      {
-         leftEye.localScale = Vector3.Lerp(leftEye.localScale, wren._ScaleMultiplier * Vector3.one * eyeSize, .05f);
-         rightEye.localScale = Vector3.Lerp(rightEye.localScale, wren._ScaleMultiplier * Vector3.one * eyeSize, .05f);
-         beak.localScale = Vector3.Lerp(beak.localScale, wren._ScaleMultiplier * Vector3.one * beakSize, .05f);
-      }
+    }
 
+    public void ResetFeatherValues()
+    {
 
+        _ResetValue = 1;
 
+        leftWing_gpu.UpdateFeathers();
+        rightWing_gpu.UpdateFeathers();
+        body_gpu.UpdateFeathers();
+        skeleton.UpdateBones();
 
+        _ResetValue = 0;
+    }
 
-   }
+    public void ResetAtLocation( Vector3 v )
+    {
 
-   public bool debug;
-   public void LateUpdate()
-   {
 
+        _ResetValue = 2;
+        _ResetLocation = v;
 
-      // leftWing.UpdatePositions();
-      //rightWing.UpdatePositions();
-      //tail.UpdatePositions();
 
+        _LockedValue = 1;
+        _ExplosionValue = 0;
+        _ExplosionVector = Vector3.zero;
 
-      //body_gpu.UpdateFeathers();
-      //leftWing_gpu.UpdateFeathers();
-      //rightWing_gpu.UpdateFeathers();
 
-      PassAlongMaterialProperties();
-      SetMaterialProperties();
+        leftWing_gpu.UpdateFeathers();
+        rightWing_gpu.UpdateFeathers();
+        body_gpu.UpdateFeathers();
+        skeleton.UpdateBones();
 
-      if (debug)
-      {
-         UpdateBody();
-      }
 
-      SetUpDebug();
-      SetUpDraw();
-      body_gpu.DrawFeathers();
-      leftWing_gpu.DrawFeathers();
-      rightWing_gpu.DrawFeathers();
+        _LockedValue = 0;
+        _ExplosionValue = 0;
+        _ExplosionVector = Vector3.zero;
 
+        _ResetValue = 0;
 
-      //SetUpDebug();
-      //SetUpDraw();
-   }
+    }
 
 
-   public void TakeOff()
-   {
-      _LockedValue = 1;
-      _LockStartTime = Time.time;
+    public void Teleport()
+    {
 
-      _OnGround = false;
+        print( "Teleporting: " + head.transform.position );
+        _ResetValue = 2;
 
-      //leftEye.localPosition = leftEyeOPos;
-      //leftEye.localRotation = leftEyeORot;
-      //leftEye.parent = leftEyeOParent;
 
-      //rightEye.localPosition = rightEyeOPos;
-      //rightEye.localRotation = rightEyeORot;
-      //rightEye.parent = rightEyeOParent;
+        leftWing_gpu.UpdateFeathers();
+        rightWing_gpu.UpdateFeathers();
+        body_gpu.UpdateFeathers();
+        skeleton.UpdateBones();
 
-      //beak.localPosition = beakOPos;
-      //beak.localRotation = beakORot;
-      //beak.parent = beakOParent;
+        _ResetValue = 0;
+    }
 
 
+    public void PhaseShift( Vector3 v )
+    {
 
+        _ResetValue = 3;
+        _ResetLocation = v;
 
-   }
+        leftWing_gpu.UpdateFeathers();
+        rightWing_gpu.UpdateFeathers();
+        body_gpu.UpdateFeathers();
+        skeleton.UpdateBones();
 
-   public void ResetFeatherValues()
-   {
+        _ResetValue = 0;
 
-      _ResetValue = 1;
+    }
 
-      leftWing_gpu.UpdateFeathers();
-      rightWing_gpu.UpdateFeathers();
-      body_gpu.UpdateFeathers();
 
-      _ResetValue = 0;
-   }
+    public void HitGround()
+    {
 
-   public void ResetAtLocation(Vector3 v)
-   {
+        _OnGround = true;
 
+        _LockedValue = 0;
+        _ExplosionValue = 1;
+        _ExplosionVector = Vector3.zero;
 
-      _ResetValue = 2;
-      _ResetLocation = v;
+        leftWing_gpu.UpdateFeathers();
+        rightWing_gpu.UpdateFeathers();
+        body_gpu.UpdateFeathers();
+        skeleton.UpdateBones();
 
 
-      _LockedValue = 1;
-      _ExplosionValue = 0;
-      _ExplosionVector = Vector3.zero;
+        // leftEye.parent = transform;
+        // rightEye.parent = transform;
+        // beak.parent = transform;
 
 
-      leftWing_gpu.UpdateFeathers();
-      rightWing_gpu.UpdateFeathers();
-      body_gpu.UpdateFeathers();
+        _LockedValue = 0;
+        _ExplosionValue = 0;
+        _ExplosionVector = Vector3.zero;
 
+    }
 
 
-      _LockedValue = 0;
-      _ExplosionValue = 0;
-      _ExplosionVector = Vector3.zero;
+    public void HitGround( Collision c )
+    {
 
-      _ResetValue = 0;
+        _OnGround = true;
 
-   }
+        _LockedValue = 0;
+        _ExplosionValue = 1;
+        _ExplosionVector = c.impulse;
 
 
+        //      print(c.impulse);
+        //      print(wren.physics.vel);
 
-   public void Teleport()
-   {
+        leftWing_gpu.UpdateFeathers();
+        rightWing_gpu.UpdateFeathers();
+        body_gpu.UpdateFeathers();
+        skeleton.UpdateBones();
 
-      print("Teleporting: " + head.transform.position);
-      _ResetValue = 2;
+        // leftEye.parent = transform;
+        // rightEye.parent = transform;
+        // beak.parent = transform;
 
 
+        _LockedValue = 0;
+        _ExplosionValue = 0;
+        _ExplosionVector = Vector3.zero;
 
-      leftWing_gpu.UpdateFeathers();
-      rightWing_gpu.UpdateFeathers();
-      body_gpu.UpdateFeathers();
+    }
 
-      _ResetValue = 0;
-   }
+    public void Explode()
+    {
 
+        _LockedValue = 0;
+        _ExplosionValue = 1;
+        _ExplosionVector = wren.physics.vel;
 
-   public void PhaseShift(Vector3 v)
-   {
 
-      _ResetValue = 3;
-      _ResetLocation = v;
+        leftWing_gpu.UpdateFeathers();
+        rightWing_gpu.UpdateFeathers();
+        body_gpu.UpdateFeathers();
+        skeleton.UpdateBones();
 
-      leftWing_gpu.UpdateFeathers();
-      rightWing_gpu.UpdateFeathers();
-      body_gpu.UpdateFeathers();
 
-      _ResetValue = 0;
+        _LockedValue = 1;
+        _ExplosionValue = 0;
+        _ExplosionVector = Vector3.zero;
 
-   }
+        _LockStartTime = Time.time;
 
+    }
 
-   public void HitGround()
-   {
 
-      _OnGround = true;
+    public void Disintegrate()
+    {
+        _LockedValue = 0;
+        _ExplosionValue = 1;
+        _ExplosionVector = wren.physics.vel;
 
-      _LockedValue = 0;
-      _ExplosionValue = 1;
-      _ExplosionVector = Vector3.zero;
 
-      leftWing_gpu.UpdateFeathers();
-      rightWing_gpu.UpdateFeathers();
-      body_gpu.UpdateFeathers();
+    }
 
-      // leftEye.parent = transform;
-      // rightEye.parent = transform;
-      // beak.parent = transform;
+    public void Reintegrate()
+    {
 
+        _LockedValue = 1;
+        _ExplosionValue = 0;
+        _ExplosionVector = Vector3.zero;
 
+        _LockStartTime = Time.time;
 
-      _LockedValue = 0;
-      _ExplosionValue = 0;
-      _ExplosionVector = Vector3.zero;
 
-   }
+    }
 
 
+    public void SetBirdParameters( ComputeShader shader )
+    {
 
-   public void HitGround(Collision c)
-   {
 
-      _OnGround = true;
+        /*
+           Setting some targets that *ARENT* the bird!
+        */
+        if ( specialTarget != null ) {
+            shader.SetMatrix( "_SpecialTarget" , specialTarget.localToWorldMatrix );
+        }
 
-      _LockedValue = 0;
-      _ExplosionValue = 1;
-      _ExplosionVector = c.impulse;
 
+        //---
+        shader.SetFloat( "_ResetValue" , _ResetValue );
+        shader.SetVector( "_ResetLocation" , _ResetLocation );
 
-      //      print(c.impulse);
-      //      print(wren.physics.vel);
+        shader.SetFloat( "_NoiseSizeForFlutter" , _NoiseSizeForFlutter );
+        shader.SetFloat( "_MaxFlutter" , _MaxFlutter );
+        shader.SetFloat( "_MinFlutter" , _MinFlutter );
+        shader.SetFloat( "_MaxFlutterSpeed" , _MaxFlutterSpeed );
+        shader.SetFloat( "_MinFlutterSpeed" , _MinFlutterSpeed );
 
-      leftWing_gpu.UpdateFeathers();
-      rightWing_gpu.UpdateFeathers();
-      body_gpu.UpdateFeathers();
+        shader.SetFloat( "_ReturnToLockTime" , _ReturnToLockTime );
+        shader.SetFloat( "_ReturnToLockForce" , _ReturnToLockForce );
+        shader.SetFloat( "_ReturnToLockTimeMultiplier" , _ReturnToLockTimeMultiplier );
 
-      // leftEye.parent = transform;
-      // rightEye.parent = transform;
-      // beak.parent = transform;
+        shader.SetFloat( "_LockDistance" , _LockDistance );
+        shader.SetFloat( "_LockLerp" , _LockLerp );
 
+        shader.SetFloat( "_ExplosionOutForce" , _ExplosionOutForce );
+        shader.SetFloat( "_ExplosionUpForce" , _ExplosionUpForce );
+        shader.SetFloat( "_ExplosionVelForce" , _ExplosionVelForce );
+        shader.SetFloat( "_BackAmountOverlapping" , _BackAmountOverlapping );
+        shader.SetFloat( "_BaseDirectionLeftRightNoise" , _BaseDirectionLeftRightNoise );
 
+        shader.SetFloat( "_BaseDirectionUpNoise" , _BaseDirectionUpNoise );
+        shader.SetFloat( "_BaseNoiseScale" , _BaseNoiseScale );
 
-      _LockedValue = 0;
-      _ExplosionValue = 0;
-      _ExplosionVector = Vector3.zero;
+        shader.SetFloat( "_ScaleMultiplier" , wren._ScaleMultiplier );
 
-   }
 
-   public void Explode()
-   {
+        shader.SetFloat( "_VortexInForce" , _VortexInForce );
+        shader.SetFloat( "_VortexCurlForce" , _VortexCurlForce );
+        shader.SetFloat( "_VortexNoiseForce" , _VortexNoiseForce );
+        shader.SetFloat( "_VortexNoiseSize" , _VortexNoiseSize );
 
-      _LockedValue = 0;
-      _ExplosionValue = 1;
-      _ExplosionVector = wren.physics.vel;
+        shader.SetFloat( "_GroundVortexHeight" , _GroundVortexHeight );
+        shader.SetFloat( "_GroundVortexForce" , _GroundVortexForce );
 
+        shader.SetFloat( "_GroundLockHeight" , _GroundLockHeight );
+        shader.SetFloat( "_GroundLockForce" , _GroundLockForce );
 
-      leftWing_gpu.UpdateFeathers();
-      rightWing_gpu.UpdateFeathers();
-      body_gpu.UpdateFeathers();
+        shader.SetFloat( "_MiddleSecondaryFeatherScaleMultiplier" ,
+            wren._ScaleMultiplier * _MiddleSecondaryFeatherScaleMultiplier );
+        shader.SetFloat( "_BaseSecondaryFeatherScale" , wren._ScaleMultiplier * _BaseSecondaryFeatherScale );
 
 
-      _LockedValue = 1;
-      _ExplosionValue = 0;
-      _ExplosionVector = Vector3.zero;
+        shader.SetFloat( "_MiddlePrimaryFeatherScaleMultiplier" ,
+            wren._ScaleMultiplier * _MiddlePrimaryFeatherScaleMultiplier );
+        shader.SetFloat( "_BasePrimaryFeatherScale" , wren._ScaleMultiplier * _BasePrimaryFeatherScale );
 
-      _LockStartTime = Time.time;
+        shader.SetFloat( "_MiddleCovertsFeatherScaleMultiplier" ,
+            wren._ScaleMultiplier * _MiddleCovertsFeatherScaleMultiplier );
+        shader.SetFloat( "_BaseCovertsFeatherScale" , wren._ScaleMultiplier * _BaseCovertsFeatherScale );
 
-   }
 
+        shader.SetFloat( "_MiddleScapularFeatherScaleMultiplier" ,
+            wren._ScaleMultiplier * _MiddleScapularFeatherScaleMultiplier );
+        shader.SetFloat( "_BaseScapularFeatherScale" , wren._ScaleMultiplier * _BaseScapularFeatherScale );
 
 
-   public void Disintegrate()
-   {
-      _LockedValue = 0;
-      _ExplosionValue = 1;
-      _ExplosionVector = wren.physics.vel;
+        shader.SetFloat( "_MiddleTailFeatherScaleMultiplier" ,
+            wren._ScaleMultiplier * _MiddleTailFeatherScaleMultiplier );
+        shader.SetFloat( "_BaseTailFeatherScale" , wren._ScaleMultiplier * _BaseTailFeatherScale );
 
 
-   }
+        shader.SetVector( "_WrenVel" , wren.physics.vel );
 
-   public void Reintegrate()
-   {
+        shader.SetFloat( "_LockStartTime" , _LockStartTime );
+        shader.SetFloat( "_Locked" , _LockedValue );
+        shader.SetFloat( "_Explosion" , _ExplosionValue );
+        shader.SetVector( "_ExplosionVector" , _ExplosionVector );
+        shader.SetVector( "_Velocity" , _Velocity );
 
-      _LockedValue = 1;
-      _ExplosionValue = 0;
-      _ExplosionVector = Vector3.zero;
 
-      _LockStartTime = Time.time;
+        shader.SetInt( "_NumScapularColumns" , _NumScapularColumns );
+        shader.SetInt( "_NumScapularRows" , _NumScapularRows );
+        shader.SetInt( "_NumTailFeathers" , _NumTailFeathers );
 
 
-   }
+        shader.SetFloat( "_Locked" , _LockedValue );
 
+        shader.SetFloat( "_TotalShardsInBody" , totalShards );
+        shader.SetFloat( "_ONumShards" , wren.shards.oNumShards );
+        shader.SetFloat( "_NumShards" , wren.shards.numShards );
+        shader.SetFloat( "_TmpNumShards" , wren.shards.tmpNumShards );
 
+        shader.SetVector( "_CollectionPosition" , wren.shards.collectPosition );
+        shader.SetFloat( "_CollectionType" , wren.shards.collectType );
 
 
-   public void SetBirdParameters(ComputeShader shader)
-   {
+        shader.SetInt( "_NumPrimaryFeathers" , _NumPrimaryFeathers );
+        shader.SetInt( "_NumPrimaryCoverts" , _NumPrimaryCoverts );
+        shader.SetInt( "_NumLesserCovertRows" , _NumLesserCovertsRows );
+        shader.SetInt( "_NumLesserCovertCols" , _NumLesserCovertsCols );
 
 
+        shader.SetFloat( "_Time" , Time.time );
+        shader.SetFloat( "_DT" , Time.deltaTime );
 
-      /*
-         Setting some targets that *ARENT* the bird!
-      */
-      if (specialTarget != null)
-      {
-         shader.SetMatrix("_SpecialTarget", specialTarget.localToWorldMatrix);
-      }
 
+    }
 
 
+    public void SetBirdParameters( MaterialPropertyBlock shader )
+    {
 
-      //---
-      shader.SetFloat("_ResetValue", _ResetValue);
-      shader.SetVector("_ResetLocation", _ResetLocation);
+        // print(shader);
 
-      shader.SetFloat("_NoiseSizeForFlutter", _NoiseSizeForFlutter);
-      shader.SetFloat("_MaxFlutter", _MaxFlutter);
-      shader.SetFloat("_MinFlutter", _MinFlutter);
-      shader.SetFloat("_MaxFlutterSpeed", _MaxFlutterSpeed);
-      shader.SetFloat("_MinFlutterSpeed", _MinFlutterSpeed);
 
-      shader.SetFloat("_ReturnToLockTime", _ReturnToLockTime);
-      shader.SetFloat("_ReturnToLockForce", _ReturnToLockForce);
-      shader.SetFloat("_ReturnToLockTimeMultiplier", _ReturnToLockTimeMultiplier);
+        /*
+           Setting some targets that *ARENT* the bird!
+        */
+        if ( specialTarget != null ) {
+            shader.SetMatrix( "_SpecialTarget" , specialTarget.localToWorldMatrix );
+        }
 
-      shader.SetFloat("_LockDistance", _LockDistance);
-      shader.SetFloat("_LockLerp", _LockLerp);
 
-      shader.SetFloat("_ExplosionOutForce", _ExplosionOutForce);
-      shader.SetFloat("_ExplosionUpForce", _ExplosionUpForce);
-      shader.SetFloat("_ExplosionVelForce", _ExplosionVelForce);
-      shader.SetFloat("_BackAmountOverlapping", _BackAmountOverlapping);
-      shader.SetFloat("_BaseDirectionLeftRightNoise", _BaseDirectionLeftRightNoise);
+        //---
+        shader.SetFloat( "_ResetValue" , _ResetValue );
+        shader.SetVector( "_ResetLocation" , _ResetLocation );
 
-      shader.SetFloat("_BaseDirectionUpNoise", _BaseDirectionUpNoise);
-      shader.SetFloat("_BaseNoiseScale", _BaseNoiseScale);
+        shader.SetFloat( "_NoiseSizeForFlutter" , _NoiseSizeForFlutter );
+        shader.SetFloat( "_MaxFlutter" , _MaxFlutter );
+        shader.SetFloat( "_MinFlutter" , _MinFlutter );
+        shader.SetFloat( "_MaxFlutterSpeed" , _MaxFlutterSpeed );
+        shader.SetFloat( "_MinFlutterSpeed" , _MinFlutterSpeed );
 
-      shader.SetFloat("_ScaleMultiplier", wren._ScaleMultiplier);
+        shader.SetFloat( "_ReturnToLockTime" , _ReturnToLockTime );
+        shader.SetFloat( "_ReturnToLockForce" , _ReturnToLockForce );
+        shader.SetFloat( "_ReturnToLockTimeMultiplier" , _ReturnToLockTimeMultiplier );
 
+        shader.SetFloat( "_LockDistance" , _LockDistance );
+        shader.SetFloat( "_LockLerp" , _LockLerp );
 
-      shader.SetFloat("_VortexInForce", _VortexInForce);
-      shader.SetFloat("_VortexCurlForce", _VortexCurlForce);
-      shader.SetFloat("_VortexNoiseForce", _VortexNoiseForce);
-      shader.SetFloat("_VortexNoiseSize", _VortexNoiseSize);
+        shader.SetFloat( "_ExplosionOutForce" , _ExplosionOutForce );
+        shader.SetFloat( "_ExplosionUpForce" , _ExplosionUpForce );
+        shader.SetFloat( "_ExplosionVelForce" , _ExplosionVelForce );
+        shader.SetFloat( "_BackAmountOverlapping" , _BackAmountOverlapping );
+        shader.SetFloat( "_BaseDirectionLeftRightNoise" , _BaseDirectionLeftRightNoise );
 
-      shader.SetFloat("_GroundVortexHeight", _GroundVortexHeight);
-      shader.SetFloat("_GroundVortexForce", _GroundVortexForce);
+        shader.SetFloat( "_BaseDirectionUpNoise" , _BaseDirectionUpNoise );
+        shader.SetFloat( "_BaseNoiseScale" , _BaseNoiseScale );
 
-      shader.SetFloat("_GroundLockHeight", _GroundLockHeight);
-      shader.SetFloat("_GroundLockForce", _GroundLockForce);
+        shader.SetFloat( "_ScaleMultiplier" , wren._ScaleMultiplier );
 
-      shader.SetFloat("_MiddleSecondaryFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleSecondaryFeatherScaleMultiplier);
-      shader.SetFloat("_BaseSecondaryFeatherScale", wren._ScaleMultiplier * _BaseSecondaryFeatherScale);
 
+        shader.SetVector( "_WrenVel" , wren.physics.vel );
+        shader.SetFloat( "_VortexInForce" , _VortexInForce );
+        shader.SetFloat( "_VortexCurlForce" , _VortexCurlForce );
+        shader.SetFloat( "_VortexNoiseForce" , _VortexNoiseForce );
+        shader.SetFloat( "_VortexNoiseSize" , _VortexNoiseSize );
 
-      shader.SetFloat("_MiddlePrimaryFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddlePrimaryFeatherScaleMultiplier);
-      shader.SetFloat("_BasePrimaryFeatherScale", wren._ScaleMultiplier * _BasePrimaryFeatherScale);
+        shader.SetFloat( "_GroundVortexHeight" , _GroundVortexHeight );
+        shader.SetFloat( "_GroundVortexForce" , _GroundVortexForce );
 
-      shader.SetFloat("_MiddleCovertsFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleCovertsFeatherScaleMultiplier);
-      shader.SetFloat("_BaseCovertsFeatherScale", wren._ScaleMultiplier * _BaseCovertsFeatherScale);
+        shader.SetFloat( "_GroundLockHeight" , _GroundLockHeight );
+        shader.SetFloat( "_GroundLockForce" , _GroundLockForce );
 
+        shader.SetFloat( "_MiddleSecondaryFeatherScaleMultiplier" ,
+            wren._ScaleMultiplier * _MiddleSecondaryFeatherScaleMultiplier );
+        shader.SetFloat( "_BaseSecondaryFeatherScale" , wren._ScaleMultiplier * _BaseSecondaryFeatherScale );
 
-      shader.SetFloat("_MiddleScapularFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleScapularFeatherScaleMultiplier);
-      shader.SetFloat("_BaseScapularFeatherScale", wren._ScaleMultiplier * _BaseScapularFeatherScale);
 
+        shader.SetFloat( "_MiddlePrimaryFeatherScaleMultiplier" ,
+            wren._ScaleMultiplier * _MiddlePrimaryFeatherScaleMultiplier );
+        shader.SetFloat( "_BasePrimaryFeatherScale" , wren._ScaleMultiplier * _BasePrimaryFeatherScale );
 
-      shader.SetFloat("_MiddleTailFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleTailFeatherScaleMultiplier);
-      shader.SetFloat("_BaseTailFeatherScale", wren._ScaleMultiplier * _BaseTailFeatherScale);
+        shader.SetFloat( "_MiddleCovertsFeatherScaleMultiplier" ,
+            wren._ScaleMultiplier * _MiddleCovertsFeatherScaleMultiplier );
+        shader.SetFloat( "_BaseCovertsFeatherScale" , wren._ScaleMultiplier * _BaseCovertsFeatherScale );
 
 
-      shader.SetVector("_WrenVel", wren.physics.vel);
+        shader.SetFloat( "_MiddleScapularFeatherScaleMultiplier" ,
+            wren._ScaleMultiplier * _MiddleScapularFeatherScaleMultiplier );
+        shader.SetFloat( "_BaseScapularFeatherScale" , wren._ScaleMultiplier * _BaseScapularFeatherScale );
 
-      shader.SetFloat("_LockStartTime", _LockStartTime);
-      shader.SetFloat("_Locked", _LockedValue);
-      shader.SetFloat("_Explosion", _ExplosionValue);
-      shader.SetVector("_ExplosionVector", _ExplosionVector);
-      shader.SetVector("_Velocity", _Velocity);
 
+        shader.SetFloat( "_MiddleTailFeatherScaleMultiplier" ,
+            wren._ScaleMultiplier * _MiddleTailFeatherScaleMultiplier );
+        shader.SetFloat( "_BaseTailFeatherScale" , wren._ScaleMultiplier * _BaseTailFeatherScale );
 
-      shader.SetInt("_NumScapularColumns", _NumScapularColumns);
-      shader.SetInt("_NumScapularRows", _NumScapularRows);
-      shader.SetInt("_NumTailFeathers", _NumTailFeathers);
 
+        shader.SetFloat( "_LockStartTime" , _LockStartTime );
+        shader.SetFloat( "_Locked" , _LockedValue );
+        shader.SetFloat( "_Explosion" , _ExplosionValue );
+        shader.SetVector( "_ExplosionVector" , _ExplosionVector );
+        shader.SetVector( "_Velocity" , _Velocity );
 
-      shader.SetFloat("_Locked", _LockedValue);
 
-      shader.SetFloat("_TotalShardsInBody", totalShards);
-      shader.SetFloat("_ONumShards", wren.shards.oNumShards);
-      shader.SetFloat("_NumShards", wren.shards.numShards);
-      shader.SetFloat("_TmpNumShards", wren.shards.tmpNumShards);
+        shader.SetInt( "_NumScapularColumns" , _NumScapularColumns );
+        shader.SetInt( "_NumScapularRows" , _NumScapularRows );
+        shader.SetInt( "_NumTailFeathers" , _NumTailFeathers );
 
-      shader.SetVector("_CollectionPosition", wren.shards.collectPosition);
-      shader.SetFloat("_CollectionType", wren.shards.collectType);
 
+        shader.SetFloat( "_Locked" , _LockedValue );
 
-      shader.SetInt("_NumPrimaryFeathers", _NumPrimaryFeathers);
-      shader.SetInt("_NumPrimaryCoverts", _NumPrimaryCoverts);
-      shader.SetInt("_NumLesserCovertRows", _NumLesserCovertsRows);
-      shader.SetInt("_NumLesserCovertCols", _NumLesserCovertsCols);
+        shader.SetFloat( "_BodyShardPercentage" , wren.shards.bodyPercentage );
 
 
-      shader.SetFloat("_Time", Time.time);
-      shader.SetFloat("_DT", Time.deltaTime);
+        shader.SetInt( "_NumPrimaryFeathers" , _NumPrimaryFeathers );
+        shader.SetInt( "_NumPrimaryCoverts" , _NumPrimaryCoverts );
+        shader.SetInt( "_NumLesserCovertRows" , _NumLesserCovertsRows );
+        shader.SetInt( "_NumLesserCovertCols" , _NumLesserCovertsCols );
 
 
+        shader.SetFloat( "_Time" , Time.time );
+        shader.SetFloat( "_DT" , Time.deltaTime );
 
-   }
+        shader.SetFloat( "_TotalShardsInBody" , totalShards );
+        shader.SetFloat( "_ONumShards" , wren.shards.oNumShards );
+        shader.SetFloat( "_NumShards" , wren.shards.numShards );
+        shader.SetFloat( "_TmpNumShards" , wren.shards.tmpNumShards );
 
+        shader.SetVector( "_CollectionPosition" , wren.shards.collectPosition );
+        shader.SetFloat( "_CollectionType" , wren.shards.collectType );
+        //      print(wren.shards.numShards);
 
 
-   public void SetBirdParameters(MaterialPropertyBlock shader)
-   {
+    }
 
-      // print(shader);
 
+    public void SetMaterialProperties()
+    {
 
-      /*
-         Setting some targets that *ARENT* the bird!
-      */
-      if (specialTarget != null)
-      {
-         shader.SetMatrix("_SpecialTarget", specialTarget.localToWorldMatrix);
-      }
+        if ( leftWing_gpu.mpb == null ) {
+            OnEnable();
+        }
 
+        leftWing_gpu.mpb.SetFloat( "_Hue1" , wren.state.hue1 );
+        leftWing_gpu.mpb.SetFloat( "_Hue2" , wren.state.hue2 );
+        leftWing_gpu.mpb.SetFloat( "_Hue3" , wren.state.hue3 );
+        leftWing_gpu.mpb.SetFloat( "_Hue4" , wren.state.hue4 );
 
 
+        rightWing_gpu.mpb.SetFloat( "_Hue1" , wren.state.hue1 );
+        rightWing_gpu.mpb.SetFloat( "_Hue2" , wren.state.hue2 );
+        rightWing_gpu.mpb.SetFloat( "_Hue3" , wren.state.hue3 );
+        rightWing_gpu.mpb.SetFloat( "_Hue4" , wren.state.hue4 );
 
-      //---
-      shader.SetFloat("_ResetValue", _ResetValue);
-      shader.SetVector("_ResetLocation", _ResetLocation);
 
-      shader.SetFloat("_NoiseSizeForFlutter", _NoiseSizeForFlutter);
-      shader.SetFloat("_MaxFlutter", _MaxFlutter);
-      shader.SetFloat("_MinFlutter", _MinFlutter);
-      shader.SetFloat("_MaxFlutterSpeed", _MaxFlutterSpeed);
-      shader.SetFloat("_MinFlutterSpeed", _MinFlutterSpeed);
+        body_gpu.mpb.SetFloat( "_Hue1" , wren.state.hue1 );
+        body_gpu.mpb.SetFloat( "_Hue2" , wren.state.hue2 );
+        body_gpu.mpb.SetFloat( "_Hue3" , wren.state.hue3 );
+        body_gpu.mpb.SetFloat( "_Hue4" , wren.state.hue4 );
 
-      shader.SetFloat("_ReturnToLockTime", _ReturnToLockTime);
-      shader.SetFloat("_ReturnToLockForce", _ReturnToLockForce);
-      shader.SetFloat("_ReturnToLockTimeMultiplier", _ReturnToLockTimeMultiplier);
 
-      shader.SetFloat("_LockDistance", _LockDistance);
-      shader.SetFloat("_LockLerp", _LockLerp);
+        leftWingTrailFromFeathers_gpu.mpb.SetFloat( "_Hue1" , wren.state.hue1 );
+        leftWingTrailFromFeathers_gpu.mpb.SetFloat( "_Hue2" , wren.state.hue2 );
+        leftWingTrailFromFeathers_gpu.mpb.SetFloat( "_Hue3" , wren.state.hue3 );
+        leftWingTrailFromFeathers_gpu.mpb.SetFloat( "_Hue4" , wren.state.hue4 );
 
-      shader.SetFloat("_ExplosionOutForce", _ExplosionOutForce);
-      shader.SetFloat("_ExplosionUpForce", _ExplosionUpForce);
-      shader.SetFloat("_ExplosionVelForce", _ExplosionVelForce);
-      shader.SetFloat("_BackAmountOverlapping", _BackAmountOverlapping);
-      shader.SetFloat("_BaseDirectionLeftRightNoise", _BaseDirectionLeftRightNoise);
+        rightWingTrailFromFeathers_gpu.mpb.SetFloat( "_Hue1" , wren.state.hue1 );
+        rightWingTrailFromFeathers_gpu.mpb.SetFloat( "_Hue2" , wren.state.hue2 );
+        rightWingTrailFromFeathers_gpu.mpb.SetFloat( "_Hue3" , wren.state.hue3 );
+        rightWingTrailFromFeathers_gpu.mpb.SetFloat( "_Hue4" , wren.state.hue4 );
 
-      shader.SetFloat("_BaseDirectionUpNoise", _BaseDirectionUpNoise);
-      shader.SetFloat("_BaseNoiseScale", _BaseNoiseScale);
+        skeleton.instanceMaterial.SetFloat( "_Hue1" , wren.state.hue1 );
+        skeleton.instanceMaterial.SetFloat( "_Hue2" , wren.state.hue2 );
+        skeleton.instanceMaterial.SetFloat( "_Hue3" , wren.state.hue3 );
+        skeleton.instanceMaterial.SetFloat( "_Hue4" , wren.state.hue4 );
 
-      shader.SetFloat("_ScaleMultiplier", wren._ScaleMultiplier);
 
+    }
 
-      shader.SetVector("_WrenVel", wren.physics.vel);
-      shader.SetFloat("_VortexInForce", _VortexInForce);
-      shader.SetFloat("_VortexCurlForce", _VortexCurlForce);
-      shader.SetFloat("_VortexNoiseForce", _VortexNoiseForce);
-      shader.SetFloat("_VortexNoiseSize", _VortexNoiseSize);
 
-      shader.SetFloat("_GroundVortexHeight", _GroundVortexHeight);
-      shader.SetFloat("_GroundVortexForce", _GroundVortexForce);
+    public bool           debugHierarchyConnections;
+    public bool           debugHierarchyBasis;
+    public DebugHierarchy debugHierarchy;
 
-      shader.SetFloat("_GroundLockHeight", _GroundLockHeight);
-      shader.SetFloat("_GroundLockForce", _GroundLockForce);
+    public void SetUpDebug()
+    {
 
-      shader.SetFloat("_MiddleSecondaryFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleSecondaryFeatherScaleMultiplier);
-      shader.SetFloat("_BaseSecondaryFeatherScale", wren._ScaleMultiplier * _BaseSecondaryFeatherScale);
+        debugHierarchy.debugConnections = debugHierarchyConnections;
+        debugHierarchy.debugBasis = debugHierarchyBasis;
+        skeleton.enabled = drawSkeleton;
 
+    }
 
-      shader.SetFloat("_MiddlePrimaryFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddlePrimaryFeatherScaleMultiplier);
-      shader.SetFloat("_BasePrimaryFeatherScale", wren._ScaleMultiplier * _BasePrimaryFeatherScale);
 
-      shader.SetFloat("_MiddleCovertsFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleCovertsFeatherScaleMultiplier);
-      shader.SetFloat("_BaseCovertsFeatherScale", wren._ScaleMultiplier * _BaseCovertsFeatherScale);
+    public bool drawBodyFeather;
+    public bool drawLeftWingFeathers;
+    public bool drawRightWingFeathers;
 
+    public bool drawSkeleton;
 
-      shader.SetFloat("_MiddleScapularFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleScapularFeatherScaleMultiplier);
-      shader.SetFloat("_BaseScapularFeatherScale", wren._ScaleMultiplier * _BaseScapularFeatherScale);
 
+    public bool drawLeftFeatherLines;
+    public bool drawRightFeatherLines;
 
-      shader.SetFloat("_MiddleTailFeatherScaleMultiplier", wren._ScaleMultiplier * _MiddleTailFeatherScaleMultiplier);
-      shader.SetFloat("_BaseTailFeatherScale", wren._ScaleMultiplier * _BaseTailFeatherScale);
+    // debug values
+    public bool drawLeftWingFeatherPoints;
+    public bool drawRightWingFeatherPoints;
 
+    public bool drawBodyPoints;
+    public bool drawBodyFeatherPoints;
 
-      shader.SetFloat("_LockStartTime", _LockStartTime);
-      shader.SetFloat("_Locked", _LockedValue);
-      shader.SetFloat("_Explosion", _ExplosionValue);
-      shader.SetVector("_ExplosionVector", _ExplosionVector);
-      shader.SetVector("_Velocity", _Velocity);
 
+    public void SetUpDraw()
+    {
+        leftWing_gpu.drawFeathers = drawLeftWingFeathers;
+        rightWing_gpu.drawFeathers = drawRightWingFeathers;
+        body_gpu.drawFeathers = drawBodyFeather;
 
-      shader.SetInt("_NumScapularColumns", _NumScapularColumns);
-      shader.SetInt("_NumScapularRows", _NumScapularRows);
-      shader.SetInt("_NumTailFeathers", _NumTailFeathers);
+        leftWing_gpu.debugFeatherPoints = drawLeftWingFeatherPoints;
+        rightWing_gpu.debugFeatherPoints = drawRightWingFeatherPoints;
+        body_gpu.debugFeatherPoints = drawBodyFeatherPoints;
 
+        leftWing_gpu.debugLinePoints = drawLeftFeatherLines;
+        rightWing_gpu.debugLinePoints = drawRightFeatherLines;
+        body_gpu.debugLinePoints = drawBodyPoints;
 
-      shader.SetFloat("_Locked", _LockedValue);
 
-      shader.SetFloat("_BodyShardPercentage", wren.shards.bodyPercentage);
-
-
-      shader.SetInt("_NumPrimaryFeathers", _NumPrimaryFeathers);
-      shader.SetInt("_NumPrimaryCoverts", _NumPrimaryCoverts);
-      shader.SetInt("_NumLesserCovertRows", _NumLesserCovertsRows);
-      shader.SetInt("_NumLesserCovertCols", _NumLesserCovertsCols);
-
-
-      shader.SetFloat("_Time", Time.time);
-      shader.SetFloat("_DT", Time.deltaTime);
-
-      shader.SetFloat("_TotalShardsInBody", totalShards);
-      shader.SetFloat("_ONumShards", wren.shards.oNumShards);
-      shader.SetFloat("_NumShards", wren.shards.numShards);
-      shader.SetFloat("_TmpNumShards", wren.shards.tmpNumShards);
-
-      shader.SetVector("_CollectionPosition", wren.shards.collectPosition);
-      shader.SetFloat("_CollectionType", wren.shards.collectType);
-      //      print(wren.shards.numShards);
-
-
-   }
-
-
-
-
-   public void SetMaterialProperties()
-   {
-
-      if (leftWing_gpu.mpb == null)
-      {
-         OnEnable();
-      }
-
-      leftWing_gpu.mpb.SetFloat("_Hue1", wren.state.hue1);
-      leftWing_gpu.mpb.SetFloat("_Hue2", wren.state.hue2);
-      leftWing_gpu.mpb.SetFloat("_Hue3", wren.state.hue3);
-      leftWing_gpu.mpb.SetFloat("_Hue4", wren.state.hue4);
-
-
-
-
-      rightWing_gpu.mpb.SetFloat("_Hue1", wren.state.hue1);
-      rightWing_gpu.mpb.SetFloat("_Hue2", wren.state.hue2);
-      rightWing_gpu.mpb.SetFloat("_Hue3", wren.state.hue3);
-      rightWing_gpu.mpb.SetFloat("_Hue4", wren.state.hue4);
-
-
-
-
-
-      body_gpu.mpb.SetFloat("_Hue1", wren.state.hue1);
-      body_gpu.mpb.SetFloat("_Hue2", wren.state.hue2);
-      body_gpu.mpb.SetFloat("_Hue3", wren.state.hue3);
-      body_gpu.mpb.SetFloat("_Hue4", wren.state.hue4);
-
-
-      leftWingTrailFromFeathers_gpu.mpb.SetFloat("_Hue1", wren.state.hue1);
-      leftWingTrailFromFeathers_gpu.mpb.SetFloat("_Hue2", wren.state.hue2);
-      leftWingTrailFromFeathers_gpu.mpb.SetFloat("_Hue3", wren.state.hue3);
-      leftWingTrailFromFeathers_gpu.mpb.SetFloat("_Hue4", wren.state.hue4);
-
-      rightWingTrailFromFeathers_gpu.mpb.SetFloat("_Hue1", wren.state.hue1);
-      rightWingTrailFromFeathers_gpu.mpb.SetFloat("_Hue2", wren.state.hue2);
-      rightWingTrailFromFeathers_gpu.mpb.SetFloat("_Hue3", wren.state.hue3);
-      rightWingTrailFromFeathers_gpu.mpb.SetFloat("_Hue4", wren.state.hue4);
-
-
-
-   }
-
-
-   public bool debugHierarchyConnections;
-   public bool debugHierarchyBasis;
-   public DebugHierarchy debugHierarchy;
-
-   public void SetUpDebug()
-   {
-
-      debugHierarchy.debugConnections = debugHierarchyConnections;
-      debugHierarchy.debugBasis = debugHierarchyBasis;
-      skeleton.enabled = drawSkeleton;
-
-   }
-
-
-
-   public bool drawBodyFeather;
-   public bool drawLeftWingFeathers;
-   public bool drawRightWingFeathers;
-
-   public bool drawSkeleton;
-
-
-
-   public bool drawLeftFeatherLines;
-   public bool drawRightFeatherLines;
-
-   // debug values
-   public bool drawLeftWingFeatherPoints;
-   public bool drawRightWingFeatherPoints;
-
-   public bool drawBodyPoints;
-   public bool drawBodyFeatherPoints;
-
-
-
-
-
-
-   public void SetUpDraw()
-   {
-      leftWing_gpu.drawFeathers = drawLeftWingFeathers;
-      rightWing_gpu.drawFeathers = drawRightWingFeathers;
-      body_gpu.drawFeathers = drawBodyFeather;
-
-      leftWing_gpu.debugFeatherPoints = drawLeftWingFeatherPoints;
-      rightWing_gpu.debugFeatherPoints = drawRightWingFeatherPoints;
-      body_gpu.debugFeatherPoints = drawBodyFeatherPoints;
-
-      leftWing_gpu.debugLinePoints = drawLeftFeatherLines;
-      rightWing_gpu.debugLinePoints = drawRightFeatherLines;
-      body_gpu.debugLinePoints = drawBodyPoints;
-
-
-
-
-   }
-
-
-
+    }
 }

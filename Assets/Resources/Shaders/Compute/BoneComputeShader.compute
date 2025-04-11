@@ -1,0 +1,356 @@
+﻿#pragma kernel BONES
+
+float4x4 transform;
+
+#include "../Chunks/safeID.cginc"
+#include "../Chunks/Matrix.cginc"
+
+
+float3 _WrenVel;
+
+
+float4x4 _Transform;
+
+float _Locked;
+float _LeftOrRight;
+
+float _ScaleMultiplier;
+
+void setFromMatrix( float4x4 mat , out float3 p , out float3 r , out float3 u , out float3 f )
+{
+    p = mul( mat , float4( 0 , 0 , 0 , 1 ) ).xyz;
+    r = _ScaleMultiplier * normalize( mul( mat , float4( 1 , 0 , 0 , 0 ) ).xyz ) * ( _LeftOrRight );
+    u = _ScaleMultiplier * normalize( mul( mat , float4( 0 , 1 , 0 , 0 ) ).xyz );
+    f = _ScaleMultiplier * normalize( mul( mat , float4( 0 , 0 , 1 , 0 ) ).xyz );
+}
+
+
+#include "../Chunks/rotationMatrix.cginc"
+#include "../Chunks/translationMatrix.cginc"
+#include "../Chunks/scaleMatrix.cginc"
+#include "../Chunks/hash.cginc"
+#include "../Chunks/snoise3D.cginc"
+#include "../Chunks/curlNoise.cginc"
+
+
+struct FullTransform
+{
+    float4x4 fullMatrix;
+    float3   pos;
+    float3   vel;
+    float2   debug;
+};
+
+RWStructuredBuffer<FullTransform> _FinalTransformBuffer;
+
+StructuredBuffer<float2>   _ConnectionBuffer;
+StructuredBuffer<float4x4> _TransformBuffer;
+
+
+float _Time;
+float _DT;
+
+float3 v1;
+float3 v2;
+
+float3 _Soul;
+
+float3 _Velocity;
+
+float  _Explosion;
+float3 _ExplosionVector;
+float  _LockStartTime;
+
+
+float _ResetValue;
+
+float _ReturnToLockTime;
+float _ReturnToLockForce;
+float _ReturnToLockTimeMultiplier;
+
+float _LockDistance;
+float _LockLerp;
+
+float _ExplosionOutForce;
+float _ExplosionUpForce;
+float _ExplosionVelForce;
+
+float3 _GroundNor;
+
+
+float _VortexInForce;
+float _VortexCurlForce;
+float _VortexNoiseForce;
+float _VortexNoiseSize;
+
+
+float _GroundVortexHeight;
+float _GroundVortexForce;
+
+float _GroundLockHeight;
+float _GroundLockForce;
+
+
+float _TotalShardsInBody;
+float _NumShards;
+float _TmpNumShards;
+float _ONumShards;
+
+float3 _CollectionPosition;
+float  _CollectionType;
+
+
+//---
+
+
+#include "../Chunks/terrainData.cginc"
+
+
+float4x4 _SpecialTarget;
+float3   _SpecialLockPos;
+float3   _ResetLocation;
+
+int   _Count;
+float _Size;
+
+#define NR_THREADS 64
+
+[numthreads(NR_THREADS,1,1)]
+void BONES( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , uint3 id : SV_DispatchThreadID )
+{
+
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
+    if ( pID >= _Count )
+    {
+        return;
+    }
+
+    FullTransform ft = _FinalTransformBuffer[ pID ];
+
+
+
+    float2   connections = _ConnectionBuffer[ pID ];
+    float4x4 m1          = _TransformBuffer[ int( connections.x ) ];
+    float4x4 m2          = _TransformBuffer[ int( connections.y ) ];
+
+
+    float3 p1 = mul( m1 , float4( 0 , 0 , 0 , 1 ) ).xyz;
+    float3 p2 = mul( m2 , float4( 0 , 0 , 0 , 1 ) ).xyz;
+
+
+    float3 dif = p2 - p1;
+
+
+    float3 f1 = mul( m1 , float4( 0 , 0 , 1 , 0 ) ).xyz;
+    float3 f2 = mul( m2 , float4( 0 , 0 , 1 , 0 ) ).xyz;
+
+    float3 r1 = mul( m1 , float4( 1 , 0 , 0 , 0 ) ).xyz;
+    float3 r2 = mul( m2 , float4( 1 , 0 , 0 , 0 ) ).xyz;
+
+    float3 u1 = mul( m1 , float4( 0 , 1 , 0 , 0 ) ).xyz;
+    float3 u2 = mul( m2 , float4( 0 , 1 , 0 , 0 ) ).xyz;
+
+
+    float3 p = ( p1 + p2 ) / 2;
+    float3 f = ( f1 + f2 ) / 2;
+    float3 r = ( r1 + r2 ) / 2;
+    float3 u = ( u1 + u2 ) / 2;
+
+
+    float3 lockPos = p;
+
+    r = normalize( dif );
+
+    u = float3( 0 , 1 , 0 ); //normalize(cross(r, f));
+    f = cross( u , r );
+    u = cross( r , f ); // unflatten if similar
+
+
+
+    f = normalize( f );
+    r = normalize( r );
+    u = normalize( u );
+
+
+    float scl = length( dif ) * _Size;
+
+    //    scl = 1;
+
+    //r = float3( 1 , 0 , 0 );
+    //u = float3( 0 , 1 , 0 );
+    //f = float3( 0 , 0 , 1 );
+    // p = float3( 0 , 0 , 0 );
+
+    float3 vel = ft.vel;
+
+    float3 force    = 0;
+    float3 forcePos = p;
+
+    float3 lockDif = ft.pos - lockPos;
+
+    float3 fPos = ft.pos;
+
+    float3 groundPos;
+    float3 groundNor;
+
+
+    GetTerrainData( fPos , groundPos , groundNor );
+
+
+    if ( length( lockDif ) < 5 )
+    {
+        vel -= lockDif * _ReturnToLockForce * _Locked * pow(
+            clamp( ( _Time - _LockStartTime ) * _ReturnToLockTimeMultiplier , 0 , 100 ) , 2 );
+    }
+    else
+    {
+        vel -= normalize( lockDif ) * _ReturnToLockForce * _Locked * pow(
+            clamp( ( _Time - _LockStartTime ) * _ReturnToLockTimeMultiplier , 0 , 100 ) , 2 );
+    }
+
+    float3 c = curlNoise( lockPos * 1 );
+
+    // vortex around special target!
+    if ( _Locked == -1 )
+    {
+        float3 sp = mul( _SpecialTarget , float4( 0 , 0 , 0 , 1 ) ).xyz;
+        // noise for prettiness
+        vel += curlNoise( forcePos * _VortexNoiseSize ) * _VortexNoiseForce; //
+
+        // Towards center force
+        vel += ( sp - forcePos ) * _VortexInForce * 100;
+
+        //vel += float3(0,1,0);
+
+        // Curls around normal
+        vel += cross( normalize( sp - forcePos ) , normalize( groundNor ) ) * _VortexCurlForce;
+
+        vel *= .9;
+    }
+
+
+
+    /*
+        if ( _Locked == 0 )
+        {
+            // noise for prettiness
+            vel += curlNoise( fPos * _VortexNoiseSize ) * _VortexNoiseForce; //
+    
+            // Towards center force
+            vel += ( _Soul - fPos ) * _VortexInForce;
+    
+            // Curls around normal
+            vel += cross( normalize( _Soul - fPos ) , float3( 0 , 1 , 0 ) ) * _VortexCurlForce;
+        }*/
+
+
+
+    if ( _Locked == 0 )
+    {
+        vel += curlNoise( fPos * _VortexNoiseSize ) * _VortexNoiseForce; //
+        vel += ( _Soul - fPos ) * _VortexInForce;
+        vel += cross( normalize( _Soul - fPos ) , groundNor ) * _VortexCurlForce;
+
+        if ( groundPos.y + _GroundLockHeight > fPos.y )
+        {
+            //  vel += groundNor * 11;
+        }
+    }
+
+
+
+    if ( _Explosion == 1 )
+    {
+        //vel = 0;
+        // shoot forward more
+        vel *= float3( 1 , 0 , 1 );
+        // Goes BOOM
+        vel += ( _ExplosionVector * _ExplosionUpForce * 3 + c * _ExplosionOutForce * 1 * float3( 1 , 0 , 1 ) );
+    }
+
+
+
+
+    if ( _ResetValue > .5 )
+    {
+
+        fPos = lockPos;
+        vel  = 0;
+    }
+
+    if ( _ResetValue > 1.5 && _ResetValue < 2.5 )
+    {
+
+        // reseting at position w/ a bit of offset to give it vortex
+        float3 centerPos = _ResetLocation;
+
+        if ( _Locked == -1 )
+        {
+            centerPos = mul( _SpecialTarget , float4( 0 , 0 , 0 , 1 ) ).xyz;
+        }
+
+        fPos = centerPos;
+        vel  = 0;
+    }
+\
+    if ( _ResetValue > 2.5 )
+    {
+
+        fPos += _ResetLocation;
+
+    }
+
+
+
+
+
+
+    bool nan;
+
+    nan = isnan( vel );
+    if ( nan ) { vel = float3( 1 , 0 , 0 ); }
+
+    vel *= ( hash( float( pID ) ) * .6 + .4 );
+    fPos += vel * _DT * .1; // * _DT;
+
+    nan = isnan( fPos );
+    if ( nan ) { fPos = lockPos; }
+
+    //  vel *= .9f;
+    vel *= .96 - .19 * clamp( _Locked , 0 , 1 ); // - .1 * clamp( returnToLockValue, 0,1);
+
+
+
+    fPos = lerp( fPos , lockPos , _Locked * clamp( pow(
+                                                       clamp(
+                                                           .03 * ( _Time - _LockStartTime ) *
+                                                           _ReturnToLockTimeMultiplier ,
+                                                           0 ,
+                                                           2 ) , 2 ) , 0 , 1 ) );
+    //fPos = lockPos;
+
+    float4x4 worldMat = float4x4(
+        scl * r.x , scl * u.x , scl * f.x , fPos.x ,
+        scl * r.y , scl * u.y , scl * f.y , fPos.y ,
+        scl * r.z , scl * u.z , scl * f.z , fPos.z ,
+        0 , 0 , 0 , 1 );
+
+    /* worldMat = float4x4(
+         1 , 0 , 0 , 0 ,
+         0 , 1 , 0 , 0 ,
+         0 , 0 , 1 , 0 ,
+         0 , 0 , 0 , 1 );*/
+
+
+    ft.fullMatrix = worldMat;
+    ft.vel        = vel;
+    ft.pos        = fPos;
+
+    ft.debug = float2( .8 , .1 );
+
+
+    _FinalTransformBuffer[ pID ] = ft;
+
+
+
+}

@@ -2719,8 +2719,13 @@ MonoBehaviour:
   debugHierarchy: {fileID: 3751723881530980275}
   instanceMesh: {fileID: -5495902117074765545, guid: a1dcddb2b4aedf54787f09b2bbc712e0,
     type: 3}
-  instanceMaterial: {fileID: 2100000, guid: d45c015b25fe3974bae0fd98749dd515, type: 2}
+  instanceMaterial: {fileID: 2100000, guid: 5d9319ce8d6a75041bfab7aa358c786a, type: 2}
   subMeshIndex: 0
+  transformShader: {fileID: 7200000, guid: 974d07344011d4a42a737b7012cacb72, type: 3}
+  numGroups: 0
+  numThreads: 0
+  _Size: 5
+  values: []
 --- !u!1 &1315740570936701672
 GameObject:
   m_ObjectHideFlags: 0
@@ -11493,7 +11498,7 @@ MonoBehaviour:
   totalShards: 4471
   featherStructSize: 36
   debug: 1
-  debugHierarchyConnections: 1
+  debugHierarchyConnections: 0
   debugHierarchyBasis: 0
   debugHierarchy: {fileID: 3751723881530980275}
   drawBodyFeather: 1
