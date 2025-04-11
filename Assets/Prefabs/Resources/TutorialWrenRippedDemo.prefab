@@ -28307,6 +28307,8 @@ MonoBehaviour:
   FeetCarriedItems: 
   lineRendererL: {fileID: 0}
   lineRendererR: {fileID: 0}
+  carryableObjects: []
+  canCarryLineRenderer: {fileID: 0}
   carryingLineResolution: 30
 --- !u!114 &7282418919974470726
 MonoBehaviour:

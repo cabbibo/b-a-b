@@ -167,14 +167,16 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
     public void DoTakeoffTutorialFinish()
     {
 
+        print( "HIII" );
+
         God.state.wrenCanDo.hasLearnedTakeOff = true;
         God.state.UpdateState();
 
-        if ( God.state.wrenCanDo.hasLearnedCarry == false && God.state.wrenCanDo.hasLearnedPing == true ) {
-            carryTutorial.JumpStartTutorial();
-        } else {
-            carryTutorial.CheckState();
-        }
+        /*  if ( God.state.wrenCanDo.hasLearnedCarry == false && God.state.wrenCanDo.hasLearnedPing == true ) {
+              carryTutorial.JumpStartTutorial();
+          } else {
+              carryTutorial.CheckState();
+          }*/
 
 
     }

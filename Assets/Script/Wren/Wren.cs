@@ -5,15 +5,11 @@ using TMPro;
 using Normal.Realtime;
 using UnityEngine.UI;
 using WrenUtils;
+
 //using System.Numerics;
 
 public class Wren : MonoBehaviour
 {
-
-
-
-
-
     /*
 
         References
@@ -22,13 +18,13 @@ public class Wren : MonoBehaviour
 
     public bool inEther;
 
-    public TextMesh title;
-    public FullBird bird;
-    public WrenInput input;
-    public WrenPhysics physics;
+    public TextMesh       title;
+    public FullBird       bird;
+    public WrenInput      input;
+    public WrenPhysics    physics;
     public WrenCameraWork cameraWork;
 
-    public WrenSynths sounds;
+    public WrenSynths   sounds;
     public WrenCarrying carrying;
 
     public WrenCompass compass;
@@ -57,14 +53,14 @@ public class Wren : MonoBehaviour
     public WrenDisintegrationManager disintegration;
 
 
-    public Caller caller;
-    public Reseter reseter;
+    public Caller     caller;
+    public Reseter    reseter;
     public Collection collection;
 
 
     // TODO remove?
     public FullInterface fullInterface;
-    public AirInterface airInterface;
+    public AirInterface  airInterface;
 
 
     public Transform startingPosition;
@@ -88,13 +84,7 @@ public class Wren : MonoBehaviour
     public bool doInterface;
 
 
-
-
-
-
-
-
-    void OnEnable()
+    private void OnEnable()
     {
 
         canMove = false;
@@ -102,17 +92,22 @@ public class Wren : MonoBehaviour
 
 
         // Makes our beacon ( aka nest ) link to us
-        if (beacon) { beacon.Create(); }
+        if ( beacon ) {
+            beacon.Create();
+        }
+
         parameters.Reset();
 
         FindInfo();
 
 
-        startingPosition = GameObject.Find("StartPosition").transform;
+        startingPosition = GameObject.Find( "StartPosition" ).transform;
 
-        maker.wrens.Add(this);
-        if (collection) { collection.CreateHolders(); }
+        maker.wrens.Add( this );
 
+        if ( collection ) {
+            collection.CreateHolders();
+        }
 
 
     }
@@ -123,22 +118,24 @@ public class Wren : MonoBehaviour
 
 
         state.CheckForOriginals();
-        state.SetInRace(-1);
+        state.SetInRace( -1 );
         rt_Tranform.RequestOwnership();
 
         //  FullReset();
 
 
-
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
-        maker.wrens.Remove(this);
-        if (beacon) { beacon.Demolish(); }
+        maker.wrens.Remove( this );
+
+        if ( beacon ) {
+            beacon.Demolish();
+        }
     }
 
-    public void PhaseShift(Vector3 p)
+    public void PhaseShift( Vector3 p )
     {
 
 //        print("PHASE SHIFT CALLED");
@@ -147,10 +144,10 @@ public class Wren : MonoBehaviour
         // teleport camera
         //gpu bird teleport
 
-        cameraWork.Offset(p - transform.position);
-        bird.PhaseShift(p - transform.position);
+        cameraWork.Offset( p - transform.position );
+        bird.PhaseShift( p - transform.position );
 
-        physics.TransportToPosition(p, physics.rb.velocity);
+        physics.TransportToPosition( p , physics.rb.velocity );
 
         God.cameraManager.PhaseShift();
 
@@ -158,17 +155,17 @@ public class Wren : MonoBehaviour
     }
 
 
-    public void PhaseShift(Transform t)
+    public void PhaseShift( Transform t )
     {
 
 
         // cameraWork.Offset(t.position - transform.position);
 
-        cameraWork.Offset(transform, t);
-        bird.PhaseShift(t.position - transform.position);
+        cameraWork.Offset( transform , t );
+        bird.PhaseShift( t.position - transform.position );
 
 
-        physics.TransportToTransform(t, physics.rb.velocity);
+        physics.TransportToTransform( t , physics.rb.velocity );
         // physics.TransportToPosition(t.position, physics.rb.velocity);
 
         // cameraWork.SetDirection(t);
@@ -186,12 +183,12 @@ public class Wren : MonoBehaviour
 
         physics.Reset();
 
-        Vector3 fPos = startingPosition.position + Vector3.up * physics.groundUpVal;
-        Crash(fPos);
-        state.LookAt(fPos + startingPosition.forward);
+        var fPos = startingPosition.position + Vector3.up * physics.groundUpVal;
+        Crash( fPos );
+        state.LookAt( fPos + startingPosition.forward );
 
         //        print(fPos);
-        bird.ResetAtLocation(fPos);//Values();
+        bird.ResetAtLocation( fPos ); //Values();
 
         //print(startingPosition.position);
         cameraWork.Reset();
@@ -199,94 +196,81 @@ public class Wren : MonoBehaviour
     }
 
 
-    public void Crash(Vector3 p)
+    public void Crash( Vector3 p )
     {
 
         //        print("CRASH CALLED");
 
-        Vector3 fPos = GroundIntersection(p) + Vector3.up * physics.groundUpVal;
+        var fPos = GroundIntersection( p ) + Vector3.up * physics.groundUpVal;
         //        print(fPos);
 
-        physics.TransportToPosition(fPos, Vector3.zero);
+        physics.TransportToPosition( fPos , Vector3.zero );
         state.HitGround();
-        if (autoTakeOff)
-        {
+
+        if ( autoTakeOff ) {
             state.TakeOff();
         }
     }
 
 
-    public Vector3 GroundIntersection(Vector3 p)
+    public Vector3 GroundIntersection( Vector3 p )
     {
 
         RaycastHit hit;
 
-        Vector3 newPos = p;
+        var newPos = p;
 
         // Ignore ourselves for collision hit
-        var layerMask = (1 << 10);
+        int layerMask = 1 << 10;
         layerMask = ~layerMask;
-        if (Physics.Raycast(p + Vector3.up * 3, -Vector3.up, out hit, 100000, layerMask))
-        {
+
+        if ( Physics.Raycast( p + Vector3.up * 3 , -Vector3.up , out hit , 100000 , layerMask ) ) {
             newPos = hit.point;
-        }
-        else
-        {
-            if (Physics.Raycast(p - Vector3.up * 3, Vector3.up, out hit, 100000, layerMask))
-            {
+        } else {
+            if ( Physics.Raycast( p - Vector3.up * 3 , Vector3.up , out hit , 100000 , layerMask ) ) {
                 newPos = hit.point;
-            }
-            else
-            {
+            } else {
                 newPos = p - Vector3.up * physics.groundUpVal;
             }
         }
 
 
-
-        if (God.oceanInfo.hasOcean)
-        {
+        if ( God.oceanInfo.hasOcean ) {
 
 
-            if (God.oceanInfo.groundPosition.y > newPos.y)
-            {
+            if ( God.oceanInfo.groundPosition.y > newPos.y ) {
 
 
                 newPos = God.oceanInfo.groundPosition;
             }
 
         }
+
         return newPos;
 
     }
 
 
-    public Vector3 GroundNormal(Vector3 p)
+    public Vector3 GroundNormal( Vector3 p )
     {
 
         RaycastHit hit;
 
-        Vector3 newPos = p;
+        var newPos = p;
 
         // Ignore ourselves for collision hit
-        var layerMask = (1 << 10);
+        int layerMask = 1 << 10;
         layerMask = ~layerMask;
-        if (Physics.Raycast(p + Vector3.up * 3, -Vector3.up, out hit, 100000, layerMask))
-        {
-            newPos = hit.normal;
-        }
-        else
-        {
-            if (Physics.Raycast(p - Vector3.up * 3, Vector3.up, out hit, 100000, layerMask))
-            {
-                newPos = hit.normal;
-            }
-            else
-            {
-                newPos = Vector3.up;//p - Vector3.up * physics.groundUpVal;
-            }
-        }
 
+        if ( Physics.Raycast( p + Vector3.up * 3 , -Vector3.up , out hit , 100000 , layerMask ) ) {
+            newPos = hit.normal;
+        } else {
+            if ( Physics.Raycast( p - Vector3.up * 3 , Vector3.up , out hit , 100000 , layerMask ) ) {
+                newPos = hit.normal;
+            } else {
+                newPos = Vector3.up; //p - Vector3.up * physics.groundUpVal;
+            }
+        }
 
 
         return newPos;
@@ -294,16 +278,12 @@ public class Wren : MonoBehaviour
     }
 
 
-
-
     public float lastFlapTime;
-    void Update()
+
+    private void Update()
     {
 
-        if (state.isLocal)
-        {
-
-
+        if ( state.isLocal ) {
 
 
             input.SetInput();
@@ -311,30 +291,25 @@ public class Wren : MonoBehaviour
             // state.inInterface = God.menu.menuOn;
 
             // ALWAYS PING
-            if (input.o_triangle < .5 && input.triangle > .5 && God.wrenCanDo.ping)
-            {
-                if (interfaceUtils != null)
-                {
+            if ( input.o_triangle < .5 && input.triangle > .5 && God.wrenCanDo.ping ) {
+                if ( interfaceUtils != null ) {
                     interfaceUtils.OnPing();
                 }
             }
 
             // ALWAYS DISINTEGRATE
-            if (input.o_square < .5 && input.square > .5 && God.wrenCanDo.disintegrate)
-            {
+            if ( input.o_square < .5 && input.square > .5 && God.wrenCanDo.disintegrate ) {
                 disintegration.Disintegrate();
             }
 
+            if ( input.left1 > .1f || input.right1 > .1f ) {
+                carrying.CheckPickup( this );
+            }
 
 
+            if ( doInterface ) {
 
-
-
-            if (doInterface)
-            {
-
-                if (input.o_square < .5 && input.square > .5)
-                {
+                if ( input.o_square < .5 && input.square > .5 ) {
                     caller.Call();
                 }
 
@@ -346,38 +321,28 @@ public class Wren : MonoBehaviour
                   }*/
 
 
-
                 // Only drop items in air ( is that correct? )
-                if (input.o_triangle < .5 && input.triangle > .5 && state.canTakeOff)
-                {
-                    if (compass != null)
-                    {
+                if ( input.o_triangle < .5 && input.triangle > .5 && state.canTakeOff ) {
+                    if ( compass != null ) {
                         compass.Toggle();
                     }
                 }
 
-                if (canMove)
-                {
+                if ( canMove ) {
 
-                    if (input.left1 > .1f && !physics.onGround)
-                    {
+                    if ( input.left1 > .1f && !physics.onGround ) {
                         // God.audio.FadeLoop(God.sounds.dropParticlesLoop , 1 , .01f);
                         bird.leftWingTrailFromFeathers_gpu.emitting = 1;
-                    }
-                    else
-                    {
+                    } else {
                         // God.audio.FadeLoop(God.sounds.dropParticlesLoop , 0, .01f);
                         bird.leftWingTrailFromFeathers_gpu.emitting = 0;
                     }
 
 
-                    if (input.right1 > .1f && !physics.onGround)
-                    {
+                    if ( input.right1 > .1f && !physics.onGround ) {
                         //God.audio.FadeLoop(God.sounds.dropParticlesLoop , 1 , .01f);
                         bird.rightWingTrailFromFeathers_gpu.emitting = 1;
-                    }
-                    else
-                    {
+                    } else {
                         //God.audio.FadeLoop(God.sounds.dropParticlesLoop , 0, .01f);
                         bird.rightWingTrailFromFeathers_gpu.emitting = 0;
                     }
@@ -387,8 +352,7 @@ public class Wren : MonoBehaviour
 
             }
 
-            if (canMove)
-            {
+            if ( canMove ) {
 
 
                 // Only drop items in air ( is that correct? )
@@ -398,42 +362,37 @@ public class Wren : MonoBehaviour
                    }
                  */
 
-                if (input.left1 < .5 && input.o_left1 > .5 && state.inInterface == false)
-                {
+                if ( input.left1 < .5 && input.o_left1 > .5 && state.inInterface == false ) {
                     carrying.DropLeftFootItems();
                 }
 
-                if (input.right1 < .5 && input.o_right1 > .5 && state.inInterface == false)
-                {
+                if ( input.right1 < .5 && input.o_right1 > .5 && state.inInterface == false ) {
                     carrying.DropRightFootItems();
                 }
 
 
-                if (input.o_ex < .5 && input.ex > .5 && physics.onGround == false && God.wrenCanDo.hover)
-                {
-                    God.audio.Play(God.sounds.takeoffClip);
+                if ( input.o_ex < .5 && input.ex > .5 && physics.onGround == false && God.wrenCanDo.hover ) {
+                    God.audio.Play( God.sounds.takeoffClip );
                     physics.ToggleHoverState();
                 }
 
 
-                if (input.o_ex < .5 && input.ex > .5 && physics.onGround == true && state.inInterface == false && state.canTakeOff)
-                {
+                if ( input.o_ex < .5 && input.ex > .5 && physics.onGround == true && state.inInterface == false &&
+                     state.canTakeOff ) {
 
-                    print("HIII");
-                    God.audio.Play(God.sounds.takeoffClip);
+                    print( "HIII" );
+                    God.audio.Play( God.sounds.takeoffClip );
                     state.TakeOff();
                 }
 
 
-
-
-                if (input.o_circle < .5 && input.circle > .5 && physics.onGround == false && state.inInterface == false && shards.numShards > 0 && God.wrenCanDo.boost)
-                {
-                    God.audio.Play(God.sounds.boostClip);
-                    shards.DoBoost(); ;
+                if ( input.o_circle < .5 && input.circle > .5 && physics.onGround == false &&
+                     state.inInterface == false && shards.numShards > 0 && God.wrenCanDo.boost ) {
+                    God.audio.Play( God.sounds.boostClip );
+                    shards.DoBoost();
+                    ;
                     physics.Boost();
                 }
-
 
 
                 /*
@@ -449,50 +408,42 @@ public class Wren : MonoBehaviour
                             */
 
 
-
-
                 // ONLY do interface stuff when we aren't 
                 // in the ether!
 
-                if (!inEther && doInterface)
-                {
+                if ( !inEther && doInterface ) {
 
 
-                    if (input.o_circle < .5 && input.circle > .5)
-                    {
+                    if ( input.o_circle < .5 && input.circle > .5 ) {
                         state.inInterface = !state.inInterface;
-                        ToggleInterface(state.inInterface);
+                        ToggleInterface( state.inInterface );
                     }
 
 
+                    if ( input.dLeft > .5f && input.o_dLeft <= .5f ) {
 
-                    if (input.dLeft > .5f && input.o_dLeft <= .5f)
-                    {
-
-                        Ray ray = new Ray();
+                        var ray = new Ray();
                         ray.origin = Camera.main.transform.position;
                         ray.direction = Camera.main.transform.forward;
                         RaycastHit hit;
-                        if (Physics.Raycast(ray, out hit, 10000))
-                        {
-                            beacon.PlaceBeacon(hit.point);
+
+                        if ( Physics.Raycast( ray , out hit , 10000 ) ) {
+                            beacon.PlaceBeacon( hit.point );
                         }
 
                     }
 
-                    if (input.o_dUp < .5 && input.dUp > .5)
-                    {
+                    if ( input.o_dUp < .5 && input.dUp > .5 ) {
 
-                        if (state.beaconOn == true)
-                        {
+                        if ( state.beaconOn == true ) {
 
 
-                            Crash(startingPosition.position);
-                            ToggleInterface(false);
+                            Crash( startingPosition.position );
+                            ToggleInterface( false );
                             state.HitGround();
-                            state.LookAt(transform.position + beacon.transform.forward);
+                            state.LookAt( transform.position + beacon.transform.forward );
                             physics.Reset();
-                            bird.ResetAtLocation(beacon.nest.transform.position);
+                            bird.ResetAtLocation( beacon.nest.transform.position );
 
                             cameraWork.Reset();
 
@@ -512,10 +463,8 @@ public class Wren : MonoBehaviour
                     }
 
 
-                }
-                else
-                {
-                    beacon.PlaceBeacon(Vector3.one * 1000000f);
+                } else {
+                    beacon.PlaceBeacon( Vector3.one * 1000000f );
                 }
 
             }
@@ -524,88 +473,72 @@ public class Wren : MonoBehaviour
             carrying.UpdateCarriedItems();
             sounds.UpdateSound();
 
-        }
-        else
-        {
+        } else {
 
             input.GetInput();
 
 
-            if (input.left1 > .1f)
-            {
+            if ( input.left1 > .1f ) {
                 bird.leftWingTrailFromFeathers_gpu.emitting = 1;
-            }
-            else
-            {
+            } else {
                 bird.leftWingTrailFromFeathers_gpu.emitting = 0;
             }
 
 
-            if (input.right1 > .1f)
-            {
+            if ( input.right1 > .1f ) {
                 bird.rightWingTrailFromFeathers_gpu.emitting = 1;
-            }
-            else
-            {
+            } else {
                 bird.rightWingTrailFromFeathers_gpu.emitting = 0;
             }
-
 
 
         }
 
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
-        if (state.isLocal)
-        {
+        if ( state.isLocal ) {
 
             bird.UpdateBody();
             cameraWork.CameraWork();
         }
     }
-    void FixedUpdate()
+
+    private void FixedUpdate()
     {
 
-        if (state.isLocal && canMove)
-        {
+        if ( state.isLocal && canMove ) {
             physics.UpdatePhysics();
         }
 
-        if (!inEther)
-        {
+        if ( !inEther ) {
             growth.updateGrowth();
         }
 
     }
 
 
-
-
-
     public virtual void LocalReset()
     {
 
 
-        print("LOCAL RESET CALLED");
+        print( "LOCAL RESET CALLED" );
         bird.ResetFeatherValues();
         physics.LocalReset();
         cameraWork.Reset();
 
     }
 
-    public virtual void ResetToOtherPlayer(GameObject other)
+    public virtual void ResetToOtherPlayer( GameObject other )
     {
         bird.ResetFeatherValues();
-        physics.ResetToOther(other);
+        physics.ResetToOther( other );
 
     }
 
 
-
-
-    public void ToggleInterface(bool onOff)
+    public void ToggleInterface( bool onOff )
     {
         //  interface.gameObject.SetActive(onOff);
 
@@ -614,39 +547,38 @@ public class Wren : MonoBehaviour
 
         //physics.rb.isKinematic = onOff;
 
-        state.inInterface = onOff;//true;
+        state.inInterface = onOff; //true;
 
-        if (physics.onGround)
-        {
-            if (fullInterface)
-            {
+        if ( physics.onGround ) {
+            if ( fullInterface ) {
 
-                fullInterface.Toggle(onOff);
+                fullInterface.Toggle( onOff );
             }
-        }
-        else
-        {
-            if (airInterface) { airInterface.Toggle(onOff); }
+        } else {
+            if ( airInterface ) {
+                airInterface.Toggle( onOff );
+            }
             //compass.gameObject.SetActive(onOff);//.Toggle( onOff);
         }
 
     }
 
 
-
     public void FindInfo()
     {
 
-        GameObject terrain = GameObject.Find("Terrain");
-        if (terrain)
-        {
+        var terrain = GameObject.Find( "Terrain" );
+
+        if ( terrain ) {
             physics.terrain = terrain.GetComponent<Terrain>();
             physics.terrainCollider = terrain.GetComponent<Collider>();
         }
-        input.controller = GameObject.Find("Rewired Input Manager").GetComponent<ControllerTest>();
-        maker = GameObject.FindGameObjectWithTag("Realtime")?.GetComponent<WrenMaker>();
-        fullInterface = God.groundInterface;//GameObject.FindGameObjectWithTag("Interface").GetComponent<FullInterface>();
-        airInterface = God.airInterface;//GameObject.FindGameObjectWithTag("Interface").GetComponent<FullInterface>();
+
+        input.controller = GameObject.Find( "Rewired Input Manager" ).GetComponent<ControllerTest>();
+        maker = GameObject.FindGameObjectWithTag( "Realtime" )?.GetComponent<WrenMaker>();
+        fullInterface =
+            God.groundInterface; //GameObject.FindGameObjectWithTag("Interface").GetComponent<FullInterface>();
+        airInterface = God.airInterface; //GameObject.FindGameObjectWithTag("Interface").GetComponent<FullInterface>();
 
         God.groundInterface.wren = this;
         God.airInterface.wren = this;
@@ -655,14 +587,12 @@ public class Wren : MonoBehaviour
     }
 
 
-
-    public void SetLocal(bool connected)
+    public void SetLocal( bool connected )
     {
 
         state.isLocal = true;
 
-        if (connected)
-        {
+        if ( connected ) {
             input.leftStickNetworkData.GetComponent<RealtimeTransform>().RequestOwnership();
             input.rightStickNetworkData.GetComponent<RealtimeTransform>().RequestOwnership();
             input.leftExtraNetworkData.GetComponent<RealtimeTransform>().RequestOwnership();
@@ -678,91 +608,66 @@ public class Wren : MonoBehaviour
     public float autoTakeoffVelocityReducer;
 
 
-    public void CheckPickUp(GameObject g)
+    public void CheckPickUp( GameObject g )
     {
-        if (!state.onGround)
-        {
+        if ( !state.onGround ) {
 
-            if (input.left1 > input.right1)
-            {
-                carrying.PickUpItem(g, 0);
-            }
-            else if (input.right1 > input.left1)
-            {
-                carrying.PickUpItem(g, 1);
+            if ( input.left1 > input.right1 ) {
+                carrying.PickUpItem( g , 0 );
+            } else if ( input.right1 > input.left1 ) {
+                carrying.PickUpItem( g , 1 );
             }
 
-            if (input.left1 > .4f && input.right1 > .4f)
-            {
+            if ( input.left1 > .4f && input.right1 > .4f ) {
 
                 // check which its closer to!
-                float leftDist = Vector3.Distance(g.transform.position, bird.leftFoot.position);
-                float rightDist = Vector3.Distance(g.transform.position, bird.rightFoot.position);
+                float leftDist = Vector3.Distance( g.transform.position , bird.leftFoot.position );
+                float rightDist = Vector3.Distance( g.transform.position , bird.rightFoot.position );
 
-                if (leftDist < rightDist)
-                {
-                    carrying.PickUpItem(g, 0);
-                }
-                else
-                {
-                    carrying.PickUpItem(g, 1);
+                if ( leftDist < rightDist ) {
+                    carrying.PickUpItem( g , 0 );
+                } else {
+                    carrying.PickUpItem( g , 1 );
                 }
             }
 
         }
     }
-    void OnCollisionEnter(Collision c)
+
+    private void OnCollisionEnter( Collision c )
     {
-        if (state.isLocal)
-        {
+        if ( state.isLocal ) {
 
-            if (c.collider.tag == "Food")
-            {
-                CheckPickUp(c.collider.gameObject);
-            }
-            else if (c.collider.tag == "Ball")
-            {
-                CheckPickUp(c.collider.gameObject);
-            }
-            else if (c.collider.tag == "Fire")
-            {
-                CheckPickUp(c.collider.gameObject);
-            }
-            else if (c.collider.tag == "Resetable")
-            {
+            if ( c.collider.tag == "Food" ) {
+                // CheckPickUp( c.collider.gameObject );
+            } else if ( c.collider.tag == "Ball" ) {
+                //CheckPickUp( c.collider.gameObject );
+            } else if ( c.collider.tag == "Fire" ) {
+                //CheckPickUp( c.collider.gameObject );
 
-            }
-            else if (c.collider.tag == "Prey")
-            {
 
-            }
-            else if (c.collider.tag == "Death")
-            {
+            } else if ( c.collider.tag == "Resetable" ) {
+
+            } else if ( c.collider.tag == "Prey" ) {
+
+            } else if ( c.collider.tag == "Death" ) {
                 state.OnDie();
 
-            }
-            else if (c.collider.tag == "Bug")
-            {
+            } else if ( c.collider.tag == "Bug" ) {
 
-            }
-            else
-            {
+            } else {
 
 
-                float dot = Vector3.Dot(c.impulse.normalized, physics.oVel.normalized);
+                float dot = Vector3.Dot( c.impulse.normalized , physics.oVel.normalized );
 
-                if (dot < 0)
-                {
+                if ( dot < 0 ) {
                     dot = -dot;
                 }
 
-                if (dot < grazeAngleMax && c.impulse.magnitude < grazeForceMax)
-                {
-                    Skim(c);
-                }
-                else
-                {
-                    Crash(c);
+                if ( dot < grazeAngleMax && c.impulse.magnitude < grazeForceMax ) {
+                    Skim( c );
+                } else {
+                    Crash( c );
                 }
 
             }
@@ -770,128 +675,137 @@ public class Wren : MonoBehaviour
     }
 
 
-    public void Skim(Collision c)
+    public void Skim( Collision c )
     {
 
-        if (!state.onGround)
-        {
-            God.audio.Play(God.sounds.skimGroundClip, c.impulse.magnitude / 10f);
+        if ( !state.onGround ) {
+            God.audio.Play( God.sounds.skimGroundClip , c.impulse.magnitude / 10f );
             God.feedbackSystems.skimParticles.transform.position = c.contacts[0].point;
-            God.feedbackSystems.skimParticles.Emit(100);
+            God.feedbackSystems.skimParticles.Emit( 100 );
             // Get biome ID
 
-            shards.DoSkim(c.contacts[0].point);
-            physics.Skim(c);
+            shards.DoSkim( c.contacts[0].point );
+            physics.Skim( c );
         }
 
     }
 
-    public void Crash(Collision c)
+    public void Crash( Collision c )
     {
 
-        print("COLLISION CRASH CALLED");
+        print( "COLLISION CRASH CALLED" );
 
-        if (!state.onGround)
-        {
+        if ( !state.onGround ) {
             //if( c.impulse.magnitude != 0 ){
             //ToggleInterface(false);
-            God.audio.Play(God.sounds.hitGroundClip);
-            state.HitGround(c);
+            God.audio.Play( God.sounds.hitGroundClip );
+            state.HitGround( c );
 
-            if (state.isLocal)
-            {
-                carrying.GroundHit(Carryable.DropSettings.FromCrash(c));
+            if ( state.isLocal ) {
+                carrying.GroundHit( Carryable.DropSettings.FromCrash( c ) );
             }
 
-            if (!inEther)
-            {
+            if ( !inEther ) {
 
-                growth.HurtCollision(c);
+                growth.HurtCollision( c );
             }
 
             //}
 
-            if (autoTakeOff)
-            {
+            if ( autoTakeOff ) {
                 //                state.
 
-                Vector3 tmpVel = physics.rb.velocity;
-                state.TransportToPosition(c.contacts[0].point + c.contacts[0].normal * 1, c.contacts[0].normal);
+                var tmpVel = physics.rb.velocity;
+                state.TransportToPosition( c.contacts[0].point + c.contacts[0].normal * 1 , c.contacts[0].normal );
                 physics.rb.velocity = tmpVel * autoTakeoffVelocityReducer;
                 state.TakeOff();
             }
         }
     }
-    void OnTriggerEnter(Collider c)
+
+    private void OnTriggerEnter( Collider c )
     {
-        if (state.isLocal)
-        {
+        if ( state.isLocal ) {
 
-            if (c.tag == "Food")
-            {
-                CheckPickUp(c.gameObject);
-            }
-            else if (c.tag == "Ball")
-            {
+            if ( c.tag == "Food" ) {
 
-                CheckPickUp(c.gameObject);
-            }
-            else if (c.tag == "Fire")
-            {
+                carrying.OnEnter( c.gameObject );
+                ///  CheckPickUp( c.gameObject );
+            } else if ( c.tag == "Ball" ) {
+                carrying.OnEnter( c.gameObject );
+                //   CheckPickUp( c.gameObject );
+            } else if ( c.tag == "Fire" ) {
+                carrying.OnEnter( c.gameObject );
+                //  CheckPickUp( c.gameObject );
+            } else if ( c.tag == "Resetable" ) {
 
-                CheckPickUp(c.gameObject);
-            }
-            else if (c.tag == "Resetable")
-            {
+            } else if ( c.tag == "Prey" ) {
 
-            }
-            else if (c.tag == "Prey")
-            {
-
-            }
-            else if (c.tag == "WaterDrop")
-            {
-
-                CheckPickUp(c.gameObject);
-            }
-            else if (c.tag == "Boost")
-            {
+            } else if ( c.tag == "WaterDrop" ) {
+                carrying.OnEnter( c.gameObject );
+                // CheckPickUp( c.gameObject );
+            } else if ( c.tag == "Boost" ) {
                 // Booster b = c.gameObject.GetComponent<Booster>();
                 // b.OnBoost(this);
 
 
-            }
-            else
-            {
+            } else {
 
-                if (waterController) { waterController.TriggerEnter(c); }
+                if ( waterController ) {
+                    waterController.TriggerEnter( c );
+                }
 
             }
         }
     }
 
 
-    void OnTriggerExit(Collider c)
+    private void OnTriggerExit( Collider c )
     {
-        if (waterController) { waterController.TriggerExit(c); }
+
+        if ( c.tag == "Food" ) {
+
+            carrying.OnExit( c.gameObject );
+            // CheckPickUp( c.gameObject );
+        } else if ( c.tag == "Ball" ) {
+            carrying.OnExit( c.gameObject );
+            //  CheckPickUp( c.gameObject );
+        } else if ( c.tag == "Fire" ) {
+            carrying.OnExit( c.gameObject );
+            //CheckPickUp( c.gameObject );
+        } else if ( c.tag == "Resetable" ) {
+
+        } else if ( c.tag == "Prey" ) {
+
+        } else if ( c.tag == "WaterDrop" ) {
+            carrying.OnExit( c.gameObject );
+            //   CheckPickUp( c.gameObject );
+        } else if ( c.tag == "Boost" ) {
+            // Booster b = c.gameObject.GetComponent<Booster>();
+            // b.OnBoost(this);
+
+
+        } else {
+
+            if ( waterController ) {
+                waterController.TriggerExit( c );
+            }
+
+        }
+
+
     }
 
 
-
-    public void SetFullPosition(Vector3 position)
+    public void SetFullPosition( Vector3 position )
     {
         //print("SET FULL POSITION  CALLED");
 
         //        print(position);
 
-        God.state.SetLastPosition(position);
+        God.state.SetLastPosition( position );
         startingPosition.position = position;
         FullReset();
 
     }
-
-
-
-
-
 }

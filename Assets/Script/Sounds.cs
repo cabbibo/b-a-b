@@ -4,15 +4,16 @@ using UnityEngine;
 
 public class Sounds : MonoBehaviour
 {
-
-
     public AudioClip[] ringHitSounds;
     public AudioClip[] pointCollectedSounds;
-    public AudioClip collectableCollected;
-    public AudioClip enterPlatform;
-    public AudioClip exitPlatform;
+    public AudioClip   collectableCollected;
+    public AudioClip   enterPlatform;
+    public AudioClip   exitPlatform;
 
-    public AudioClip scoreSound;
+    public AudioClip   scoreSound;
+    public AudioClip[] collectableCanCarrySounds;
+    public AudioClip[] collectableCantCarrySounds;
+    public AudioClip[] collectableCarryingLoops;
     public AudioClip[] collectableDroppedSounds;
     public AudioClip[] collectablePickedUpSounds;
 
@@ -45,11 +46,11 @@ public class Sounds : MonoBehaviour
     public AudioClip dropParticlesLoop;
 
     public AudioClip[] flapSounds;
-    public AudioClip waterFillingLoop;
-    public AudioClip waterFilledSound;
-    public AudioClip carryingWaterLoop;
-    public AudioClip waterDroppedSound;
-    public AudioClip waterHitSound;
+    public AudioClip   waterFillingLoop;
+    public AudioClip   waterFilledSound;
+    public AudioClip   carryingWaterLoop;
+    public AudioClip   waterDroppedSound;
+    public AudioClip   waterHitSound;
 
 
     public AudioClip maxHealthReachedClip;
@@ -66,7 +67,6 @@ public class Sounds : MonoBehaviour
     public AudioClip CollectableCollected;
 
 
-
     public AudioClip tutorialSuccessSound;
     public AudioClip tutorialSectionStartSound;
 
@@ -78,8 +78,7 @@ public class Sounds : MonoBehaviour
     public AudioClip largeFailSound;
 
 
-    [Header("ACTIVITY FEEDBACK SOUNDS")]
-
+    [Header( "ACTIVITY FEEDBACK SOUNDS" )]
     public AudioClip inActivityFullExitedClip;
 
     public AudioClip activityReEnterClip;
@@ -98,7 +97,6 @@ public class Sounds : MonoBehaviour
     public AudioClip whileInActivityLoop;
 
 
-
     public AudioClip[] texturalHitClips;
 
 
@@ -108,19 +106,12 @@ public class Sounds : MonoBehaviour
 
     // barrel roll sound?
 
-    [Header("Button Press Sounds")]
-
+    [Header( "Button Press Sounds" )]
     public AudioClip interfacePingClip;
+
     public AudioClip boostClip;
-
-
 
 
     public AudioClip crystalTogetherClip;
     public AudioClip crystalApartClip;
-
-
-
-
-
 }

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SparklesForever
+  m_Name: SparklesForever 1
   m_Shader: {fileID: 4800000, guid: 149967b3742d05a49b65661346f1d055, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -79,12 +79,12 @@ Material:
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
-    - _NoiseSize: 1
+    - _NoiseSize: 111
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Size: 0.01
     - _SmoothnessTextureChannel: 0
-    - _SolidAmount: 0
+    - _SolidAmount: 1
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _TriplanarSharpness: 1

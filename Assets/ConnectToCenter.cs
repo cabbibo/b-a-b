@@ -32,7 +32,7 @@ public class ConnectToCenterEditor : Editor
 
 
 [System.Serializable]
-public class ConnectToCenterEvent : UnityEvent<GameObject , GameObject>
+public class ConnectToCenterEvent : UnityEvent<GameObject , GameObject , bool>
 {
 }
 
@@ -47,13 +47,17 @@ public class ConnectToCenter : MonoBehaviour
 
     public bool[] connected = new bool[0];
 
-    public ConnectToCenterEvent OnConnectEvent    = new();
-    public ConnectToCenterEvent OnDisconnectEvent = new();
+    // public ConnectToCenterEvent OnConnectEvent = new();
+    public ConnectToCenterEvent OnToggleEvent = new();
 
     public UnityEvent<ConnectToCenter> OnAllConnected = new();
 
     public AudioClip[] connectionClips;
+    public AudioClip[] disconnectionClips;
 
+    public AudioClip onAllConnectedClip;
+    public float     onAllConnectedVolume = 1f;
+    public float     onAllConnectedPitch  = .3f;
 
     // public LineRendererPrefab linePrefab;
     // Start is called before the first frame update
@@ -162,9 +166,9 @@ public class ConnectToCenter : MonoBehaviour
 
 
         God.audio.Play( connectionClips , Random.Range( .8f , 1.2f ) );
-        
 
-        OnConnectEvent.Invoke( objectsToConnect[id] , connectionPoints[id] );
+
+        OnToggleEvent.Invoke( objectsToConnect[id] , connectionPoints[id] , true );
         StartCoroutine( ConnectCoroutine( id ) );
 
     }
@@ -189,8 +193,8 @@ public class ConnectToCenter : MonoBehaviour
             return;
         }
 
-        God.audio.Play( connectionClips , Random.Range( -.8f , -1.2f ) );
-        OnDisconnectEvent.Invoke( objectsToConnect[id] , connectionPoints[id] );
+        God.audio.Play( disconnectionClips , Random.Range( .8f , 1.2f ) );
+        OnToggleEvent.Invoke( objectsToConnect[id] , connectionPoints[id] , false );
 
         StartCoroutine( DisconnectCoroutine( id ) );
     }
@@ -209,6 +213,8 @@ public class ConnectToCenter : MonoBehaviour
             }
         }
 
+        print( "Connnnex" );
+        God.audio.Play( onAllConnectedClip , onAllConnectedPitch , onAllConnectedVolume );
         OnAllConnected.Invoke( this );
 
 
@@ -283,10 +289,14 @@ public class ConnectToCenter : MonoBehaviour
 
         float t = 0;
 
-        while (t <= 1) {
-            // Calculate the current position of the line renderer
-            var currentPosition = Vector3.Lerp( end , start , t );
+        while (t <= connectionSpeed) {
+
             t += Time.deltaTime;
+
+            float nT = t / connectionSpeed;
+            // Calculate the current position of the line renderer
+            var currentPosition = Vector3.Lerp( start , end , (1 - nT) * (1 - nT) );
+
 
             connectionPoints[id].transform.position = currentPosition;
             // Set the position of the line renderer

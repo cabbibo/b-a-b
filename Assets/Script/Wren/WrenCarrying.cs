@@ -19,6 +19,18 @@ public class WrenCarrying : MonoBehaviour
     public LineRenderer lineRendererL;
     public LineRenderer lineRendererR;
 
+
+    public List<GameObject> carryableObjects = new();
+
+
+    public LineRenderer canCarryLineRenderer;
+
+
+    public void OnEnable()
+    {
+        carryableObjects.Clear();
+    }
+
     // TODO: don't use God, use info from Wren
     public int GetNormalClientId()
     {
@@ -156,6 +168,26 @@ public class WrenCarrying : MonoBehaviour
     public void UpdateLineRenderers()
     {
 
+
+        canCarryLineRenderer.positionCount = carryableObjects.Count + 1;
+
+        if ( carryableObjects.Count == 0 ) {
+            canCarryLineRenderer.enabled = false;
+        } else {
+            canCarryLineRenderer.enabled = true;
+            canCarryLineRenderer.SetPosition( 0 , wren.soul.transform.position );
+        }
+
+        for ( int i = 0; i < carryableObjects.Count; i++ ) {
+
+            var g = carryableObjects[i];
+
+            canCarryLineRenderer.SetPosition( i + 1 , g.transform.position );
+
+
+        }
+
+
         var leftFootPositions = new List<Vector3>();
         var rightFootPositions = new List<Vector3>();
 
@@ -218,6 +250,58 @@ public class WrenCarrying : MonoBehaviour
 
     }
 
+
+    public void CheckPickup( Wren wren )
+    {
+        if ( !wren.state.onGround && wren.state.inInterface == false ) {
+
+
+            for ( int i = 0; i < carryableObjects.Count; i++ ) {
+
+                var g = carryableObjects[i];
+
+
+                if ( wren.input.left1 > .4f && wren.input.right1 > .4f ) {
+
+                    // check which its closer to!
+                    float leftDist = Vector3.Distance( g.transform.position , wren.bird.leftFoot.position );
+                    float rightDist = Vector3.Distance( g.transform.position , wren.bird.rightFoot.position );
+
+                    if ( leftDist < rightDist ) {
+                        PickUpItem( g , 0 );
+                    } else {
+                        PickUpItem( g , 1 );
+                    }
+
+                    // otherwise figure out which one is more pressed down
+                } else {
+
+                    if ( wren.input.left1 > wren.input.right1 ) {
+                        PickUpItem( g , 0 );
+                    } else if ( wren.input.right1 > wren.input.left1 ) {
+                        PickUpItem( g , 1 );
+                    }
+
+
+                }
+            }
+        }
+
+
+    }
+
+    public void OnEnter( GameObject go )
+    {
+        God.audio.Play( God.sounds.collectableCanCarrySounds );
+        carryableObjects.Add( go );
+    }
+
+    public void OnExit( GameObject go )
+    {
+        God.audio.Play( God.sounds.collectableCantCarrySounds );
+
+        while (carryableObjects.Contains( go )) carryableObjects.Remove( go );
+    }
 
     public int CheckIfCarryingItem( Carryable carryable )
     {

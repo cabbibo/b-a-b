@@ -204,7 +204,7 @@ public class PingTutorial : TutorialCoroutine
     }
 
 
-    public void OnSelect( GameObject crystal , GameObject lerpTarget )
+    public void OnSelect( GameObject crystal , GameObject lerpTarget , bool connected )
     {
 
         int id = -1;
@@ -223,10 +223,18 @@ public class PingTutorial : TutorialCoroutine
             print( "ID IS " + id );
         }
 
-        God.wren.interfaceUtils.interfacePointer.AddPointer( tutorialTargets2[id].transform , 0 ,
-            new Vector4( 3 , 1 , 0 , 1 ) );
+
+        if ( connected ) {
+            God.wren.interfaceUtils.interfacePointer.AddPointer( tutorialTargets2[id].transform , 0 ,
+                new Vector4( 0 , 1 , 0 , 1 ) );
+        } else {
+            God.wren.interfaceUtils.interfacePointer.AddPointer( tutorialTargets2[id].transform , 0 ,
+                new Vector4( 0 , 0 , 0 , 1 ) );
+        }
 
         God.cameraManager.pointOfInterestManager.SetPointOfInterestForTime( lerpTarget.transform , 2 , 20 , 80 , .03f );
+
+
     }
 
 

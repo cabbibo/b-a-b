@@ -27,6 +27,9 @@ Shader "World/SparklesForever"
         _WindChangeSpeed ("_WindChangeSpeed",float) = 1
         _WindChangeSize ("_WindChangeSize",float) = 1
 
+        _NoiseSize ("_NoiseSize",float) = 1
+        _SolidAmount ("_SolidAmount",float) = 1
+
 
 
 
@@ -76,6 +79,8 @@ Shader "World/SparklesForever"
             float _Multiplier;
 
 
+            float _NoiseSize;
+
             float3 _FadeLocation;
 
             struct appdata_full2
@@ -122,6 +127,8 @@ Shader "World/SparklesForever"
             float  _WindChangeSpeed;
             float  _WindChangeSize;
 
+            float _SolidAmount;
+
             //Our vertex function simply fetches a point from the buffer corresponding to the vertex index
             //which we transform with the view-projection matrix before passing to the pixel program.
             varyings vert( appdata_full2 vert )
@@ -148,7 +155,7 @@ Shader "World/SparklesForever"
 
                 float3 noiseVal = snoise( wPos * _WindChangeSize + windDirection * flooredTime );
 
-                o.worldPos = wPos + _WindDirection * noiseVal * _WindAmount; //windAmount;
+                o.worldPos = wPos; // + _WindDirection * noiseVal * _WindAmount; //windAmount;
 
 
                 o.pos   = mul( UNITY_MATRIX_VP , float4( o.worldPos , 1.0f ) );
@@ -303,7 +310,7 @@ Shader "World/SparklesForever"
                 {
 
                     float3 fPos = v.worldPos - normalize( v.eye ) * float( i ) * 1.3;
-                    float  v    = ( snoise( fPos * 1 ) + 1 ) / 2;
+                    float  v    = ( snoise( fPos * _NoiseSize ) + 1 ) / 2;
                     shadowCol += hsv( (float)i / 3 , 1 , v );
 
 
@@ -349,7 +356,7 @@ Shader "World/SparklesForever"
 
 
 
-                col = shadowCol * pow( ( .5 - abs( v.uv.y - .5 ) ) , 2 );
+                col = shadowCol * lerp( pow( ( .5 - abs( v.uv.y - .5 ) ) , 2 ) , 1 , _SolidAmount );
 
                 col *= col * 1000;
 
