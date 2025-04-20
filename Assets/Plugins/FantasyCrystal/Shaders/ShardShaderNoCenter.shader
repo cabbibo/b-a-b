@@ -104,6 +104,15 @@
             float _Contrast;
 
 
+            /*
+             uvs2[j] = new Vector4(averagePosition.x, averagePosition.y, averagePosition.z, i);
+                uvs3[j] = new Vector4(up.x, up.y, up.z, 0);
+                uvs4[j] = new Vector4(forward.x, forward.y, forward.z, 0);
+                uvs5[j] = new Vector4(scale.x, scale.y, scale.z, 0);
+
+                */
+
+
             //A simple input struct for our pixel shader step containing a position.
             struct varyings
             {
@@ -121,6 +130,7 @@
                 float3 rdR : TEXCOORD9;
                 float3 rdG : TEXCOORD10;
                 float3 rdB : TEXCOORD11;
+                int    id : TEXCOORD12;
             };
 
 
@@ -158,7 +168,10 @@
                 float4   p = vertex.position;
                 float3   n = vertex.normal; //_NormBuffer[id/3];
 
-                float3 worldPos = mul( unity_ObjectToWorld , float4( p.xyz , 1.0f ) ).xyz;
+                float3 worldPos  = mul( unity_ObjectToWorld , float4( p.xyz , 1.0f ) ).xyz;
+                float3 centerPos = mul( unity_ObjectToWorld , float4( 0 , 0 , 0 , 1 ) ).xyz;
+
+                int id = vertex.uv2.w;
 
 
                 float3 scaledDownPos = lerp( p.xyz , vertex.uv2.xyz , _ExplosionValue );
@@ -166,17 +179,23 @@
 
                 p = float4( scaledDownPos , 1 );
 
+                float fExplosionValue = _ExplosionValue;
+
+
+                // little bit of noise
+                fExplosionValue = pow( fExplosionValue , 1 + .8 * ( sin( float( id ) * 100 ) + .9 ) );
+
                 if ( _ExplosionType == 0 )
                 {
-                    p.xyz += normalize( vertex.uv2.xyz ) * _ExplosionSize * _ExplosionValue;
+                    p.xyz += normalize( vertex.uv2.xyz ) * _ExplosionSize * fExplosionValue;
                 }
                 else if ( _ExplosionType == 1 )
                 {
-                    p.xyz += normalize( vertex.uv3.xyz ) * _ExplosionSize * _ExplosionValue;
+                    p.xyz += normalize( vertex.uv3.xyz ) * _ExplosionSize * fExplosionValue;
                 }
-                else if ( _ExplosionType == 1 )
+                else if ( _ExplosionType == 2 )
                 {
-                    p.xyz += normalize( vertex.uv4.xyz ) * _ExplosionSize * _ExplosionValue;
+                    p.xyz += normalize( vertex.uv4.xyz ) * _ExplosionSize * fExplosionValue;
                 }
 
 
@@ -197,14 +216,15 @@
                 o.rdG         = refract( eye , -n , _IndexOfRefraction - _ColorSplit * 1 );
                 o.rdB         = refract( eye , -n , _IndexOfRefraction - _ColorSplit * 2 );
                 o.eye         = refract( -normalize( _WorldSpaceCameraPos - worldPos ) ,
-                                                 normalize( mul( unity_ObjectToWorld , float4( n.xyz , 0.0f ) ) ) ,
-                                                 _IndexOfRefraction );
+                                             normalize( mul( unity_ObjectToWorld , float4( n.xyz , 0.0f ) ) ) ,
+                                             _IndexOfRefraction );
 
                 o.worldNor = normalize( mul( unity_ObjectToWorld , float4( -n , 0.0f ) ).xyz );
                 o.lightDir = normalize( mul( unity_ObjectToWorld , float4( 1 , -1 , 0 , 0 ) ).xyz );
 
                 float4 refractedPos = UnityObjectToClipPos( float4( o.ro + o.rd * 1.5 , 1 ) );
                 o.grabPos           = ComputeGrabScreenPos( refractedPos );
+                o.id                = vertex.uv2.w;
 
 
                 return o;
@@ -277,8 +297,8 @@
 
                 return t3D( pos ) * normalize(
                     float3( t3D( pos + eps.xyy ) - t3D( pos - eps.xyy ) ,
-                                    t3D( pos + eps.yxy ) - t3D( pos - eps.yxy ) ,
-                                    t3D( pos + eps.yyx ) - t3D( pos - eps.yyx ) ) );
+                 t3D( pos + eps.yxy ) - t3D( pos - eps.yxy ) ,
+                 t3D( pos + eps.yyx ) - t3D( pos - eps.yyx ) ) );
 
 
             }
@@ -286,13 +306,13 @@
             float3 hsv( float h , float s , float v )
             {
                 return lerp( float3( 1.0 , 1 , 1 ) , clamp( ( abs( frac(
-          h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 -
-      3.0 ) - 1.0 ) , 0.0 , 1.0 ) ,
-                    s ) * v;
+                       h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 -
+                   3.0 ) - 1.0 ) , 0.0 , 1.0 ) ,
+s ) * v;
             }
 
 
-            float4 trace( float3 ro , float3 rd , float iOR )
+            float4 trace( float3 ro , float3 rd , float iOR , float hueOffset )
             {
 
 
@@ -304,6 +324,7 @@
                 float totalSmoke = 0;
 
                 float3 col = 0;
+
 
                 for ( int i = 0; i < _NumSteps; i++ )
                 {
@@ -333,7 +354,7 @@
                     col = .99 * col;
 
 
-                    float fHue = _HueStart + _HueSize * noiseDensity;
+                    float fHue = _HueStart + _HueSize * noiseDensity + _HueSize * hueOffset * .5;
                     //lerp( _HueStart , _HueSize , noiseDensity);
 
                     col += hsv( fHue , _Saturation , _Lightness );
@@ -349,10 +370,11 @@
             {
                 float3 col = 0; //hsv( float(v.face) * .3 , 1,1);
 
+                float hueOffset = sin( float( v.id ) + 100 + _Time.x * _NoiseSpeed );
 
-                float4 traceValR = trace( v.ro , v.rdR , 1 );
-                float4 traceValG = trace( v.ro , v.rdG , 1 );
-                float4 traceValB = trace( v.ro , v.rdB , 1 );
+                float4 traceValR = trace( v.ro , v.rdR , 1 , hueOffset );
+                float4 traceValG = trace( v.ro , v.rdG , 1 , hueOffset );
+                float4 traceValB = trace( v.ro , v.rdB , 1 , hueOffset );
                 //float4 traceVal =  trace(v.ro, v.rd, 1);
                 // float4 traceVal =  trace(v.ro, v.rd, 1);
 
@@ -371,6 +393,8 @@
                 // col = bg;
 
                 col = saturate( col * .8 ) / .8;
+
+                //  col = hsv( float( v.id ) / 10 , 1 , 1 ); //  )
 
                 //col = _ExplosionValue;
                 return float4( col.xyz , 1 ); //saturate(float4(col,3*length(col) ));

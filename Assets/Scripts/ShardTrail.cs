@@ -197,6 +197,8 @@ public class ShardTrail : MonoBehaviour
             uint y; uint z;
             shader.GetKernelThreadGroupSizes(0, out numThreads, out y, out z);
 
+            
+            
 
             shader.SetBuffer(0, "_VertBuffer", shardBuffer);
             shader.SetBuffer(0, "_TrailBuffer", trailBuffer);

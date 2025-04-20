@@ -254,6 +254,7 @@ Shader "World/SparklesForever"
                 {
                     //col *= saturate(capDistance * 10);
                 }
+
                 col *= _Color;
 
 
@@ -309,8 +310,13 @@ Shader "World/SparklesForever"
                 for ( int i = 0; i < 3; i++ )
                 {
 
+                    float nI = (float)i / 3;
+
                     float3 fPos = v.worldPos - normalize( v.eye ) * float( i ) * 1.3;
-                    float  v    = ( snoise( fPos * _NoiseSize ) + 1 ) / 2;
+                    float  v    = ( snoise(
+                            fPos * _NoiseSize + float3( 3 * nI * _Time.y , _Time.y * ( nI + 1 ) , nI * _Time.y ) + nI *
+                            100 ) + 1 ) /
+                        2;
                     shadowCol += hsv( (float)i / 3 , 1 , v );
 
 
@@ -325,7 +331,7 @@ Shader "World/SparklesForever"
                 shadowCol = length( shadowCol ) * ( shadowCol * .8 + .3 ) * 10; //
 
                 //shadowCol += .5;
-                shadowCol *= float3( .1 , .3 , .6 );
+                //shadowCol *= float3( .1 , .3 , .6 );
 
                 shadowCol /= clamp( ( .1 + .1 * length( v.eye ) ) , 2 , 3 );
 
@@ -359,6 +365,9 @@ Shader "World/SparklesForever"
                 col = shadowCol * lerp( pow( ( .5 - abs( v.uv.y - .5 ) ) , 2 ) , 1 , _SolidAmount );
 
                 col *= col * 1000;
+                col *= v.color;
+
+                // col = 1;
 
                 if ( length( col ) < .1 )
                 {

@@ -7,7 +7,6 @@ using WrenUtils;
 [ExecuteAlways]
 public class WrenShardManager : MonoBehaviour
 {
-
     public int numShards = 0;
     public int maxShards = 100000;
 
@@ -21,11 +20,11 @@ public class WrenShardManager : MonoBehaviour
     public int numShardsInBody = 0;
 
 
-    public int oNumShards = 0;
+    public int oNumShards   = 0;
     public int tmpNumShards = 0;
 
     public Vector3 collectPosition;
-    public float collectType;
+    public float   collectType;
 
 
     public float lostPerCrash;
@@ -40,25 +39,29 @@ public class WrenShardManager : MonoBehaviour
 
     public void DoBoost()
     {
-        print("SPEND");
-        SpendShards((int)boostNumLost);
+        print( "SPEND" );
+        SpendShards( (int)boostNumLost );
     }
 
-    public void DoSkim(Vector3 location)
+    public void DoSkim( Vector3 location )
     {
 
-        print(location);
+        print( location );
 
-        int id = Random.Range(-1, 7);
-        if (God.islandData != null)
-        {
-            id = God.islandData.maxBiomeID;
-        }
-        else
-        {
+        int id = Random.Range( -1 , 7 );
+
+        if ( God.islandData != null ) {
+            print( "HERE" );
+            id = God.biomeController.maxBiomeID;
+        } else {
+            print( "here" );
             id = -1;
         }
-        CollectShards((int)gainedPerSkim, id, location);
+
+        print( "SKIMM" );
+        print( id );
+
+        CollectShards( (int)gainedPerSkim , id , location );
     }
 
     public void DoDisintegrate()
@@ -71,11 +74,11 @@ public class WrenShardManager : MonoBehaviour
         SpendExtraShards();
     }
 
-    public void DoReverse(Vector3 delta)
+    public void DoReverse( Vector3 delta )
     {
 
-        SpendShards((int)reverseNumLost);
-        PhaseShift(delta);
+        SpendShards( (int)reverseNumLost );
+        PhaseShift( delta );
 
     }
 
@@ -104,10 +107,10 @@ public class WrenShardManager : MonoBehaviour
 
 
     // Start is called before the first frame update
-    void OnEnable()
+    private void OnEnable()
     {
         numShardsInBody = fullBird.totalShards;
-        numShards = PlayerPrefs.GetInt("Shards", 0);
+        numShards = PlayerPrefs.GetInt( "Shards" , 0 );
     }
 
     public float GetBodyShardPercentage()
@@ -137,31 +140,26 @@ public class WrenShardManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
-        if (wren.physics.distToGround < 3 && wren.physics.onGround == false)
-        {
-            int id = Random.Range(-1, 7);
+        if ( wren.physics.distToGround < 3 && wren.physics.onGround == false ) {
+            int id = Random.Range( -1 , 7 );
 
-            if (God.islandData != null)
-            {
+            if ( God.islandData != null ) {
                 id = God.islandData.maxBiomeID;
-            }
-            else
-            {
+            } else {
                 id = -1;
             }
-            CollectShards((int)gainedWhileClose, id, wren.transform.position);
+
+            CollectShards( (int)gainedWhileClose , id , wren.transform.position );
         }
 
-        if (oNumShards == numShards)
-        {
+        if ( oNumShards == numShards ) {
             tmpNumShards = numShards;
         }
 
-        if (oNumShards != numShards)
-        {
+        if ( oNumShards != numShards ) {
             tmpNumShards = oNumShards;
             oNumShards = numShards;
             UpdateShards();
@@ -175,7 +173,7 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShard()
     {
-        print("collected1");
+        print( "collected1" );
         numShards++;
         collectType = -1;
         collectPosition = wren.transform.position;
@@ -183,25 +181,25 @@ public class WrenShardManager : MonoBehaviour
     }
 
 
-    public void CollectShard(float type)
+    public void CollectShard( float type )
     {
-        print("collected2");
+        print( "collected2" );
         numShards++;
         collectType = type;
         collectPosition = wren.transform.position;
         UpdateShards();
     }
 
-    public void CollectShards(int amount, float type)
+    public void CollectShards( int amount , float type )
     {
-        print("collected3");
+        print( "collected3" );
         numShards += amount;
         collectType = type;
         collectPosition = wren.transform.position;
         UpdateShards();
     }
 
-    public void CollectShards(int amount, float type, Vector3 position)
+    public void CollectShards( int amount , float type , Vector3 position )
     {
         //       print("collected custom");
         //  print(position);
@@ -212,7 +210,7 @@ public class WrenShardManager : MonoBehaviour
     }
 
 
-    public void CollectShards(int amount, float type, Transform position)
+    public void CollectShards( int amount , float type , Transform position )
     {
         //print("collected");
         numShards += amount;
@@ -223,10 +221,10 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectBodyShards()
     {
-        if (numShards < numShardsInBody)
-        {
+        if ( numShards < numShardsInBody ) {
             numShards = numShardsInBody;
         }
+
         UpdateShards();
     }
 
@@ -236,14 +234,14 @@ public class WrenShardManager : MonoBehaviour
         UpdateShards();
     }
 
-    public void SpendShards(int amount)
+    public void SpendShards( int amount )
     {
         numShards -= amount;
         UpdateShards();
     }
 
 
-    public void SpendShard(int amount)
+    public void SpendShard( int amount )
     {
         numShards--;
         UpdateShards();
@@ -251,14 +249,13 @@ public class WrenShardManager : MonoBehaviour
 
     public void SpendExtraShards()
     {
-        if (numShards > numShardsInBody)
-        {
+        if ( numShards > numShardsInBody ) {
             numShards = numShardsInBody;
         }
+
         UpdateShards();
 
     }
-
 
 
     public float bodyPercentage;
@@ -266,25 +263,28 @@ public class WrenShardManager : MonoBehaviour
     public float shardTrailPercentage;
 
 
+    public ShardTrail trail;
+
     public void UpdateShards()
     {
 
-        numShards = Mathf.Clamp(numShards, 0, maxShards);
-        PlayerPrefs.SetInt("Shards", numShards);
-
+        numShards = Mathf.Clamp( numShards , 0 , maxShards );
+        PlayerPrefs.SetInt( "Shards" , numShards );
 
 
         bodyPercentage = GetBodyShardPercentage();
         shardPercentage = GetShardPercentage();
         shardTrailPercentage = GetShardTrailPercentage();
 
+        trail.UpdateShards();
+
     }
 
     public ShardTrail shardTrail;
 
-    public void PhaseShift(Vector3 position)
+    public void PhaseShift( Vector3 position )
     {
-        shardTrail.PhaseShift(position);
+        shardTrail.PhaseShift( position );
     }
 
 
@@ -293,5 +293,4 @@ public class WrenShardManager : MonoBehaviour
         numShards = 0;
         UpdateShards();
     }
-
 }

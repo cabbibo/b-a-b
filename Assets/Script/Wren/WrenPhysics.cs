@@ -8,6 +8,7 @@ using WrenUtils;
 using UnityEngine.Rendering;
 using Crest;
 using System.Runtime.Remoting.Messaging;
+using UnityEngine.InputSystem.Utilities;
 
 
 public class WrenPhysics : MonoBehaviour
@@ -1749,7 +1750,12 @@ public class WrenPhysics : MonoBehaviour
 
 
             var targetPos = wren.GroundIntersection( rb.position ) + Vector3.up * groundUpVal;
-            AddForce( (targetPos - rb.position).normalized * groundUpForce );
+
+            // smoothly change value as close to target so doesn't bob as hard
+            float val = (targetPos - rb.position).magnitude;
+            val = Mathf.Clamp( val , 0 , 1 );
+
+            AddForce( (targetPos - rb.position).normalized * val * groundUpForce );
 
 
             if ( wren.cameraWork.objectTargeted != null ) {

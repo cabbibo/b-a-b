@@ -25,6 +25,8 @@ int _TrailBuffer_COUNT;
 #include "../../Chunks/ParticleAxisHelpers.cginc"
 
 
+
+
 float3 _Chest;
 
 float4x4 _WorldToLocal;

@@ -9,9 +9,8 @@ using UnityEngine.Playables;
 [ExecuteAlways]
 public class IslandData : MonoBehaviour
 {
-
     public float radius;
-    public bool active;
+    public bool  active;
 
     public UnityEvent OnIslandEnterEvent;
     public UnityEvent OnIslandLeaveEvent;
@@ -26,13 +25,11 @@ public class IslandData : MonoBehaviour
 
     public Biome[] biomes;
 
-    public int[] biomeIDs = new int[8] { 0, 1, 2, 3, 4, 5, 6, 7 };
+    public int[] biomeIDs = new int[8] { 0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 };
 
 
-
-    public Texture2D BiomeMap;
+    public Texture2D     BiomeMap;
     public RenderTexture heightMap;
-
 
 
     public Texture2D windMap;
@@ -45,15 +42,12 @@ public class IslandData : MonoBehaviour
     public Texture2D foodMap;
 
 
-
     public Vector3 size;
     public Vector3 offset;
     public Vector4 currentFoodValues;
 
 
     public bool debugWind;
-
-
 
 
     public void Initialize()
@@ -65,53 +59,47 @@ public class IslandData : MonoBehaviour
         size = terrain.terrainData.size;
 
 
-        Shader.SetGlobalTexture("_WindMap", windMap);
-        Shader.SetGlobalTexture("_BiomeMap1", biomeMap1);
-        Shader.SetGlobalTexture("_BiomeMap2", biomeMap2);
-        Shader.SetGlobalTexture("_FoodMap", foodMap);
+        Shader.SetGlobalTexture( "_WindMap" , windMap );
+        Shader.SetGlobalTexture( "_BiomeMap1" , biomeMap1 );
+        Shader.SetGlobalTexture( "_BiomeMap2" , biomeMap2 );
+        Shader.SetGlobalTexture( "_FoodMap" , foodMap );
 
-        for (int i = 0; i < quests.Length; i++)
-        {
+        for ( int i = 0; i < quests.Length; i++ ) {
             quests[i].Initialize();
         }
 
     }
 
 
-
-
-    public Vector3 GetWindPower(Vector3 p)
+    public Vector3 GetWindPower( Vector3 p )
     {
 
 
-        Vector3 uv = God.NormalizedPositionInMap(p);//new Vector2(.5f , .6f);
-        Color c = windMap.GetPixelBilinear(uv.x, uv.z);
+        var uv = God.NormalizedPositionInMap( p ); //new Vector2(.5f , .6f);
+        var c = windMap.GetPixelBilinear( uv.x , uv.z );
 
 
-        Vector3 tPos = new Vector3(p.x, p.y, p.z);
+        var tPos = new Vector3( p.x , p.y , p.z );
         //        print(c);
 
 
-        Vector3 v1 = new Vector3(c.r, c.g, c.b);
+        var v1 = new Vector3( c.r , c.g , c.b );
 
-        if (debugWind)
-        {
-            if (lr == null)
-            {
+        if ( debugWind ) {
+            if ( lr == null ) {
                 lr = GetComponent<LineRenderer>();
             }
+
             lr.enabled = true;
 
-            lr.SetPosition(0, tPos);
-            lr.SetPosition(1, tPos + v1 * 10);
-        }
-        else
-        {
+            lr.SetPosition( 0 , tPos );
+            lr.SetPosition( 1 , tPos + v1 * 10 );
+        } else {
             lr.enabled = false;
         }
+
         return v1;
     }
-
 
 
     public LineRenderer lr;
@@ -130,7 +118,6 @@ public class IslandData : MonoBehaviour
     public int secondMaxBiomeID;
 
 
-
     public int oMaxBiomeID;
     public int oSecondMaxBiomeID;
 
@@ -139,10 +126,8 @@ public class IslandData : MonoBehaviour
     public Vector2 oWrenUVPosition;
 
 
-
-
     // Check to see if we are in our island or not
-    void WhileHibernate()
+    private void WhileHibernate()
     {
         /*
                 // TODO can remove
@@ -163,45 +148,45 @@ public class IslandData : MonoBehaviour
         */
 
 
-
     }
-    void Update()
+
+    private void Update()
     {
         // In editor ( no wren ) have a debug transform we can check values with!
 
-        Vector3 positionToCheck = Vector3.zero;
+        var positionToCheck = Vector3.zero;
 
-        if (debugValueTransform != null) { positionToCheck = debugValueTransform.position; }
-        if (God.wren != null)
-        {
+        if ( debugValueTransform != null ) {
+            positionToCheck = debugValueTransform.position;
+        }
+
+        if ( God.wren != null ) {
             positionToCheck = God.wren.transform.position;
         }
 
         oWrenUVPosition = wrenUVPosition;
-        wrenUVPosition = God.UVInMap(positionToCheck);
+        wrenUVPosition = God.UVInMap( positionToCheck );
 
-        MaterialPropertyBlock mpb = new MaterialPropertyBlock();
-        terrain.GetSplatMaterialPropertyBlock(mpb);
-        mpb.SetTexture("_BiomeMap1", biomeMap1);
-        mpb.SetTexture("_BiomeMap2", biomeMap2);
+        var mpb = new MaterialPropertyBlock();
+        terrain.GetSplatMaterialPropertyBlock( mpb );
+        mpb.SetTexture( "_BiomeMap1" , biomeMap1 );
+        mpb.SetTexture( "_BiomeMap2" , biomeMap2 );
         //mpb.SetVector("_BiomeIDs1", new Vector4(biomeIDs[0], biomeIDs[1], biomeIDs[2], biomeIDs[3]));
         //mpb.SetVector("_BiomeIDs2", new Vector4(biomeIDs[4], biomeIDs[5], biomeIDs[6], biomeIDs[7]));
 
 
-        terrain.SetSplatMaterialPropertyBlock(mpb);
+        terrain.SetSplatMaterialPropertyBlock( mpb );
 
 
-        if (!onIsland)
-        {
+        if ( !onIsland ) {
             WhileHibernate();
-        }
-        else
-        {
+        } else {
 
 
-            currentWindDirection = GetWind(wrenUVPosition);
-            currentBiomeValues = GetBiomeValues(wrenUVPosition);
-            currentFoodValues = GetFood(wrenUVPosition);
+            currentWindDirection = GetWind( wrenUVPosition );
+            currentBiomeValues = GetBiomeValues( wrenUVPosition );
+            currentFoodValues = GetFood( wrenUVPosition );
+
 
         }
 
@@ -213,57 +198,47 @@ public class IslandData : MonoBehaviour
     public float[] currentBiomeValues;
 
 
-    public Vector3 GetWind(Vector2 uv)
+    public Vector3 GetWind( Vector2 uv )
     {
 
-        Color c = windMap.GetPixelBilinear(uv.x, uv.y);
+        var c = windMap.GetPixelBilinear( uv.x , uv.y );
 
-        if (uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1)
-        {
-            return new Vector3(c.r, c.g, c.b);
-        }
-        else
-        {
+        if ( uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1 ) {
+            return new Vector3( c.r , c.g , c.b );
+        } else {
             return Vector3.zero;
         }
 
     }
 
-    public Vector3 GetFood(Vector2 uv)
+    public Vector3 GetFood( Vector2 uv )
     {
 
-        Color c = foodMap.GetPixelBilinear(uv.x, uv.y);
+        var c = foodMap.GetPixelBilinear( uv.x , uv.y );
 
 
-        if (uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1)
-        {
-            return new Vector3(c.r, c.g, c.b);
-        }
-        else
-        {
+        if ( uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1 ) {
+            return new Vector3( c.r , c.g , c.b );
+        } else {
             return Vector3.zero;
         }
 
     }
 
 
-    public float[] GetBiomeValues(Vector2 uv)
+    public float[] GetBiomeValues( Vector2 uv )
     {
 
-        Color c1 = biomeMap1.GetPixelBilinear(uv.x, uv.y);
-        Color c2 = biomeMap2.GetPixelBilinear(uv.x, uv.y);
+        var c1 = biomeMap1.GetPixelBilinear( uv.x , uv.y );
+        var c2 = biomeMap2.GetPixelBilinear( uv.x , uv.y );
 
-        if (uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1)
-        {
-            return new float[] { c1.r, c1.g, c1.b, c1.a, c2.r, c2.g, c2.b, c2.a };
-        }
-        else
-        {
-            return new float[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+        if ( uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1 ) {
+            return new float[] { c1.r , c1.g , c1.b , c1.a , c2.r , c2.g , c2.b , c2.a };
+        } else {
+            return new float[] { 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 };
         }
 
     }
-
 
 
     public bool onIsland = false;
@@ -272,15 +247,13 @@ public class IslandData : MonoBehaviour
     public PlayCutScene islandCompleteCutScene;
 
 
-
-
     public void OnIslandEnter()
     {
         //        print("ON ISLAND ENTER");
 
         onIsland = true;
-        if (God.state.islandDiscovered == false)
-        {
+
+        if ( God.state.islandDiscovered == false ) {
 
 
             /*print(tutorialStateManager.islandReached);
@@ -296,17 +269,15 @@ public class IslandData : MonoBehaviour
         }
 
 
-
     }
 
 
     public void OnIslandLeave()
     {
 
-        print("ON ISLAND LEAVE");
+        print( "ON ISLAND LEAVE" );
         onIsland = false;
     }
-
 
 
     /*public void OnBiomeCompleted(int i)
@@ -329,6 +300,4 @@ public class IslandData : MonoBehaviour
 
         }
     }*/
-
-
 }

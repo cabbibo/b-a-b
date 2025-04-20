@@ -12,6 +12,7 @@ public class TakeOffTutorial : TutorialCoroutine
     public bool oWrenOnGround;
     public bool wrenOnGround;
 
+
     public override IEnumerator TutorialSequence()
     {
 
@@ -60,6 +61,8 @@ public class TakeOffTutorial : TutorialCoroutine
 
 
             if ( oWrenOnGround == false && wrenOnGround == true ) {
+
+
                 tmpHint = God.interfaceTutorial.currentHint;
                 tmpHintText = God.interfaceTutorial.currentHintText;
 
