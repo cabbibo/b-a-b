@@ -162,7 +162,7 @@
                     o.life = life;
                     o.type = type;
                     o.pos  = mul( UNITY_MATRIX_VP , float4( o.worldPos , 1.0f ) );
-                    
+
 
                 }
 
@@ -212,7 +212,7 @@
                     col = 1;
                 }
 
-                col = v.type / 7;
+                //  col = v.type / 7;
                 // col = bgCol.xyz + col * col * col * col * 10;
 
                 // col = flatNormal;

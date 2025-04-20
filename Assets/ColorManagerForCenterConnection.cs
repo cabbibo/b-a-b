@@ -24,7 +24,7 @@ public class ColorManagerForCenterConnection : MonoBehaviour
         }
 
         for ( int i = 0; i < shards.Length; i++ ) {
-            shards[i].type = (int)(hues[i] * 7f);
+            shards[i].type = i;
         }
 
         for ( int i = 0; i < connectors.Length; i++ ) {

@@ -354,6 +354,8 @@ Shader "Islands/Tutorial/Feathers"
 
                 col = lerp( 1 , 0 , saturate( minBary * 10 ) );
                 col *= hsv( v.collectionType / 7 , 1 , 1 );
+
+
                 //col = bgCol.xyz + col*col *col*col * 10;
 
 

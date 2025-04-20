@@ -8,19 +8,19 @@ using WrenUtils;
 [ExecuteAlways]
 public class ShardTrail : MonoBehaviour
 {
-    public int maxShards;
-    public int currentShards;
-    public Wren wren;
-    public Material debugMaterial;
+    public int           maxShards;
+    public int           currentShards;
+    public Wren          wren;
+    public Material      debugMaterial;
     public ComputeShader shader;
     public ComputeBuffer shardBuffer;
 
     public ComputeBuffer vertBuffer;
     public ComputeBuffer triBuffer;
-    public Mesh[] meshes;
+    public Mesh[]        meshes;
 
 
-    public int numPointsTrail;
+    public int       numPointsTrail;
     public Vector3[] trailPoints;
 
     public ComputeBuffer trailBuffer;
@@ -36,7 +36,7 @@ public class ShardTrail : MonoBehaviour
             public int totalTris;
             public int trisPerMesh;*/
 
-    public int numGroups;
+    public int  numGroups;
     public uint numThreads;
 
 
@@ -66,8 +66,7 @@ public class ShardTrail : MonoBehaviour
     public void Create()
     {
 
-        if (mpb == null)
-        {
+        if ( mpb == null ) {
             mpb = new MaterialPropertyBlock();
         }
 
@@ -78,26 +77,23 @@ public class ShardTrail : MonoBehaviour
 
         maxShards = wren.shards.maxShards - wren.shards.numShardsInBody;
 
-        shardBuffer = new ComputeBuffer(maxShards, 16 * sizeof(float));
+        shardBuffer = new ComputeBuffer( maxShards , 16 * sizeof(float) );
 
 
         trailPoints = new Vector3[numPointsTrail];
-        trailBuffer = new ComputeBuffer(numPointsTrail, 3 * sizeof(float));
+        trailBuffer = new ComputeBuffer( numPointsTrail , 3 * sizeof(float) );
 
 
-        for (int i = 0; i < numPointsTrail; i++)
-        {
+        for ( int i = 0; i < numPointsTrail; i++ ) {
             trailPoints[i] = wren.bird.shoulder.position - wren.bird.shoulder.forward * i * 0.04f;
         }
 
 
         populateMeshData();
 
-        shader.SetFloat("_Reset", 1);
+        shader.SetFloat( "_Reset" , 1 );
         UpdateShards();
-        shader.SetFloat("_Reset", 0);
-
-
+        shader.SetFloat( "_Reset" , 0 );
 
 
     }
@@ -121,12 +117,11 @@ public class ShardTrail : MonoBehaviour
         float[] values = new float[totalVerts * 8];
 
 
-        Vector3[] positions = shardMesh.vertices;
-        Vector3[] normals = shardMesh.normals;
-        Vector2[] uvs = shardMesh.uv;
+        var positions = shardMesh.vertices;
+        var normals = shardMesh.normals;
+        var uvs = shardMesh.uv;
 
-        for (int j = 0; j < shardMesh.vertices.Length; j++)
-        {
+        for ( int j = 0; j < shardMesh.vertices.Length; j++ ) {
 
             values[j * 8 + 0] = positions[j].x;
             values[j * 8 + 1] = positions[j].y;
@@ -136,14 +131,11 @@ public class ShardTrail : MonoBehaviour
             values[j * 8 + 4] = normals[j].y;
             values[j * 8 + 5] = normals[j].z;
 
-            if (j < uvs.Length)
-            {
+            if ( j < uvs.Length ) {
 
                 values[j * 8 + 6] = uvs[j].x;
                 values[j * 8 + 7] = uvs[j].y;
-            }
-            else
-            {
+            } else {
 
                 values[j * 8 + 6] = 0;
                 values[j * 8 + 7] = 0;
@@ -152,12 +144,12 @@ public class ShardTrail : MonoBehaviour
         }
 
 
-        vertBuffer = new ComputeBuffer(totalVerts, 8 * sizeof(float));
-        triBuffer = new ComputeBuffer(totalTris, sizeof(int));
+        vertBuffer = new ComputeBuffer( totalVerts , 8 * sizeof(float) );
+        triBuffer = new ComputeBuffer( totalTris , sizeof(int) );
 
-        vertBuffer.SetData(values);
+        vertBuffer.SetData( values );
 
-        triBuffer.SetData(shardMesh.triangles);
+        triBuffer.SetData( shardMesh.triangles );
 
 
     }
@@ -167,17 +159,27 @@ public class ShardTrail : MonoBehaviour
     public void Destroy()
     {
 
-        if (vertBuffer != null) { vertBuffer.Dispose(); }
-        if (triBuffer != null) { triBuffer.Dispose(); }
-        if (shardBuffer != null) { shardBuffer.Dispose(); }
-        if (trailBuffer != null) { trailBuffer.Dispose(); }
+        if ( vertBuffer != null ) {
+            vertBuffer.Dispose();
+        }
+
+        if ( triBuffer != null ) {
+            triBuffer.Dispose();
+        }
+
+        if ( shardBuffer != null ) {
+            shardBuffer.Dispose();
+        }
+
+        if ( trailBuffer != null ) {
+            trailBuffer.Dispose();
+        }
     }
 
     // Update is called once per frame
     public void UpdateShards()
     {
-        for (int i = numPointsTrail - 1; i > 0; i--)
-        {
+        for ( int i = numPointsTrail - 1; i > 0; i-- ) {
             trailPoints[i] = trailPoints[i - 1];
         }
 
@@ -185,77 +187,79 @@ public class ShardTrail : MonoBehaviour
 
 
         debugLineRenderer.positionCount = numPointsTrail;
-        debugLineRenderer.SetPositions(trailPoints);
+        debugLineRenderer.SetPositions( trailPoints );
 
-        trailBuffer.SetData(trailPoints);
+        trailBuffer.SetData( trailPoints );
 
-        if (shardBuffer != null)
-        {
+        if ( shardBuffer != null ) {
 
             //print("GPU BODY BIRD HEAD :" + bird.head.position );
 
-            uint y; uint z;
-            shader.GetKernelThreadGroupSizes(0, out numThreads, out y, out z);
-
-            
-            
-
-            shader.SetBuffer(0, "_VertBuffer", shardBuffer);
-            shader.SetBuffer(0, "_TrailBuffer", trailBuffer);
-            shader.SetInt("_VertBuffer_COUNT", maxShards);
-            shader.SetInt("_TrailBuffer_COUNT", numPointsTrail);
-            shader.SetVector("_Chest", wren.bird.shoulder.position);
-            shader.SetFloat("_Time", Time.time);
-            shader.SetMatrix("_WorldToLocal", wren.transform.worldToLocalMatrix);
-            shader.SetFloat("_TotalShardsInBody", wren.shards.numShardsInBody);
-            shader.SetFloat("_ONumShards", wren.shards.oNumShards);
-            shader.SetFloat("_NumShards", wren.shards.numShards);
-            shader.SetFloat("_TmpNumShards", wren.shards.tmpNumShards);
-            shader.SetVector("_WrenVel", wren.physics.vel);
-            shader.SetVector("_CollectionPosition", wren.shards.collectPosition);
-            shader.SetFloat("_CollectionType", wren.shards.collectType);
+            uint y;
+            uint z;
+            shader.GetKernelThreadGroupSizes( 0 , out numThreads , out y , out z );
 
 
+//            print( wren.shards.collectType );
+
+
+            shader.SetBuffer( 0 , "_VertBuffer" , shardBuffer );
+            shader.SetBuffer( 0 , "_TrailBuffer" , trailBuffer );
+            shader.SetInt( "_VertBuffer_COUNT" , maxShards );
+            shader.SetInt( "_TrailBuffer_COUNT" , numPointsTrail );
+            shader.SetVector( "_Chest" , wren.bird.shoulder.position );
+            shader.SetFloat( "_Time" , Time.time );
+            shader.SetMatrix( "_WorldToLocal" , wren.transform.worldToLocalMatrix );
+            shader.SetFloat( "_TotalShardsInBody" , wren.shards.numShardsInBody );
+            shader.SetFloat( "_ONumShards" , wren.shards.oNumShards );
+            shader.SetFloat( "_NumShards" , wren.shards.numShards );
+            shader.SetFloat( "_TmpNumShards" , wren.shards.tmpNumShards );
+            shader.SetVector( "_WrenVel" , wren.physics.vel );
+            shader.SetVector( "_CollectionPosition" , wren.shards.collectPosition );
+            shader.SetFloat( "_CollectionType" , wren.shards.collectType );
 
 
             numGroups = (maxShards + ((int)numThreads - 1)) / (int)numThreads;
-            if (numGroups <= 0) { numGroups = 1; }
 
-            shader.Dispatch(0, numGroups, 1, 1);
+            if ( numGroups <= 0 ) {
+                numGroups = 1;
+            }
+
+            shader.Dispatch( 0 , numGroups , 1 , 1 );
 
 
         }
 
 
-
     }
 
-    void RenderShards()
+    private void RenderShards()
     {
 
         allVerts = shardMesh.vertices.Length * maxShards;
         allTris = shardMesh.triangles.Length * maxShards;
 
-        mpb.SetBuffer("_ShardBuffer", shardBuffer);
-        mpb.SetBuffer("_VertBuffer", vertBuffer);
-        mpb.SetBuffer("_TriBuffer", triBuffer);
-        mpb.SetInt("_Count", maxShards);
-        mpb.SetInt("_TriCount", totalTris);
-        mpb.SetInt("_VertCount", totalVerts);
-        mpb.SetMatrix("_Model", wren.transform.localToWorldMatrix);
-        Graphics.DrawProcedural(debugMaterial, new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, maxShards * totalTris, 1, null, mpb, ShadowCastingMode.On, true, LayerMask.NameToLayer("Default"));
+        mpb.SetBuffer( "_ShardBuffer" , shardBuffer );
+        mpb.SetBuffer( "_VertBuffer" , vertBuffer );
+        mpb.SetBuffer( "_TriBuffer" , triBuffer );
+        mpb.SetInt( "_Count" , maxShards );
+        mpb.SetInt( "_TriCount" , totalTris );
+        mpb.SetInt( "_VertCount" , totalVerts );
+        mpb.SetMatrix( "_Model" , wren.transform.localToWorldMatrix );
+        Graphics.DrawProcedural( debugMaterial , new Bounds( transform.position , Vector3.one * 5000 ) ,
+            MeshTopology.Triangles , maxShards * totalTris , 1 , null , mpb , ShadowCastingMode.On , true ,
+            LayerMask.NameToLayer( "Default" ) );
 
 
     }
 
 
-    public void PhaseShift(Vector3 delta)
+    public void PhaseShift( Vector3 delta )
     {
 
-        shader.SetFloat("_Reset", 2);
-        shader.SetVector("_PhaseShiftDelta", delta);
+        shader.SetFloat( "_Reset" , 2 );
+        shader.SetVector( "_PhaseShiftDelta" , delta );
         UpdateShards();
-        shader.SetFloat("_Reset", 0);
+        shader.SetFloat( "_Reset" , 0 );
     }
-
 }
