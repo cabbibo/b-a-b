@@ -1,18 +1,16 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
-
 using WrenUtils;
 
 [ExecuteAlways]
 public class PlayCutScene : MonoBehaviour
 {
-
-
-    public float speedMultiplier = 1;
+    public float      speedMultiplier = 1;
     public UnityEvent CutSceneFinished;
     public UnityEvent CutSceneStarted;
 
@@ -20,123 +18,113 @@ public class PlayCutScene : MonoBehaviour
 
     public Transform cameraTarget;
     public Transform wrenTarget;
-    public float lerpSpeed = 1;
-    public float slerpSpeed = 1;
+    public float     lerpSpeed  = 1;
+    public float     slerpSpeed = 1;
 
 
     public TimelineAsset timeline;
-    public bool playOnce;
-    public float transitionInSpeed;
-    public float transitionOutSpeed;
+    public bool          playOnce;
+    public float         transitionInSpeed;
+    public float         transitionOutSpeed;
 
-    LerpTo lerpTo;
-    GlitchHit glitch;
-    public PlayableDirector director;
+    private LerpTo           lerpTo;
+    private GlitchHit        glitch;
+    public  PlayableDirector director;
 
-    float tmpLerpSpeed;
-    float tmpSlerpSpeed;
-    Transform tmpLerpTarget;
+    private float     tmpLerpSpeed;
+    private float     tmpSlerpSpeed;
+    private Transform tmpLerpTarget;
 
+
+    /*
+        0= crashed
+        1= slowFlight
+        2= normalFlight
+    */
+    public int birdType;
+
+
+    public float FOV = 60;
 
     public Transform wrenCrashPosition;
 
 
-
-
-
-    bool played;
+    private bool played;
 
 
     // Start is called before the first frame update
-    void OnEnable()
+    private void OnEnable()
     {
 
         playing = false;
 
-        if (director == null)
-        {
+        if ( director == null ) {
             // if( Camera.main == null ){ Camera.main = Camera.Camera.main; }
             director = GetComponent<PlayableDirector>();
 
         }
+
         director.played += Director_Played;
         director.stopped += Director_Stopped;
 
-        if (timeline != null)
-        {
+        if ( timeline != null ) {
             director.playableAsset = timeline;
         }
 
-        lerpTo = God.cameraManager.lerpManager;
-        glitch = Camera.main.gameObject.GetComponent<GlitchHit>();
-
-
-        //print(lerpTo);
-        //print(God.cameraManager);
-        //print(God.cameraManager.lerpTo);
-        // print(lerpTo);
-
-        //        print("AWAKE");
-        //        print(lerpTo.target);
-        tmpLerpTarget = lerpTo.target;
-
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         director.played -= Director_Played;
         director.stopped -= Director_Stopped;
     }
 
-    float transitionStartTime;
-    bool transitioning;
-
-    bool transitionIn;
-
-    public bool playing = false;
+    private bool transitioning;
+    public  bool playing = false;
 
 
     public bool stealCameraInEditMode;
-    Vector3 targetPos;
-    Quaternion targetRot;
 
-    Vector3 startPos;
-    Quaternion startRot;
-
-    // Update is called once per frame
-    void Update()
+    public void OnDrawGizmosSelected()
     {
-        if (Application.isEditor && Application.isPlaying != true && stealCameraInEditMode)
-        {
+        print( "hiii" );
+
+        if ( Application.isEditor && Application.isPlaying != true && stealCameraInEditMode ) {
+
+            //print( this );
+            //print( cameraTarget.position );
             Camera.main.transform.position = cameraTarget.position;
             Camera.main.transform.rotation = cameraTarget.rotation;
         }
-        if (playing)
-        {
+
+    }
+
+    // Update is called once per frame
+    private void Update()
+    {
 
 
+        if ( playing ) {
 
-
+            print( "playing cutscene" );
+            ;
             float fSpeed = 1;
-            if (God.input.x)
-            {
+
+            if ( God.input.x ) {
                 AudioListener.volume = .1f;
                 fSpeed *= 10;
-            }
-            else
-            {
+            } else {
                 AudioListener.volume = 1;
             }
 
             fSpeed *= speedMultiplier;
 
-            director.playableGraph.GetRootPlayable(0).SetSpeed(fSpeed);
+            director.playableGraph.GetRootPlayable( 0 ).SetSpeed( fSpeed );
 
-            if (God.wren != null && wrenTarget != null)
-            {
+            if ( God.wren != null && wrenTarget != null ) {
                 God.wren.canMove = false;
-                if (wrenTarget != null)
-                {
+
+                if ( wrenTarget != null ) {
                     God.wren.transform.position = wrenTarget.transform.position;
                     God.wren.transform.rotation = wrenTarget.transform.rotation;
                 }
@@ -144,145 +132,75 @@ public class PlayCutScene : MonoBehaviour
 
         }
 
-        if (transitioning)
-        {
 
-            if (God.wren != null)
-            {
+        // Move the wren to the correct position?
+        if ( transitioning ) {
+
+            print( "transitioning" );
+
+            if ( God.wren != null ) {
                 God.wren.canMove = false;
 
-                if (wrenCrashPosition != null)
-                {
+                if ( wrenCrashPosition != null ) {
                     God.wren.transform.position = wrenCrashPosition.position;
                     God.wren.transform.rotation = wrenCrashPosition.rotation;
                 }
 
             }
 
-            if (transitionIn)
-            {
-                if (transitionInSpeed == 0)
-                {
-                    StartPlay();
-                }
-                else
-                {
-
-                    // print("Evaluating");
-                    float v = Time.time - transitionStartTime;
-                    v /= transitionInSpeed;
-                    if (v >= 1)
-                    {
-                        StartPlay();
-                    }
-                    else
-                    {
-                        //print("transitioning");
-                        float fV = v * v * (3 - 2 * v);
-
-                        //print(fV);
-                        //print(startPos);
-                        //print(targetPos);
-                        Camera.main.transform.position = Vector3.Lerp(startPos, targetPos, fV);
-                        Camera.main.transform.rotation = Quaternion.Slerp(startRot, targetRot, fV);
-                    }
-                }
-            }
-            else
-            {
-                if (transitionOutSpeed == 0)
-                {
-                    transitioning = false;
-                    OnFinish();
-                }
-                else
-                {
-                    float v = Time.time - transitionStartTime;
-                    v /= transitionOutSpeed;
-                    if (v >= 1)
-                    {
-                        transitioning = false;
-                        OnFinish();
-                    }
-                    else
-                    {
-                        float fV = v * v * (3 - 2 * v);
-                        Camera.main.transform.position = Vector3.Lerp(startPos, targetPos, fV);
-                        Camera.main.transform.rotation = Quaternion.Slerp(startRot, targetRot, fV);
-                    }
-                }
-            }
-
         }
 
     }
 
 
-
-    private void Director_Stopped(PlayableDirector d)
+    public void OnTransitionInComplete()
     {
+        // Lets go we made it in!
+        StartPlay();
 
-        print("Director stoppped on :  " + this.gameObject.name);
+    }
+
+    public void OnTransitionOutComplete()
+    {
+        OnFinish();
+    }
+
+    private void Director_Stopped( PlayableDirector d )
+    {
+        print( "stopped" );
         playing = false;
         AudioListener.volume = 1;
         Stop();
     }
 
 
-    private void Director_Played(PlayableDirector d)
+    private void Director_Played( PlayableDirector d )
     {
-
-        //glitch.StartGlitch();
-
-        //print("playStart");
+        print( "played" );
         AudioListener.volume = 1;
-
         playing = true;
 
     }
 
-    void StartPlay()
+    private void StartPlay()
     {
 
-        print("start play cut scene");
-        //        print("Evaluating2");
+        print( "start play cut scene" );
         transitioning = false;
         director.Play();
-        director.playableGraph.GetRootPlayable(0).SetSpeed(1);
+        director.playableGraph.GetRootPlayable( 0 ).SetSpeed( 1 );
         playing = true;
-        lerpTo.enabled = true;
-        lerpTo.target = cameraTarget;
+
         God.wren.canMove = false;
         AudioListener.volume = 1;
 
-        //       print("lerping enabled");
     }
 
     public void Stop()
     {
-
-        startPos = Camera.main.transform.position;
-        startRot = Camera.main.transform.rotation;
-
-
-        lerpTo.target = tmpLerpTarget;
-        if (lerpTo.target == null)
-        {
-            lerpTo.target = Camera.main.transform;
-        }
-
-
-        targetPos = lerpTo.target.position;
-        targetRot = lerpTo.target.rotation;// Quaternion.LookRotation( lerpTo.lookTarget.position - lerpTo.target.position);
-
-        lerpTo.enabled = false;
-
-
-        transitionStartTime = Time.time;
-        transitioning = true;
-        transitionIn = false;
-
+        print( "Cut scene stopped pplaying" );
         AudioListener.volume = 1;
+        God.cameraManager.cutSceneManager.OnCutSceneFinishedPlaying();
 
 
     }
@@ -291,24 +209,12 @@ public class PlayCutScene : MonoBehaviour
     public void OnFinish()
     {
 
+        print( "finished " );
         God.instance.inCutScene = false;
-        lerpTo.enabled = true;
 
-        print("FINISHED!");
-        print(lerpTo);
-        print(lerpTo.target);
-        print(Camera.main);
-        print(tmpLerpTarget);
-        print(lerpTo.resetTarget);
-
-        lerpTo.ResetTargets();
-
-        print("hi");
-        Camera.main.transform.position = lerpTo.target.position;
-        Camera.main.transform.LookAt(lerpTo.lookTarget);
         CutSceneFinished.Invoke();
-        if (God.wren != null)
-        {
+
+        if ( God.wren != null ) {
             God.wren.canMove = true;
         }
 
@@ -320,71 +226,36 @@ public class PlayCutScene : MonoBehaviour
     public void Play()
     {
 
-        print("playing cutscene");
+        print( "playing cutscene" );
         AudioListener.volume = 1;
 
-        if (played && playOnce)
-        {
-            print("already played");
-        }
-        else
-        {
+        if ( played && playOnce ) {
+            print( "already played" );
+        } else {
 
-            print("PLAYING FOR REAL");
-            print(gameObject.name);
-
-            print(God.cameraManager.lerpManager);
             lerpTo = God.cameraManager.lerpManager;
-
 
             God.instance.inCutScene = true;
             CutSceneStarted.Invoke();
-            lerpTo.enabled = false;
-
-
-
-
-            lerpTo.lerpSpeed = lerpSpeed;
-            lerpTo.slerpSpeed = slerpSpeed;
-            lerpTo.target = cameraTarget;
-
-            print("Setting camera target");
-            print(cameraTarget);
-
-
-            transitionStartTime = Time.time;
-            transitioning = true;
-            transitionIn = true;
-
-            startPos = Camera.main.transform.position;
-            startRot = Camera.main.transform.rotation;
 
 
             //evaluate to get original position
             director.time = 0;
             director.Evaluate();
 
-
-
-            targetPos = cameraTarget.position;
-            targetRot = cameraTarget.rotation;
-
-            Camera.main.transform.position = startPos;
-            Camera.main.transform.rotation = startRot;
+            transitioning = true;
 
             // Our bird shouldn't be flying during 
             // cut scenes!
-            if (God.wren)
-            {
-                if (wrenCrashPosition != null)
-                {
-                    God.wren.Crash(wrenCrashPosition.position);
-                }
-                else
-                {
-                    God.wren.Crash(God.wren.transform.position);
+            if ( God.wren ) {
+                if ( wrenCrashPosition != null ) {
+                    God.wren.Crash( wrenCrashPosition.position );
+                } else {
+                    God.wren.Crash( God.wren.transform.position );
                 }
             }
+
+            God.cameraManager.cutSceneManager.SetCutScene( this );
         }
     }
 
@@ -394,38 +265,26 @@ public class PlayCutScene : MonoBehaviour
     public void SetEndValues()
     {
 
-        startPos = Camera.main.transform.position;
-        startRot = Camera.main.transform.rotation;
-
+        print( "setting end values" );
         director.time = director.playableAsset.duration;
         director.Evaluate();
 
-        Camera.main.transform.position = startPos;
-        Camera.main.transform.rotation = startRot;
 
     }
 
     public void SetStartValues()
     {
 
-        //        print(gameObject.name);
-
-
-        startPos = Camera.main.transform.position;
-        startRot = Camera.main.transform.rotation;
-
-
+        print( "setting start values" );
         director.time = 0;
         director.Evaluate();
-
-        Camera.main.transform.position = startPos;
-        Camera.main.transform.rotation = startRot;
-
 
     }
 
     public void OnEnd()
     {
+
+        print( "end called" );
 
     }
 }

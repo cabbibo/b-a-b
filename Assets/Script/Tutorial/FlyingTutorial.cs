@@ -62,23 +62,30 @@ public class FlyingTutorial : TutorialCoroutine
 
     public TutorialEnder ender;
 
-    [Header( "Start" )] public GameObject activeInTutorial;
-    public                     GameObject activeAfterTutorial;
-    public                     GameObject cloudParticles;
+    [Header( "Start" )]
+    public GameObject activeInTutorial;
+
+    public GameObject activeAfterTutorial;
+    public GameObject cloudParticles;
 
 
-    [Header( "Cameras" )] public CinematicCamera cameraInsideCloseup;
-    public                       CinematicCamera cameraCloseBack;
-    public                       CinematicCamera cameraFarBack;
+    [Header( "Cameras" )]
+    public CinematicCamera cameraInsideCloseup;
+
+    public CinematicCamera cameraCloseBack;
+    public CinematicCamera cameraFarBack;
 
 
-    [Header( "Tooltip Cards" )] public CanvasGroup     groupCard;
-    public                             CanvasGroup     groupXToContinue;
-    public                             TextMeshProUGUI cardTitle;
-    public                             TextMeshProUGUI cardText;
-    public                             GameObject      cardFlyOnGround;
+    [Header( "Tooltip Cards" )]
+    public CanvasGroup groupCard;
 
-    [Header( "Ending" )] public CanvasGroup groupEnd;
+    public CanvasGroup     groupXToContinue;
+    public TextMeshProUGUI cardTitle;
+    public TextMeshProUGUI cardText;
+    public GameObject      cardFlyOnGround;
+
+    [Header( "Ending" )]
+    public CanvasGroup groupEnd;
     //float _lastSequenceTime;
 
 
@@ -186,24 +193,27 @@ public class FlyingTutorial : TutorialCoroutine
 
         print( "WAITING" );
 
+        God.interfaceTutorial.ShowPoetryText( "it feels strange to be something new" );
+
         God.interfaceTutorial.SetControllerHint(
             InterfaceTutorial.ControllerHint.Wiggle ,
-            "it feels strange to be something new"
+            "WIGGLE"
         );
 
-        yield return God.interfaceTutorial.WaitForXToContinue();
+        yield return WiggleSequence(); //WaitForXToContinue();
+
+
         God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.None );
         print( "AFTER X TO CONTINUE" );
-
-
         God.postController.WormHole( OnBirdBackShown );
 
 
         yield return God.interfaceTutorial.WaitWithCheat( 3 );
 
         God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Wiggle );
-        God.interfaceTutorial.controllerText.text = "your feathers light as air";
-        yield return God.interfaceTutorial.WaitForXToContinue();
+        God.interfaceTutorial.poetryText.text = "your feathers light as air";
+
+        yield return WiggleSequence2(); //WaitForXToContinue();
 
         God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.None );
         God.interfaceTutorial.TutorialSectionComplete();
@@ -214,10 +224,10 @@ public class FlyingTutorial : TutorialCoroutine
         OnBirdZoomOutEnd();
 
         God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Wiggle );
-        God.interfaceTutorial.controllerText.text = "wiggle your crystalline wings small bird";
+        God.interfaceTutorial.poetryText.text = "wiggle your crystalline wings small bird";
 
         // yield return WaitWithCheat(waitTimeInFirstShots);
-        yield return God.interfaceTutorial.WaitForXToContinue();
+        yield return WiggleSequence2();
 
         God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.None );
         God.interfaceTutorial.TutorialSectionComplete();
@@ -228,10 +238,14 @@ public class FlyingTutorial : TutorialCoroutine
 
         yield return God.interfaceTutorial.WaitWithCheat( 3 );
         God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Wiggle );
-        God.interfaceTutorial.controllerText.text = "even at your core, you are still a bird now";
-        yield return God.interfaceTutorial.WaitForXToContinue();
+        God.interfaceTutorial.poetryText.text = "even at your core, you are still a bird now";
+
+
+        yield return WiggleSequence2();
         God.interfaceTutorial.TutorialSectionComplete();
+        God.interfaceTutorial.HidePoetryText();
         God.cameraManager.cinematicManager.ReleasePriority( .1f );
+
 
         // OnRotateToFrontStart();
         //cinematicCamera.tutorialCameraIdx = (float)Camera.Front;
@@ -443,8 +457,7 @@ _   _          ___         ____                        ____
 
             if ( upOrDown > 0 ) {
                 God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Forward );
-            }
-            else {
+            } else {
                 God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Back );
             }
 
@@ -463,27 +476,23 @@ _   _          ___         ____                        ____
 
                     if ( upOrDown > 0 ) {
                         PlaceHitTarget();
-                    }
-                    else {
+                    } else {
                         PlaceHitTarget();
                     }
 
-                }
-                else {
+                } else {
                     DeactivatePointer();
                     targetManager.EraseAllTargets();
                 }
 
-            }
-            else {
+            } else {
 
                 if ( Vector3.Dot( God.wren.transform.forward , tv1 ) > 0 ) {
 
                     if ( upOrDown > 0 ) {
                         DeactivatePointer();
                         PlaceHitTarget();
-                    }
-                    else {
+                    } else {
 
                         DeactivatePointer();
                         PlaceHitTarget();
@@ -494,7 +503,7 @@ _   _          ___         ____                        ____
                 //t = Mathf.Clamp01(t - Time.unscaledDeltaTime * 1.25f);
             }
 
-            God.interfaceTutorial.ShowProgress( t );
+            //  God.interfaceTutorial.ShowProgress( t );
             // Set back to normal;
 
             if ( Input.GetKeyDown( KeyCode.Space ) ) {
@@ -577,8 +586,7 @@ ___) |\ V  V /| |_| | |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |__
 
                 if ( heightDiff > 0 ) {
                     God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Swoop );
-                }
-                else {
+                } else {
                     God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Back );
                 }
 
@@ -588,8 +596,7 @@ ___) |\ V  V /| |_| | |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |__
 
                 if ( fHeight > God.wren.transform.position.y + maxHeightAboveBelow ) {
                     fHeight = Mathf.Lerp( fHeight , God.wren.transform.position.y + maxHeightAboveBelow , .1f );
-                }
-                else if ( fHeight < God.wren.transform.position.y - maxHeightAboveBelow ) {
+                } else if ( fHeight < God.wren.transform.position.y - maxHeightAboveBelow ) {
                     fHeight = Mathf.Lerp( fHeight , God.wren.transform.position.y - maxHeightAboveBelow , .1f );
                 }
 
@@ -616,8 +623,7 @@ ___) |\ V  V /| |_| | |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |__
                     canPlace = true;
                     divingOrNot = false;
 
-                }
-                else if ( heightDiff > 0 && oHeightDiff < 0 ) {
+                } else if ( heightDiff > 0 && oHeightDiff < 0 ) {
                     OnTargetHit();
                     t += amountProgressPerHit;
                     canPlace = true;
@@ -641,7 +647,7 @@ ___) |\ V  V /| |_| | |_| |  __/   ___) | |__| |_| | |_| | |___| |\  | |___| |__
 
             }
 
-            God.interfaceTutorial.ShowProgress( t );
+            //  God.interfaceTutorial.ShowProgress( t );
             // Set back to normal;
 
 
@@ -703,8 +709,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
             if ( leftOrRight > 0 ) {
                 God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Left );
-            }
-            else {
+            } else {
                 God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Right );
             }
 
@@ -719,8 +724,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
                 }
 
 
-            }
-            else {
+            } else {
 
 
                 // maybe need some new way here?
@@ -734,7 +738,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
             }
 
-            God.interfaceTutorial.ShowProgress( t );
+            //  God.interfaceTutorial.ShowProgress( t );
 
 
             if ( Input.GetKeyDown( KeyCode.Space ) ) {
@@ -802,8 +806,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
                 OnTargetHit();
                 PlaceFreeFlightTarget();
 
-            }
-            else {
+            } else {
 
                 if ( Vector3.Dot( God.wren.transform.forward , tv1 ) > .4f ) {
                     DeactivatePointer();
@@ -815,7 +818,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
                 //if (Vector3.Dot(God.wren.transform.forward, tv1) > .4f) { PlaceLRHitTarget(); }
             }
 
-            God.interfaceTutorial.ShowProgress( t );
+            //   God.interfaceTutorial.ShowProgress( t );
 
 
             if ( Input.GetKeyDown( KeyCode.Space ) ) {
@@ -866,23 +869,18 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
 
             //            print(flapStart);
 
-            if ( staminaLowHit ) {
-
-                God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Release2 );
-            }
-            else {
-                God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Flap );
-            }
 
             if ( God.wren.stats.stamina < staminaCutoff ) {
                 if ( staminaLowHit == false ) {
                     t += .5f;
                     staminaLowHit = true;
+                    God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Release2 );
                 }
             }
 
             if ( God.wren.stats.stamina > .95f ) {
                 staminaLowHit = false;
+                God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Flap );
             }
 
 
@@ -893,8 +891,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
                     God.interfaceTutorial.FadeFullGroupCoroutine( 1 , 0 );
                     flapStart = true;
                 }
-            }
-            else {
+            } else {
 
                 if ( flapStart ) {
                     // t += .1f;
@@ -906,7 +903,8 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
             }
 
 
-            God.interfaceTutorial.ShowProgress( t );
+            // God.interfaceTutorial.ShowProgress( t );
+
             if ( Input.GetKeyDown( KeyCode.Space ) ) {
                 break;
             }
@@ -924,13 +922,149 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
     }
 
 
+    private IEnumerator WiggleSequence()
+    {
+
+        float t = 0;
+
+
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
+
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.LeftStick );
+
+
+        //  God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.LeftStick );
+        while (t < 1) {
+            if ( God.input.left.magnitude > .1f ) {
+                t += .01f;
+            }
+
+            God.interfaceTutorial.ShowProgress( t );
+
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
+                break;
+            }
+
+            yield return null;
+        }
+
+        God.interfaceTutorial.SmallSectionComplete();
+
+        t = 0;
+
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.RightStick );
+
+        while (t < 1) {
+            if ( God.input.right.magnitude > .1f ) {
+                t += .01f;
+            }
+
+            God.interfaceTutorial.ShowProgress( t );
+
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
+                break;
+            }
+
+            yield return null;
+        }
+
+        God.interfaceTutorial.SmallSectionComplete();
+
+        t = 0;
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.L2 );
+
+        while (t < 1) {
+
+            if ( Mathf.Abs( God.input.l2Vel ) > .001f ) {
+                t += .03f;
+            }
+
+            if ( God.input.l2 > .5f ) {
+                t += .002f;
+            }
+
+            God.interfaceTutorial.ShowProgress( t );
+
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
+                break;
+            }
+
+            yield return null;
+        }
+
+        God.interfaceTutorial.SmallSectionComplete();
+
+        t = 0;
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.R2 );
+
+        while (t < 1) {
+
+            if ( Mathf.Abs( God.input.r2Vel ) > .001f ) {
+                t += .03f;
+            }
+
+            if ( God.input.r2 > .5f ) {
+                t += .002f;
+            }
+
+            God.interfaceTutorial.ShowProgress( t );
+
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
+                break;
+            }
+
+            yield return null;
+        }
+
+        print( "setting to none" );
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.None );
+        print( "hasSetNone" );
+
+        God.interfaceTutorial.SmallSectionComplete();
+
+
+    }
+
+
+    private IEnumerator WiggleSequence2()
+    {
+
+        float t = 0;
+
+
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
+
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Wiggle );
+
+
+        //  God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.LeftStick );
+        while (t < 1) {
+            if ( God.input.left.magnitude > .1f || God.input.right.magnitude > .1f ||
+                 Mathf.Abs( God.input.l2Vel ) > .001f || God.input.l2 > .5f || Mathf.Abs( God.input.r2Vel ) > .001f ||
+                 God.input.r2 > .5f ) {
+                t += .002f;
+            }
+
+            God.interfaceTutorial.ShowProgress( t );
+
+            if ( Input.GetKeyDown( KeyCode.Space ) ) {
+                break;
+            }
+
+            yield return null;
+        }
+
+
+    }
+
+
     private IEnumerator FlapQuickSequence()
     {
 
 
         float t = 0;
 
-        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Flap , "Flap To Gain Speed!" );
+        God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Flap , "FLAP" );
         God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 );
 
         bool flapStart = false;
@@ -985,6 +1119,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
             }
 
             God.interfaceTutorial.ShowProgress( t );
+
             if ( Input.GetKeyDown( KeyCode.Space ) ) {
                 break;
             }
@@ -1027,6 +1162,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
             }
 
             God.interfaceTutorial.ShowProgress( t );
+
             if ( Input.GetKeyDown( KeyCode.Space ) ) {
                 break;
             }
@@ -1097,8 +1233,7 @@ _     _ _   _   _      _
 
         if ( leftOrRight > 0 ) {
             targetManager.SetTarget( God.wren.transform.position + flatWrenForward * 100 + flatWrenRight * -20 , 0 );
-        }
-        else {
+        } else {
             targetManager.SetTarget( God.wren.transform.position + flatWrenForward * 100 + flatWrenRight * 20 , 0 );
         }
 
@@ -1243,6 +1378,7 @@ _______     _______ _   _ _____ ____
     {
         title = "";
         text = "";
+
         switch (type) {
             case CardType.RevealIsland:
                 title = "Bird Island";
@@ -1305,8 +1441,7 @@ _______     _______ _   _ _____ ____
 
         if ( cardType == CardType.RevealIsland ) {
             StartCoroutine( ShowTutorialStartCardSequence() );
-        }
-        else {
+        } else {
             StartCoroutine( ShowCardSequence( delay , target , pause ) );
         }
     }
@@ -1346,6 +1481,7 @@ _______     _______ _   _ _____ ____
 
         float t = 1;
         float prevTimescale = Time.timeScale;
+
         while (pause && t > 0) {
             t -= Time.unscaledDeltaTime * 1.2f;
             Time.timeScale = Mathf.Lerp( TIMESCALE_LOW , prevTimescale , t );
@@ -1359,6 +1495,7 @@ _______     _______ _   _ _____ ____
 
         bool lastX = God.input.x;
         wait = true;
+
         while (wait) {
             if ( !lastX && God.input.x ) {
                 wait = false;
@@ -1369,6 +1506,7 @@ _______     _______ _   _ _____ ____
         }
 
         t = 0;
+
         while (pause && t < 1) {
             t += Time.unscaledDeltaTime * .5f;
             groupCard.alpha = 1 - t;
@@ -1411,6 +1549,7 @@ _______     _______ _   _ _____ ____
         groupXToContinue.alpha = 1;
 
         bool wait = true , lastX = God.input.x;
+
         while (wait) {
             if ( !lastX && God.input.x ) {
                 wait = false;
@@ -1429,6 +1568,7 @@ _______     _______ _   _ _____ ____
         groupXToContinue.alpha = 1;
 
         wait = true;
+
         while (wait) {
             if ( !lastX && God.input.x ) {
                 wait = false;
@@ -1445,6 +1585,7 @@ _______     _______ _   _ _____ ____
         groupXToContinue.alpha = 1;
 
         wait = true;
+
         while (wait) {
             if ( !lastX && God.input.x ) {
                 wait = false;
@@ -1463,6 +1604,7 @@ _______     _______ _   _ _____ ____
         groupXToContinue.alpha = 1;
 
         wait = true;
+
         while (wait) {
             if ( !lastX && God.input.x ) {
                 wait = false;
@@ -1493,6 +1635,7 @@ _______     _______ _   _ _____ ____
         God.wren.physics.rb.isKinematic = true;
 
         bool wait = true;
+
         while (wait) {
             if ( God.input.squarePressed ) {
                 wait = false;

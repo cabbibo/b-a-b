@@ -202,6 +202,7 @@ public class InterfacePointer : MonoBehaviour
             fades[i] = Mathf.Lerp( fades[i] , targetFades[i] , fades[i] < targetFades[i] ? fadeInSpeed : fadeOutSpeed );
         }
 
+        bool mustRemake = false;
 
         if ( pointerList.Count > 0 ) {
 
@@ -212,10 +213,25 @@ public class InterfacePointer : MonoBehaviour
             */
 
             for ( int i = 0; i < pointerList.Count; i++ ) {
+
+                if ( pointerList[i] == null ) {
+                    // Debug.LogError( "Pointer is null" );
+                    //Debug.LogError( pointerList[i].gameObject.name );
+                    pointerList.RemoveAt( i );
+                    i--;
+                    mustRemake = true;
+                    continue;
+
+                }
+
                 pointerPositions[i] = pointerList[i].position;
 
             }
 
+            if ( mustRemake ) {
+                UpdateBuffers();
+                RemakeBuffer();
+            }
 
             _buffer.SetData( pointerPositions );
 

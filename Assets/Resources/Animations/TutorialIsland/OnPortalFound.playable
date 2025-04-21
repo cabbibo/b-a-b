@@ -290,7 +290,7 @@ MonoBehaviour:
     m_Start: 0
     m_ClipIn: 0
     m_Asset: {fileID: -3701720226845501724}
-    m_Duration: 18.35
+    m_Duration: 9.383333333333333
     m_TimeScale: 1
     m_ParentTrack: {fileID: -5938062690833490956}
     m_EaseInDuration: 0
@@ -437,7 +437,7 @@ MonoBehaviour:
   - {fileID: -5938062690833490956}
   - {fileID: -8910936866817413300}
   - {fileID: 7793603657156512339}
-  m_FixedDuration: 30.366666666666667
+  m_FixedDuration: 9.366666666666667
   m_EditorSettings:
     m_Framerate: 60
     m_ScenePreview: 1
@@ -470,7 +470,7 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 49.566666
+        time: 9.933333
         value: {x: 8.149, y: 69.253, z: 0.089}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
@@ -512,7 +512,7 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 49.566666
+        time: 9.933333
         value: {x: 3351.7212, y: 332.36487, z: 3704.1223}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
@@ -592,7 +592,7 @@ AnimationClip:
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 49.566666
+    m_StopTime: 9.933333
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -622,7 +622,7 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 49.566666
+        time: 9.933333
         value: 8.149
         inSlope: 0
         outSlope: 0
@@ -652,7 +652,7 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 49.566666
+        time: 9.933333
         value: 69.253
         inSlope: 0
         outSlope: 0
@@ -682,7 +682,7 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 49.566666
+        time: 9.933333
         value: 0.089
         inSlope: 0
         outSlope: 0
@@ -712,7 +712,7 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 49.566666
+        time: 9.933333
         value: 3351.7212
         inSlope: 0
         outSlope: 0
@@ -742,7 +742,7 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 49.566666
+        time: 9.933333
         value: 332.36487
         inSlope: 0
         outSlope: 0
@@ -772,7 +772,7 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 49.566666
+        time: 9.933333
         value: 3704.1223
         inSlope: 0
         outSlope: 0
@@ -923,7 +923,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: AnimationHelpers/CameraAnimator
+    path: AnimationHelpers/WrenAnimator
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -935,19 +935,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: AnimationHelpers/CameraAnimator
-    classID: 4
-    script: {fileID: 0}
-    flags: 0
-  - serializedVersion: 2
-    curve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    attribute: m_LocalEulerAngles.x
-    path: AnimationHelpers/CameraAnimator
+    path: AnimationHelpers/WrenAnimator
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -970,8 +958,20 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    attribute: m_LocalEulerAngles.x
+    path: AnimationHelpers/CameraAnimator
+    classID: 4
+    script: {fileID: 0}
+    flags: 0
+  - serializedVersion: 2
+    curve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: AnimationHelpers/WrenAnimator
+    path: AnimationHelpers/CameraAnimator
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -983,7 +983,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: AnimationHelpers/WrenAnimator
+    path: AnimationHelpers/CameraAnimator
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -1696,7 +1696,7 @@ MonoBehaviour:
     m_Start: 0
     m_ClipIn: 0
     m_Asset: {fileID: -2514672053915676084}
-    m_Duration: 49.56666666666667
+    m_Duration: 9.383333333333333
     m_TimeScale: 1
     m_ParentTrack: {fileID: 7793603657156512339}
     m_EaseInDuration: 0

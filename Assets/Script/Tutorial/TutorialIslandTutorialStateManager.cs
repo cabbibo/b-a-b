@@ -172,12 +172,6 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
         God.state.wrenCanDo.hasLearnedTakeOff = true;
         God.state.UpdateState();
 
-        /*  if ( God.state.wrenCanDo.hasLearnedCarry == false && God.state.wrenCanDo.hasLearnedPing == true ) {
-              carryTutorial.JumpStartTutorial();
-          } else {
-              carryTutorial.CheckState();
-          }*/
-
 
     }
 
@@ -187,12 +181,11 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
         print( "DOING CARRY TUTORIAL FINISH" );
 
-        /*
+
         God.state.wrenCanDo.hasLearnedCarry = true;
         God.state.UpdateState();
 
         SetPostCarryState();
-        */
 
 
     }
@@ -228,7 +221,6 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
             DoTakeoffTutorialFinish();
         } else if ( tutorial is CarryTutorial ) {
             DoCarryTutorialFinish();
-            //SetPostCarryState();
         }
     }
 
@@ -246,13 +238,13 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
         print( "OnProgress: " + progress );
 
-        //Debug.Log("Progress: " + progress);
         if ( tutorial is TakeOffTutorial ) {
 
 
             if ( pingTutorial.hasStarted == false && God.state.wrenCanDo.hasLearnedPing == false ) {
                 pingTutorial.StartTutorial();
             }
+
 
         } else if ( tutorial is PingTutorial ) {
             //Debug.Log("Ping Progress: " + progress);

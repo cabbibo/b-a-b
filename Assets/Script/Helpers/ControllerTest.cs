@@ -7,8 +7,6 @@ using Rewired;
 [ExecuteAlways]
 public class ControllerTest : MonoBehaviour
 {
-
-
     private Player player; // The Rewired Player
 
     public AnimationCurve leftYRemap;
@@ -25,17 +23,29 @@ public class ControllerTest : MonoBehaviour
     public Vector2 left;
     public Vector2 right;
 
+    public Vector2 leftVel;
+    public Vector2 rightVel;
+
+    public Vector2 oLeft;
+    public Vector2 oRight;
+
 
     public Vector2 alwaysLeft;
     public Vector2 alwaysRight;
 
     public float r1;
-    public bool r1Pressed;
+    public bool  r1Pressed;
     public float l1;
-    public bool l1Pressed;
+    public bool  l1Pressed;
 
     public float r2;
     public float l2;
+
+    public float oR2;
+    public float oL2;
+
+    public float r2Vel;
+    public float l2Vel;
 
     public bool r3;
     public bool l3;
@@ -75,20 +85,16 @@ public class ControllerTest : MonoBehaviour
     public Joystick joystick;
 
     // Start is called before the first frame update
-    void OnEnable()
+    private void OnEnable()
     {
-        player = ReInput.players.GetPlayer(0);
+        player = ReInput.players.GetPlayer( 0 );
 
         // Find the first Joystick object with "DualSense" in its name
         foreach (var controller in player.controllers.Joysticks)
-        {
-            if (controller.name.Contains("DualSense"))
-            {
+            if ( controller.name.Contains( "DualSense" ) ) {
                 joystick = (Joystick)controller;
                 break;
             }
-        }
-
 
 
         // Set the motor speeds for the haptic feedback
@@ -98,84 +104,92 @@ public class ControllerTest : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
-        player = ReInput.players.GetPlayer(0);
+        player = ReInput.players.GetPlayer( 0 );
         /*if (player == null)
         {
             player = ReInput.players.GetPlayer(0);
         }*/
 
-        if (player == null)
-        {
+        if ( player == null ) {
             return;
         }
 
-        float invX = 1;//invertX ? -1:1;
-        float invY = 1;//invertY ? -1:1;
+        float invX = 1; //invertX ? -1:1;
+        float invY = 1; //invertY ? -1:1;
 
 
-        baseLeft = new Vector2(player.GetAxis("leftX"), player.GetAxis("leftY"));
-        baseRight = new Vector2(player.GetAxis("rightX"), player.GetAxis("rightY"));
+        baseLeft = new Vector2( player.GetAxis( "leftX" ) , player.GetAxis( "leftY" ) );
+        baseRight = new Vector2( player.GetAxis( "rightX" ) , player.GetAxis( "rightY" ) );
 
-        left = new Vector2(player.GetAxis("leftX") * invX, player.GetAxis("leftY") * invY);
-        right = new Vector2(player.GetAxis("rightX") * invX, player.GetAxis("rightY") * invY);
+        oLeft = left;
+        oRight = right;
+        left = new Vector2( player.GetAxis( "leftX" ) * invX , player.GetAxis( "leftY" ) * invY );
+        right = new Vector2( player.GetAxis( "rightX" ) * invX , player.GetAxis( "rightY" ) * invY );
 
 
         Remap();
+
+        leftVel = left - oLeft;
+        rightVel = right - oRight;
+
         //left = Remap(left, leftXRemap, leftYRemap);
         //right = Remap(right, rightXRemap, rightYRemap);
 
         alwaysLeft = left;
         alwaysRight = right;
 
-        if (swapLR)
-        {
-            right = new Vector2(player.GetAxis("leftX") * invX, player.GetAxis("leftY") * invY);
-            left = new Vector2(player.GetAxis("rightX") * invX, player.GetAxis("rightY") * invY);
+        if ( swapLR ) {
+            right = new Vector2( player.GetAxis( "leftX" ) * invX , player.GetAxis( "leftY" ) * invY );
+            left = new Vector2( player.GetAxis( "rightX" ) * invX , player.GetAxis( "rightY" ) * invY );
         }
 
-        r1 = player.GetAxis("R1");
-        r1Pressed = player.GetButtonDown("R1");
-        l1 = player.GetAxis("L1");
-        l1Pressed = player.GetButtonDown("L1");
-
-        r2 = player.GetAxis("R2");
-        l2 = player.GetAxis("L2");
-
-        dUp = player.GetButton("D-Up");
-        dDown = player.GetButton("D-Down");
-        dLeft = player.GetButton("D-Left");
-        dRight = player.GetButton("D-Right");
+        r1 = player.GetAxis( "R1" );
+        r1Pressed = player.GetButtonDown( "R1" );
+        l1 = player.GetAxis( "L1" );
+        l1Pressed = player.GetButtonDown( "L1" );
 
 
-        dUpPressed = player.GetButtonDown("D-Up");
-        dDownPressed = player.GetButtonDown("D-Down");
-        dLeftPressed = player.GetButtonDown("D-Left");
-        dRightPressed = player.GetButtonDown("D-Right");
+        oR2 = r2;
+        oL2 = l2;
 
-        l3 = player.GetButton("L3");
-        r3 = player.GetButton("R3");
+        r2 = player.GetAxis( "R2" );
+        l2 = player.GetAxis( "L2" );
 
-        triangle = player.GetButton("Triangle");
-        trianglePressed = player.GetButtonDown("Triangle");
+        r2Vel = r2 - oR2;
+        l2Vel = l2 - oL2;
 
-
-
-        circle = player.GetButton("Circle");
-        circlePressed = player.GetButtonDown("Circle");
-
-        square = player.GetButton("Square");
-        squarePressed = player.GetButtonDown("Square");
-
-        x = player.GetButton("X");
-        xPressed = player.GetButtonDown("X");
+        dUp = player.GetButton( "D-Up" );
+        dDown = player.GetButton( "D-Down" );
+        dLeft = player.GetButton( "D-Left" );
+        dRight = player.GetButton( "D-Right" );
 
 
+        dUpPressed = player.GetButtonDown( "D-Up" );
+        dDownPressed = player.GetButtonDown( "D-Down" );
+        dLeftPressed = player.GetButtonDown( "D-Left" );
+        dRightPressed = player.GetButtonDown( "D-Right" );
 
-        menuPressed = player.GetButtonDown("Menu");
+        l3 = player.GetButton( "L3" );
+        r3 = player.GetButton( "R3" );
 
+        triangle = player.GetButton( "Triangle" );
+        trianglePressed = player.GetButtonDown( "Triangle" );
+
+
+        circle = player.GetButton( "Circle" );
+        circlePressed = player.GetButtonDown( "Circle" );
+
+        square = player.GetButton( "Square" );
+        squarePressed = player.GetButtonDown( "Square" );
+
+        x = player.GetButton( "X" );
+        xPressed = player.GetButtonDown( "X" );
+
+
+        menuPressed = player.GetButtonDown( "Menu" );
 
 
     }
@@ -185,31 +199,26 @@ public class ControllerTest : MonoBehaviour
     {
         // left = Remap(left, leftXRemap, leftYRemap);
 
-        Vector2 tmp = new Vector2(left.x, left.y);
+        var tmp = new Vector2( left.x , left.y );
         left.x = tmp.x * (1 - tmp.y);
         left.y = tmp.y * (1 - tmp.x);
 
 
         //right = Remap(right, rightXRemap, rightYRemap);
 
-        tmp.Set(right.x, right.y);
+        tmp.Set( right.x , right.y );
         right.x = tmp.x * (1 - tmp.y);
         right.y = tmp.y * (1 - tmp.x);
 
 
     }
 
-    public Vector2 Remap(Vector2 input, AnimationCurve curveX, AnimationCurve curveY)
+    public Vector2 Remap( Vector2 input , AnimationCurve curveX , AnimationCurve curveY )
     {
-        Vector2 output = new Vector2(curveX.Evaluate(Mathf.Abs(input.x)) * Mathf.Sign(input.x), curveY.Evaluate(Mathf.Abs(input.y)) * Mathf.Sign(input.y));
+        var output = new Vector2( curveX.Evaluate( Mathf.Abs( input.x ) ) * Mathf.Sign( input.x ) ,
+            curveY.Evaluate( Mathf.Abs( input.y ) ) * Mathf.Sign( input.y ) );
         return output;
     }
-
-
-
-
-
-
 
 
     /* public float leftY
@@ -234,55 +243,59 @@ public class ControllerTest : MonoBehaviour
      }*/
 
 
-
-    public void SetVibration(int whichMotor, float intensity)
+    public void SetVibration( int whichMotor , float intensity )
     {
 
 
-        print("setting");
+        print( "setting" );
+
         // Set vibration for a certain duration
-        foreach (Joystick j in player.controllers.Joysticks)
-        {
-            if (!j.supportsVibration) continue;
-            print("setting here");
-            if (j.vibrationMotorCount > 0)
-            {
-                j.SetVibration(whichMotor, intensity); // 1 second duration
-                print("set 4");
+        foreach (var j in player.controllers.Joysticks) {
+            if ( !j.supportsVibration ) {
+                continue;
+            }
+
+            print( "setting here" );
+
+            if ( j.vibrationMotorCount > 0 ) {
+                j.SetVibration( whichMotor , intensity ); // 1 second duration
+                print( "set 4" );
             }
         }
 
     }
 
 
-    public void SetVibration(int whichMotor, float intensity1, float intensity2, float frequency)
+    public void SetVibration( int whichMotor , float intensity1 , float intensity2 , float frequency )
     {
 
 
         // Set vibration for a certain duration
-        foreach (Joystick j in player.controllers.Joysticks)
-        {
-            if (!j.supportsVibration) continue;
-            if (j.vibrationMotorCount > 0)
-            {
-                j.SetVibration(whichMotor, intensity1, intensity2, .1f); // 1 second duration
+        foreach (var j in player.controllers.Joysticks) {
+            if ( !j.supportsVibration ) {
+                continue;
+            }
+
+            if ( j.vibrationMotorCount > 0 ) {
+                j.SetVibration( whichMotor , intensity1 , intensity2 , .1f ); // 1 second duration
             }
         }
 
     }
 
 
-    public void SetVibration(int whichMotor, float intensity1, float duration)
+    public void SetVibration( int whichMotor , float intensity1 , float duration )
     {
 
 
         // Set vibration for a certain duration
-        foreach (Joystick j in player.controllers.Joysticks)
-        {
-            if (!j.supportsVibration) continue;
-            if (j.vibrationMotorCount > 0)
-            {
-                j.SetVibration(whichMotor, intensity1, duration); // 1 second duration
+        foreach (var j in player.controllers.Joysticks) {
+            if ( !j.supportsVibration ) {
+                continue;
+            }
+
+            if ( j.vibrationMotorCount > 0 ) {
+                j.SetVibration( whichMotor , intensity1 , duration ); // 1 second duration
             }
         }
 
