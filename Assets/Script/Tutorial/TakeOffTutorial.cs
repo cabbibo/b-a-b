@@ -71,7 +71,7 @@ public class TakeOffTutorial : TutorialCoroutine
                 //   yield return God.interfaceTutorial.WaitWithCheat(3);
                 God.interfaceTutorial.SetControllerHint(
                     InterfaceTutorial.ControllerHint.TakeOff ,
-                    "Press the take off button to take off"
+                    "TAKE OFF"
                 );
 
 
@@ -91,7 +91,7 @@ public class TakeOffTutorial : TutorialCoroutine
                 stateManager.OnProgress( this , (float)numTimesTakenOff / (float)numTimesTakenOffToComplete );
 
                 numTimesTakenOff++;
-                God.interfaceTutorial.ShowProgress( (float)numTimesTakenOff / (float)numTimesTakenOffToComplete );
+                // God.interfaceTutorial.ShowProgress( (float)numTimesTakenOff / (float)numTimesTakenOffToComplete );
 
             }
 

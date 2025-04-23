@@ -145,7 +145,7 @@ public class OverallCameraManager : MonoBehaviour
             priorityRequestTime = Time.time;
             priorityRequestSpeed = priorityRequestSpeedDefault;
         } else {
-            Debug.LogWarning( "Already have priority" );
+//            Debug.LogWarning( "Already have priority" );
         }
     }
 

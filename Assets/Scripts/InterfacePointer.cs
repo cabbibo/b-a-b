@@ -333,7 +333,7 @@ public class InterfacePointer : MonoBehaviour
         if ( pointerList.Contains( pointer ) ) {
 
 
-            print( "HAS POINTER" );
+           // print( "HAS POINTER" );
 
             if ( objectOfInterest != null ) {
 

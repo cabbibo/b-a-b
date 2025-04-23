@@ -88,13 +88,13 @@ public class PingTutorial : TutorialCoroutine
     {
 
 
-        God.interfaceTutorial.SetControllerHint(
-            InterfaceTutorial.ControllerHint.Ping ,
-            "Press the Ping button to see objective locations"
-        );
-
         God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 ); //StartCoroutine(FadeGroup(groupContainer, 0, 1));
 
+
+        God.interfaceTutorial.SetControllerHint(
+            InterfaceTutorial.ControllerHint.Ping ,
+            "PING"
+        );
 
         while (true) {
             if ( God.input.triangle ) {
@@ -117,13 +117,13 @@ public class PingTutorial : TutorialCoroutine
 
 
         print( "PING SET" );
+        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 ); //StartCoroutine(FadeGroup(groupContainer, 0, 1));
 
         God.interfaceTutorial.SetControllerHint(
             InterfaceTutorial.ControllerHint.Ping ,
-            "Press the Ping button to see objective locations"
+            "COMPASS"
         );
 
-        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 ); //StartCoroutine(FadeGroup(groupContainer, 0, 1));
 
         God.wren.interfaceUtils.ClearPointers();
 
@@ -136,6 +136,12 @@ public class PingTutorial : TutorialCoroutine
                     tutorialTargets[currentTargetIndex].transform.position ) < hitRadius ) {
 
                 OnTargetHit();
+
+
+                God.interfaceTutorial.SetControllerHint(
+                    InterfaceTutorial.ControllerHint.Ping ,
+                    "COMPASS"
+                );
 
                 print( "YA GET FUCKED" );
 
@@ -161,7 +167,7 @@ public class PingTutorial : TutorialCoroutine
 
         God.interfaceTutorial.SetControllerHint(
             InterfaceTutorial.ControllerHint.Ping ,
-            "Connect to the crystals to complete the tutorial"
+            "COLLECT"
         );
 
 

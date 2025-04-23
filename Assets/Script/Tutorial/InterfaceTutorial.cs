@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 using WrenUtils;
 
 public class InterfaceTutorial : MonoBehaviour
@@ -32,6 +33,11 @@ public class InterfaceTutorial : MonoBehaviour
 
 
     private MaterialPropertyBlock bgMpr;
+
+    public void OnEnable()
+    {
+        groupContainer.alpha = 0;
+    }
 
     public void SetBGFade( float t )
     {
@@ -95,8 +101,16 @@ public class InterfaceTutorial : MonoBehaviour
         float t = 0;
         float _ct = Time.unscaledTime;
 
+        print( "Fade Routine started" );
+        print( "From: " + from );
+        print( "To: " + to );
+        print( "Delay: " + delay );
+        print( "Duration: " + duration );
+        print( "Group :" + group.gameObject.name );
+
         while (t < duration) {
 
+            print( "Fadding group :  " + group.gameObject.name + " : " + t / duration );
 
             if ( delay > 0 && Time.unscaledTime - _ct < delay ) {
                 yield return null;
@@ -286,33 +300,81 @@ public class InterfaceTutorial : MonoBehaviour
         R2
     }
 
+    [Header( "FeedbackGroups" )]
+    public ControllerUIFeedbackGroup groupDive;
+
+    public ControllerUIFeedbackGroup groupLeft;
+    public ControllerUIFeedbackGroup groupRight;
+    public ControllerUIFeedbackGroup groupUp;
+    public ControllerUIFeedbackGroup groupDown;
+    public ControllerUIFeedbackGroup groupHold;
+    public ControllerUIFeedbackGroup groupFlap;
+    public ControllerUIFeedbackGroup groupSwoop;
+    public ControllerUIFeedbackGroup groupRelease;
+    public ControllerUIFeedbackGroup groupRelease2;
+
+    public ControllerUIFeedbackGroup groupGentle;
+    public ControllerUIFeedbackGroup groupBoost;
+    public ControllerUIFeedbackGroup groupPing;
+    public ControllerUIFeedbackGroup groupWiggle;
+    public ControllerUIFeedbackGroup groupTakeOff;
+
+    public ControllerUIFeedbackGroup groupCarry;
+
+    public ControllerUIFeedbackGroup groupLeftStick;
+    public ControllerUIFeedbackGroup groupRightStick;
+
+    public ControllerUIFeedbackGroup groupL2;
+    public ControllerUIFeedbackGroup groupR2;
+
     [Header( "Controller" )]
-    public GameObject groupSticks;
+    public GameObject button1;
 
-    public GameObject groupDive;
-    public GameObject groupLeft;
-    public GameObject groupRight;
-    public GameObject groupUp;
-    public GameObject groupDown;
-    public GameObject groupHold;
-    public GameObject groupFlap;
-    public GameObject groupSwoop;
-    public GameObject groupRelease;
-    public GameObject groupRelease2;
+    public GameObject button2;
+    public GameObject button3;
+    public GameObject button4;
 
-    public GameObject groupGentle;
-    public GameObject groupBoost;
-    public GameObject groupPing;
-    public GameObject groupWiggle;
-    public GameObject groupTakeOff;
+    public GameObject dUp;
+    public GameObject dDown;
+    public GameObject dLeft;
+    public GameObject dRight;
 
-    public GameObject groupCarry;
+    public GameObject leftStick;
+    public GameObject rightStick;
 
-    public GameObject groupLeftStick;
-    public GameObject groupRightStick;
+    public GameObject allDirectionsLeftStick;
+    public GameObject allDirectionsRightStick;
 
-    public GameObject groupL2;
-    public GameObject groupR2;
+    public GameObject upLeftStick;
+    public GameObject upRightStick;
+    public GameObject downLeftStick;
+    public GameObject downRightStick;
+    public GameObject leftLeftStick;
+    public GameObject leftRightStick;
+    public GameObject rightLeftStick;
+    public GameObject rightRightStick;
+
+    public GameObject l1;
+    public GameObject l2;
+    public GameObject l3;
+
+    public GameObject r1;
+    public GameObject r2;
+    public GameObject r3;
+
+    public GameObject l1Up;
+    public GameObject l2Up;
+
+    public GameObject r1Up;
+    public GameObject r2Up;
+
+    public GameObject hold;
+    public GameObject press;
+    public GameObject release;
+    public GameObject tap;
+
+    public Image[]           allUIImages;
+    public TextMeshProUGUI[] allUIText;
 
 
     public ControllerHint currentHint;
@@ -321,7 +383,6 @@ public class InterfaceTutorial : MonoBehaviour
     public IEnumerator ControllerHintSequence( ControllerHint hint )
     {
         SetControllerHint( hint );
-
         StartCoroutine( FadeGroup( groupContainer , 0 , 1 ) );
         yield return WaitWithCheat( 0.25f );
 
@@ -384,6 +445,57 @@ public class InterfaceTutorial : MonoBehaviour
         return t < 1;
     }
 
+    public ControllerUIFeedbackGroup currentFeedbackGroup;
+
+    public void SetFeedbackGroup( ControllerUIFeedbackGroup group )
+    {
+
+        currentFeedbackGroup = group;
+
+        button1.SetActive( group.button1 );
+        button2.SetActive( group.button2 );
+        button3.SetActive( group.button3 );
+        button4.SetActive( group.button4 );
+
+        dUp.SetActive( group.dUp );
+        dDown.SetActive( group.dDown );
+        dLeft.SetActive( group.dLeft );
+        dRight.SetActive( group.dRight );
+        leftStick.SetActive( group.leftStick );
+        rightStick.SetActive( group.rightStick );
+        allDirectionsLeftStick.SetActive( group.allDirectionsLeftStick );
+        allDirectionsRightStick.SetActive( group.allDirectionsRightStick );
+        upLeftStick.SetActive( group.upLeftStick );
+        upRightStick.SetActive( group.upRightStick );
+        downLeftStick.SetActive( group.downLeftStick );
+        downRightStick.SetActive( group.downRightStick );
+        leftLeftStick.SetActive( group.leftLeftStick );
+        leftRightStick.SetActive( group.leftRightStick );
+        rightLeftStick.SetActive( group.rightLeftStick );
+        rightRightStick.SetActive( group.rightRightStick );
+
+        l1.SetActive( group.l1 );
+        l2.SetActive( group.l2 );
+        l3.SetActive( group.l3 );
+
+        r1.SetActive( group.r1 );
+        r2.SetActive( group.r2 );
+        r3.SetActive( group.r3 );
+
+        l1Up.SetActive( group.l1Up );
+        l2Up.SetActive( group.l2Up );
+
+        r1Up.SetActive( group.r1Up );
+        r2Up.SetActive( group.r2Up );
+
+        hold.SetActive( group.hold );
+        press.SetActive( group.press );
+        release.SetActive( group.release );
+        tap.SetActive( group.tap );
+
+
+    }
+
 
     public void SetControllerHint( ControllerHint hint , string text = null )
     {
@@ -404,6 +516,89 @@ public class InterfaceTutorial : MonoBehaviour
 
         groupText.gameObject.SetActive( hint != ControllerHint.None );
 
+
+        if ( hint == ControllerHint.Left ) {
+            SetFeedbackGroup( groupLeft );
+        }
+
+        if ( hint == ControllerHint.Right ) {
+            SetFeedbackGroup( groupRight );
+        }
+
+        if ( hint == ControllerHint.Forward ) {
+            SetFeedbackGroup( groupUp );
+        }
+
+        if ( hint == ControllerHint.Back ) {
+            SetFeedbackGroup( groupDown );
+        }
+
+        if ( hint == ControllerHint.Dive ) {
+            SetFeedbackGroup( groupDive );
+        }
+
+        if ( hint == ControllerHint.Hold ) {
+            SetFeedbackGroup( groupHold );
+        }
+
+        if ( hint == ControllerHint.Flap ) {
+            SetFeedbackGroup( groupFlap );
+        }
+
+        if ( hint == ControllerHint.Swoop ) {
+            SetFeedbackGroup( groupSwoop );
+        }
+
+        if ( hint == ControllerHint.Release ) {
+            SetFeedbackGroup( groupRelease );
+        }
+
+        if ( hint == ControllerHint.Release2 ) {
+            SetFeedbackGroup( groupRelease2 );
+        }
+
+        if ( hint == ControllerHint.Gentle ) {
+            SetFeedbackGroup( groupGentle );
+        }
+
+        if ( hint == ControllerHint.Boost ) {
+            SetFeedbackGroup( groupBoost );
+        }
+
+        if ( hint == ControllerHint.Ping ) {
+            SetFeedbackGroup( groupPing );
+        }
+
+        if ( hint == ControllerHint.Wiggle ) {
+            SetFeedbackGroup( groupWiggle );
+        }
+
+        if ( hint == ControllerHint.TakeOff ) {
+            SetFeedbackGroup( groupTakeOff );
+        }
+
+        if ( hint == ControllerHint.Carry ) {
+            SetFeedbackGroup( groupCarry );
+        }
+
+        if ( hint == ControllerHint.LeftStick ) {
+            SetFeedbackGroup( groupLeftStick );
+        }
+
+        if ( hint == ControllerHint.RightStick ) {
+            SetFeedbackGroup( groupRightStick );
+        }
+
+        if ( hint == ControllerHint.L2 ) {
+            SetFeedbackGroup( groupL2 );
+        }
+
+        if ( hint == ControllerHint.R2 ) {
+            SetFeedbackGroup( groupR2 );
+        }
+
+
+        /*
         groupLeft.SetActive( hint == ControllerHint.Left );
         groupRight.SetActive( hint == ControllerHint.Right );
         groupUp.SetActive( hint == ControllerHint.Forward );
@@ -425,90 +620,92 @@ public class InterfaceTutorial : MonoBehaviour
         groupRightStick.SetActive( hint == ControllerHint.RightStick );
         groupL2.SetActive( hint == ControllerHint.L2 );
         groupR2.SetActive( hint == ControllerHint.R2 );
+*/
 
 
         if ( text != null ) {
             controllerText.text = text;
-
             currentHintText = controllerText.text;
-            return;
+
+        } else {
+
+            switch (hint) {
+                case ControllerHint.Dive:
+                    controllerText.text = "DIVE";
+                    break;
+                case ControllerHint.Left:
+                    controllerText.text = "LEFT";
+                    break;
+                case ControllerHint.Right:
+                    controllerText.text = "RIGHT";
+                    break;
+                case ControllerHint.Forward:
+                    controllerText.text = "DOWN";
+                    break;
+                case ControllerHint.Back:
+                    controllerText.text = "UP";
+                    break;
+                case ControllerHint.Hold:
+                    controllerText.text = "BRAKE";
+                    break;
+                case ControllerHint.Flap:
+                    controllerText.text = "FLAP";
+                    break;
+                case ControllerHint.Swoop:
+                    controllerText.text = "SWOOP";
+                    break;
+                case ControllerHint.Release:
+                    controllerText.text = "GLIDE";
+                    break;
+                case ControllerHint.Release2:
+                    controllerText.text = "REST";
+                    break;
+                case ControllerHint.Gentle:
+                    controllerText.text = "WIGGLE";
+                    break;
+                case ControllerHint.Boost:
+                    controllerText.text = "BOOST";
+                    break;
+                case ControllerHint.Ping:
+                    controllerText.text = "PING";
+                    break;
+                case ControllerHint.Wiggle:
+                    controllerText.text = "WIGGLE";
+                    break;
+                case ControllerHint.TakeOff:
+                    controllerText.text = "TAKE OFF";
+                    break;
+                case ControllerHint.Carry:
+                    controllerText.text = "CARRY";
+                    break;
+
+                case ControllerHint.LeftStick:
+                    controllerText.text = "WIGGLE";
+                    break;
+
+                case ControllerHint.RightStick:
+                    controllerText.text = "WIGGLE";
+                    break;
+                case ControllerHint.L2:
+                    controllerText.text = "TAP-TAP";
+                    break;
+                case ControllerHint.R2:
+                    controllerText.text = "TAP-TAP";
+                    break;
+                case ControllerHint.None:
+                    controllerText.text = "";
+                    break;
+
+                /* case ControllerHint.y:
+                     controllerText.text = "PRESS sticks to HOLD";
+                     break;*/
+                /*            case ControllerHint.TakeOff:
+                                controllerText.text = "PRESS X to TAKE OFF";
+                                break;*/
+            }
+
+
         }
-
-        switch (hint) {
-            case ControllerHint.Dive:
-                controllerText.text = "DIVE";
-                break;
-            case ControllerHint.Left:
-                controllerText.text = "LEFT";
-                break;
-            case ControllerHint.Right:
-                controllerText.text = "RIGHT";
-                break;
-            case ControllerHint.Forward:
-                controllerText.text = "DOWN";
-                break;
-            case ControllerHint.Back:
-                controllerText.text = "UP";
-                break;
-            case ControllerHint.Hold:
-                controllerText.text = "BRAKE";
-                break;
-            case ControllerHint.Flap:
-                controllerText.text = "FLAP";
-                break;
-            case ControllerHint.Swoop:
-                controllerText.text = "SWOOP";
-                break;
-            case ControllerHint.Release:
-                controllerText.text = "GLIDE";
-                break;
-            case ControllerHint.Release2:
-                controllerText.text = "REST";
-                break;
-            case ControllerHint.Gentle:
-                controllerText.text = "WIGGLE";
-                break;
-            case ControllerHint.Boost:
-                controllerText.text = "BOOST";
-                break;
-            case ControllerHint.Ping:
-                controllerText.text = "PING";
-                break;
-            case ControllerHint.Wiggle:
-                controllerText.text = "WIGGLE";
-                break;
-            case ControllerHint.TakeOff:
-                controllerText.text = "TAKE OFF";
-                break;
-            case ControllerHint.Carry:
-                controllerText.text = "CARRY";
-                break;
-
-            case ControllerHint.LeftStick:
-                controllerText.text = "WIGGLE";
-                break;
-
-            case ControllerHint.RightStick:
-                controllerText.text = "WIGGLE";
-                break;
-            case ControllerHint.L2:
-                controllerText.text = "TAP-TAP";
-                break;
-            case ControllerHint.R2:
-                controllerText.text = "TAP-TAP";
-                break;
-            case ControllerHint.None:
-                controllerText.text = "";
-                break;
-
-            /* case ControllerHint.y:
-                 controllerText.text = "PRESS sticks to HOLD";
-                 break;*/
-            /*            case ControllerHint.TakeOff:
-                            controllerText.text = "PRESS X to TAKE OFF";
-                            break;*/
-        }
-
 
         print( "setting text: " + controllerText.text );
 
@@ -518,6 +715,7 @@ public class InterfaceTutorial : MonoBehaviour
             groupText.alpha = 1;
 
             if ( fadeTextCoroutine != null ) {
+                Debug.LogWarning( "COROUTINE STOPPING" );
                 StopCoroutine( fadeTextCoroutine );
                 fadeTextCoroutine = null;
             }
@@ -543,10 +741,14 @@ public class InterfaceTutorial : MonoBehaviour
 
     public void FadeOutText()
     {
+
+        // Setting Fade Out
+        print( "setting Fade Out" );
         fadeTextCoroutine = FadeGroup( groupText , 1 , 0 , 1.3f , 1f );
         StartCoroutine( fadeTextCoroutine );
-    }
 
+
+    }
 
     public void FadeInIfOff()
     {
@@ -557,5 +759,31 @@ public class InterfaceTutorial : MonoBehaviour
         if ( groupContainer.alpha <= 0 ) {
             StartCoroutine( FadeGroup( groupContainer , 0 , 1 ) ); // Fading in the groupContainer from 0 to 1.
         }
+    }
+
+
+    public void Update()
+    {
+        SetUIPulse();
+    }
+
+    public void SetUIPulse()
+    {
+
+        if ( currentFeedbackGroup != null ) {
+            var c = Color.Lerp( currentFeedbackGroup.color1 , currentFeedbackGroup.color2 ,
+                (-Mathf.Cos( currentFeedbackGroup.pulseSpeed * Time.time ) + 1) / 2 );
+//        print( c );
+
+            for ( int i = 0; i < allUIImages.Length; i++ ) {
+                allUIImages[i].color = c;
+            }
+
+            for ( int i = 0; i < allUIText.Length; i++ ) {
+                allUIText[i].color = c;
+            }
+
+        }
+
     }
 }

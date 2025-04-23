@@ -148,8 +148,8 @@ public class WrenShardManager : MonoBehaviour
             int id = Random.Range( -1 , 7 );
 
             if ( God.islandData != null ) {
-                print( "HAS ISALAND" );
-                print( God.biomeController.maxBiomeID );
+                // print( "HAS ISALAND" );
+                //   print( God.biomeController.maxBiomeID );
                 id = God.biomeController.maxBiomeID;
             } else {
                 id = -1;
@@ -206,7 +206,7 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShards( int amount , float type , Vector3 position )
     {
-        print( "collected custom" );
+        //  print( "collected custom" );
 
         numShards += amount;
         collectType = type;
