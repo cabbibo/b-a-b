@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3587809072063482111}
+  - component: {fileID: 5501074270313702092}
   m_Layer: 10
   m_Name: CarryingReps
   m_TagString: Untagged
@@ -34,6 +35,28 @@ Transform:
   - {fileID: 4720591335304267410}
   m_Father: {fileID: 8120365990806255992}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5501074270313702092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147375780261061787}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51de878a15f030848bbc811fa4f3cd1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wren: {fileID: 6951865465235407638}
+  upDistCarrying: 0
+  backDistCarrying: -1.4
+  CarriedItems: []
+  FeetCarriedItems: 
+  lineRendererL: {fileID: 8915306664602239703}
+  lineRendererR: {fileID: 270965686109484110}
+  carryableObjects: []
+  canCarryLineRenderer: {fileID: 280194967612410937}
+  carryingLineResolution: 30
 --- !u!1 &231923058896873658
 GameObject:
   m_ObjectHideFlags: 0
@@ -26077,7 +26100,6 @@ GameObject:
   - component: {fileID: 6084063050993218892}
   - component: {fileID: 5852462534492014359}
   - component: {fileID: 9122258413311042299}
-  - component: {fileID: 7200611807387144284}
   - component: {fileID: 7513889539506830256}
   - component: {fileID: 6738018899578692129}
   - component: {fileID: 742813609323488648}
@@ -26145,7 +26167,7 @@ MonoBehaviour:
   physics: {fileID: 8215229437021733713}
   cameraWork: {fileID: 7513889539506830256}
   sounds: {fileID: 9122258413311042299}
-  carrying: {fileID: 7200611807387144284}
+  carrying: {fileID: 5501074270313702092}
   compass: {fileID: 6941728428549406741}
   parameters: {fileID: 6738018899578692129}
   state: {fileID: 5852462534492014359}
@@ -26592,28 +26614,6 @@ MonoBehaviour:
   rightWingPitchMultiplier: 1
   leftWingUpdraftMultiplier: 1
   rightWingUpdraftMultiplier: 1
---- !u!114 &7200611807387144284
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6777034358615131737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 51de878a15f030848bbc811fa4f3cd1a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  wren: {fileID: 6951865465235407638}
-  upDistCarrying: 0
-  backDistCarrying: -1.4
-  CarriedItems: []
-  FeetCarriedItems: 
-  lineRendererL: {fileID: 8915306664602239703}
-  lineRendererR: {fileID: 270965686109484110}
-  carryableObjects: []
-  canCarryLineRenderer: {fileID: 280194967612410937}
-  carryingLineResolution: 30
 --- !u!114 &7513889539506830256
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26904,6 +26904,7 @@ MonoBehaviour:
   bodyPercentage: 0
   shardPercentage: 0
   shardTrailPercentage: -0.8086453
+  trail: {fileID: 0}
   shardTrail: {fileID: 8095474312806863968}
 --- !u!114 &2035757486640604507
 MonoBehaviour:

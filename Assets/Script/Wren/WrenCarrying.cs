@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Normal.Realtime;
+using Unity.VisualScripting;
 using UnityEngine.UI;
 using WrenUtils;
 
@@ -57,11 +58,15 @@ public class WrenCarrying : MonoBehaviour
 
         if ( c.TryToCarry( this , targetPosition ) ) {
 
+            c.footID = footID;
+            c.carryTransform = footID == 0 ? wren.bird.leftFoot : wren.bird.rightFoot;
             God.audio.Play( God.sounds.collectablePickedUpSounds );
             CarriedItems.Add( c );
             FeetCarriedItems.Add( footID );
 
             print( CarriedItems.Count );
+
+
         } else {
 
             print( "no picky" );
@@ -165,11 +170,12 @@ public class WrenCarrying : MonoBehaviour
     public int carryingLineResolution = 30;
 
 
+    // Draws out carrying line!
     public void UpdateLineRenderers()
     {
 
 
-        canCarryLineRenderer.positionCount = carryableObjects.Count + 1;
+        /*canCarryLineRenderer.positionCount = carryableObjects.Count + 1;
 
         if ( carryableObjects.Count == 0 ) {
             canCarryLineRenderer.enabled = false;
@@ -186,6 +192,7 @@ public class WrenCarrying : MonoBehaviour
 
 
         }
+*/
 
 
         var leftFootPositions = new List<Vector3>();
@@ -293,14 +300,29 @@ public class WrenCarrying : MonoBehaviour
     public void OnEnter( GameObject go )
     {
         God.audio.Play( God.sounds.collectableCanCarrySounds );
-        carryableObjects.Add( go );
+
+        if ( !carryableObjects.Contains( go ) ) {
+            carryableObjects.Add( go );
+            go.GetComponent<Carryable>().CanPickup( this );
+        }
     }
 
     public void OnExit( GameObject go )
     {
         God.audio.Play( God.sounds.collectableCantCarrySounds );
 
-        while (carryableObjects.Contains( go )) carryableObjects.Remove( go );
+        bool didDrop = false;
+
+        while (carryableObjects.Contains( go )) {
+            didDrop = true;
+            carryableObjects.Remove( go );
+        }
+
+        if ( didDrop ) {
+            go.GetComponent<Carryable>().CantPickup( this );
+        }
+
+
     }
 
     public int CheckIfCarryingItem( Carryable carryable )

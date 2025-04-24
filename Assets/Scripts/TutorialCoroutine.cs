@@ -124,6 +124,7 @@ public class TutorialCoroutine : MonoBehaviour
         hasStarted = true;
         hasFinished = false;
         tutSequence = StartCoroutine( TutorialSequence() );
+        
     }
 
 

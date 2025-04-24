@@ -46,20 +46,20 @@ public class WrenShardManager : MonoBehaviour
     public void DoSkim( Vector3 location )
     {
 
-        print( location );
+//        print( location );
 
         int id = Random.Range( -1 , 7 );
 
         if ( God.islandData != null ) {
-            print( "HERE" );
+            // print( "HERE" );
             id = God.biomeController.maxBiomeID;
         } else {
-            print( "here" );
+            // print( "here" );
             id = -1;
         }
 
-        print( "SKIMM" );
-        print( id );
+        //print( "SKIMM" );
+        //print( id );
 
         CollectShards( (int)gainedPerSkim , id , location );
     }

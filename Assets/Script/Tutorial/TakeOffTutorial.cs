@@ -37,7 +37,7 @@ public class TakeOffTutorial : TutorialCoroutine
     public override void OnComplete()
     {
         base.OnComplete();
-        God.interfaceTutorial.TutorialSectionComplete();
+       // God.interfaceTutorial.TutorialSectionComplete();
         stateManager.OnTutorialEnd( this );
     }
 

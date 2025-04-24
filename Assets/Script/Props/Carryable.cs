@@ -5,46 +5,57 @@ using Normal.Realtime;
 using Normal.Realtime.Serialization;
 using UnityEngine.Events;
 
+[System.Serializable]
+public class CarryableEvent : UnityEvent<Carryable> // Generic UnityEvent with string and int arguments
+{
+}
+
 public class Carryable : RealtimeComponent<CarryableModel>
 {
+    public CarryableEvent OnPickup;
+    public CarryableEvent OnDrop;
 
-    public UnityEvent OnPickup;
-    public UnityEvent OnDrop;
+    public CarryableEvent OnCantPickup;
+    public CarryableEvent OnCanPickup;
+
+
+    public int       footID;
+    public Transform carryTransform;
+
 
     public class DropSettings
     {
         public Vector3? ExplosiveDirection;
         public Vector3? ExplosivePosition;
-        public float? ExplosiveForce;
+        public float?   ExplosiveForce;
 
-        public static DropSettings FromCrash(Collision collision)
+        public static DropSettings FromCrash( Collision collision )
         {
             return new DropSettings
             {
-                ExplosiveDirection = collision.contacts[0].normal,
-                ExplosivePosition = collision.contacts[0].point,
-                ExplosiveForce = collision.impulse.magnitude * 0f//50f + collision.impulse.magnitude * .1f,
+                ExplosiveDirection = collision.contacts[0].normal ,
+                ExplosivePosition = collision.contacts[0].point ,
+                ExplosiveForce = collision.impulse.magnitude * 0f //50f + collision.impulse.magnitude * .1f,
             };
         }
     }
 
-    public float carryForce = 10;
+    public float carryForce        = 10;
     public float carryBackDistance = .4f;
-    public float carryUpDistance = 0f;
+    public float carryUpDistance   = 0f;
 
 
+    public bool  setPositionOnPickup = false;
+    public bool  dropOnGroundHit     = true;
+    public float carryingDrag        = 3f;
+    public float releasedDrag        = .25f;
 
-    public bool setPositionOnPickup = false;
-    public bool dropOnGroundHit = true;
-    public float carryingDrag = 3f;
-    public float releasedDrag = .25f;
-
-    public bool gravityOnDrop = false;
+    public        bool  gravityOnDrop = false;
     private const float CarryCooldown = 0.5f;
 
-    private Rigidbody _rigidbody;
-    private Transform _transform;
-    private RealtimeView _realtimeView;
+    private Rigidbody         _rigidbody;
+    private Transform         _transform;
+    private RealtimeView      _realtimeView;
     private RealtimeTransform _realtimeTransform;
 
     private Vector3 _initialScale;
@@ -56,32 +67,31 @@ public class Carryable : RealtimeComponent<CarryableModel>
     {
         get
         {
-            if (model != null)
-            {
+            if ( model != null ) {
                 return model.beingCarried;
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }
     }
 
-    public int IdOfLastCarrier
+    public void SetPosition( Vector3 position )
     {
-        get { return model.lastCarrierId; }
+        _transform.position = position;
+        _rigidbody.position = position;
     }
 
+    public int IdOfLastCarrier => model.lastCarrierId;
+
     private float _lastCarryTime = -CarryCooldown;
-    private float TimeSinceLastCarried
-    {
-        get { return Time.time - _lastCarryTime; }
-    }
+    private float TimeSinceLastCarried => Time.time - _lastCarryTime;
 
     private WrenCarrying _carrier;
     public WrenCarrying carrier => _carrier;
 
-    void Awake()
+    public WrenCarrying canCarrier;
+
+    private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
         _transform = transform;
@@ -90,44 +100,41 @@ public class Carryable : RealtimeComponent<CarryableModel>
         _initialScale = _transform.localScale;
     }
 
-    public bool CheckAvailableToCarry(WrenCarrying carrier)
+    public bool CheckAvailableToCarry( WrenCarrying carrier )
     {
-        print(carrier);
-        print(carrier.GetNormalClientId());
-        print(IdOfLastCarrier);
-        print(CarryCooldown);
-        print(TimeSinceLastCarried);
-        if (carrier.GetNormalClientId() != null)
-        {
-            return !BeingCarried && (IdOfLastCarrier != carrier.GetNormalClientId() || TimeSinceLastCarried >= CarryCooldown);
-        }
-        else
-        {
+        print( carrier );
+        print( carrier.GetNormalClientId() );
+        print( IdOfLastCarrier );
+        print( CarryCooldown );
+        print( TimeSinceLastCarried );
+
+        if ( carrier.GetNormalClientId() != null ) {
+            return !BeingCarried &&
+                   (IdOfLastCarrier != carrier.GetNormalClientId() || TimeSinceLastCarried >= CarryCooldown);
+        } else {
             return false;
         }
     }
 
-    protected override void OnRealtimeModelReplaced(CarryableModel previousModel, CarryableModel currentModel)
+    protected override void OnRealtimeModelReplaced( CarryableModel previousModel , CarryableModel currentModel )
     {
-        if (previousModel != null)
-        {
+        if ( previousModel != null ) {
             previousModel.beingCarriedDidChange -= OnBeingCarriedChanged;
             previousModel.lastCarrierIdDidChange -= OnLastCarrierIdChanged;
         }
 
-        if (currentModel != null)
-        {
+        if ( currentModel != null ) {
             currentModel.beingCarriedDidChange += OnBeingCarriedChanged;
             currentModel.lastCarrierIdDidChange += OnLastCarrierIdChanged;
         }
     }
 
-    private void OnBeingCarriedChanged(CarryableModel model, bool carried)
+    private void OnBeingCarriedChanged( CarryableModel model , bool carried )
     {
         _lastCarryTime = Time.time;
     }
 
-    private void OnLastCarrierIdChanged(CarryableModel model, int id)
+    private void OnLastCarrierIdChanged( CarryableModel model , int id )
     {
 
     }
@@ -138,14 +145,13 @@ public class Carryable : RealtimeComponent<CarryableModel>
         _realtimeTransform.RequestOwnership();
     }
 
-    public bool TryToCarry(WrenCarrying carrier, Vector3 targetPosition)
+    public bool TryToCarry( WrenCarrying carrier , Vector3 targetPosition )
     {
-        if (!CheckAvailableToCarry(carrier))
-        {
+        if ( !CheckAvailableToCarry( carrier ) ) {
             return false;
         }
 
-        print("TRying to carry here");
+        print( "TRying to carry here" );
 
         _realtimeView.RequestOwnership();
         _realtimeTransform.RequestOwnership();
@@ -154,8 +160,7 @@ public class Carryable : RealtimeComponent<CarryableModel>
         GetComponent<Collider>().enabled = false;
 
         // TODO: Ask jacob if we need this line
-        if (setPositionOnPickup)
-        {
+        if ( setPositionOnPickup ) {
             _rigidbody.position = targetPosition;
         }
 
@@ -165,22 +170,21 @@ public class Carryable : RealtimeComponent<CarryableModel>
         model.lastCarrierId = carrier.GetNormalClientId();
         _carrier = carrier;
 
-        OnPickup.Invoke();
+        OnPickup.Invoke( this );
 
         return true;
     }
 
 
-
-    public bool TryToResetPosition(WrenCarrying carrier, Vector3 targetPosition)
+    public bool TryToResetPosition( WrenCarrying carrier , Vector3 targetPosition )
     {
-        print("TRying to reset position here");
-        if (!CheckAvailableToCarry(carrier))
-        {
+        print( "TRying to reset position here" );
+
+        if ( !CheckAvailableToCarry( carrier ) ) {
             return false;
         }
 
-        print("able to reset");
+        print( "able to reset" );
 
 
         _realtimeView.RequestOwnership();
@@ -194,14 +198,14 @@ public class Carryable : RealtimeComponent<CarryableModel>
     }
 
 
-    public void UpdateCarriedPosition(WrenCarrying carrier, Vector3 targetPosition)
+    public void UpdateCarriedPosition( WrenCarrying carrier , Vector3 targetPosition )
     {
         //_rigidbody.position = targetPosition;
 
-        _rigidbody.AddForce(carryForce * (targetPosition - transform.position));
+        _rigidbody.AddForce( carryForce * (targetPosition - transform.position) );
     }
 
-    public bool TryToDrop(WrenCarrying carrier, DropSettings dropSettings = null)
+    public bool TryToDrop( WrenCarrying carrier , DropSettings dropSettings = null )
     {
 
         model.beingCarried = false;
@@ -215,21 +219,18 @@ public class Carryable : RealtimeComponent<CarryableModel>
         transform.localScale /= whileCarryingScaleMultiplier;
 
 
-        if (dropSettings != null)
-        {
-            if (dropSettings.ExplosiveDirection.HasValue)
-            {
+        if ( dropSettings != null ) {
+            if ( dropSettings.ExplosiveDirection.HasValue ) {
                 // _rigidbody.AddForceAtPosition(dropSettings.ExplosiveDirection.Value * dropSettings.ExplosiveForce.Value, dropSettings.ExplosivePosition.Value, ForceMode.Impulse);
-                _rigidbody.AddForce(dropSettings.ExplosiveDirection.Value * dropSettings.ExplosiveForce.Value, ForceMode.Impulse);
-                print("adding force: " + dropSettings.ExplosiveDirection.Value * dropSettings.ExplosiveForce.Value);
+                _rigidbody.AddForce( dropSettings.ExplosiveDirection.Value * dropSettings.ExplosiveForce.Value ,
+                    ForceMode.Impulse );
+                print( "adding force: " + dropSettings.ExplosiveDirection.Value * dropSettings.ExplosiveForce.Value );
             }
-        }
-        else
-        {
-            print("no drop settings lol");
+        } else {
+            print( "no drop settings lol" );
         }
 
-        OnDrop.Invoke();
+        OnDrop.Invoke( this );
 
         return true;
     }
@@ -240,5 +241,27 @@ public class Carryable : RealtimeComponent<CarryableModel>
     }
 
 
+    public void CanPickup( WrenCarrying wc )
+    {
+        if ( wc == null ) {
+            return;
+        }
 
+        canCarrier = wc;
+
+        OnCanPickup.Invoke( this );
+    }
+
+    public void CantPickup( WrenCarrying wc )
+    {
+        if ( wc == null ) {
+            return;
+        }
+
+        if ( canCarrier == wc ) {
+            canCarrier = null;
+        }
+
+        OnCantPickup.Invoke( this );
+    }
 }

@@ -209,7 +209,7 @@ public class RetrivalActivityCaller : MonoBehaviour
 
     }
 
-    public void OnCarryablePickUp()
+    public void OnCarryablePickUp(Carryable c)
     {
         // set back to original location
         activity.mainPointOfInterest.position = startLocation.position;
@@ -222,7 +222,7 @@ public class RetrivalActivityCaller : MonoBehaviour
 
 
     // point us back to
-    public void OnCarryableDrop()
+    public void OnCarryableDrop(Carryable c)
     {
         isCarrying = false;
 

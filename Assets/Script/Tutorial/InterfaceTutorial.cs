@@ -37,6 +37,10 @@ public class InterfaceTutorial : MonoBehaviour
     public void OnEnable()
     {
         groupContainer.alpha = 0;
+        SetControllerHint( ControllerHint.None );
+        poetryText.text = "";
+        controllerText.text = "";
+        HidePoetryText();
     }
 
     public void SetBGFade( float t )
@@ -707,15 +711,15 @@ public class InterfaceTutorial : MonoBehaviour
 
         }
 
-        print( "setting text: " + controllerText.text );
+//        print( "setting text: " + controllerText.text );
 
         if ( controllerText.text != "" ) {
 
-            print( "starting co routine" );
+            //     print( "starting co routine" );
             groupText.alpha = 1;
 
             if ( fadeTextCoroutine != null ) {
-                Debug.LogWarning( "COROUTINE STOPPING" );
+                //       Debug.LogWarning( "COROUTINE STOPPING" );
                 StopCoroutine( fadeTextCoroutine );
                 fadeTextCoroutine = null;
             }

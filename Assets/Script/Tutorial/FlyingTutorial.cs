@@ -876,7 +876,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
                 if ( staminaLowHit == false ) {
                     t += addPerLowStamHit;
                     staminaLowHit = true;
-                    God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Release2 , "" );
+                    God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Release , "" );
                 }
             }
 
