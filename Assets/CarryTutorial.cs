@@ -21,23 +21,23 @@ public class CarryTutorial : TutorialCoroutine
         //   yield return BeginningWait();
 
 
-        print( "DOING SEQUENCE" );
+        print("DOING SEQUENCE");
 
         God.wren.interfaceUtils.ClearPointers();
 
-        God.interfaceTutorial.ShowContinue( false );
+        God.interfaceTutorial.ShowContinue(false);
         God.interfaceTutorial.ShowText();
 
-        God.interfaceTutorial.ShowProgress( 0 );
-        God.interfaceTutorial.SetBGFade( 0 );
+        God.interfaceTutorial.ShowProgress(0);
+        God.interfaceTutorial.SetBGFade(0);
 
 
-        yield return God.interfaceTutorial.WaitWithCheat( 1 );
+        yield return God.interfaceTutorial.WaitWithCheat(1);
 
 
         yield return CheckForCarry();
 
-        print( "POST PING" );
+        print("POST PING");
 
         OnComplete();
 
@@ -54,7 +54,7 @@ public class CarryTutorial : TutorialCoroutine
     {
         base.OnComplete();
         God.interfaceTutorial.TutorialSectionComplete();
-        stateManager.OnTutorialEnd( this );
+        stateManager.OnTutorialEnd(this);
     }
 
     public bool justSwapped = false;
@@ -63,17 +63,18 @@ public class CarryTutorial : TutorialCoroutine
     {
 
         God.interfaceTutorial.SetControllerHint(
-            InterfaceTutorial.ControllerHint.Ping ,
+            InterfaceTutorial.ControllerHint.Ping,
             "FIND"
         );
 
 
-        God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 ); //StartCoroutine(FadeGroup(groupContainer, 0, 1));
+        God.interfaceTutorial.FadeFullGroupCoroutine(0, 1); //StartCoroutine(FadeGroup(groupContainer, 0, 1));
 
-        God.wren.interfaceUtils.SetObjectOfInterest( objectToCarry.transform ); //
+        God.wren.interfaceUtils.SetObjectOfInterest(objectToCarry.transform); //
 
 
-        while (objectToCarry.BeingCarried == false) {
+        while (objectToCarry.BeingCarried == false)
+        {
 
             UpdateCarryableFeedback();
             //  print("NOT CARRIED");
@@ -82,10 +83,10 @@ public class CarryTutorial : TutorialCoroutine
         }
 
 
-        portal.gameObject.SetActive( true );
+        portal.gameObject.SetActive(true);
 
         God.interfaceTutorial.SetControllerHint(
-            InterfaceTutorial.ControllerHint.Release ,
+            InterfaceTutorial.ControllerHint.Release,
             "Release L1 / R1 to drop the object"
         );
 
@@ -95,12 +96,13 @@ public class CarryTutorial : TutorialCoroutine
 
 
         God.interfaceTutorial.SetControllerHint(
-            InterfaceTutorial.ControllerHint.Ping ,
+            InterfaceTutorial.ControllerHint.Ping,
             "Grab it again! ( ping to find it )"
         );
 
 
-        while (objectToCarry.BeingCarried == false) {
+        while (objectToCarry.BeingCarried == false)
+        {
 
             UpdateCarryableFeedback();
 
@@ -110,22 +112,26 @@ public class CarryTutorial : TutorialCoroutine
         }
 
 
-        while ((objectToCarry.transform.position - portal.position).magnitude > portalHitDistance) {
+        while ((objectToCarry.transform.position - portal.position).magnitude > portalHitDistance)
+        {
 
 
-            if ( objectToCarry.BeingCarried == true ) {
+            if (objectToCarry.BeingCarried == true)
+            {
 
 
-                God.wren.interfaceUtils.SetObjectOfInterest( portal.transform ); //
+                God.wren.interfaceUtils.SetObjectOfInterest(portal.transform); //
 
 
                 God.interfaceTutorial.SetControllerHint(
-                    InterfaceTutorial.ControllerHint.Ping ,
+                    InterfaceTutorial.ControllerHint.Ping,
                     "FIND PORTAL"
                 );
 
 
-            } else {
+            }
+            else
+            {
 
                 UpdateCarryableFeedback();
 
@@ -137,7 +143,7 @@ public class CarryTutorial : TutorialCoroutine
         }
 
 
-        print( "PORTAL HIT111111111111111111111111111111111111111" );
+        print("PORTAL HIT111111111111111111111111111111111111111");
 
 
         God.wren.interfaceUtils.ReleaseObjectOfInterest();
@@ -153,17 +159,22 @@ public class CarryTutorial : TutorialCoroutine
 
     public void UpdateCarryableFeedback()
     {
-        if ( God.wren.carrying.carryableObjects.Contains( objectToCarry.gameObject ) && justSwapped == false ) {
+
+        if (God.wren.carrying.carryableObjects.Contains(objectToCarry.gameObject) && justSwapped == false)
+        {
             justSwapped = true;
             God.interfaceTutorial.SetControllerHint(
-                InterfaceTutorial.ControllerHint.Carry ,
+                InterfaceTutorial.ControllerHint.Carry,
                 "L1 / R1 to Carry"
             );
-        } else if ( !God.wren.carrying.carryableObjects.Contains( objectToCarry.gameObject ) &&
-                    justSwapped == true ) {
+        }
+        else if (!God.wren.carrying.carryableObjects.Contains(objectToCarry.gameObject) &&
+                    justSwapped == true)
+        {
             justSwapped = false;
+            God.wren.interfaceUtils.SetObjectOfInterest(objectToCarry.gameObject.transform); //
             God.interfaceTutorial.SetControllerHint(
-                InterfaceTutorial.ControllerHint.Ping ,
+                InterfaceTutorial.ControllerHint.Ping,
                 "Get Close"
             );
         }
