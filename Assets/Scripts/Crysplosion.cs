@@ -4,24 +4,21 @@ using UnityEngine;
 
 
 [ExecuteAlways]
-
 public class Crysplosion : MonoBehaviour
 {
-
-
     public bool exploding = false;
-    public bool reseting = false;
+    public bool reseting  = false;
 
     public float explosionSpeed = 1;
-    public float resetSpeed = 1;
+    public float resetSpeed     = 1;
 
 
-    [Range(0, 1f)]
+    [Range( 0 , 1f )]
     public float explosionValue;
 
 
     public float explositionSize = 10;
-    public int explosionType;
+    public int   explosionType;
 
     public MaterialPropertyBlock mpb;
 
@@ -29,34 +26,31 @@ public class Crysplosion : MonoBehaviour
 
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
 
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
-        if (exploding)
-        {
+        if ( exploding ) {
 
 
-            explosionValue = Mathf.Lerp(explosionValue, 1, explosionSpeed);
+            explosionValue = Mathf.Lerp( explosionValue , 1 , explosionSpeed );
 
-            if (explosionValue > .95f)
-            {
+            if ( explosionValue > .95f ) {
                 explosionValue = 1;
                 exploding = false;
             }
         }
 
-        if (reseting)
-        {
+        if ( reseting ) {
 
-            explosionValue = Mathf.Lerp(explosionValue, 0, resetSpeed);
-            if (explosionValue < 0.01f)
-            {
+            explosionValue = Mathf.Lerp( explosionValue , 0 , resetSpeed );
+
+            if ( explosionValue < 0.01f ) {
                 explosionValue = 0;
                 reseting = false;
             }
@@ -64,31 +58,29 @@ public class Crysplosion : MonoBehaviour
         }
 
 
-
-        if (mpb == null)
-        {
+        if ( mpb == null ) {
             mpb = new MaterialPropertyBlock();
         }
 
 
-        meshRenderer.GetPropertyBlock(mpb);
-        mpb.SetFloat("_ExplosionValue", explosionValue);
-        mpb.SetFloat("_ExplosionSize", explositionSize);
-        mpb.SetInt("_ExplosionType", explosionType);
-        meshRenderer.SetPropertyBlock(mpb);
-
+        meshRenderer.GetPropertyBlock( mpb );
+        mpb.SetFloat( "_ExplosionValue" , explosionValue );
+        mpb.SetFloat( "_ExplosionSize" , explositionSize );
+        mpb.SetInt( "_ExplosionType" , explosionType );
+        meshRenderer.SetPropertyBlock( mpb );
 
 
     }
 
-    public void Explode(float speed)
+    public void Explode( float speed )
     {
 
         exploding = true;
 
     }
 
-    public void Reset(float startExplosionValue)
+
+    public void Reset( float startExplosionValue )
     {
 
         reseting = true;
@@ -99,8 +91,7 @@ public class Crysplosion : MonoBehaviour
 
     public void Reset()
     {
-        Reset(1);
+        Reset( 1 );
 
     }
-
 }

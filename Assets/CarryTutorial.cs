@@ -89,7 +89,7 @@ public class CarryTutorial : TutorialCoroutine
 
         God.interfaceTutorial.SetControllerHint(
             InterfaceTutorial.ControllerHint.Release2 ,
-            "Release L1 / R1 to drop the object"
+            "RELEASE"
         );
 
 
@@ -99,7 +99,7 @@ public class CarryTutorial : TutorialCoroutine
 
         God.interfaceTutorial.SetControllerHint(
             InterfaceTutorial.ControllerHint.Carry ,
-            "Grab it again!"
+            "GRAB"
         );
 
 
@@ -128,7 +128,7 @@ public class CarryTutorial : TutorialCoroutine
                     God.wren.interfaceUtils.SetObjectOfInterest( portal.transform ); //
                     God.interfaceTutorial.SetControllerHint(
                         InterfaceTutorial.ControllerHint.Ping ,
-                        "FIND PORTAL"
+                        "CARRY"
                     );
 
                 }
@@ -143,7 +143,7 @@ public class CarryTutorial : TutorialCoroutine
                     God.wren.interfaceUtils.SetObjectOfInterest( objectToCarry.transform ); //
                     God.interfaceTutorial.SetControllerHint(
                         InterfaceTutorial.ControllerHint.Carry ,
-                        "L1 or R1 to Carry"
+                        "GRAB"
                     );
 
                 }
@@ -182,7 +182,7 @@ public class CarryTutorial : TutorialCoroutine
             justSwapped = true;
             God.interfaceTutorial.SetControllerHint(
                 InterfaceTutorial.ControllerHint.Carry ,
-                "L1 or R1 to Carry"
+                "GRAB"
             );
         } else if ( !God.wren.carrying.carryableObjects.Contains( objectToCarry.gameObject ) &&
                     justSwapped == true ) {
@@ -192,7 +192,7 @@ public class CarryTutorial : TutorialCoroutine
             God.wren.interfaceUtils.SetObjectOfInterest( objectToCarry.gameObject.transform ); //
             God.interfaceTutorial.SetControllerHint(
                 InterfaceTutorial.ControllerHint.Ping ,
-                "Get Close"
+                "FIND"
             );
         }
 

@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
+using Random = UnityEngine.Random;
 
 public class Target : MonoBehaviour
 {
@@ -83,6 +85,30 @@ public class Target : MonoBehaviour
 
     }
 
+
+    public void Reset()
+    {
+        if ( ringCrystal != null ) {
+            ringCrystal.Reset();
+        }
+
+        if ( centerCrystal != null ) {
+            centerCrystal.Reset();
+        }
+
+
+    }
+
+    public void SetOff()
+    {
+        if ( ringCrystal != null ) {
+            ringCrystal.explosionValue = 1;
+        }
+
+        if ( centerCrystal != null ) {
+            centerCrystal.explosionValue = 1;
+        }
+    }
 
     public void Erase()
     {

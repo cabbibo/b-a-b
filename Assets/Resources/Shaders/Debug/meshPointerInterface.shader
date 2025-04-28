@@ -310,14 +310,13 @@ Shader "Debug/MeshPointerInterface"
 
                 col = hsv( v.type * .1 + ( ( v.viewMatch + 1 ) / 2 ) * .01 + matchVal * .01 - .02 , 1 , 1 );
 
-
-
+                col *= .06f;
 
                 if ( v.extra.y < .5 )
                 {
                     // discard the inside;
 
-                    col *= 4;
+                    col *= 40;
 
                     if ( matchVal < .2 )
                     {
@@ -343,7 +342,7 @@ Shader "Debug/MeshPointerInterface"
                 // POINT OF INTEREST
                 if ( v.type > 9.5 && v.type < 10.5 )
                 {
-                    col *= 10 * sin( _Time.y * 30 + v.valAlong * 4 );
+                    col *= 50 * sin( _Time.y * 30 + v.valAlong * 4 );
                 }
 
 

@@ -91,7 +91,7 @@ public class WrenCameraWork : MonoBehaviour
   {
 
 
-    print("camera offset 2");
+   // print("camera offset 2");
     Vector3 localPos = startingTransform.InverseTransformPoint(camTarget.position);
     Vector3 localForward = startingTransform.InverseTransformDirection(camTarget.forward);
     Vector3 localUp = startingTransform.InverseTransformDirection(camTarget.up);

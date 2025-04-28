@@ -466,6 +466,8 @@ Shader "Debug/PointerInterfaceProcShader1"
                 fCol = 1;
 
 
+
+
                 return float4( fCol , 1 );
 
             }

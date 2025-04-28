@@ -40,4 +40,17 @@ public class SetParticleValues : MonoBehaviour
         }
 
     }
+
+    public void SetParticlesOff()
+    {
+        if ( particlesActive != null ) {
+            var emission = particlesActive.emission;
+            emission.rateOverTime = 0;
+        }
+
+        if ( particlesPassive != null ) {
+            var emission = particlesPassive.emission;
+            emission.rateOverTime = 0;
+        }
+    }
 }

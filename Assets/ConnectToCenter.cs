@@ -64,7 +64,7 @@ public class ConnectToCenter : MonoBehaviour
     private void Start()
     {
 
-        print( "hello i am starting" );
+       // print( "hello i am starting" );
 
         if ( connected == null || connected.Length != objectsToConnect.Length ) {
             connected = new bool[objectsToConnect.Length];

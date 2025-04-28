@@ -32,8 +32,12 @@ public class CutSceneCameraManager : BaseCameraManager
             return;
         }
 
-        transform.position = cutScene.cameraTarget.position;
-        transform.rotation = cutScene.cameraTarget.rotation;
+        if ( cutScene.playing ) {
+            transform.position = cutScene.cameraTarget.position;
+            transform.rotation = cutScene.cameraTarget.rotation;
+
+
+        }
 
 
     }
@@ -72,6 +76,8 @@ public class CutSceneCameraManager : BaseCameraManager
 
     public void OnCutSceneFinishedPlaying()
     {
+
+        print( "CutSceneFinishedPlaying" );
         transitionStartTime = Time.time;
 
         startPos = Camera.main.transform.position;
@@ -110,6 +116,7 @@ public class CutSceneCameraManager : BaseCameraManager
 
         while (Time.time - transitionStartTime < cutScene.transitionInSpeed) {
 
+            //      print( "transitioning out" );
             float nTime = (Time.time - transitionStartTime) / cutScene.transitionInSpeed;
             transform.position = Vector3.Lerp( startPos , targetPos , nTime );
             transform.rotation = Quaternion.Lerp( startRot , targetRot , nTime );
@@ -124,6 +131,8 @@ public class CutSceneCameraManager : BaseCameraManager
     public void OnTransitionOutComplete()
     {
         print( "transition out complete" );
+        // overallManager.lerpManager.transform.position = transform.position;
+        // overallManager.lerpManager.transform.rotation = transform.rotation;
         ReleasePriority();
         cutScene.OnTransitionOutComplete();
         cutScene = null;

@@ -87,7 +87,6 @@ public class PlayCutScene : MonoBehaviour
 
     public void OnDrawGizmosSelected()
     {
-        print( "hiii" );
 
         if ( Application.isEditor && Application.isPlaying != true && stealCameraInEditMode ) {
 

@@ -10,6 +10,11 @@ public class CarryableEvent : UnityEvent<Carryable> // Generic UnityEvent with s
 {
 }
 
+[System.Serializable]
+public class BoolEvent : UnityEvent<bool , Carryable>
+{
+}
+
 public class Carryable : RealtimeComponent<CarryableModel>
 {
     public CarryableEvent OnPickup;
@@ -18,9 +23,13 @@ public class Carryable : RealtimeComponent<CarryableModel>
     public CarryableEvent OnCantPickup;
     public CarryableEvent OnCanPickup;
 
+    public BoolEvent OnSetCarryable;
+
 
     public int       footID;
     public Transform carryTransform;
+
+    public bool isCarryable = true;
 
 
     public class DropSettings
@@ -63,6 +72,12 @@ public class Carryable : RealtimeComponent<CarryableModel>
     public float whileCarryingScaleMultiplier = .3f;
 
 
+    public void SetCarryable( bool isCarryable )
+    {
+        this.isCarryable = isCarryable;
+        OnSetCarryable.Invoke( isCarryable , this );
+    }
+
     public bool BeingCarried
     {
         get
@@ -77,8 +92,12 @@ public class Carryable : RealtimeComponent<CarryableModel>
 
     public void SetPosition( Vector3 position )
     {
+        _realtimeView.RequestOwnership();
+        _realtimeTransform.RequestOwnership();
+
         _transform.position = position;
         _rigidbody.position = position;
+        _rigidbody.velocity = Vector3.zero;
     }
 
     public int IdOfLastCarrier => model.lastCarrierId;
@@ -148,6 +167,10 @@ public class Carryable : RealtimeComponent<CarryableModel>
     public bool TryToCarry( WrenCarrying carrier , Vector3 targetPosition )
     {
         if ( !CheckAvailableToCarry( carrier ) ) {
+            return false;
+        }
+
+        if ( !isCarryable ) {
             return false;
         }
 
@@ -243,25 +266,32 @@ public class Carryable : RealtimeComponent<CarryableModel>
 
     public void CanPickup( WrenCarrying wc )
     {
-        if ( wc == null ) {
-            return;
+
+        if ( isCarryable ) {
+            if ( wc == null ) {
+                return;
+            }
+
+            canCarrier = wc;
+
+            OnCanPickup.Invoke( this );
         }
-
-        canCarrier = wc;
-
-        OnCanPickup.Invoke( this );
     }
 
     public void CantPickup( WrenCarrying wc )
     {
-        if ( wc == null ) {
-            return;
-        }
 
-        if ( canCarrier == wc ) {
-            canCarrier = null;
-        }
 
-        OnCantPickup.Invoke( this );
+        if ( isCarryable ) {
+            if ( wc == null ) {
+                return;
+            }
+
+            if ( canCarrier == wc ) {
+                canCarrier = null;
+            }
+
+            OnCantPickup.Invoke( this );
+        }
     }
 }

@@ -105,16 +105,16 @@ public class InterfaceTutorial : MonoBehaviour
         float t = 0;
         float _ct = Time.unscaledTime;
 
-        print( "Fade Routine started" );
+/*        print( "Fade Routine started" );
         print( "From: " + from );
         print( "To: " + to );
         print( "Delay: " + delay );
         print( "Duration: " + duration );
         print( "Group :" + group.gameObject.name );
-
+*/
         while (t < duration) {
 
-            print( "Fadding group :  " + group.gameObject.name + " : " + t / duration );
+//            print( "Fadding group :  " + group.gameObject.name + " : " + t / duration );
 
             if ( delay > 0 && Time.unscaledTime - _ct < delay ) {
                 yield return null;
@@ -506,9 +506,9 @@ public class InterfaceTutorial : MonoBehaviour
 
 
         currentHint = hint;
-        print( "CONTROLLER HINT SET" );
+//        print( "CONTROLLER HINT SET" );
 
-        Debug.Log( "CONTROLLER HINT SET: " + hint );
+        //   Debug.Log( "CONTROLLER HINT SET: " + hint );
 
 
         controllerText.transform.parent.gameObject.SetActive( hint !=
@@ -747,7 +747,7 @@ public class InterfaceTutorial : MonoBehaviour
     {
 
         // Setting Fade Out
-        print( "setting Fade Out" );
+//        print( "setting Fade Out" );
         fadeTextCoroutine = FadeGroup( groupText , 1 , 0 , 1.3f , 1f );
         StartCoroutine( fadeTextCoroutine );
 

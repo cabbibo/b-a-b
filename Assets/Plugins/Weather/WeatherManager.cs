@@ -33,7 +33,7 @@ public class WeatherManager : MonoBehaviour
     {
         // WS.SetValues(this);
 
-        print("SETTING");
+//        print("SETTING");
 
         sunManager.auto = WS.sun_auto;
         sunManager.rawTimeInCycle = WS.sun_rawTimeInCycle;

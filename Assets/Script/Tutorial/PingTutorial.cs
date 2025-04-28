@@ -50,7 +50,7 @@ public class PingTutorial : TutorialCoroutine
         //   yield return BeginningWait();
 
 
-        print( "DOING SEQUENCE" );
+//        print( "DOING SEQUENCE" );
         // DoTutorialSequenceSetup();
         currentTargetIndex = 0;
 
@@ -76,6 +76,9 @@ public class PingTutorial : TutorialCoroutine
 
     }
 
+    public ColorManagerForCenterConnection connectToCenter;
+
+
     public override void OnComplete()
     {
         base.OnComplete();
@@ -84,6 +87,7 @@ public class PingTutorial : TutorialCoroutine
     }
 
 
+    /*
     private IEnumerator CheckForPing()
     {
 
@@ -106,6 +110,7 @@ public class PingTutorial : TutorialCoroutine
 
 
     }
+    */
 
     public bool allConnected = false;
 
@@ -116,7 +121,7 @@ public class PingTutorial : TutorialCoroutine
         //targetManager.currentTarget.transform.position = tutorialTargets[currentTargetIndex].transform.position;
 
 
-        print( "PING SET" );
+//        print( "PING SET" );
         God.interfaceTutorial.FadeFullGroupCoroutine( 0 , 1 ); //StartCoroutine(FadeGroup(groupContainer, 0, 1));
 
         God.interfaceTutorial.SetControllerHint(
@@ -127,22 +132,43 @@ public class PingTutorial : TutorialCoroutine
 
         God.wren.interfaceUtils.ClearPointers();
 
-        print( "ping target happening" );
+        for ( int i = 0; i < connectToCenter.rings.Length; i++ ) {
+            connectToCenter.rings[i].GetComponent<Crysplosion>().explosionValue = 1;
+        }
 
-        SelectTarget();
+//        print( "ping target happening" );
+
+
+        bool hasPinged = false;
 
         while (currentTargetIndex < tutorialTargets.Count) {
-            if ( Vector3.Distance( God.wren.transform.position ,
-                    tutorialTargets[currentTargetIndex].transform.position ) < hitRadius ) {
+
+            // check for actual ping
+            if ( hasPinged == false && God.wren.input.triangle > .5 ) {
+
+                print( "DID First Ping PING" );
+
+                SelectTarget();
+
+                hasPinged = true;
+                God.interfaceTutorial.SetControllerHint(
+                    InterfaceTutorial.ControllerHint.None
+                );
+
+
+            }
+
+            if ( Vector3.Distance( God.wren.transform.position , tutorialTargets[currentTargetIndex].transform.position ) < hitRadius ) {
 
                 OnTargetHit();
 
 
                 God.interfaceTutorial.SetControllerHint(
                     InterfaceTutorial.ControllerHint.Ping ,
-                    "COMPASS"
+                    ""
                 );
 
+                hasPinged = false;
                 print( "YA GET FUCKED" );
 
                 if ( currentTargetIndex + 1 == tutorialTargets.Count ) {
@@ -150,13 +176,15 @@ public class PingTutorial : TutorialCoroutine
                 }
 
                 currentTargetIndex++;
-                SelectTarget();
 
             }
 
             yield return null;
         }
 
+        for ( int i = 0; i < connectToCenter.rings.Length; i++ ) {
+            connectToCenter.rings[i].GetComponent<Crysplosion>().Reset();
+        }
 
         // Swap to all of them
 
@@ -166,7 +194,7 @@ public class PingTutorial : TutorialCoroutine
 
 
         God.interfaceTutorial.SetControllerHint(
-            InterfaceTutorial.ControllerHint.Ping ,
+            InterfaceTutorial.ControllerHint.None ,
             "COLLECT"
         );
 
@@ -207,6 +235,8 @@ public class PingTutorial : TutorialCoroutine
         //targetManager.SetTarget(tutorialTargets[currentTargetIndex].transform.position);
         //targetManager.DestroyAllPointers();
         targetManager.AddOnlyCurrentPointer( tutorialTargets[currentTargetIndex].transform.position );
+
+
     }
 
 
@@ -250,8 +280,7 @@ public class PingTutorial : TutorialCoroutine
         print( "ALL CONNECTED" );
         God.particleSystems.EmitForTime( God.particleSystems.fountainParticleSystem ,
             centerConnector.transform.position , 10000 , 2 );
-        God.cameraManager.pointOfInterestManager.SetPointOfInterestForTime( centerConnector.transform , 10 , 20 , 80 ,
-            .03f );
+        //  God.cameraManager.pointOfInterestManager.SetPointOfInterestForTime( centerConnector.transform , 10 , 20 , 80 ,.03f );
         allConnected = true;
 
     }

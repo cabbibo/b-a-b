@@ -5,17 +5,14 @@ using WrenUtils;
 
 public class WrenInput : MonoBehaviour
 {
-
-
-
     public Wren wren;
 
     public ControllerTest controller;
-    public Transform leftStickNetworkData;
-    public Transform rightStickNetworkData;
-    public Transform leftExtraNetworkData;
-    public Transform rightExtraNetworkData;
-    public Transform finalExtraNetworkData;
+    public Transform      leftStickNetworkData;
+    public Transform      rightStickNetworkData;
+    public Transform      leftExtraNetworkData;
+    public Transform      rightExtraNetworkData;
+    public Transform      finalExtraNetworkData;
 
     public bool invertY;
     public bool swapLR;
@@ -62,7 +59,6 @@ public class WrenInput : MonoBehaviour
     public float o_left2;
 
 
-
     public float o_rightX;
     public float o_rightY;
     public float o_right2;
@@ -74,7 +70,6 @@ public class WrenInput : MonoBehaviour
     public float o_right3;
     public float o_ex;
     public float o_circle;
-
 
 
     public float o_dLeft;
@@ -128,13 +123,11 @@ public class WrenInput : MonoBehaviour
         // dont need to reduce left2 / right2 by stamina cuz its coming from other side!
 
 
-
     }
 
 
     public void SetInput()
     {
-
 
 
         o_dDown = dDown;
@@ -175,53 +168,51 @@ public class WrenInput : MonoBehaviour
         //{
 
         // reducing our input based on stamina
-        float flapReducer = 1 - Mathf.Clamp((.5f - wren.stats.stamina) / .5f, 0, 1);
+        float flapReducer = 1 - Mathf.Clamp( (.3f - wren.stats.stamina) / .3f , 0 , 1 );
+        flapReducer = Mathf.Pow( flapReducer , 1 );
+
         left2 *= flapReducer;
         right2 *= flapReducer;
+
+
         // }
 
 
-        float d = Vector3.Dot(transform.forward, Vector3.up);
+        float d = Vector3.Dot( transform.forward , Vector3.up );
 
-        if (God.wren.physics.maxAngleForY != God.wren.physics.maxAngleForYMax)
-        {
+        if ( God.wren.physics.maxAngleForY != God.wren.physics.maxAngleForYMax ) {
 
-            float reductionFactor = Mathf.Clamp((Mathf.Abs(d) - God.wren.physics.maxAngleForY) / (God.wren.physics.maxAngleForYMax - God.wren.physics.maxAngleForY), 0, 1);
+            float reductionFactor =
+                Mathf.Clamp(
+                    (Mathf.Abs( d ) - God.wren.physics.maxAngleForY) /
+                    (God.wren.physics.maxAngleForYMax - God.wren.physics.maxAngleForY) , 0 , 1 );
 
             reductionFactor *= reductionFactor;
             reductionFactor *= God.wren.physics.maxAngleForYMaxReduction;
 
-            if (d < 0)
-            {
+            if ( d < 0 ) {
 
-                if (leftY > 0)
-                {
+                if ( leftY > 0 ) {
                     leftY = leftY * (1 - reductionFactor);
                 }
 
 
-                if (rightY > 0)
-                {
+                if ( rightY > 0 ) {
                     rightY = rightY * (1 - reductionFactor);
                 }
 
-            }
-            else
-            {
-                if (leftY < 0)
-                {
+            } else {
+                if ( leftY < 0 ) {
                     leftY = leftY * (1 - reductionFactor);
                 }
 
-                if (rightY < 0)
-                {
+                if ( rightY < 0 ) {
                     rightY = rightY * (1 - reductionFactor);
                 }
 
             }
 
         }
-
 
 
         /*if (d > maxAngle)
@@ -240,27 +231,25 @@ public class WrenInput : MonoBehaviour
         // leftY = leftY *
 
 
-        leftStickNetworkData.localPosition = new Vector3(leftX, leftY, left2);
-        rightStickNetworkData.localPosition = new Vector3(rightX, rightY, right2);
+        leftStickNetworkData.localPosition = new Vector3( leftX , leftY , left2 );
+        rightStickNetworkData.localPosition = new Vector3( rightX , rightY , right2 );
 
 
         left3 = controller.l3 ? 1 : 0;
         square = controller.square ? 1 : 0;
         triangle = controller.triangle ? 1 : 0;
-        leftExtraNetworkData.localPosition = new Vector3(left3, square, triangle);
+        leftExtraNetworkData.localPosition = new Vector3( left3 , square , triangle );
 
 
         right3 = controller.r3 ? 1 : 0;
         ex = controller.x ? 1 : 0;
         circle = controller.circle ? 1 : 0;
-        rightExtraNetworkData.localPosition = new Vector3(right3, ex, circle);
+        rightExtraNetworkData.localPosition = new Vector3( right3 , ex , circle );
 
 
         right1 = controller.r1;
         left1 = controller.l1;
-        finalExtraNetworkData.localPosition = new Vector3(left1, right1, fDebug);
-
-
+        finalExtraNetworkData.localPosition = new Vector3( left1 , right1 , fDebug );
 
 
         // These ones don't currently need to be networked!
@@ -270,10 +259,5 @@ public class WrenInput : MonoBehaviour
         dDown = controller.dDown ? 1 : 0;
 
 
-
-
     }
-
-
-
 }

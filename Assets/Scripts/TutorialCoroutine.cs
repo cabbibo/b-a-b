@@ -119,12 +119,12 @@ public class TutorialCoroutine : MonoBehaviour
     public void JumpStartTutorial()
     {
 
-        print( "JumpSTarting" );
+        //print( "JumpSTarting" );
         God.wren.PhaseShift( startPosition );
         hasStarted = true;
         hasFinished = false;
         tutSequence = StartCoroutine( TutorialSequence() );
-        
+
     }
 
 

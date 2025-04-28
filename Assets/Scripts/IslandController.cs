@@ -86,7 +86,7 @@ public class IslandController : MonoBehaviour
 
 
 
-        print("SETTING WEATHER STUFF");
+       // print("SETTING WEATHER STUFF");
         God.weatherManager.SetValues(weatherSettings);
 
 

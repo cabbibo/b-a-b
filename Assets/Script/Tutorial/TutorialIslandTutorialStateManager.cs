@@ -13,7 +13,11 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
     public CarryTutorial carryTutorial;
 
+    public bool doCarryTutorial = false;
+
     // public TakeOffTutorial takeOffTutorial;
+
+    public OnCrystalDroppedAtPortal onCrystalDroppedAtPortal;
 
 
     public Portal portal;
@@ -29,12 +33,13 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
         flyingTutorial.CheckState();
         pingTutorial.CheckState();
         takeOffTutorial.CheckState();
-        carryTutorial.CheckState();
 
+        if ( doCarryTutorial ) {
+            carryTutorial.CheckState();
+        }
 
         if ( God.state.wrenCanDo.hasLearnedFlight == false ) {
             flyingTutorial.JumpStartTutorial();
-
 
         } else {
 
@@ -42,7 +47,7 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
             if ( God.state.wrenCanDo.hasLearnedPing == false ) {
 
                 God.state.wrenCanDo.ping = true;
-                print( "STARTING PING TUTORIAL" );
+                //  print( "STARTING PING TUTORIAL" );
                 God.wren.state.TakeOff();
                 pingTutorial.JumpStartTutorial(); //StartPingTutorial(); 
 
@@ -52,23 +57,37 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
             } else {
 
-                God.state.wrenCanDo.ping = true;
 
-                if ( God.state.wrenCanDo.hasLearnedCarry == false ) {
+                if ( doCarryTutorial ) {
 
-                    God.wren.state.TakeOff();
-                    carryTutorial.JumpStartTutorial();
+                    God.state.wrenCanDo.ping = true;
+
+                    if ( God.state.wrenCanDo.hasLearnedCarry == false ) {
 
 
-                    if ( God.state.wrenCanDo.hasLearnedTakeOff == false ) {
-                        print( "THIS GUY" );
-                        takeOffTutorial.StartTutorial();
+                        God.wren.state.TakeOff();
+                        carryTutorial.JumpStartTutorial();
+
+
+                        if ( God.state.wrenCanDo.hasLearnedTakeOff == false ) {
+                            print( "THIS GUY" );
+                            takeOffTutorial.StartTutorial();
+                        }
+
+
+                    } else {
+
+                        SetPostCarryState();
+
                     }
-
 
                 } else {
 
-                    SetPostCarryState();
+
+                    if ( God.state.wrenCanDo.hasLearnedTakeOff == false ) {
+                        print( "THIS GUY2" );
+                        takeOffTutorial.StartTutorial();
+                    }
 
                 }
 
@@ -156,11 +175,18 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
         SetPostPingState();
 
 
-        if ( God.state.wrenCanDo.hasLearnedCarry == false ) {
-            carryTutorial.StartTutorial();
+        if ( doCarryTutorial ) {
+
+            if ( God.state.wrenCanDo.hasLearnedCarry == false ) {
+                carryTutorial.StartTutorial();
+            } else {
+                carryTutorial.CheckState();
+            }
+
         } else {
-            carryTutorial.CheckState();
+            DoFullFinish();
         }
+
     }
 
 
@@ -185,7 +211,9 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
         God.state.wrenCanDo.hasLearnedCarry = true;
         God.state.UpdateState();
 
+
         SetPostCarryState();
+        DoFullFinish();
 
 
     }
@@ -221,7 +249,23 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
             DoTakeoffTutorialFinish();
         } else if ( tutorial is CarryTutorial ) {
             DoCarryTutorialFinish();
+
         }
+
+
+    }
+
+    public bool DoFullFinish()
+    {
+        print( "DOING FULL FINISH" );
+
+
+        God.state.UpdateState();
+
+        SetPostCarryState();
+        onCrystalDroppedAtPortal.OnCrystalDropped();
+
+        return true;
     }
 
 

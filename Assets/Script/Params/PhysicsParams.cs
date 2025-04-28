@@ -155,7 +155,7 @@ public class PhysicsParams : ScriptableObject
 
     public void OnValidate()
     {
-        Debug.Log( "HIII" );
+//        Debug.Log( "HIII" );
 
         if ( God.wren != null ) {
             God.wren.parameters.OnPhysicsParamsValidate( this );

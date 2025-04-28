@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using UnityEngine;
 using WrenUtils;
 
@@ -47,6 +48,27 @@ public class CarryableFeedback : MonoBehaviour
 
     }
 
+    public void OnSetCarryable( bool isCarryable , Carryable carryable )
+    {
+
+        if ( isCarryable ) {
+
+            canCarryRepresentation.gameObject.SetActive( false );
+            cantCarryRepresentation.gameObject.SetActive( true );
+            isCarryingRepresentation.gameObject.SetActive( false );
+        } else {
+            canCarryRepresentation.gameObject.SetActive( false );
+            cantCarryRepresentation.gameObject.SetActive( false );
+            isCarryingRepresentation.gameObject.SetActive( false );
+
+            if ( setParticleValues != null ) {
+                setParticleValues.SetParticlesOff();
+            }
+        }
+
+
+    }
+
     public void OnCarry()
     {
 
@@ -79,28 +101,48 @@ public class CarryableFeedback : MonoBehaviour
     public void OnCanCarry()
     {
 
-        canCarry = true;
+        if ( carryable.isCarryable ) {
+            canCarry = true;
 
-        if ( canCarryRepresentation != null ) {
-            canCarryRepresentation.SetActive( true );
-        }
+            if ( canCarryRepresentation != null ) {
+                canCarryRepresentation.SetActive( true );
+            }
 
-        if ( cantCarryRepresentation != null ) {
-            cantCarryRepresentation.SetActive( false );
+            if ( cantCarryRepresentation != null ) {
+                cantCarryRepresentation.SetActive( false );
+            }
+        } else {
+            if ( canCarryRepresentation != null ) {
+                canCarryRepresentation.SetActive( false );
+            }
+
+            if ( cantCarryRepresentation != null ) {
+                cantCarryRepresentation.SetActive( false );
+            }
         }
     }
 
     public void OnCantCarry()
     {
 
-        canCarry = false;
+        if ( carryable.isCarryable ) {
+            canCarry = false;
 
-        if ( canCarryRepresentation != null ) {
-            canCarryRepresentation.SetActive( false );
-        }
+            if ( canCarryRepresentation != null ) {
+                canCarryRepresentation.SetActive( false );
+            }
 
-        if ( cantCarryRepresentation != null ) {
-            cantCarryRepresentation.SetActive( true );
+            if ( cantCarryRepresentation != null ) {
+                cantCarryRepresentation.SetActive( true );
+            }
+        } else {
+            if ( canCarryRepresentation != null ) {
+                canCarryRepresentation.SetActive( false );
+            }
+
+            if ( cantCarryRepresentation != null ) {
+                cantCarryRepresentation.SetActive( false );
+            }
         }
 
     }
@@ -110,34 +152,54 @@ public class CarryableFeedback : MonoBehaviour
         CanCarryLineUpdate();
     }
 
+    public int carryLinePositionCount = 20;
+
     public void CanCarryLineUpdate()
     {
         if ( canCarryLine != null ) {
 
-            if ( canCarry ) {
+            if ( carryable.isCarryable ) {
+                if ( canCarry ) {
 
-                canCarryLine.enabled = true;
+                    canCarryLine.enabled = true;
+                    canCarryLine.positionCount = 20;
 
-                canCarryLine.SetPosition( 0 , carryable.transform.position );
-                canCarryLine.SetPosition( 1 , carryable.canCarrier.transform.position );
+                    for ( int i = 0; i < carryLinePositionCount; i++ ) {
+                        var end = carryable.transform.position;
+                        var start = carryable.canCarrier.transform.position;
+                        var right = Vector3.Cross( (start - end).normalized , Vector3.up ).normalized;
+                        float t = (float)i / (float)(carryLinePositionCount - 1);
+                        var pos = Vector3.Lerp( start , end , t );
+
+                        float c = 1 - Mathf.Abs( t - .5f ) * 2;
+                        pos += Mathf.Sin( t * 20 + Time.time * 5 ) * right * c * 1;
+                        canCarryLine.SetPosition( i , pos );
+                    }
 
 
+                } else {
+
+                    canCarryLine.enabled = false;
+                    canCarryLine.positionCount = 2;
+
+                    canCarryLine.SetPosition( 0 , carryable.transform.position );
+                    canCarryLine.SetPosition( 0 , carryable.transform.position );
+
+                }
+
+                if ( isCarrying ) {
+                    canCarryLine.startColor = isCarryingColor;
+                    canCarryLine.endColor = isCarryingColor;
+                } else {
+                    canCarryLine.startColor = canCarryColor;
+                    canCarryLine.endColor = canCarryColor;
+
+                }
             } else {
 
                 canCarryLine.enabled = false;
-
                 canCarryLine.SetPosition( 0 , carryable.transform.position );
                 canCarryLine.SetPosition( 0 , carryable.transform.position );
-
-            }
-
-            if ( isCarrying ) {
-                canCarryLine.startColor = isCarryingColor;
-                canCarryLine.endColor = isCarryingColor;
-            } else {
-                canCarryLine.startColor = canCarryColor;
-                canCarryLine.endColor = canCarryColor;
-
             }
 
         }
@@ -150,7 +212,7 @@ public class CarryableFeedback : MonoBehaviour
                  isCarryingLine.enabled = true;
 
                  isCarryingLine.SetPosition( 0 , carryable.transform.position );
-                 isCarryingLine.SetPosition( 1 , carryable.carrier.transform.position );
+                 isCarryingLine.SetPosition( 1 , carryable.carryable.transform.position );
 
              } else {
                  isCarryingLine.enabled = false;
