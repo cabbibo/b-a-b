@@ -77,7 +77,7 @@ public class CutSceneCameraManager : BaseCameraManager
     public void OnCutSceneFinishedPlaying()
     {
 
-        print( "CutSceneFinishedPlaying" );
+//        print( "CutSceneFinishedPlaying" );
         transitionStartTime = Time.time;
 
         startPos = Camera.main.transform.position;
@@ -106,7 +106,7 @@ public class CutSceneCameraManager : BaseCameraManager
 
     public void OnTransitionInComplete()
     {
-        print( "transition in complete" );
+//        print( "transition in complete" );
         cutScene.OnTransitionInComplete();
     }
 
@@ -130,7 +130,7 @@ public class CutSceneCameraManager : BaseCameraManager
 
     public void OnTransitionOutComplete()
     {
-        print( "transition out complete" );
+//        print( "transition out complete" );
         // overallManager.lerpManager.transform.position = transform.position;
         // overallManager.lerpManager.transform.rotation = transform.rotation;
         ReleasePriority();

@@ -378,9 +378,8 @@ public class Wren : MonoBehaviour
 
 
                 if ( input.o_ex < .5 && input.ex > .5 && physics.onGround == true && state.inInterface == false &&
-                     state.canTakeOff ) {
+                     state.canTakeOff && God.wrenCanDo.takeOff ) {
 
-                    print( "HIII" );
                     God.audio.Play( God.sounds.takeoffClip );
                     state.TakeOff();
                 }
@@ -693,7 +692,7 @@ public class Wren : MonoBehaviour
     public void Crash( Collision c )
     {
 
-        print( "COLLISION CRASH CALLED" );
+//        print( "COLLISION CRASH CALLED" );
 
         if ( !state.onGround ) {
             //if( c.impulse.magnitude != 0 ){

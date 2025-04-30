@@ -408,17 +408,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9037b30633b85334da6ca1bdef435425, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hueStart: 1
-  hueSize: 1
-  noiseSpeed: 1
-  noiseSize: 7
-  saturation: 0
-  lightness: 1
-  contrast: 3
-  _ColorMultiplier: 8
+  hueStart: 1.02
+  hueSize: 20
+  noiseSpeed: 11
+  noiseSize: 10
+  saturation: 1
+  lightness: 2
+  contrast: 10
+  _ColorMultiplier: 0.8
   _CenterOrbFalloff: 1
-  _CenterOrbFalloffSharpness: 1
-  _CenterOrbImportance: 0.1
+  _CenterOrbFalloffSharpness: 0.5
+  _CenterOrbImportance: 0.114
   _DeltaStepSize: 0.1
 --- !u!1 &344630836724289603
 GameObject:
@@ -1447,8 +1447,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 0.4716981, g: 0.0876939, b: 0, a: 1}
+      key1: {r: 0, g: 0, b: 0, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -1472,7 +1472,7 @@ LineRenderer:
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
+      m_ColorSpace: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
@@ -2644,7 +2644,7 @@ LineRenderer:
   - {x: 1259.9606, y: 716.3544, z: 1978.9294}
   - {x: 1259.6516, y: 716.42755, z: 1979.1223}
   - {x: 1259.6516, y: 716.42755, z: 1979.1223}
-  - {x: 1259.6122, y: 716.3789, z: 1979.1239}
+  - {x: 1259.6802, y: 716.4054, z: 1979.1736}
   - {x: 1259.5272, y: 716.4596, z: 1979.1754}
   - {x: 1259.4119, y: 716.4894, z: 1979.2247}
   - {x: 1259.3071, y: 716.51636, z: 1979.2694}
@@ -2742,13 +2742,14 @@ MonoBehaviour:
   debugHierarchy: {fileID: 3751723881530980275}
   instanceMesh: {fileID: -5495902117074765545, guid: a1dcddb2b4aedf54787f09b2bbc712e0,
     type: 3}
-  instanceMaterial: {fileID: 2100000, guid: 5d9319ce8d6a75041bfab7aa358c786a, type: 2}
+  instanceMaterial: {fileID: 2100000, guid: aefe7c6bd04df294c84b50524ddec248, type: 2}
   subMeshIndex: 0
   transformShader: {fileID: 7200000, guid: 974d07344011d4a42a737b7012cacb72, type: 3}
   numGroups: 0
   numThreads: 0
   _Size: 5
   values: []
+  renderedBones: 0
 --- !u!1 &1315740570936701672
 GameObject:
   m_ObjectHideFlags: 0
@@ -3928,7 +3929,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1796573163053325612}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.38269445, y: -0.382092, z: -0.38269195, w: 0.7490644}
+  m_LocalRotation: {x: 0.557727, y: 0.55685467, z: 0.55772537, w: 0.26037672}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -20237,8 +20238,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 0, g: 0.21642627, b: 0.4716981, a: 1}
+      key1: {r: 0, g: 0, b: 0, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -20262,7 +20263,7 @@ LineRenderer:
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
+      m_ColorSpace: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
@@ -20431,17 +20432,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9037b30633b85334da6ca1bdef435425, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hueStart: 1
-  hueSize: 1
-  noiseSpeed: 1
-  noiseSize: 7
-  saturation: 0
-  lightness: 1
-  contrast: 3
-  _ColorMultiplier: 8
+  hueStart: 1.02
+  hueSize: 20
+  noiseSpeed: 11
+  noiseSize: 10
+  saturation: 1
+  lightness: 2
+  contrast: 10
+  _ColorMultiplier: 0.8
   _CenterOrbFalloff: 1
-  _CenterOrbFalloffSharpness: 1
-  _CenterOrbImportance: 0.1
+  _CenterOrbFalloffSharpness: 0.5
+  _CenterOrbImportance: 0.114
   _DeltaStepSize: 0.1
 --- !u!1 &6269323994461936869
 GameObject:
@@ -26968,6 +26969,7 @@ MonoBehaviour:
   hasLearnedPlaceBeacon: 0
   hasLearnedRewind: 0
   hasLearnedCarry: 0
+  hasLearnedWalk: 0
 --- !u!1 &6924367461183544387
 GameObject:
   m_ObjectHideFlags: 0
@@ -30993,17 +30995,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9037b30633b85334da6ca1bdef435425, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hueStart: 1
-  hueSize: 1
-  noiseSpeed: 1
-  noiseSize: 7
-  saturation: 0
-  lightness: 1
-  contrast: 3
-  _ColorMultiplier: 8
+  hueStart: 1.02
+  hueSize: 20
+  noiseSpeed: 11
+  noiseSize: 10
+  saturation: 1
+  lightness: 2
+  contrast: 10
+  _ColorMultiplier: 0.8
   _CenterOrbFalloff: 1
-  _CenterOrbFalloffSharpness: 1
-  _CenterOrbImportance: 0.1
+  _CenterOrbFalloffSharpness: 0.5
+  _CenterOrbImportance: 0.114
   _DeltaStepSize: 0.1
 --- !u!1001 &375056077050512013
 PrefabInstance:

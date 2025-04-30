@@ -11,7 +11,7 @@ namespace WrenUtils
     {
         public UnityEvent OnLoadEvent;
 
-        public string            name;
+        public string        name;
         public PhysicsParams physicsParams;
 
         public Portal[] portals;
@@ -32,14 +32,14 @@ namespace WrenUtils
             God.wren.state.inInterface = false;
             God.wren.airInterface.Toggle( false );
             God.wren.fullInterface.Toggle( false );
+            God.interfaceTutorial.SetOff();
             God.cameraManager.lerpManager.enabled = true;
 
 
             if ( newScene == 0 ) {
                 God.wren.inEther = true;
                 Camera.main.GetComponent<UnderwaterRenderer>().enabled = false;
-            }
-            else {
+            } else {
                 God.wren.inEther = false;
                 Camera.main.GetComponent<UnderwaterRenderer>().enabled = true;
             }
@@ -88,14 +88,12 @@ namespace WrenUtils
                 //                print("loaded from portal false");
                 // loading from last position
                 startPos = God.state.lastPosition;
-            }
-            else {
+            } else {
                 if ( God.state.currentQuestID >= 0 ) {
                     if ( God.state.currentQuestID >= portals.Length ) {
                         startPos = baseStartPosition.position;
                         God.state.SetCurrentBiome( -1 );
-                    }
-                    else {
+                    } else {
 
                         God.state.SetLastPosition( portals[God.state.currentQuestID].startPoint.position );
                         // return / spawn at gate that is our current biome!
@@ -104,8 +102,7 @@ namespace WrenUtils
 
                     }
 
-                }
-                else {
+                } else {
                     startPos = God.state.lastPosition;
 
                 }

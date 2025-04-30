@@ -5,7 +5,6 @@ using WrenUtils;
 
 public class PointOfInterestCameraController : BaseCameraManager
 {
-
     public Transform pointOfInterest;
 
     public float distanceFromBird = 10;
@@ -13,21 +12,16 @@ public class PointOfInterestCameraController : BaseCameraManager
 
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
-        if (pointOfInterest != null)
-        {
-            if (overallManager.currentPriority != this)
-            {
-                overallManager.RequestPriority(this, requestSpeed);
+        if ( pointOfInterest != null ) {
+            if ( overallManager.currentPriority != this ) {
+                overallManager.RequestPriority( this , requestSpeed );
             }
-        }
-        else
-        {
-            if (overallManager.currentPriority == this)
-            {
-                overallManager.ReleasePriority(this, requestSpeed);
+        } else {
+            if ( overallManager.currentPriority == this ) {
+                overallManager.ReleasePriority( this , requestSpeed );
             }
         }
 
@@ -39,23 +33,20 @@ public class PointOfInterestCameraController : BaseCameraManager
     {
 
 
-
-
-        if (pointOfInterest != null)
-        {
+        if ( pointOfInterest != null ) {
 
             //            print("Point of Interest: " + pointOfInterest.name);
 
 
-            Vector3 targetPos = pointOfInterest.position;
-            Vector3 birdPos = God.wren.transform.position;
+            var targetPos = pointOfInterest.position;
+            var birdPos = God.wren.transform.position;
 
-            Vector3 direction = targetPos - birdPos;
+            var direction = targetPos - birdPos;
             float distance = direction.magnitude;
 
 
             transform.position = birdPos - direction.normalized * distanceFromBird;
-            transform.LookAt(birdPos);
+            transform.LookAt( birdPos );
 
 
         }
@@ -63,7 +54,7 @@ public class PointOfInterestCameraController : BaseCameraManager
 
     }
 
-    public void SetPointOfInterest(Transform newPointOfInterest)
+    public void SetPointOfInterest( Transform newPointOfInterest )
     {
         pointOfInterest = newPointOfInterest;
     }
@@ -73,24 +64,22 @@ public class PointOfInterestCameraController : BaseCameraManager
         pointOfInterest = null;
     }
 
-    public void SetPointOfInterestForTime(Transform newPointOfInterest, float time, float dfb, float fov, float rs)
+    public void SetPointOfInterestForTime( Transform newPointOfInterest , float time , float dfb , float fov , float rs )
     {
 
-        print("SETTTING");
+        //        print("SETTTING");
         pointOfInterest = newPointOfInterest;
         FOV = fov;
         distanceFromBird = dfb;
         requestSpeed = rs;
-        StartCoroutine(SetForTimePeriodCoroutine(time));
+        StartCoroutine( SetForTimePeriodCoroutine( time ) );
     }
 
 
-    private IEnumerator SetForTimePeriodCoroutine(float time)
+    private IEnumerator SetForTimePeriodCoroutine( float time )
     {
 
-        yield return new WaitForSeconds(time);
+        yield return new WaitForSeconds( time );
         ClearPointOfInterest();
     }
-
-
 }

@@ -143,20 +143,6 @@ public class PingTutorial : TutorialCoroutine
 
         while (currentTargetIndex < tutorialTargets.Count) {
 
-            // check for actual ping
-            if ( hasPinged == false && God.wren.input.triangle > .5 ) {
-
-                print( "DID First Ping PING" );
-
-                SelectTarget();
-
-                hasPinged = true;
-                God.interfaceTutorial.SetControllerHint(
-                    InterfaceTutorial.ControllerHint.None
-                );
-
-
-            }
 
             if ( Vector3.Distance( God.wren.transform.position , tutorialTargets[currentTargetIndex].transform.position ) < hitRadius ) {
 
@@ -178,6 +164,25 @@ public class PingTutorial : TutorialCoroutine
                 currentTargetIndex++;
 
             }
+
+
+            // check for actual ping
+            if ( hasPinged == false && God.wren.input.triangle > .5 ) {
+
+                print( "DID First Ping PING" );
+
+                SelectTarget();
+
+                hasPinged = true;
+                God.interfaceTutorial.SetControllerHint(
+                    InterfaceTutorial.ControllerHint.None
+                );
+
+                God.wren.interfaceUtils.OnPing();
+
+
+            }
+
 
             yield return null;
         }

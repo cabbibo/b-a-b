@@ -27,6 +27,8 @@ public class BirdSkeleton : MonoBehaviour
     {
         argsBuffer = new ComputeBuffer( 1 , args.Length * sizeof(uint) , ComputeBufferType.IndirectArguments );
         instanceCount = debugHierarchy.connections.Length;
+
+        renderedBones = (int)Mathf.Floor( fullBird.percentageRendered * (float)instanceCount );
         UpdateBuffers();
     }
 
@@ -78,6 +80,7 @@ public class BirdSkeleton : MonoBehaviour
     public float _Size;
 
     public float[] values;
+    public int     renderedBones;
 
     // Update is called once per frame
 
@@ -87,6 +90,7 @@ public class BirdSkeleton : MonoBehaviour
 
         //   print( "uppp" );
         fullBird.SetBirdParameters( transformShader );
+
 
         uint y;
         uint z;
@@ -128,17 +132,16 @@ public class BirdSkeleton : MonoBehaviour
         }
 
         instanceCount = debugHierarchy.connections.Length;
+        renderedBones = (int)Mathf.Floor( fullBird.percentageRendered * (float)instanceCount );
 
         if ( cachedInstanceCount != instanceCount || cachedSubMeshIndex != subMeshIndex ) {
-
             UpdateBuffers();
         }
-
 
         //  UpdateBones();
 
 
-        instanceMaterial.SetInt( "_Count" , debugHierarchy.connections.Length );
+        instanceMaterial.SetInt( "_Count" , renderedBones );
         //instanceMaterial.SetBuffer( "_TransformBuffer" , debugHierarchy._buffer );
         //instanceMaterial.SetBuffer( "_ConnectionBuffer" , debugHierarchy._connectionsBuffer );
         instanceMaterial.SetBuffer( "_FinalTransformBuffer" , finalTransformBuffer );

@@ -40,13 +40,13 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
         if ( God.state.wrenCanDo.hasLearnedFlight == false ) {
             flyingTutorial.JumpStartTutorial();
-
         } else {
 
 
             if ( God.state.wrenCanDo.hasLearnedPing == false ) {
 
                 God.state.wrenCanDo.ping = true;
+                God.state.wrenCanDo.takeOff = true;
                 //  print( "STARTING PING TUTORIAL" );
                 God.wren.state.TakeOff();
                 pingTutorial.JumpStartTutorial(); //StartPingTutorial(); 
@@ -61,6 +61,7 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
                 if ( doCarryTutorial ) {
 
                     God.state.wrenCanDo.ping = true;
+                    God.state.wrenCanDo.takeOff = true;
 
                     if ( God.state.wrenCanDo.hasLearnedCarry == false ) {
 
@@ -83,6 +84,8 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
                 } else {
 
+                    God.state.wrenCanDo.ping = true;
+                    God.state.wrenCanDo.takeOff = true;
 
                     if ( God.state.wrenCanDo.hasLearnedTakeOff == false ) {
                         print( "THIS GUY2" );
@@ -95,6 +98,8 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
 
         }
+
+        God.state.UpdateState();
 
     }
 
@@ -116,6 +121,7 @@ public class TutorialIslandTutorialStateManager : TutorialStateManager
 
         God.state.wrenCanDo.hasLearnedFlight = true;
         God.state.wrenCanDo.ping = true;
+        God.state.wrenCanDo.takeOff = true;
         God.state.UpdateState();
 
         SetPostFlightState();

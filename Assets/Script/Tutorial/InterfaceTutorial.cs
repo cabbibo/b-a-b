@@ -252,7 +252,7 @@ public class InterfaceTutorial : MonoBehaviour
 
     public void TutorialSectionComplete()
     {
-        print( "TutorialSectionComplete" );
+        //  print( "TutorialSectionComplete" );
         StartCoroutine( FadeGroup( groupContainer , 1 , 0 ) );
         ShowProgress( 0 );
         God.audio.Play( God.sounds.texturalHitClips );
@@ -269,6 +269,11 @@ public class InterfaceTutorial : MonoBehaviour
 
     }
 
+
+    public void SetOff()
+    {
+        groupContainer.alpha = 0;
+    }
 
     /**
     ____ ___ ____   _   _ _____ _     ____  _____ ____  ____
@@ -301,7 +306,11 @@ public class InterfaceTutorial : MonoBehaviour
         LeftStick ,
         RightStick ,
         L2 ,
-        R2
+        R2 ,
+        Ground_Left ,
+        Ground_Right ,
+        Ground_Forward ,
+        Ground_Back
     }
 
     [Header( "FeedbackGroups" )]
@@ -330,6 +339,12 @@ public class InterfaceTutorial : MonoBehaviour
 
     public ControllerUIFeedbackGroup groupL2;
     public ControllerUIFeedbackGroup groupR2;
+
+    public ControllerUIFeedbackGroup groupGround_Left;
+    public ControllerUIFeedbackGroup groupGround_Right;
+    public ControllerUIFeedbackGroup groupGround_Forward;
+    public ControllerUIFeedbackGroup groupGround_Back;
+
 
     [Header( "Controller" )]
     public GameObject button1;
@@ -601,6 +616,22 @@ public class InterfaceTutorial : MonoBehaviour
             SetFeedbackGroup( groupR2 );
         }
 
+        if ( hint == ControllerHint.Ground_Left ) {
+            SetFeedbackGroup( groupGround_Left );
+        }
+
+        if ( hint == ControllerHint.Ground_Right ) {
+            SetFeedbackGroup( groupGround_Right );
+        }
+
+        if ( hint == ControllerHint.Ground_Forward ) {
+            SetFeedbackGroup( groupGround_Forward );
+        }
+
+        if ( hint == ControllerHint.Ground_Back ) {
+            SetFeedbackGroup( groupGround_Back );
+        }
+
 
         /*
         groupLeft.SetActive( hint == ControllerHint.Left );
@@ -696,6 +727,23 @@ public class InterfaceTutorial : MonoBehaviour
                 case ControllerHint.R2:
                     controllerText.text = "TAP-TAP";
                     break;
+
+                case ControllerHint.Ground_Left:
+                    controllerText.text = "LEFT";
+                    break;
+
+                case ControllerHint.Ground_Right:
+                    controllerText.text = "RIGHT";
+                    break;
+
+                case ControllerHint.Ground_Forward:
+                    controllerText.text = "FORWARD";
+                    break;
+
+                case ControllerHint.Ground_Back:
+                    controllerText.text = "BACK";
+                    break;
+
                 case ControllerHint.None:
                     controllerText.text = "";
                     break;

@@ -105,8 +105,7 @@ public class PlayCutScene : MonoBehaviour
 
         if ( playing ) {
 
-            print( "playing cutscene" );
-            ;
+//            print( "playing cutscene" );
             float fSpeed = 1;
 
             if ( God.input.x ) {
@@ -166,7 +165,7 @@ public class PlayCutScene : MonoBehaviour
 
     private void Director_Stopped( PlayableDirector d )
     {
-        print( "stopped" );
+//        print( "stopped" );
         playing = false;
         AudioListener.volume = 1;
         Stop();
@@ -175,7 +174,7 @@ public class PlayCutScene : MonoBehaviour
 
     private void Director_Played( PlayableDirector d )
     {
-        print( "played" );
+//        print( "played" );
         AudioListener.volume = 1;
         playing = true;
 
@@ -184,7 +183,7 @@ public class PlayCutScene : MonoBehaviour
     private void StartPlay()
     {
 
-        print( "start play cut scene" );
+//        print( "start play cut scene" );
         transitioning = false;
         director.Play();
         director.playableGraph.GetRootPlayable( 0 ).SetSpeed( 1 );
@@ -197,7 +196,7 @@ public class PlayCutScene : MonoBehaviour
 
     public void Stop()
     {
-        print( "Cut scene stopped pplaying" );
+//        print( "Cut scene stopped pplaying" );
         AudioListener.volume = 1;
         God.cameraManager.cutSceneManager.OnCutSceneFinishedPlaying();
 
@@ -208,7 +207,7 @@ public class PlayCutScene : MonoBehaviour
     public void OnFinish()
     {
 
-        print( "finished " );
+//        print( "finished " );
         God.instance.inCutScene = false;
 
         CutSceneFinished.Invoke();
@@ -225,7 +224,7 @@ public class PlayCutScene : MonoBehaviour
     public void Play()
     {
 
-        print( "playing cutscene" );
+//        print( "playing cutscene" );
         AudioListener.volume = 1;
 
         if ( played && playOnce ) {

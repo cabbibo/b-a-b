@@ -7,8 +7,6 @@ using WrenUtils;
 public class FullState : MonoBehaviour
 
 {
-
-
     public bool gameStarted;
     public bool tutorialFinished;
     public bool tutorialIslandFinished;
@@ -19,13 +17,11 @@ public class FullState : MonoBehaviour
     public bool[] biomesCompleted;
 
 
-
     public bool[] questsDiscovered;
     public bool[] questsStarted;
     public bool[] questsCompleted;
 
     public int numQuests = 7;
-
 
 
     public bool[] activitiesDiscovered;
@@ -53,6 +49,10 @@ public class FullState : MonoBehaviour
 
     public WrenCanDo wrenCanDo;
 
+
+    public int newIslandCompleted;
+    public int newIslandDiscovered;
+
     public void OnEnable()
     {
         //   print("full state enabled");
@@ -64,7 +64,6 @@ public class FullState : MonoBehaviour
     public Activity currentlyActiveActivity;
 
 
-
     public void OnDestroy()
     {
         UpdateLastPosition();
@@ -72,50 +71,52 @@ public class FullState : MonoBehaviour
 
 
     }
+
     public void Update()
     {
 
         totalTimeInGame += Time.deltaTime;
-        PlayerPrefs.SetInt("_TotalSecondsInGame", (int)totalTimeInGame);
+        PlayerPrefs.SetInt( "_TotalSecondsInGame" , (int)totalTimeInGame );
 
-        if (Time.frameCount % framesBetweenSaves == framesBetweenSaves - 1)
-        {
+        if ( Time.frameCount % framesBetweenSaves == framesBetweenSaves - 1 ) {
             UpdateLastPosition();
         }
 
     }
+
     public void UpdateState()
     {
 
         //        print("Updating State");
         // TODO save all this to player prefs
 
-        PlayerPrefsX.SetBool("_GameStarted", gameStarted);
-        PlayerPrefsX.SetBool("_TutorialFinished", tutorialFinished);
-        PlayerPrefsX.SetBool("_TutorialIslandFinished", tutorialIslandFinished);
-        PlayerPrefsX.SetBool("_IslandDiscovered", islandDiscovered);
+        PlayerPrefsX.SetBool( "_GameStarted" , gameStarted );
+        PlayerPrefsX.SetBool( "_TutorialFinished" , tutorialFinished );
+        PlayerPrefsX.SetBool( "_TutorialIslandFinished" , tutorialIslandFinished );
+        PlayerPrefsX.SetBool( "_IslandDiscovered" , islandDiscovered );
 
-        PlayerPrefsX.SetBool("_GameFinished", gameFinished);
+        PlayerPrefsX.SetBool( "_GameFinished" , gameFinished );
 
-        PlayerPrefsX.SetBoolArray("_BiomesStarted", biomesStarted);
-        PlayerPrefsX.SetBoolArray("_BiomesCompleted", biomesCompleted);
-        PlayerPrefsX.SetBoolArray("_BiomesDiscovered", biomesDiscovered);
-
-
-        PlayerPrefsX.SetBoolArray("_QuestsStarted", questsStarted);
-        PlayerPrefsX.SetBoolArray("_QuestsCompleted", questsCompleted);
-        PlayerPrefsX.SetBoolArray("_QuestsDiscovered", questsDiscovered);
+        PlayerPrefsX.SetBoolArray( "_BiomesStarted" , biomesStarted );
+        PlayerPrefsX.SetBoolArray( "_BiomesCompleted" , biomesCompleted );
+        PlayerPrefsX.SetBoolArray( "_BiomesDiscovered" , biomesDiscovered );
 
 
+        PlayerPrefsX.SetBoolArray( "_QuestsStarted" , questsStarted );
+        PlayerPrefsX.SetBoolArray( "_QuestsCompleted" , questsCompleted );
+        PlayerPrefsX.SetBoolArray( "_QuestsDiscovered" , questsDiscovered );
 
-        PlayerPrefs.SetInt("_CurrentScene", currentSceneID);
-        PlayerPrefs.SetInt("_CurrentBiome", currentBiomeID);
-        PlayerPrefs.SetInt("_CurrentQuest", currentQuestID);
 
-        PlayerPrefs.SetInt("_TotalSecondsInGame", (int)totalTimeInGame);
+        PlayerPrefs.SetInt( "_CurrentScene" , currentSceneID );
+        PlayerPrefs.SetInt( "_CurrentBiome" , currentBiomeID );
+        PlayerPrefs.SetInt( "_CurrentQuest" , currentQuestID );
+
+        PlayerPrefs.SetInt( "_TotalSecondsInGame" , (int)totalTimeInGame );
+
+        PlayerPrefs.SetInt( "_NewIslandDiscovered" , newIslandDiscovered );
+        PlayerPrefs.SetInt( "_NewIslandCompleted" , newIslandCompleted );
 
         wrenCanDo.SaveState();
-
 
 
     }
@@ -123,20 +124,18 @@ public class FullState : MonoBehaviour
     public void UpdateLastPosition()
     {
 
-        if (God.wren != null)
-        {
+        if ( God.wren != null ) {
             lastPosition = God.wren.transform.position;
             // saving the position of the bird!
-            PlayerPrefsX.SetVector3("_LastPosition", lastPosition);
+            PlayerPrefsX.SetVector3( "_LastPosition" , lastPosition );
         }
     }
 
-    public void SetLastPosition(Vector3 v)
+    public void SetLastPosition( Vector3 v )
     {
         lastPosition = v;
-        PlayerPrefsX.SetVector3("_LastPosition", lastPosition);
+        PlayerPrefsX.SetVector3( "_LastPosition" , lastPosition );
     }
-
 
 
     public void LoadState()
@@ -145,91 +144,78 @@ public class FullState : MonoBehaviour
 
         // TODO load all this from player prefs
 
-        tutorialFinished = PlayerPrefsX.GetBool("_TutorialFinished", false);
-        tutorialIslandFinished = PlayerPrefsX.GetBool("_TutorialIslandFinished", false);
+        tutorialFinished = PlayerPrefsX.GetBool( "_TutorialFinished" , false );
+        tutorialIslandFinished = PlayerPrefsX.GetBool( "_TutorialIslandFinished" , false );
 
-        gameStarted = PlayerPrefsX.GetBool("_GameStarted", false);
-        gameFinished = PlayerPrefsX.GetBool("_GameFinished", false);
-        islandDiscovered = PlayerPrefsX.GetBool("_IslandDiscovered", false);
+        gameStarted = PlayerPrefsX.GetBool( "_GameStarted" , false );
+        gameFinished = PlayerPrefsX.GetBool( "_GameFinished" , false );
+        islandDiscovered = PlayerPrefsX.GetBool( "_IslandDiscovered" , false );
 
-        currentSceneID = PlayerPrefs.GetInt("_CurrentScene", 0);
-        currentBiomeID = PlayerPrefs.GetInt("_CurrentBiome", -1);
-        currentQuestID = PlayerPrefs.GetInt("_CurrentQuest", -1);
+        currentSceneID = PlayerPrefs.GetInt( "_CurrentScene" , 0 );
+        currentBiomeID = PlayerPrefs.GetInt( "_CurrentBiome" , -1 );
+        currentQuestID = PlayerPrefs.GetInt( "_CurrentQuest" , -1 );
 
         ///        print("Loading last Position");
-        lastPosition = PlayerPrefsX.GetVector3("_LastPosition", Vector3.zero);
+        lastPosition = PlayerPrefsX.GetVector3( "_LastPosition" , Vector3.zero );
 
 
-        biomesStarted = PlayerPrefsX.GetBoolArray("_BiomesStarted");
-        biomesCompleted = PlayerPrefsX.GetBoolArray("_BiomesCompleted");
-        biomesDiscovered = PlayerPrefsX.GetBoolArray("_BiomesDiscovered");
+        biomesStarted = PlayerPrefsX.GetBoolArray( "_BiomesStarted" );
+        biomesCompleted = PlayerPrefsX.GetBoolArray( "_BiomesCompleted" );
+        biomesDiscovered = PlayerPrefsX.GetBoolArray( "_BiomesDiscovered" );
 
-        if (biomesStarted.Length != numBiomes)
-        {
+        if ( biomesStarted.Length != numBiomes ) {
             biomesStarted = new bool[numBiomes];
         }
 
-        if (biomesCompleted.Length != numBiomes)
-        {
+        if ( biomesCompleted.Length != numBiomes ) {
             biomesCompleted = new bool[numBiomes];
         }
 
-        if (biomesDiscovered.Length != numBiomes)
-        {
+        if ( biomesDiscovered.Length != numBiomes ) {
             biomesDiscovered = new bool[numBiomes];
         }
 
 
+        questsStarted = PlayerPrefsX.GetBoolArray( "_QuestsStarted" );
+        questsCompleted = PlayerPrefsX.GetBoolArray( "_QuestsCompleted" );
+        questsDiscovered = PlayerPrefsX.GetBoolArray( "_QuestsDiscovered" );
 
-
-
-        questsStarted = PlayerPrefsX.GetBoolArray("_QuestsStarted");
-        questsCompleted = PlayerPrefsX.GetBoolArray("_QuestsCompleted");
-        questsDiscovered = PlayerPrefsX.GetBoolArray("_QuestsDiscovered");
-
-        if (questsStarted.Length != numQuests)
-        {
+        if ( questsStarted.Length != numQuests ) {
             questsStarted = new bool[numQuests];
         }
 
-        if (questsCompleted.Length != numQuests)
-        {
+        if ( questsCompleted.Length != numQuests ) {
             questsCompleted = new bool[numQuests];
         }
 
-        if (questsDiscovered.Length != numQuests)
-        {
+        if ( questsDiscovered.Length != numQuests ) {
             questsDiscovered = new bool[numQuests];
         }
 
 
+        activitiesStarted = PlayerPrefsX.GetBoolArray( "_ActivitiesStarted" );
+        activitiesCompleted = PlayerPrefsX.GetBoolArray( "_ActivitiesCompleted" );
+        activitiesDiscovered = PlayerPrefsX.GetBoolArray( "_ActivitiesDiscovered" );
 
-        activitiesStarted = PlayerPrefsX.GetBoolArray("_ActivitiesStarted");
-        activitiesCompleted = PlayerPrefsX.GetBoolArray("_ActivitiesCompleted");
-        activitiesDiscovered = PlayerPrefsX.GetBoolArray("_ActivitiesDiscovered");
-
-        if (activitiesStarted.Length != numActivities)
-        {
+        if ( activitiesStarted.Length != numActivities ) {
             activitiesStarted = new bool[numActivities];
         }
 
-        if (activitiesCompleted.Length != numActivities)
-        {
+        if ( activitiesCompleted.Length != numActivities ) {
             activitiesCompleted = new bool[numActivities];
         }
 
-        if (activitiesDiscovered.Length != numActivities)
-        {
+        if ( activitiesDiscovered.Length != numActivities ) {
             activitiesDiscovered = new bool[numActivities];
         }
 
 
+        newIslandDiscovered = PlayerPrefs.GetInt( "_NewIslandDiscovered" , -1 );
+        newIslandCompleted = PlayerPrefs.GetInt( "_NewIslandCompleted" , -1 );
 
-        totalTimeInGame = (float)PlayerPrefs.GetInt("_TotalSecondsInGame", 0);
+        totalTimeInGame = (float)PlayerPrefs.GetInt( "_TotalSecondsInGame" , 0 );
 
         wrenCanDo.LoadState();
-
-
 
 
     }
@@ -268,63 +254,57 @@ public class FullState : MonoBehaviour
         totalTimeInGame = 0;
 
 
-
         wrenCanDo.ResetState();
         UpdateState();
 
 
-
     }
 
-    public void SetCurrentScene(int i)
+    public void SetCurrentScene( int i )
     {
         currentSceneID = i;
         UpdateState();
     }
 
-    public void SetCurrentBiome(int i)
+    public void SetCurrentBiome( int i )
     {
         currentBiomeID = i;
         UpdateState();
     }
 
-    public void SetCurrentQuest(int i)
+    public void SetCurrentQuest( int i )
     {
         currentQuestID = i;
         UpdateState();
     }
 
-    public void OnBiomeDiscovered(int i)
+    public void OnBiomeDiscovered( int i )
     {
         biomesDiscovered[i] = true;
         UpdateState();
     }
 
-    public void OnBiomeStarted(int i)
+    public void OnBiomeStarted( int i )
     {
         biomesStarted[i] = true;
         UpdateState();
     }
 
 
-
-
-    public void OnBiomeCompleted(int i)
+    public void OnBiomeCompleted( int i )
     {
         biomesCompleted[i] = true;
 
 
         bool allCompleted = true;
-        for (int j = 0; j < biomesCompleted.Length; j++)
-        {
-            if (!biomesCompleted[j])
-            {
+
+        for ( int j = 0; j < biomesCompleted.Length; j++ ) {
+            if ( !biomesCompleted[j] ) {
                 allCompleted = false;
             }
         }
 
-        if (allCompleted)
-        {
+        if ( allCompleted ) {
             OnGameFinish();
         }
 
@@ -332,34 +312,32 @@ public class FullState : MonoBehaviour
     }
 
 
-    public void OnQuestDiscovered(int i)
+    public void OnQuestDiscovered( int i )
     {
         questsDiscovered[i] = true;
         UpdateState();
     }
 
-    public void OnQuestStarted(int i)
+    public void OnQuestStarted( int i )
     {
         questsStarted[i] = true;
         UpdateState();
     }
 
-    public void OnQuestCompleted(int i)
+    public void OnQuestCompleted( int i )
     {
         questsCompleted[i] = true;
 
 
         bool allCompleted = true;
-        for (int j = 0; j < questsCompleted.Length; j++)
-        {
-            if (!questsCompleted[j])
-            {
+
+        for ( int j = 0; j < questsCompleted.Length; j++ ) {
+            if ( !questsCompleted[j] ) {
                 allCompleted = false;
             }
         }
 
-        if (allCompleted)
-        {
+        if ( allCompleted ) {
             OnGameFinish();
         }
 
@@ -367,7 +345,7 @@ public class FullState : MonoBehaviour
     }
 
 
-    public void ResetQuest(int i)
+    public void ResetQuest( int i )
     {
         questsDiscovered[i] = false;
         questsStarted[i] = false;
@@ -376,7 +354,7 @@ public class FullState : MonoBehaviour
     }
 
 
-    public void SetQuestState(int i, bool discovered, bool started, bool completed)
+    public void SetQuestState( int i , bool discovered , bool started , bool completed )
     {
         questsDiscovered[i] = discovered;
         questsStarted[i] = started;
@@ -385,36 +363,32 @@ public class FullState : MonoBehaviour
     }
 
 
-
-
-    public void OnActivityDiscovered(int i)
+    public void OnActivityDiscovered( int i )
     {
         activitiesDiscovered[i] = true;
         UpdateState();
     }
 
-    public void OnActivityStarted(int i)
+    public void OnActivityStarted( int i )
     {
         activitiesStarted[i] = true;
         UpdateState();
     }
 
-    public void OnActivityCompleted(int i)
+    public void OnActivityCompleted( int i )
     {
         activitiesCompleted[i] = true;
 
 
         bool allCompleted = true;
-        for (int j = 0; j < activitiesCompleted.Length; j++)
-        {
-            if (!activitiesCompleted[j])
-            {
+
+        for ( int j = 0; j < activitiesCompleted.Length; j++ ) {
+            if ( !activitiesCompleted[j] ) {
                 allCompleted = false;
             }
         }
 
-        if (allCompleted)
-        {
+        if ( allCompleted ) {
             OnGameFinish();
         }
 
@@ -422,7 +396,32 @@ public class FullState : MonoBehaviour
     }
 
 
-    public void ResetActivity(int i)
+    public void OnIslandDiscovered( int islandID )
+    {
+        newIslandDiscovered = islandID;
+        UpdateState();
+    }
+
+    public void OnIslandCompleted( int islandID )
+    {
+        newIslandCompleted = islandID;
+
+        UpdateState();
+    }
+
+    public void ResetIslandDiscovered()
+    {
+        newIslandDiscovered = -1;
+        UpdateState();
+    }
+
+    public void ResetIslandCompleted()
+    {
+        newIslandCompleted = -1;
+        UpdateState();
+    }
+
+    public void ResetActivity( int i )
     {
         activitiesDiscovered[i] = false;
         activitiesStarted[i] = false;
@@ -450,6 +449,7 @@ public class FullState : MonoBehaviour
         tutorialIslandFinished = true;
         UpdateState();
     }
+
     public void OnGameFinish()
     {
         gameFinished = true;
@@ -487,7 +487,7 @@ public class FullState : MonoBehaviour
 
         //TODO:
         //public RaceController  raceController;
-        //public SpeedTrapController speedTrapController; 
+        //public SpeedTrapController speedTrapController;
         //public PlantableController plantableController;
 
 
@@ -621,5 +621,4 @@ public class FullState : MonoBehaviour
 
         }
     */
-
 }
