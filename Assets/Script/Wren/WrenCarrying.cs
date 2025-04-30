@@ -30,6 +30,9 @@ public class WrenCarrying : MonoBehaviour
     public void OnEnable()
     {
         carryableObjects.Clear();
+        canCarryLineRenderer.positionCount = 0;
+        lineRendererL.positionCount = 0;
+        lineRendererR.positionCount = 0;
     }
 
     // TODO: don't use God, use info from Wren

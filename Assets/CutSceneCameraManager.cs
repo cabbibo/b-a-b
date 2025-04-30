@@ -82,6 +82,7 @@ public class CutSceneCameraManager : BaseCameraManager
 
         startPos = Camera.main.transform.position;
         startRot = Camera.main.transform.rotation;
+        
         targetPos = God.wren.cameraWork.camTarget.position;
         targetRot = God.wren.cameraWork.camTarget.rotation;
 

@@ -25,9 +25,10 @@ public class TutorialCoroutine : MonoBehaviour
 
     public TutorialStateManager stateManager;
 
-    public List<GameObject> preObjects    = new();
-    public List<GameObject> postObjects   = new();
-    public List<GameObject> duringObjects = new();
+    public List<GameObject> onlyPreObjects = new();
+    public List<GameObject> preObjects     = new();
+    public List<GameObject> postObjects    = new();
+    public List<GameObject> duringObjects  = new();
 
     public UnityEvent preEvent    = new();
     public UnityEvent duringEvent = new();
@@ -58,7 +59,7 @@ public class TutorialCoroutine : MonoBehaviour
     public virtual void SetStartState()
     {
 
-
+        foreach (var go in onlyPreObjects) go.SetActive( true );
         foreach (var go in preObjects) go.SetActive( true );
 
         foreach (var go in duringObjects) go.SetActive( true );
@@ -73,6 +74,7 @@ public class TutorialCoroutine : MonoBehaviour
     {
 
 
+        foreach (var go in onlyPreObjects) go.SetActive( true );
         foreach (var go in preObjects) go.SetActive( true );
 
         foreach (var go in duringObjects) go.SetActive( false );
@@ -87,6 +89,7 @@ public class TutorialCoroutine : MonoBehaviour
     public virtual void SetPostState()
     {
 
+        foreach (var go in onlyPreObjects) go.SetActive(false );
         foreach (var go in duringObjects) go.SetActive( false );
 
         foreach (var go in preObjects) go.SetActive( true );

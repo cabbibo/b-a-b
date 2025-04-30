@@ -283,12 +283,14 @@ public class FlyingTutorial : TutorialCoroutine
         God.wren.bird.featherMaterial = featherMainMaterial;
 
         yield return God.interfaceTutorial.WaitWithCheat( 1 );
-
+/*
 
         yield return FlapSequence();
         God.interfaceTutorial.TutorialSectionComplete();
         yield return StopSequence();
         God.interfaceTutorial.TutorialSectionComplete();
+
+        */
 
 
         God.wren.bird.featherMaterial = featherMainMaterial;

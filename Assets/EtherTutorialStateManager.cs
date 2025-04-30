@@ -3,6 +3,41 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor( typeof(EtherTutorialStateManager) )]
+public class EtherTutorialStateManagerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        var etherTutorialStateManager = (EtherTutorialStateManager)target;
+
+        DrawDefaultInspector();
+
+        if ( GUILayout.Button( "SetStartValues" ) ) {
+            etherTutorialStateManager.postTutorialIslandCutScene.SetStartValues();
+            etherTutorialStateManager.postWalkingCutScene.SetStartValues();
+        }
+
+        if ( GUILayout.Button( "SetFirstAnimationEnd" ) ) {
+            etherTutorialStateManager.postTutorialIslandCutScene.SetEndValues();
+        }
+
+        if ( GUILayout.Button( "SetSecondAnimationEnd" ) ) {
+            etherTutorialStateManager.postWalkingCutScene.SetEndValues(); //OnPostWalkingCutSceneComplete();
+        }
+
+        /*  if ( GUILayout.Button( "OnPostCutSceneComplete" ) ) {
+              etherTutorialStateManager.OnPostCutSceneComplete();
+          }*/
+
+
+    }
+}
+
+#endif
+
 public class EtherTutorialStateManager : TutorialStateManager
 {
     public WalkingTutorial walkingTutorial;
@@ -24,12 +59,22 @@ public class EtherTutorialStateManager : TutorialStateManager
 
         if ( God.state.wrenCanDo.hasLearnedWalk == false ) {
 
+            print( "hiii" );
+
+            God.wren.shards.SetToBodyShards();
+            postTutorialIslandCutScene.SetStartValues();
+            postWalkingCutScene.SetStartValues();
             postTutorialIslandCutScene.Play();
 
         } else {
             // TODO check to see what other islands have been visited / completed
 
+            print( "AFTER" );
+            postTutorialIslandCutScene.SetEndValues();
+            postWalkingCutScene.SetEndValues();
+
             StateCheck();
+
         }
 
 
