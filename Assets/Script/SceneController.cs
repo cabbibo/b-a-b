@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 using Crest;
-
 using WrenUtils;
 
 
@@ -15,8 +14,8 @@ using WrenUtils;
 */
 public class SceneController : MonoBehaviour
 {
-
     public string[] scenes;
+
     //public int God.state.currentSceneID = -1;
     public int oldScene = 0;
     public int newScene = 0;
@@ -30,26 +29,20 @@ public class SceneController : MonoBehaviour
     public MenuController menuController;
 
 
-
-
-
     // STEP ONE UNLOAD EVERYTHING
     public void OnEnable()
     {
 
 
         // Unloading all the scenes!
-        for (int i = 0; i < scenes.Length; i++)
-        {
-            UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneByName(scenes[i]);
+        for ( int i = 0; i < scenes.Length; i++ ) {
+            var scene = SceneManager.GetSceneByName( scenes[i] );
 
-            if (scene != null)
-            {
-                if (scene.name != "BaseScene" && scene.name != null)
-                {
+            if ( scene != null ) {
+                if ( scene.name != "BaseScene" && scene.name != null ) {
                     //                    print("unloading scene");
                     //                  print(scene.name);
-                    SceneManager.UnloadScene(scene);
+                    SceneManager.UnloadScene( scene );
                 }
             }
         }
@@ -63,7 +56,6 @@ public class SceneController : MonoBehaviour
     }
 
 
-
     public void OnDisable()
     {
         // Remove our listeners
@@ -72,27 +64,20 @@ public class SceneController : MonoBehaviour
     }
 
 
-
-
-
     public void OnRoomConnection()
     {
 
         loadedFromPortal = false;
 
 
-        if (autoLoad)
-        {
-            HardLoad(God.state.currentSceneID);
-        }
-        else
-        {
-            menuController.gameObject.SetActive(true);
+        if ( autoLoad ) {
+            HardLoad( God.state.currentSceneID );
+        } else {
+            menuController.gameObject.SetActive( true );
         }
 
 
     }
-
 
 
     public void NewGame()
@@ -113,30 +98,19 @@ public class SceneController : MonoBehaviour
     {
 
         God.state.OnGameStart();
-        HardLoad(God.state.currentSceneID);
+        HardLoad( God.state.currentSceneID );
 
     }
 
 
-
-
-
-
-
-
-
-
-
-
-    public void LoadSceneFromPortal(Portal portal)
+    public void LoadSceneFromPortal( Portal portal )
     {
 
 
-
-        print("LOADING FROM PORTAL");
+        print( "LOADING FROM PORTAL" );
         // make it so we dont hurt ourselves
         God.wren.inEther = true;
-        God.wren.Crash(portal.collisionPoint.position);
+        God.wren.Crash( portal.collisionPoint.position );
 
         God.wren.canMove = false;
         God.cameraManager.lerpManager.enabled = false;
@@ -144,63 +118,51 @@ public class SceneController : MonoBehaviour
 
         loadedFromPortal = true;
         // Lerps out of scene via a portal
-        StartCoroutine(PortalAnimationOut(portal));
+        StartCoroutine( PortalAnimationOut( portal ) );
 
 
     }
 
 
-
-
-
-
-    public void HardLoad(int id)
+    public void HardLoad( int id )
     {
         sceneLoaded = true;
-        StartCoroutine(SceneSwitch(id, God.state.currentSceneID));
+        StartCoroutine( SceneSwitch( id , God.state.currentSceneID ) );
 
     }
 
     public void Death()
     {
-        God.state.SetCurrentBiome(-1);
-        HardLoad(God.state.currentSceneID);
+        God.state.SetCurrentBiome( -1 );
+        HardLoad( God.state.currentSceneID );
     }
 
 
     //TODO: HACKY AF
-    IEnumerator SceneSwitch(int NS, int OS)
+    private IEnumerator SceneSwitch( int NS , int OS )
     {
 
         newScene = NS;
         oldScene = OS;
 
-        if (newScene == oldScene)
-        {
+        if ( newScene == oldScene ) {
             // yield break;
         }
 
-        UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneByName(scenes[oldScene]);
+        var scene = SceneManager.GetSceneByName( scenes[oldScene] );
 
-        if (scene != null)
-        {
+        if ( scene != null ) {
 
-            if (scene.isLoaded)
-            {
+            if ( scene.isLoaded ) {
                 // unloading old scne
-                var progress2 = SceneManager.UnloadSceneAsync(scene);
+                var progress2 = SceneManager.UnloadSceneAsync( scene );
 
 
-
-                if (progress2 != null)
-                {
+                if ( progress2 != null ) {
                     while (!progress2.isDone)
-                    {
-
                         // Check each frame if the scene has completed.
                         // For more information about yield in C# see: https://youtu.be/bsZjfuTrPSA
                         yield return null;
-                    }
                 }
 
             }
@@ -208,65 +170,56 @@ public class SceneController : MonoBehaviour
         }
 
 
-        SceneManager.LoadScene(scenes[newScene], LoadSceneMode.Additive);
+        SceneManager.LoadScene( scenes[newScene] , LoadSceneMode.Additive );
 
         // Set the animation stuff when new scene is loaded
 
 
-
     }
 
 
-    public void SetNewScene(int newSceneID, int oldSceneID)
+    public void SetNewScene( int newSceneID , int oldSceneID )
     {
 
 
-
-
-
-
     }
-
-
-
 
 
     public UnityEvent OnSceneLoadEvent;
 
-    void OnSceneUnloaded(UnityEngine.SceneManagement.Scene s)
+    private void OnSceneUnloaded( UnityEngine.SceneManagement.Scene s )
     {
 
     }
 
-    void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, LoadSceneMode mode)
+    private void OnSceneLoaded( UnityEngine.SceneManagement.Scene scene , LoadSceneMode mode )
     {
 
+        print( "============= SCENE LOADED ==============" );
 
         // dont do anything if we are in the base scene
-        if (scene.name == "BaseScene")
-        {
+        if ( scene.name == "BaseScene" ) {
             return;
         }
         //        print("Scene Loaded");
         //       print(scene);
         //     print(scene.name);
 
-        GameObject[] rootObjects = scene.GetRootGameObjects();
+        var rootObjects = scene.GetRootGameObjects();
         //        print(rootObjects[0]);
 
-        WrenUtils.Scene wrenScene = rootObjects[0].GetComponent<WrenUtils.Scene>();
+        var wrenScene = rootObjects[0].GetComponent<WrenUtils.Scene>();
 
-        God.state.SetCurrentScene(newScene);
+        God.state.SetCurrentScene( newScene );
 
 
-        LerpTo lt = God.cameraManager.lerpManager;
+        var lt = God.cameraManager.lerpManager;
         lt.enabled = true;
 
 
-        if (wrenScene != null)
-        {
+        if ( wrenScene != null ) {
             God.currentScene = wrenScene;
-            wrenScene.SceneLoaded(newScene, loadedFromPortal);
+            wrenScene.SceneLoaded( newScene , loadedFromPortal );
         }
 
         //print(God.state);
@@ -274,64 +227,47 @@ public class SceneController : MonoBehaviour
         // print(God.state);
         // print(wrenScene);
 
-        if (wrenScene == null)
-        {
-            Debug.LogError("Scene not found : Make sure scene is top object in hierarchy!");
+        if ( wrenScene == null ) {
+            Debug.LogError( "Scene not found : Make sure scene is top object in hierarchy!" );
         }
 
         // Only animate in if we have animation!
-        if (God.state.currentBiomeID >= 0 && God.state.currentBiomeID < wrenScene.portals.Length && God.wren != null)
-        {
+        if ( God.state.currentBiomeID >= 0 && God.state.currentBiomeID < wrenScene.portals.Length && God.wren != null ) {
+            print( "============= STARTING PORTAL ANIMATION IN ==============" );
             //   print("starting portal animation in");
-            StartCoroutine(PortalAnimationIn(wrenScene.portals[God.state.currentBiomeID]));
-        }
-        else
-        {
+            StartCoroutine( PortalAnimationIn( wrenScene.portals[God.state.currentBiomeID] ) );
+        } else {
+            print( "============= BASE ANIMATION IN ==============" );
             //            print("starting base animation in");
-            StartCoroutine(BaseAnimationIn());
+            StartCoroutine( BaseAnimationIn() );
         }
 
         OnSceneLoadEvent.Invoke();
 
     }
 
-    void OnSceneLoaded()
+    private void OnSceneLoaded()
     {
         OnSceneLoadEvent.Invoke();
     }
 
-    bool isScene_CurrentlyLoaded(string sceneName_no_extention, out UnityEngine.SceneManagement.Scene sceneFound)
+    private bool isScene_CurrentlyLoaded( string sceneName_no_extention , out UnityEngine.SceneManagement.Scene sceneFound )
     {
 
-        sceneFound = SceneManager.GetSceneAt(0);
-        for (int i = 0; i < SceneManager.sceneCount; ++i)
-        {
-            UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneAt(i);
+        sceneFound = SceneManager.GetSceneAt( 0 );
 
-            if (scene.name == sceneName_no_extention)
-            {
+        for ( int i = 0; i < SceneManager.sceneCount; ++i ) {
+            var scene = SceneManager.GetSceneAt( i );
+
+            if ( scene.name == sceneName_no_extention ) {
                 //the scene is already loaded
                 sceneFound = scene;
                 return true;
             }
         }
 
-        return false;//scene not currently loaded in the hierarchy
+        return false; //scene not currently loaded in the hierarchy
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     /*
@@ -344,13 +280,6 @@ public class SceneController : MonoBehaviour
     */
 
 
-
-
-
-
-
-
-
     /*
 
     Animating out of the portal
@@ -358,66 +287,75 @@ public class SceneController : MonoBehaviour
     */
 
     public float portalAnimationOutLength = 3;
-    IEnumerator PortalAnimationOut(Portal portal)
+
+    private IEnumerator PortalAnimationOut( Portal portal )
     {
+
+        print( "=============== PORTAL ANIMATION OUT ================" );
 
         float StartTime = Time.time;
 
-        Vector3 startPoint = God.camera.transform.position;
-        Vector3 endPoint = portal.collisionPoint.position;
+        var startPoint = God.camera.transform.position;
+        var endPoint = portal.collisionPoint.position;
 
 
-        Quaternion startRot = God.camera.transform.rotation;
-        Quaternion endRot = Quaternion.LookRotation(portal.collisionPoint.forward, Vector3.up);
-        while (Time.time - StartTime < portalAnimationOutLength)
-        {
+        var startRot = God.camera.transform.rotation;
+        var endRot = Quaternion.LookRotation( portal.collisionPoint.forward , Vector3.up );
+
+        while (Time.time - StartTime < portalAnimationOutLength) {
 
             float val = (Time.time - StartTime) / portalAnimationOutLength;
             //God.fade
-            God.postController.SetFade(val * val);
-            God.camera.transform.position = Vector3.Lerp(startPoint, endPoint, val);///.Lerp()
-            God.camera.transform.rotation = Quaternion.Slerp(startRot, endRot, val);///.Lerp()
+            God.postController.SetFade( val * val );
+            God.camera.transform.position = Vector3.Lerp( startPoint , endPoint , val ); ///.Lerp()
+            God.camera.transform.rotation = Quaternion.Slerp( startRot , endRot , val ); ///.Lerp()
 
             yield return null;
         }
 
-        God.state.SetCurrentBiome(portal.biome);
-        God.state.SetCurrentQuest(portal.questID);
-        HardLoad(portal.sceneID);
+
+        print( "============= SET BIOME INFO ==============" );
+        print( " pb " + portal.biome );
+        print( " ps " + portal.sceneID );
+        print( " pq " + portal.questID );
+
+        God.state.SetCurrentBiome( portal.biome );
+        God.state.SetCurrentQuest( portal.questID );
+        HardLoad( portal.sceneID );
 
     }
 
-    IEnumerator PortalAnimationIn(Portal portal)
+    private IEnumerator PortalAnimationIn( Portal portal )
     {
 
         float StartTime = Time.time;
 
-        float v1 = Vector3.Distance(portal.collisionPointFront.position, portal.startPoint.position);
-        float v2 = Vector3.Distance(portal.collisionPointBack.position, portal.startPoint.position);
+        float v1 = Vector3.Distance( portal.collisionPointFront.position , portal.startPoint.position );
+        float v2 = Vector3.Distance( portal.collisionPointBack.position , portal.startPoint.position );
 
         portal.collisionPoint = portal.collisionPointFront;
 
-        if (v2 < v1)
-        {
+        if ( v2 < v1 ) {
             portal.collisionPoint = portal.collisionPointBack;
         }
 
 
-        Vector3 endPoint = portal.collisionPoint.position;
-        Quaternion endRot = Quaternion.LookRotation(portal.collisionPoint.forward, Vector3.up);
+        var endPoint = portal.collisionPoint.position;
+        var endRot = Quaternion.LookRotation( portal.collisionPoint.forward , Vector3.up );
 
 
-        Vector3 startPoint = God.wren.cameraWork.camTarget.position;//portal.startPoint.position + portal.startPoint.forward * -God.wren.cameraWork.groundBackAmount + portal.startPoint.up * -God.wren.cameraWork.groundUpAmount;
-        Quaternion startRot = God.wren.cameraWork.camTarget.rotation;//portal.startPoint.rotation;
+        var startPoint =
+            God.wren.cameraWork.camTarget
+                .position; //portal.startPoint.position + portal.startPoint.forward * -God.wren.cameraWork.groundBackAmount + portal.startPoint.up * -God.wren.cameraWork.groundUpAmount;
+        var startRot = God.wren.cameraWork.camTarget.rotation; //portal.startPoint.rotation;
 
-        while (Time.time - StartTime < fadeInLength)
-        {
+        while (Time.time - StartTime < fadeInLength) {
 
             float val = (Time.time - StartTime) / fadeInLength;
             //God.fade
-            God.postController.SetFade(1 - val);
-            God.camera.transform.position = Vector3.Lerp(endPoint, startPoint, val);///.Lerp()
-            God.camera.transform.rotation = Quaternion.Slerp(endRot, startRot, val);///.Lerp()
+            God.postController.SetFade( 1 - val );
+            God.camera.transform.position = Vector3.Lerp( endPoint , startPoint , val ); ///.Lerp()
+            God.camera.transform.rotation = Quaternion.Slerp( endRot , startRot , val ); ///.Lerp()
 
 
             yield return null;
@@ -430,25 +368,27 @@ public class SceneController : MonoBehaviour
 
 
     public float fadeInLength = 3;
-    IEnumerator BaseAnimationIn()
+
+    private IEnumerator BaseAnimationIn()
     {
 
         float StartTime = Time.time;
 
 
+        var endPoint = God.wren.cameraWork.camTarget.position;
+        var endRot = God.wren.cameraWork.camTarget.rotation;
 
-        Vector3 endPoint = God.wren.cameraWork.camTarget.position;
-        Quaternion endRot = God.wren.cameraWork.camTarget.rotation;
 
-
-        Vector3 startPoint = God.wren.cameraWork.camTarget.position;//portal.startPoint.position + portal.startPoint.forward * -God.wren.cameraWork.groundBackAmount + portal.startPoint.up * -God.wren.cameraWork.groundUpAmount;
-        Quaternion startRot = God.wren.cameraWork.camTarget.rotation;//portal.startPoint.rotation;
+        var startPoint =
+            God.wren.cameraWork.camTarget
+                .position; //portal.startPoint.position + portal.startPoint.forward * -God.wren.cameraWork.groundBackAmount + portal.startPoint.up * -God.wren.cameraWork.groundUpAmount;
+        var startRot = God.wren.cameraWork.camTarget.rotation; //portal.startPoint.rotation;
 
 
         /*
-        
+
         TODO what do do about this actually!
-        
+
         while (Time.time - StartTime < fadeInLength)
         {
 
@@ -484,15 +424,6 @@ public class SceneController : MonoBehaviour
     }
 
 
-
-
-
-
-
-
-
-
-
     /*
 
     DEMO ENDER STUFF
@@ -505,58 +436,56 @@ public class SceneController : MonoBehaviour
 
     */
 
-    IEnumerator DemoAnimationOut(Portal portal)
+    private IEnumerator DemoAnimationOut( Portal portal )
     {
 
 
         float StartTime = Time.time;
 
 
-        Vector3 startPoint = God.camera.transform.position;
-        Vector3 endPoint = portal.collisionPoint.position;
+        var startPoint = God.camera.transform.position;
+        var endPoint = portal.collisionPoint.position;
 
 
-        Quaternion startRot = God.camera.transform.rotation;
-        Quaternion endRot = Quaternion.LookRotation(portal.collisionPoint.forward, Vector3.up);
-        while (Time.time - StartTime < portalAnimationOutLength)
-        {
+        var startRot = God.camera.transform.rotation;
+        var endRot = Quaternion.LookRotation( portal.collisionPoint.forward , Vector3.up );
+
+        while (Time.time - StartTime < portalAnimationOutLength) {
 
             float val = (Time.time - StartTime) / portalAnimationOutLength;
             //God.fade
             //  God.postController._Fade = val * val;
-            God.camera.transform.position = Vector3.Lerp(startPoint, endPoint, val);///.Lerp()
-            God.camera.transform.rotation = Quaternion.Slerp(startRot, endRot, val);///.Lerp()
+            God.camera.transform.position = Vector3.Lerp( startPoint , endPoint , val ); ///.Lerp()
+            God.camera.transform.rotation = Quaternion.Slerp( startRot , endRot , val ); ///.Lerp()
 
             yield return null;
         }
 
-        God.state.SetCurrentBiome(portal.biome);
+        God.state.SetCurrentBiome( portal.biome );
         OnDemoEnd();
 
     }
 
 
-    public void EndDemo(Portal portal)
+    public void EndDemo( Portal portal )
     {
         // make it so we dont hurt ourselves
         God.wren.inEther = true;
-        God.wren.Crash(portal.collisionPoint.position);
+        God.wren.Crash( portal.collisionPoint.position );
 
         God.wren.canMove = false;
         Camera.main.gameObject.GetComponent<LerpTo>().enabled = false;
 
         God.cameraManager.lerpManager.enabled = false;
-        StartCoroutine(DemoAnimationOut(portal));
+        StartCoroutine( DemoAnimationOut( portal ) );
 
     }
 
 
     public GameObject demoEnder;
+
     public void OnDemoEnd()
     {
-        demoEnder.SetActive(true);
+        demoEnder.SetActive( true );
     }
-
-
-
 }

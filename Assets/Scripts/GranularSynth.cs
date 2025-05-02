@@ -20,7 +20,7 @@ public class GranularSynth : MonoBehaviour
     private void OnEnable()
     {
 
-        print( "hi" );
+//        print( "hi" );
         samples = new float[clips.Length][];
         sampleLengths = new int[clips.Length];
 
@@ -211,7 +211,7 @@ public class GranularSynth : MonoBehaviour
     public void NewGrain( float length , float speed , float loudness , float positionInSample , int clipID , float leftRightBlend )
     {
 
-        print( grains );
+        //        print( grains );
 
         if ( grains.Count >= maxGrains ) {
             return;

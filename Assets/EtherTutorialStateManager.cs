@@ -77,6 +77,7 @@ public class EtherTutorialStateManager : TutorialStateManager
 
         }
 
+        print( "full after" );
 
     }
 
@@ -104,6 +105,7 @@ public class EtherTutorialStateManager : TutorialStateManager
         if ( God.state.newIslandCompleted != -1 ) {
             DoNewIslandCompleted( God.state.newIslandCompleted );
         }
+
 
     }
 

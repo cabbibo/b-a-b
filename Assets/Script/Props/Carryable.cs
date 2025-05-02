@@ -121,11 +121,11 @@ public class Carryable : RealtimeComponent<CarryableModel>
 
     public bool CheckAvailableToCarry( WrenCarrying carrier )
     {
-        print( carrier );
-        print( carrier.GetNormalClientId() );
-        print( IdOfLastCarrier );
-        print( CarryCooldown );
-        print( TimeSinceLastCarried );
+        /*   print( carrier );
+           print( carrier.GetNormalClientId() );
+           print( IdOfLastCarrier );
+           print( CarryCooldown );
+           print( TimeSinceLastCarried );*/
 
         if ( carrier.GetNormalClientId() != null ) {
             return !BeingCarried &&

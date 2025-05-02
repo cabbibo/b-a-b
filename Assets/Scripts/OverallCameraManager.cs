@@ -186,4 +186,19 @@ public class OverallCameraManager : MonoBehaviour
         lerpManager.transform.rotation = God.wren.cameraWork.camTarget.rotation;
 
     }
+
+    public void SetBaseState()
+    {
+        currentPriority = defaultPriority;
+        priorityRequestTime = Time.time;
+        priorityRequestSpeed = priorityRequestSpeedDefault;
+
+        for ( int i = 0; i < cameraManagers.Length; i++ ) {
+            cameraManagers[i].weight = 0;
+
+            if ( cameraManagers[i] == defaultPriority ) {
+                cameraManagers[i].weight = 100;
+            }
+        }
+    }
 }
