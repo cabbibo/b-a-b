@@ -25,7 +25,6 @@ Material:
   - _FOAM_ON
   - _SHADOWS_ON
   - _SUBSURFACESCATTERING_ON
-  - _SUBSURFACESHALLOWCOLOUR_ON
   - _TRANSPARENCY_ON
   - _UNDERWATER_ON
   m_InvalidKeywords:
@@ -38,7 +37,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: 
+  m_LockedProperties: _SubSurfaceColour
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -47,7 +46,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _FoamTexture:
-        m_Texture: {fileID: 2800000, guid: 76e25da1cefc7f446bcc43a70fb13a0f, type: 3}
+        m_Texture: {fileID: 2800000, guid: 3ef5295c90914704d8129d9349151bed, type: 3}
         m_Scale: {x: 0.1, y: 0.1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -136,15 +135,15 @@ Material:
     - _Foam: 1
     - _Foam3DLighting: 1
     - _FoamBubbleParallax: 0.5
-    - _FoamScale: 6.6
+    - _FoamScale: 2.6
     - _ForceUnderwater: 0
     - _FresnelPower: 1
     - _Invert: 1
     - _MipBias: 0
     - _Moving: 0.17
-    - _NormalsScale: 0.1
-    - _NormalsStrength: 0.076
-    - _NormalsStrengthOverall: 0.745
+    - _NormalsScale: 136.4
+    - _NormalsStrength: 0.461
+    - _NormalsStrengthOverall: 1
     - _Offset: 0.00008
     - _OverrideReflectionCubemap: 0
     - _PlanarReflectionDistanceFactor: 0
@@ -166,15 +165,15 @@ Material:
     - _StartLevel: 0.157
     - _StencilFunction: 0
     - _SubSurfaceBase: 0
-    - _SubSurfaceDepthMax: 33.1
-    - _SubSurfaceDepthPower: 8.88
+    - _SubSurfaceDepthMax: 500
+    - _SubSurfaceDepthPower: 10
     - _SubSurfaceHeightLerp: 1
     - _SubSurfaceHeightMax: 24.9
     - _SubSurfaceHeightPower: 1.68
     - _SubSurfaceScattering: 1
-    - _SubSurfaceShallowColour: 1
-    - _SubSurfaceSun: 1.68
-    - _SubSurfaceSunFallOff: 5.26
+    - _SubSurfaceShallowColour: 0
+    - _SubSurfaceSun: 1.57
+    - _SubSurfaceSunFallOff: 12.04
     - _TexelSize: 0.125
     - _TextureRes: 1024
     - _Transparency: 1
@@ -185,7 +184,7 @@ Material:
     - _WaveFoamBubblesStart: 0.115
     - _WaveFoamBubblesStrength: 0.637
     - _WaveFoamCoverage: 0.38
-    - _WaveFoamFeather: 0.207
+    - _WaveFoamFeather: 1
     - _WaveFoamLightScale: 2
     - _WaveFoamNormalStrength: 21.2
     - _WaveFoamNormalsY: 0.253
@@ -198,14 +197,14 @@ Material:
     - _Diffuse: {r: 0, g: 0.003921569, b: 0.16862746, a: 1}
     - _DiffuseGrazing: {r: 0, g: 0.003921569, b: 0.16862746, a: 1}
     - _DiffuseShadow: {r: 0, g: 0, b: 0.08627451, a: 1}
-    - _FoamBubbleColor: {r: 0.5482029, g: 0.71300006, b: 0.7062737, a: 1}
-    - _FoamWhiteColor: {r: 1, g: 0.99634784, b: 0.97199994, a: 0.6862745}
+    - _FoamBubbleColor: {r: 1, g: 0.7189845, b: 0, a: 1}
+    - _FoamWhiteColor: {r: 0, g: 1, b: 0.681592, a: 0.6862745}
     - _SkyAwayFromSun: {r: 0.15419213, g: 0.22129796, b: 0.5372549, a: 1}
     - _SkyBase: {r: 0.55200005, g: 0.85242355, b: 1, a: 1}
     - _SkyTowardsSun: {r: 2.6390157, g: 1.8217498, b: 0.9236555, a: 1}
     - _SubSurface: {r: 0, g: 0.48, b: 0.36, a: 1}
-    - _SubSurfaceColour: {r: 0.09019608, g: 0.49803922, b: 0.45490196, a: 1}
+    - _SubSurfaceColour: {r: 0.090196066, g: 0.49803922, b: 0.38908404, a: 1}
     - _SubSurfaceShallowCol: {r: 0, g: 0.003921569, b: 0.24705882, a: 1}
-    - _SubSurfaceShallowColShadow: {r: 0.14417942, g: 0.2264151, b: 0.21173015, a: 1}
+    - _SubSurfaceShallowColShadow: {r: 1, g: 0.3983134, b: 0, a: 1}
     - _SubSurfaceShallowColour: {r: 0.41999996, g: 0.75, b: 0.69, a: 1}
   m_BuildTextureStacks: []

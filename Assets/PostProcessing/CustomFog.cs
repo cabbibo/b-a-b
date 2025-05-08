@@ -7,35 +7,36 @@ using WrenUtils;
 using UnityEditor;
 
 
-
 [ExecuteAlways]
 public class CustomFog : MonoBehaviour
 {
-
     public Camera camera;
 
-    public PostProcessVolume volume;
-    private FogEffect fog;
+    public  PostProcessVolume volume;
+    private FogEffect         fog;
+    private SketchEffect      sketchEffect;
 
     private VolumeProfile profile;
 
-    public float _Intensity;
+    public float     _Intensity;
     public Matrix4x4 _InverseProjection;
 
     public RenderTexture heightMap;
-    public Vector3 mapSize;
-    public Vector3 mapOffset;
+    public Vector3       mapSize;
+    public Vector3       mapOffset;
 
     public Camera cam;
-    void OnEnable()
+
+    private void OnEnable()
     {
         volume = GetComponent<PostProcessVolume>();
 
-        volume.profile.TryGetSettings(out fog);
+        volume.profile.TryGetSettings( out fog );
+        volume.profile.TryGetSettings( out sketchEffect );
 
     }
 
-    void Update()
+    private void Update()
     {
 
         fog.intensity.value = _Intensity;
@@ -51,10 +52,13 @@ public class CustomFog : MonoBehaviour
         fog.heightMap.value = heightMap;
         fog.mapSize.value = mapSize;
         fog.mapOffset.value = mapOffset;
+
+
         // glitch.blend.value = blend;
+
+        sketchEffect.heightMap.value = heightMap;
+        sketchEffect.mapSize.value = mapSize;
+        sketchEffect.mapOffset.value = mapOffset;
+
     }
-
-
-
 }
-
