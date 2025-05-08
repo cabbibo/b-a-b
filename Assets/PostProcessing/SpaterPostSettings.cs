@@ -16,7 +16,8 @@ namespace UnityEngine.Rendering.PostProcessing
         public FloatParameter lookupOffset    = new() { value = 0f };
         public ColorParameter color           = new() { value = Color.white };
 
-        public TextureParameter frameTex = new() { value = null };
+        public TextureParameter frameTex      = new() { value = null };
+        public TextureParameter frameNoiseTex = new() { value = null };
 
         public FloatParameter frameUpper = new() { value = 1f };
         public FloatParameter frameLower = new() { value = 0f };
@@ -51,6 +52,7 @@ namespace UnityEngine.Rendering.PostProcessing
             sheet.properties.SetColor( "_Color" , settings.color );
             sheet.properties.SetFloat( "_Desaturate" , settings.desaturate );
             sheet.properties.SetTexture( "_FrameTex" , settings.frameTex );
+            sheet.properties.SetTexture( "_FrameNoiseTex" , settings.frameNoiseTex );
             sheet.properties.SetFloat( "_OverallMultiplier" , settings.overallMultiplier );
             context.command.BlitFullscreenTriangle( context.source , context.destination , sheet , 0 );
         }

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Island Island Skybox
+  m_Name: Island_Skybox_Shader
   m_Shader: {fileID: 4800000, guid: 9ad6ddbe5ba85f84f9c36571effdd889, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0

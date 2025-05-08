@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: IslandTerrain
+  m_Name: Island_Terrain_Shader
   m_Shader: {fileID: 4800000, guid: 9d7d7d60846f2a24492820d20c75d781, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -79,6 +79,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _FullNormalMap:
+        m_Texture: {fileID: 2800000, guid: c87b7544a54af544b8b16ecbb011e243, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _IslandTexture:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -115,12 +119,20 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 2800000, guid: 5d9534be66b4a2d4f9c4df626dede92f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _NormalsAndAOMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: c87b7544a54af544b8b16ecbb011e243, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PainterlyLightMap:
+        m_Texture: {fileID: 2800000, guid: 5e5563419aacdf84aa143633b53f0223, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
@@ -148,7 +160,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TextureMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 10699fff51d94294ba42e7a9428bc431, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ValleyTexture:
@@ -156,7 +168,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _WaterflowMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: ee1347eef280c4d43862e3bd48d375d7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -191,11 +203,13 @@ Material:
     - _DesertStriationVerticalCutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _Fade: 111111
     - _FogAmount: 0
     - _FogEnd: 1000
     - _FogNoiseAmount: 0
     - _FogNoiseScale: 1
     - _FogStart: 100
+    - _FullNormalStrength: 12.43
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -210,16 +224,29 @@ Material:
     - _Mode: 0
     - _NoiseTextureBase: 1
     - _NoiseTextureStrength: 0.2
+    - _NormalMapStrength: 1.14
     - _OcclusionStrength: 1
+    - _OutlineAmount: 0.1
+    - _OverallMultiplier: 1.07
+    - _PainterlyLightImportance: 0.99
     - _Parallax: 0.02
+    - _ShadowStrength: 1
+    - _Size: 0.01
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _StencilMask: 9
+    - _TriplanarNormalWeight: 0.39
+    - _TriplanarSharpness: 1
     - _UVSec: 0
+    - _WindAmount: 0.2
+    - _WindChangeSize: 0.0001
+    - _WindChangeSpeed: 5
     - _WrenShadowRadius: 1
     - _WrenShadowThickness: 0.2
     - _ZWrite: 1
     m_Colors:
+    - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseFlatColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
@@ -267,6 +294,7 @@ Material:
     - _DesertStriationColorLight: {r: 1, g: 1, b: 1, a: 1}
     - _DesertStriationSize: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
     - _FogColor: {r: 1, g: 1, b: 1, a: 1}
     - _ForestColor: {r: 1, g: 1, b: 1, a: 1}
     - _ForestFlatColor: {r: 1, g: 1, b: 1, a: 1}
@@ -290,11 +318,15 @@ Material:
     - _MountainLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
     - _MountainLowHigh: {r: 700, g: 1000, b: 0, a: 0}
     - _MountainSpecialColor: {r: 1, g: 1, b: 1, a: 1}
+    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _TextureShadingWeights: {r: 0, g: 1, b: 2, a: 3}
+    - _TriplanarMultiplier: {r: 0.003, g: 0.003, b: 0.003, a: 1}
     - _ValleyColor: {r: 1, g: 1, b: 1, a: 1}
     - _ValleyFlatColor: {r: 1, g: 1, b: 1, a: 1}
     - _ValleyHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
     - _ValleyLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
     - _ValleyLowHigh: {r: 700, g: 1000, b: 0, a: 0}
     - _ValleySpecialColor: {r: 1, g: 1, b: 1, a: 1}
+    - _WindDirection: {r: 11, g: 0, b: 0, a: 1}
     - _WrenShadowColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

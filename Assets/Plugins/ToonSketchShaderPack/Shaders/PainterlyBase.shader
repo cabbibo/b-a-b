@@ -135,7 +135,7 @@ Shader "Painterly/PainterlyBase"
         {
 
 
-            // Giving our selves stencil info 
+               // Giving our selves stencil info 
             // for our outline shader to use
             Stencil
             {

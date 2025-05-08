@@ -102,10 +102,10 @@ Material:
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
-    - _NoiseExtrudeSubtractor: 0.01
-    - _NoiseNormalExtrude: 0.4
+    - _NoiseExtrudeSubtractor: 0.001
+    - _NoiseNormalExtrude: 0.1
     - _NoisePow: 2
-    - _NoiseSize: 1
+    - _NoiseSize: 2
     - _NoiseSpeed: 2
     - _NoiseStepRate: 5
     - _NoiseSubtractor: 0.01
@@ -113,7 +113,7 @@ Material:
     - _NoiseUVOffset: 0.6
     - _Normal: 0
     - _OcclusionStrength: 1
-    - _OutlineAmount: 0.01
+    - _OutlineAmount: 0
     - _OutlineHue: 0.1
     - _Outlined: 0
     - _PainterlyLight: 1
