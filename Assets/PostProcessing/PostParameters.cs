@@ -1,20 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
-
 using WrenUtils;
 using Crest;
 
 
-[CreateAssetMenu(fileName = "PostParameters", menuName = "PostParameters", order = 1)]
+[CreateAssetMenu( fileName = "PostParameters" , menuName = "PostParameters" , order = 1 )]
 public class PostParameters : ScriptableObject
 {
-
-
-
     public bool mainPost;
     public bool bloom;
     public bool colorGrading;
@@ -28,14 +23,13 @@ public class PostParameters : ScriptableObject
     public bool ambientOcclusion;
     public bool spaterPost;
     public bool astigma;
+    public bool sketchEffect;
+    public bool dithered;
 
-    
 
-
-
-    [Header("Main Post Settings")]
-
+    [Header( "Main Post Settings" )]
     public float mainHue;
+
     public float mainSaturation;
     public float mainLightness;
     public float mainBlend;
@@ -44,72 +38,69 @@ public class PostParameters : ScriptableObject
     public Texture2D biomeMap;
 
 
-
-    [Header("Bloom Settings")]
+    [Header( "Bloom Settings" )]
     public float bloomIntensity;
+
     public float bloomThreshold;
     public float bloomDirtIntensity;
 
 
-    [Header("Color Grading Settings")]
+    [Header( "Color Grading Settings" )]
     public Color colorFilter;
+
     public float hueShift;
     public float contrast;
     public float postExposure;
-    
 
 
-
-
-
-    [Header("Vignette Settings")]
+    [Header( "Vignette Settings" )]
     public float vignetteIntensity;
+
     public float vignetteSmoothness;
     public float vignetteRoundness;
     public Color vignetteColor;
-    public bool vignetteRounded;
+    public bool  vignetteRounded;
 
 
-
-
-
-
-    [Header("Lens Distortion Settings")]
+    [Header( "Lens Distortion Settings" )]
     public float lensDistortionIntensity;
+
     public float lensDistortionScale;
 
-    [Header("Chromatic Aberration Settings")]
+    [Header( "Chromatic Aberration Settings" )]
     public float chromaticAberrationIntensity;
 
 
+    [Header( "Fog Settings" )]
+    public float fogIntensity = 1;
 
-    [Header("Fog Settings")]
-    public float fogIntensity=1;
-    public float fogHeightPower=1;
-    public float fogHeightMultiplier=30;
+    public float fogHeightPower      = 1;
+    public float fogHeightMultiplier = 30;
 
-    public int fogSteps = 50;
-    public float fogStepSize= 10;
-    public float maxFog = 1;
-    public Color fogNear = Color.white;
-    public Color fogFar = Color.white;
-    public Color fogDistant = Color.white;
+    public int   fogSteps       = 50;
+    public float fogStepSize    = 10;
+    public float maxFog         = 1;
+    public Color fogNear        = Color.white;
+    public Color fogFar         = Color.white;
+    public Color fogDistant     = Color.white;
     public float fogOceanHeight = 1;
 
     public float fogDensityNear = 1;
-    public float fogDensityFar = 1;
+    public float fogDensityFar  = 1;
 
     public float fogLightColorImportance = 1;
 
-    [Header("Depth Of Field Settings")]
+    [Header( "Depth Of Field Settings" )]
     public float depthOfFieldAperture;
+
     public float depthOfFieldFocalLength;
     public float depthOfFieldFocusDistance;
-    public bool focusOnWren;
+    public bool  focusOnWren;
 
 
-    [Header("Glitch Settings")]
+    [Header( "Glitch Settings" )]
     public float glitchIntensity;
+
     public float glitchBlend;
     public float glitchSize;
     public float glitchAmount;
@@ -117,11 +108,10 @@ public class PostParameters : ScriptableObject
     public float glitchSplit;
 
 
-
-
-    [Header("Splat Settings")]
+    [Header( "Splat Settings" )]
     public bool renderBackground;
-    public int splatAmount;
+
+    public int   splatAmount;
     public float splatSize;
 
     public float splatSpeed;
@@ -136,18 +126,32 @@ public class PostParameters : ScriptableObject
     public float splatColorMultiplier;
 
 
-
-    [Header("Ambient Occlusion Settings")]
+    [Header( "Ambient Occlusion Settings" )]
     public float ambientOcclusionIntensity;
+
     public Color ambientOcclusionColor;
 
 
-
-    [Header("Spater Post Settings")]
+    [Header( "Spater Post Settings" )]
     public float spaterPostFade;
 
-    [Header("Astigma Settings")]
+    public Texture2D spaterFrameTexture;
+    public Texture2D spaterFrameNoiseTexture;
+    public Color     spaterFrameColor;
+    public float     spaterFrameNoiseScale;
+    public float     spaterFrameNoiseChangeSpeed;
+    public float     spaterFrameNoiseWeight;
+    public float     spaterOverallMultiplier;
+    public float     spaterAudioPower;
+    public float     spaterAudioBase;
+    public float     spaterAudioDistort;
+    public float     spaterAudioLookupSize;
+    public float     spaterFrameNoiseRotation;
+
+
+    [Header( "Astigma Settings" )]
     public float astigmaIntensity;
+
     public float astigmaScale;
     public float astigmaCutoff;
     public float astimgaAngle;
@@ -155,19 +159,37 @@ public class PostParameters : ScriptableObject
     public float astigmaNumDirections;
 
 
+    [Header( "Sketch Settings" )]
+    public float sketchIntensity;
+
+    public float     sketchScale;
+    public float     sketchChangeSpeed;
+    public Texture2D sketchTexture;
+
+    [Header( "Dither Settings" )]
+    public float ditherIntensity;
+
+    public int       ditherPixelScale;
+    public Texture2D ditherPattern;
+    public Texture3D ditherPrimary;
+    public Texture3D ditherSecondary;
+    public float     ditherNoiseIntensity;
+
     public void SetValues(
-        MainPost mainPost_Reference,
-        Bloom bloom_Reference,
-        ColorGrading colorGrading_Reference,
-        Vignette vignette_Reference,
-        LensDistortion lensDistortion_Reference,
-        ChromaticAberration chromaticAberration_Reference,
-        FogEffect fogEffect_Reference,
-        DepthOfField depthOfField_Reference,
-        GlitchEffect glitchEffect_Reference,
-        AmbientOcclusion ambientOcclusion_Reference,
-        SpaterPostSettings spaterPost_Reference,
-        Astigma astigma_Reference,
+        MainPost mainPost_Reference ,
+        Bloom bloom_Reference ,
+        ColorGrading colorGrading_Reference ,
+        Vignette vignette_Reference ,
+        LensDistortion lensDistortion_Reference ,
+        ChromaticAberration chromaticAberration_Reference ,
+        FogEffect fogEffect_Reference ,
+        DepthOfField depthOfField_Reference ,
+        GlitchEffect glitchEffect_Reference ,
+        AmbientOcclusion ambientOcclusion_Reference ,
+        SpaterPostSettings spaterPost_Reference ,
+        Astigma astigma_Reference ,
+        SketchEffect sketchEffect_Reference ,
+        QuickDither.Dithered dither_Reference ,
         PlaceParticlesOnDepthMap placeParticlesOnDepthMap
     )
     {
@@ -180,21 +202,20 @@ public class PostParameters : ScriptableObject
                 }*/
 
 
-
-        mainPost_Reference.enabled.Override(mainPost);
-        bloom_Reference.enabled.Override(bloom);
-        colorGrading_Reference.enabled.Override(colorGrading);
-        vignette_Reference.enabled.Override(vignette);
-        lensDistortion_Reference.enabled.Override(lensDistortion);
-        chromaticAberration_Reference.enabled.Override(chromaticAberration);
-        fogEffect_Reference.enabled.Override(fogEffect);
-        depthOfField_Reference.enabled.Override(depthOfField);
-        glitchEffect_Reference.enabled.Override(glitchEffect);
-        ambientOcclusion_Reference.enabled.Override(ambientOcclusion);
-        spaterPost_Reference.enabled.Override(spaterPost);
-        astigma_Reference.enabled.Override(astigma);
-
-
+        mainPost_Reference.enabled.Override( mainPost );
+        bloom_Reference.enabled.Override( bloom );
+        colorGrading_Reference.enabled.Override( colorGrading );
+        vignette_Reference.enabled.Override( vignette );
+        lensDistortion_Reference.enabled.Override( lensDistortion );
+        chromaticAberration_Reference.enabled.Override( chromaticAberration );
+        fogEffect_Reference.enabled.Override( fogEffect );
+        depthOfField_Reference.enabled.Override( depthOfField );
+        glitchEffect_Reference.enabled.Override( glitchEffect );
+        ambientOcclusion_Reference.enabled.Override( ambientOcclusion );
+        spaterPost_Reference.enabled.Override( spaterPost );
+        astigma_Reference.enabled.Override( astigma );
+        sketchEffect_Reference.enabled.Override( sketchEffect );
+        dither_Reference.enabled.Override( dithered );
 
 
         ambientOcclusion_Reference.intensity.value = ambientOcclusionIntensity;
@@ -208,9 +229,8 @@ public class PostParameters : ScriptableObject
         mainPost_Reference._Blend.value = mainBlend;
         mainPost_Reference._Fade.value = mainFade;
 
-        if (God.wren != null && focusOnWren)
-        {
-            depthOfFieldFocusDistance = Vector3.Distance(God.wren.transform.position, God.camera.transform.position);
+        if ( God.wren != null && focusOnWren ) {
+            depthOfFieldFocusDistance = Vector3.Distance( God.wren.transform.position , God.camera.transform.position );
         }
 
         // todo if we are focusing on something else make that be the focus object ( even better make them both be in focus)
@@ -272,14 +292,40 @@ public class PostParameters : ScriptableObject
         glitchEffect_Reference.speed.value = glitchSpeed;
         glitchEffect_Reference.split.value = glitchSplit;
 
+        Debug.Log( spaterFrameTexture );
         spaterPost_Reference.fade.value = spaterPostFade;
+        spaterPost_Reference.frameTex.value = spaterFrameTexture;
+        spaterPost_Reference.frameNoiseTex.value = spaterFrameNoiseTexture;
+        spaterPost_Reference.frameNoiseScale.value = spaterFrameNoiseScale;
+        spaterPost_Reference.frameNoiseSpeed.value = spaterFrameNoiseChangeSpeed;
+        spaterPost_Reference.color.value = spaterFrameColor;
+        spaterPost_Reference.frameNoiseWeight.value = spaterFrameNoiseWeight;
+        spaterPost_Reference.overallMultiplier.value = spaterOverallMultiplier;
+        spaterPost_Reference.audioPower.value = spaterAudioPower;
+        spaterPost_Reference.audioBase.value = spaterAudioBase;
+        spaterPost_Reference.audioDistort.value = spaterAudioDistort;
+        spaterPost_Reference.audioLookupSize.value = spaterAudioLookupSize;
+        spaterPost_Reference.frameNoiseRotation.value = spaterFrameNoiseRotation;
 
-        if( splatAmount<1 )
-        {
+
+        sketchEffect_Reference.paintMap.value = sketchTexture;
+        sketchEffect_Reference.intensity.value = sketchIntensity;
+        sketchEffect_Reference.scale.value = sketchScale;
+        sketchEffect_Reference.changeSpeed.value = sketchChangeSpeed;
+
+        dither_Reference.intensity.value = ditherIntensity;
+        dither_Reference.pixelScale.value = ditherPixelScale;
+        dither_Reference.pattern.value = ditherPattern;
+        dither_Reference.primary.value = ditherPrimary;
+        dither_Reference.secondary.value = ditherSecondary;
+        dither_Reference.noiseIntensity.value = ditherNoiseIntensity;
+
+
+        if ( splatAmount < 1 ) {
             splatAmount = 1;
         }
-        if( splatAmount != placeParticlesOnDepthMap.splatAmount )
-        {
+
+        if ( splatAmount != placeParticlesOnDepthMap.splatAmount ) {
             placeParticlesOnDepthMap.splatAmount = splatAmount;
             placeParticlesOnDepthMap.Reset();
         }
@@ -299,34 +345,30 @@ public class PostParameters : ScriptableObject
         placeParticlesOnDepthMap.colorMultiplier = splatColorMultiplier;
 
 
-
     }
 
 
-
-
-    Vector2 CartToPolar(Vector3 position)
+    private Vector2 CartToPolar( Vector3 position )
     {
 
-        float angle = Mathf.Atan2(position.x, position.z);
-        float radius = (new Vector2(position.x, position.z)).magnitude;
+        float angle = Mathf.Atan2( position.x , position.z );
+        float radius = new Vector2( position.x , position.z ).magnitude;
 
 
         float x = (position.x + 2048) / 4096;
         float y = (position.z + 2048) / 4096;
 
-        Color c = biomeMap.GetPixelBilinear(x, y, 0);
+        var c = biomeMap.GetPixelBilinear( x , y , 0 );
 
         //        print( c.a);
 
 
-        float h, s, v;
+        float h , s , v;
 
-        Color.RGBToHSV(c, out h, out s, out v);
+        Color.RGBToHSV( c , out h , out s , out v );
 
         mainHue = h;
         mainBlend = c.a;
-
 
 
         /* angle = (angle > 0 ? angle : (2*Mathf.PI + angle));
@@ -339,11 +381,11 @@ public class PostParameters : ScriptableObject
 
          print( _Hue );*/
 
-        return new Vector2(angle, radius);
+        return new Vector2( angle , radius );
 
     }
 
-    public void CopyTo(PostParameters p)
+    public void CopyTo( PostParameters p )
     {
 
         //print(p);
@@ -360,6 +402,8 @@ public class PostParameters : ScriptableObject
         p.ambientOcclusion = ambientOcclusion;
         p.spaterPost = spaterPost;
         p.astigma = astigma;
+        p.sketchEffect = sketchEffect;
+        p.dithered = dithered;
 
         p.mainHue = mainHue;
         p.mainSaturation = mainSaturation;
@@ -401,8 +445,6 @@ public class PostParameters : ScriptableObject
         p.fogLightColorImportance = fogLightColorImportance;
 
 
-
-
         p.depthOfFieldAperture = depthOfFieldAperture;
         p.depthOfFieldFocalLength = depthOfFieldFocalLength;
         p.depthOfFieldFocusDistance = depthOfFieldFocusDistance;
@@ -434,6 +476,19 @@ public class PostParameters : ScriptableObject
         p.ambientOcclusionColor = ambientOcclusionColor;
 
         p.spaterPostFade = spaterPostFade;
+        p.spaterFrameTexture = spaterFrameTexture;
+        p.spaterFrameNoiseTexture = spaterFrameNoiseTexture;
+        p.spaterFrameColor = spaterFrameColor;
+        p.spaterFrameNoiseScale = spaterFrameNoiseScale;
+        p.spaterFrameNoiseChangeSpeed = spaterFrameNoiseChangeSpeed;
+        p.spaterOverallMultiplier = spaterOverallMultiplier;
+        p.spaterFrameNoiseWeight = spaterFrameNoiseWeight;
+        p.spaterAudioPower = spaterAudioPower;
+        p.spaterAudioBase = spaterAudioBase;
+        p.spaterAudioDistort = spaterAudioDistort;
+        p.spaterAudioLookupSize = spaterAudioLookupSize;
+        p.spaterFrameNoiseRotation = spaterFrameNoiseRotation;
+
 
         p.astigmaIntensity = astigmaIntensity;
         p.astigmaScale = astigmaScale;
@@ -442,6 +497,17 @@ public class PostParameters : ScriptableObject
         p.astigmaNumSamples = astigmaNumSamples;
         p.astigmaNumDirections = astigmaNumDirections;
 
+        p.sketchIntensity = sketchIntensity;
+        p.sketchScale = sketchScale;
+        p.sketchChangeSpeed = sketchChangeSpeed;
+        p.sketchTexture = sketchTexture;
+
+        p.ditherIntensity = ditherIntensity;
+        p.ditherPixelScale = ditherPixelScale;
+        p.ditherPattern = ditherPattern;
+        p.ditherPrimary = ditherPrimary;
+        p.ditherSecondary = ditherSecondary;
+        p.ditherNoiseIntensity = ditherNoiseIntensity;
 
 
     }
@@ -451,8 +517,6 @@ public class PostParameters : ScriptableObject
     {
 //        Debug.Log("HIII");
 
-        God.postController.OnPostParametersValidate(this);
+        God.postController.OnPostParametersValidate( this );
     }
-
-
 }

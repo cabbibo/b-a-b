@@ -11,6 +11,12 @@ public sealed class SketchEffect : PostProcessEffectSettings
     [Tooltip( "size" )]
     public FloatParameter intensity = new() { value = 0.5f };
 
+    [Range( 0f , 1f )]
+    public FloatParameter scale = new() { value = 0.5f };
+
+    [Range( 0f , 1f )]
+    public FloatParameter changeSpeed = new() { value = 0.1f };
+
     [Tooltip( "The height map" )]
     public TextureParameter heightMap = new() { value = null };
 
@@ -33,23 +39,6 @@ public sealed class SketchEffect : PostProcessEffectSettings
     public Vector4Parameter inverseProjection4 = new() { value = Vector4.zero };
 
 
-    public FloatParameter _FogMultiplier       = new() { value = 1f };
-    public FloatParameter _FogHeightMultiplier = new() { value = 0.001f };
-    public FloatParameter _FogHeightPower      = new() { value = 1f };
-    public FloatParameter _FogDensityAtFar     = new() { value = 1f };
-    public FloatParameter _FogDensityAtNear    = new() { value = 0f };
-    public FloatParameter _FogStepSize         = new() { value = 80f };
-    public FloatParameter _MaxFogTotal         = new() { value = 1f };
-
-    public FloatParameter _LightColorImportance = new() { value = 1f };
-    public IntParameter   _FogSamples           = new() { value = 50 };
-
-    public FloatParameter _OceanHeight = new() { value = 240f };
-
-    public ColorParameter _FogColorNear    = new() { value = Color.white };
-    public ColorParameter _FogColorFar     = new() { value = Color.white };
-    public ColorParameter _FogColorDistant = new() { value = Color.white };
-
     // Only use if the blend value is greater than 1
     public override bool IsEnabledAndSupported( PostProcessRenderContext context )
     {
@@ -68,18 +57,9 @@ public sealed class SketchPostRenderer : PostProcessEffectRenderer<SketchEffect>
 
         var sheet = context.propertySheets.Get( Shader.Find( "PostProcessing/SketchEffect" ) );
 
-
-        sheet.properties.SetFloat( "_Intensity" , settings.intensity );
-
-
-        // Debug.Log(context.camera.transform.position);
-        //  Debug.Log(context.camera.projectionMatrix.inverse);
-        //  Debug.Log(context.camera.cameraToWorldMatrix.inverse);
-
         var projectionInverse = GL.GetGPUProjectionMatrix( context.camera.projectionMatrix , false ).inverse;
         //Matrix4x4 projectionInverse = context.camera.projectionMatrix.inverse;
         var viewInverse = context.camera.cameraToWorldMatrix;
-
 
         var inverseViewProjection = projectionInverse * viewInverse;
 
@@ -87,24 +67,14 @@ public sealed class SketchPostRenderer : PostProcessEffectRenderer<SketchEffect>
         sheet.properties.SetTexture( "_PaintMap" , settings.paintMap );
         sheet.properties.SetVector( "_MapSize" , settings.mapSize );
 
+        sheet.properties.SetFloat( "_Intensity" , settings.intensity.value );
+        sheet.properties.SetFloat( "_Scale" , settings.scale.value );
+        sheet.properties.SetFloat( "_ChangeSpeed" , settings.changeSpeed.value );
+
 
         sheet.properties.SetMatrix( "_InverseProjection" , projectionInverse );
         sheet.properties.SetMatrix( "_InverseView" , viewInverse );
         sheet.properties.SetMatrix( "_InverseViewProjection" , inverseViewProjection );
-
-        sheet.properties.SetFloat( "_FogMultiplier" , settings._FogMultiplier );
-        sheet.properties.SetFloat( "_FogHeightMultiplier" , settings._FogHeightMultiplier );
-        sheet.properties.SetFloat( "_FogHeightPower" , settings._FogHeightPower );
-        sheet.properties.SetFloat( "_FogDensityAtFar" , settings._FogDensityAtFar );
-        sheet.properties.SetFloat( "_FogDensityAtNear" , settings._FogDensityAtNear );
-        sheet.properties.SetFloat( "_FogStepSize" , settings._FogStepSize );
-        sheet.properties.SetFloat( "_MaxFogTotal" , settings._MaxFogTotal );
-        sheet.properties.SetInt( "_FogSamples" , settings._FogSamples );
-        sheet.properties.SetColor( "_FogColorNear" , settings._FogColorNear );
-        sheet.properties.SetColor( "_FogColorFar" , settings._FogColorFar );
-        sheet.properties.SetColor( "_FogColorDistant" , settings._FogColorDistant );
-        sheet.properties.SetFloat( "_OceanHeight" , settings._OceanHeight );
-        sheet.properties.SetFloat( "_LightColorImportance" , settings._LightColorImportance );
 
         context.command.BlitFullscreenTriangle( context.source , context.destination , sheet , 0 );
     }

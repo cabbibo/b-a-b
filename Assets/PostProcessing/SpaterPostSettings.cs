@@ -19,6 +19,11 @@ namespace UnityEngine.Rendering.PostProcessing
         public TextureParameter frameTex      = new() { value = null };
         public TextureParameter frameNoiseTex = new() { value = null };
 
+        public FloatParameter frameNoiseScale    = new() { value = 1f };
+        public FloatParameter frameNoiseSpeed    = new() { value = 1f };
+        public FloatParameter frameNoiseWeight   = new() { value = 1f };
+        public FloatParameter frameNoiseRotation = new() { value = 1f };
+
         public FloatParameter frameUpper = new() { value = 1f };
         public FloatParameter frameLower = new() { value = 0f };
 
@@ -50,9 +55,13 @@ namespace UnityEngine.Rendering.PostProcessing
             sheet.properties.SetFloat( "_FrameLower" , settings.frameLower );
             sheet.properties.SetVector( "_CenterOffset" , settings.centerOffset );
             sheet.properties.SetColor( "_Color" , settings.color );
+            sheet.properties.SetFloat( "_FrameNoiseWeight" , settings.frameNoiseWeight );
             sheet.properties.SetFloat( "_Desaturate" , settings.desaturate );
             sheet.properties.SetTexture( "_FrameTex" , settings.frameTex );
             sheet.properties.SetTexture( "_FrameNoiseTex" , settings.frameNoiseTex );
+            sheet.properties.SetFloat( "_FrameNoiseScale" , settings.frameNoiseScale );
+            sheet.properties.SetFloat( "_FrameNoiseSpeed" , settings.frameNoiseSpeed );
+            sheet.properties.SetFloat( "_FrameNoiseRotation" , settings.frameNoiseRotation );
             sheet.properties.SetFloat( "_OverallMultiplier" , settings.overallMultiplier );
             context.command.BlitFullscreenTriangle( context.source , context.destination , sheet , 0 );
         }

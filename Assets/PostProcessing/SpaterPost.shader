@@ -3,6 +3,8 @@ Shader "Hidden/Custom/SpaterPost"
     HLSLINCLUDE
     #include "Packages/com.unity.postprocessing/PostProcessing/Shaders/StdLib.hlsl"
 
+    #include "Assets/Resources/Shaders/Chunks/rotateUV.cginc"
+
     TEXTURE2D_SAMPLER2D( _MainTex , sampler_MainTex );
     TEXTURE2D_SAMPLER2D( _FrameTex , sampler_FrameTex );
     TEXTURE2D_SAMPLER2D( _FrameNoiseTex , sampler_FrameNoiseTex );
@@ -88,6 +90,10 @@ Shader "Hidden/Custom/SpaterPost"
     }
 
     float _OverallMultiplier;
+    float _FrameNoiseSpeed;
+    float _FrameNoiseScale;
+    float _FrameNoiseWeight;
+    float _FrameNoiseRotation;
 
     float4 Frag( VaryingsDefault i ) : SV_Target
     {
@@ -96,13 +102,14 @@ Shader "Hidden/Custom/SpaterPost"
 
         float frameVal = SAMPLE_TEXTURE2D( _FrameTex , sampler_FrameTex , i.texcoord ).x;
 
-        float4 fullPaintVal = SAMPLE_TEXTURE2D( _FrameNoiseTex , sampler_FrameNoiseTex , i.texcoord * 5+ floor(_Time.y *3) * .1 );
-        frameVal += fullPaintVal.x * .4;
-        frameVal += fullPaintVal.y * .4;
+        float4 fullPaintVal = SAMPLE_TEXTURE2D( _FrameNoiseTex , sampler_FrameNoiseTex , rotateUV( i.texcoord * _FrameNoiseScale + sin( floor(_Time.y *_FrameNoiseSpeed) ) , _FrameNoiseRotation) );
+        frameVal += fullPaintVal.x * _FrameNoiseWeight;
+        frameVal += fullPaintVal.y * _FrameNoiseWeight;
 
         frameVal = frameVal * 1;
         frameVal = saturate( frameVal );
         //frameVal = 1-frameVal;
+
 
         float2 dir = float2(
             SAMPLE_TEXTURE2D( _FrameTex , sampler_FrameTex , i.texcoord + float2(.01 , 0 ) ).x - SAMPLE_TEXTURE2D( _FrameTex , sampler_FrameTex , i.texcoord - float2(.01 , 0 ) ).x ,
@@ -157,9 +164,9 @@ Shader "Hidden/Custom/SpaterPost"
 
         float3 tCol = color.rgb;
 
-        color.rgb = lerp( color.rgb , color.rgb * _Color.xyz * 2 , _Fade );
+        //color.rgb = lerp( color.rgb , color.rgb * _Color.xyz * 2 , _Fade );
 
-        color.rgb *= _AudioBase + _AudioPower * aCol.xyz * _Color.xyz * ( 1 - frameVal ); //lookup * lookup*lookup * lookup*10;// * (1-frameVal);
+        // color.rgb *= _AudioBase + _AudioPower * aCol.xyz * _Color.xyz * ( 1 - frameVal ); //lookup * lookup*lookup * lookup*10;// * (1-frameVal);
         color.rgb *= 1;
 
 
@@ -169,6 +176,7 @@ Shader "Hidden/Custom/SpaterPost"
 
 
         color.rgb = lerp( color.rgb , _Color , pow( 1 - saturate( frameVal * 1 - 0 ) , 4 ) );
+
 
         //    color.rgb = aCol;
 

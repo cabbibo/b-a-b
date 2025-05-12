@@ -123,6 +123,7 @@
     #include "Assets/Resources/Shaders/Chunks/snoise.cginc"
     #include "Assets/Resources/Shaders/Chunks/noise.cginc"
     #include "Assets/Resources/Shaders/Chunks/triNoise3D.cginc"
+    #include "Assets/Resources/Shaders/Chunks/rotateUV.cginc"
 
     struct AttributesDefault
     {
@@ -175,13 +176,13 @@
 
     float3 GetNormal( float2 uv )
     {
-        float  eps = .001;
+        float  eps = .0006;
         float3 nl  = GetWorldPos( uv + float2( eps , 0 ) );
         float3 nr  = GetWorldPos( uv - float2( eps , 0 ) );
         float3 nt  = GetWorldPos( uv + float2( 0 , eps ) );
         float3 nb  = GetWorldPos( uv - float2( 0 , eps ) );
 
-        float3 n = cross( ( nr - nl ) * 1000 , ( nt - nb ) * 1000 ) * 10000;
+        float3 n = cross( ( nr - nl ) * 1 , ( nt - nb ) * 1 ) * 10;
 
         return normalize( n );
     }
@@ -198,19 +199,6 @@
         float3 blur   = ( center * 3 + left + right + up + down ) / 7;
 
         return blur;
-
-    }
-
-
-    float2 rotateUV( float amount , float2 uv )
-    {
-        float    sinX           = sin( amount );
-        float    cosX           = cos( amount );
-        float    sinY           = sin( amount );
-        float2x2 rotationMatrix = float2x2( cosX , -sinX , sinY , cosX );
-
-        return mul( rotationMatrix , uv );;
-
 
     }
 
@@ -270,7 +258,7 @@
         color       = saturate( abs( delta ) * .1 );
         color.xyz *= bgCol;
 
-        color.xyz = GetNormal( v.texcoord + offsetPaint * .01 * distance * .0001 );
+        color.xyz = GetNormal( v.texcoord );
 
         float x = dot( GetNormal( v.texcoord ) , float3( 1 , 0 , 0 ) );
         float y = worldPos.y;
@@ -278,15 +266,31 @@
         float3 pos = GetWorldPos( v.texcoord );
         float3 nor = GetNormal( v.texcoord );
 
-        float offsetVal = tex2D( _PaintMap , rotateUV( pos.y * .001 , pos.xz * .001 + 100 * sin( floor( _Time.y * 3 ) ) ) ).b;
+        float offsetVal = tex2D( _PaintMap , rotateUV( pos.xz * .001 + 100 * sin( floor( _Time.y * 3 ) ) , pos.y * .001 ) ).b;
+
+        offsetVal = tex2D( _PaintMap , rotateUV( v.texcoord * 4 + .8 + floor( _Time.y * 1 ) , .5 ) ).b;
+        offsetVal += tex2D( _PaintMap , rotateUV( v.texcoord * 5 + .3 + floor( _Time.y * 1 ) , .7 ) ).g;
+        //  offsetVal += tex2D( _PaintMap , rotateUV( v.texcoord * 5 + .3 + floor( _Time.y * 4 ) , -.5 ) ).g;
 
 
-        float2 offsetUV = rotateUV( ( offsetVal - .5 ) * .03 , v.texcoord );
+        float2 offsetUV = rotateUV( v.texcoord , offsetVal * .1 );
 
+        color.r = tex2D( _MainTex , v.texcoord + offsetVal * ( .000 + .002 ) ).r;
+        color.g = tex2D( _MainTex , v.texcoord + offsetVal * ( .000 + .003 ) ).g;
+        color.b = tex2D( _MainTex , v.texcoord + offsetVal * ( .000 + .004 ) ).b;
+        color += color * ( offsetVal * .2 + .8 );
+        // color += ( offsetVal * .3 + .8 ) * color;
 
-        color.xyz = tex2D( _MainTex , offsetUV ).xyz;
+        float fade = abs( v.texcoord.x - .5 ) * 2;
+        fade       = saturate( ( fade - .9 ) * 10 + offsetVal );;
+        fade       = max( fade , saturate( ( abs( v.texcoord.y - .5 ) * 2 - .9 ) * 10 + offsetVal ) );;
+        // color      = fade;
 
-        color.xyz *= 1 + ( offsetVal - .5 ) * .1;
+        color = lerp( color , 1 , fade );
+
+        //  color.xyz = tex2D( _MainTex , offsetUV ).xyz;
+
+        // color.xyz *= 1 + ( offsetVal - .5 ) * .1;
         float d1 = distance;
         float d2 = LinearEyeDepth( tex2D( _CameraDepthTexture , offsetUV ).r );
 

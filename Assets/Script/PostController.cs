@@ -72,6 +72,8 @@ public class PostController : MonoBehaviour
     public SpaterPostSettings spaterPost_Reference;
     public Astigma            astigma_Reference;
 
+    public SketchEffect         sketchEffect_Reference;
+    public QuickDither.Dithered dithered_Reference;
 
     // other controllers
     public CustomFog          customFog;
@@ -97,6 +99,8 @@ public class PostController : MonoBehaviour
         volume.profile.TryGetSettings( out ambientOcclusion_Reference );
         volume.profile.TryGetSettings( out spaterPost_Reference );
         volume.profile.TryGetSettings( out astigma_Reference );
+        volume.profile.TryGetSettings( out sketchEffect_Reference );
+        volume.profile.TryGetSettings( out dithered_Reference );
 
 
     }
@@ -125,6 +129,8 @@ public class PostController : MonoBehaviour
             ambientOcclusion_Reference ,
             spaterPost_Reference ,
             astigma_Reference ,
+            sketchEffect_Reference ,
+            dithered_Reference ,
             placeParticlesOnDepthMap
         );
 
