@@ -113,14 +113,15 @@
             float3 hsv( float h , float s , float v )
             {
                 return lerp( float3( 1.0 , 1 , 1 ) , clamp( ( abs( frac(
-                                                    h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ) , 0.0 , 1.0 ) , s ) * v;
+            h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ) , 0.0 , 1.0 ) , s ) * v;
             }
 
 
             float     _MapScale;
             float     _Fade;
             sampler2D _MainTex;
-            #include "../Chunks/noise.cginc"
+            #include "Assets/Resources/Shaders/Chunks/noise.cginc"
+            #include "Assets/Resources/Shaders/Chunks/generic_desaturate.cginc"
 
             float2 GetXYCoordsInPlane( float3 p1 , float3 v1 , float3 up )
             {
@@ -144,9 +145,9 @@
                 float oc = 1.0 - c;
 
                 return float4x4( oc * axis.x * axis.x + c , oc * axis.x * axis.y - axis.z * s , oc * axis.z * axis.x + axis.y * s , 0.0 ,
-                                         oc * axis.x * axis.y + axis.z * s , oc * axis.y * axis.y + c , oc * axis.y * axis.z - axis.x * s , 0.0 ,
-                                         oc * axis.z * axis.x - axis.y * s , oc * axis.y * axis.z + axis.x * s , oc * axis.z * axis.z + c , 0.0 ,
-                                         0.0 , 0.0 , 0.0 , 1.0 );
+              oc * axis.x * axis.y + axis.z * s , oc * axis.y * axis.y + c , oc * axis.y * axis.z - axis.x * s , 0.0 ,
+              oc * axis.z * axis.x - axis.y * s , oc * axis.y * axis.z + axis.x * s , oc * axis.z * axis.z + c , 0.0 ,
+              0.0 , 0.0 , 0.0 , 1.0 );
             }
 
             //Pixel function returns a solid color for each point.
@@ -274,13 +275,24 @@
                 col *= col;
                 col *= _Fade;
 
-                col += pow( texCUBE( _CubeMap , rd ).xyz , 1 ).x * pow( abs( rd.y ) , 2 ) * 2; //* 1;
+                float offset = tex2D( _MainTex , float2( rd.y * .1 , ( atan2( rd.x , rd.z ) + 3.14 ) / 6.28 ) * 10 );
+                offset += tex2D( _MainTex , float2( rd.y * .1 , ( atan2( rd.x , rd.z ) + 3.14 ) / 6.28 ) * 20 ) * .8;
+                offset += tex2D( _MainTex , float2( rd.y * .1 , ( atan2( rd.x , rd.z ) + 3.14 ) / 6.28 ) * 30 ) * .4;
+
+                // offset += tex2D( _MainTex , float2( rd.y , atan2( rd.x , rd.z ) / 6.28 ) * .2 );
+                //offset += tex2D( _MainTex , float2( rd.y , atan2( rd.x , rd.z ) / 6.28 ) * 1.3 );
+
+                float3 cubeCol = texCUBE( _CubeMap , rd + float3( offset * .1 , 0 , offset * .1 ) ).xyz;
+                col            = 10 * pow( cubeCol , 2 ) * ( saturate( pow( saturate( rd.y ) , 2 ) ) + .1 ); //* 1;
+                col            = generic_desaturate( col , 0.1 );
+                //  col            = offset;
+                col = lerp( col * ( offset + 1 ) , col , rd.y * rd.y );
 
                 //col *= 10;
-                col = saturate( col );
+                //col = saturate( col );
 
 
-                col = pow( texCUBE( _CubeMap , rd ).xyz , 1 );
+                //col = pow( texCUBE( _CubeMap , rd ).xyz , 1 );
 
                 //col += pow( dot( -_LightDir,rd) ,100)* 10;
 

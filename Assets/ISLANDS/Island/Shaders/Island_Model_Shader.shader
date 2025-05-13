@@ -3,6 +3,8 @@ Shader "Islands/Island/Model"
     Properties
     {
 
+        _HighLightColor("HighLightColor", Color) = (1,1,1,1)
+        _LowLightColor("LowLightColor", Color) = (0,0,0,1)
         _Color ("Color", Color) = (1,1,1,1)
         _BackfaceColor("BackfaceColor", Color )= (1,1,1,1)
         _Size ("Size", float) = .01
@@ -37,6 +39,7 @@ Shader "Islands/Island/Model"
 
 
         _StencilMask ("Stencil Mask", Int) = 9
+
 
 
 

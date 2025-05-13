@@ -2,7 +2,12 @@ fileFormatVersion: 2
 guid: 3998bfc326e75074aafb201bb17017e4
 ShaderImporter:
   externalObjects: {}
-  defaultTextures: []
+  defaultTextures:
+  - _PainterlyMap: {instanceID: 0}
+  - _Normals: {instanceID: 0}
+  - _ReflectionCubemapOverride: {instanceID: 0}
+  - _FoamTexture: {instanceID: 0}
+  - _CausticsTexture: {instanceID: 0}
   nonModifiableTextures: []
   userData: 
   assetBundleName: 

@@ -28,7 +28,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: 
+  m_LockedProperties: _SubSurfaceShallowCol
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -73,7 +73,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Normals:
-        m_Texture: {fileID: 2800000, guid: abaa3d4f433df074389559003412235d, type: 3}
+        m_Texture: {fileID: 2800000, guid: d39a1b9e5d5c7b9499f579fa5c70a2a3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -126,9 +126,9 @@ Material:
     - _DebugDisableSmoothLOD: 0
     - _DebugVisualise: 0
     - _DetailNormalMapScale: 1
-    - _DirectionalLightBoost: 7
-    - _DirectionalLightFallOff: 275
-    - _DirectionalLightFallOffFar: 42
+    - _DirectionalLightBoost: 399
+    - _DirectionalLightFallOff: 1474
+    - _DirectionalLightFallOffFar: 1
     - _DirectionalLightFarDistance: 137
     - _DirectionalLightVaryRoughness: 0
     - _DstBlend: 0
@@ -136,20 +136,21 @@ Material:
     - _Flow: 0
     - _Foam: 1
     - _Foam3DLighting: 1
-    - _FoamBubbleParallax: 0.14
-    - _FoamScale: 4.4
+    - _FoamBubbleParallax: 0.5
+    - _FoamScale: 6
     - _FresnelPower: 5
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
-    - _NormalsScale: 121.2
-    - _NormalsStrength: 0.702
-    - _NormalsStrengthOverall: 1
+    - _NormalsScale: 41.4
+    - _NormalsStrength: 0.624
+    - _NormalsStrengthOverall: 0.466
     - _OcclusionStrength: 1
     - _OutlineAmount: 1.46
-    - _OverallMultiplier: 0.3
+    - _OutlineOffset: 0.13
+    - _OverallMultiplier: 1.16
     - _OverrideReflectionCubemap: 0
     - _PainterlyLightImportance: 0.92
     - _Parallax: 0.02
@@ -165,7 +166,7 @@ Material:
     - _Roughness: 0
     - _ShadowStrength: 1
     - _Shadows: 0
-    - _ShorelineFoamMinDepth: 0.27
+    - _ShorelineFoamMinDepth: 0.01
     - _Size: 0
     - _SkyDirectionality: 1
     - _SmoothnessTextureChannel: 0
@@ -185,12 +186,12 @@ Material:
     - _TriplanarSharpness: 4
     - _UVSec: 0
     - _Underwater: 0
-    - _WaveFoamBubblesCoverage: 5
-    - _WaveFoamFeather: 0.408
-    - _WaveFoamLightScale: 2
-    - _WaveFoamNormalStrength: 28.34
-    - _WaveFoamSpecularBoost: 0.15
-    - _WaveFoamSpecularFallOff: 293
+    - _WaveFoamBubblesCoverage: 1.28
+    - _WaveFoamFeather: 1
+    - _WaveFoamLightScale: 0
+    - _WaveFoamNormalStrength: 30
+    - _WaveFoamSpecularBoost: 12.14
+    - _WaveFoamSpecularFallOff: 195
     - _WindAmount: 1
     - _WindChangeSize: 1
     - _WindChangeSpeed: 5
@@ -198,6 +199,7 @@ Material:
     m_Colors:
     - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _ColorMultiplier: {r: 0.37878248, g: 0.47231814, b: 0.6037736, a: 1}
     - _DepthFogDensity: {r: 0.9, g: 0.3, b: 0.35, a: 1}
     - _Diffuse: {r: 0, g: 0.0026954073, b: 0.16981128, a: 1}
     - _DiffuseGrazing: {r: 0, g: 0.003921569, b: 0.16862735, a: 1}
@@ -206,7 +208,7 @@ Material:
     - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
     - _FoamBubbleColor: {r: 1, g: 1, b: 1, a: 1}
     - _FoamWhiteColor: {r: 1, g: 1, b: 1, a: 1}
-    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 0.17937878, g: 0.19255202, b: 0.2735849, a: 1}
     - _SkyAwayFromSun: {r: 1, g: 1, b: 1, a: 1}
     - _SkyBase: {r: 1, g: 1, b: 1, a: 1}
     - _SkyTowardsSun: {r: 1, g: 1, b: 1, a: 1}

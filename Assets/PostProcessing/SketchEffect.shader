@@ -65,19 +65,6 @@
     float3 _MapSize;
     float3 _MapOffset;
 
-
-    float  _FogMultiplier;
-    float  _FogHeightMultiplier;
-    float  _FogHeightPower;
-    float  _FogDensityAtFar;
-    float  _FogDensityAtNear;
-    float  _FogStepSize;
-    float  _MaxFogTotal;
-    float4 _FogColorNear;
-    float4 _FogColorFar;
-    float4 _FogColorDistant;
-    float  _OceanHeight;
-
     float _LightColorImportance;
     int   _FogSamples;
     #define _FogSamples 40
@@ -124,6 +111,7 @@
     #include "Assets/Resources/Shaders/Chunks/noise.cginc"
     #include "Assets/Resources/Shaders/Chunks/triNoise3D.cginc"
     #include "Assets/Resources/Shaders/Chunks/rotateUV.cginc"
+    #include "Assets/Resources/Shaders/Chunks/generic_desaturate.cginc"
 
     struct AttributesDefault
     {
@@ -202,6 +190,20 @@
 
     }
 
+    float _NoiseSpeed;
+    float _NoiseScale;
+    float _NoiseSampleRotation;
+    float _NoiseSampleRotationSize;
+    float _NoiseSampleChromaticSplit;
+    float _NoiseSampleOffset;
+
+
+    float _BorderSubtractor;
+    float _BorderMultiplier;
+    float _BorderNoiseAdder;
+
+    float4 _BorderColor;
+
 
     float4 Frag( VaryingsDefault v ) : SV_Target
     {
@@ -242,7 +244,7 @@
         // float4 worldPos          = float4( ro + rd * distance , 1 );
         float shadowAttenuation = GetSunShadowsAttenuation_PCF5x5( worldPos , 100 , -10 ).x;
 
-        float offset = _FogStepSize * staticNoise( v.texcoord + _Time.y % 1 );
+        //  float offset = _FogStepSize * staticNoise( v.texcoord + _Time.y % 1 );
 
 
         color.xyz = ( ( 1 - sVal )
@@ -266,34 +268,49 @@
         float3 pos = GetWorldPos( v.texcoord );
         float3 nor = GetNormal( v.texcoord );
 
-        float offsetVal = tex2D( _PaintMap , rotateUV( pos.xz * .001 + 100 * sin( floor( _Time.y * 3 ) ) , pos.y * .001 ) ).b;
-
-        offsetVal = tex2D( _PaintMap , rotateUV( v.texcoord * 4 + .8 + floor( _Time.y * 1 ) , .5 ) ).b;
-        offsetVal += tex2D( _PaintMap , rotateUV( v.texcoord * 5 + .3 + floor( _Time.y * 1 ) , .7 ) ).g;
-        //  offsetVal += tex2D( _PaintMap , rotateUV( v.texcoord * 5 + .3 + floor( _Time.y * 4 ) , -.5 ) ).g;
 
 
-        float2 offsetUV = rotateUV( v.texcoord , offsetVal * .1 );
+        float offsetVal;
 
-        color.r = tex2D( _MainTex , v.texcoord + offsetVal * ( .000 + .002 ) ).r;
-        color.g = tex2D( _MainTex , v.texcoord + offsetVal * ( .000 + .003 ) ).g;
-        color.b = tex2D( _MainTex , v.texcoord + offsetVal * ( .000 + .004 ) ).b;
-        color += color * ( offsetVal * .2 + .8 );
-        // color += ( offsetVal * .3 + .8 ) * color;
+        offsetVal = tex2D( _PaintMap , rotateUV( v.texcoord * _NoiseScale + .8 + floor( _Time.y * _NoiseSpeed ) , _NoiseSampleRotation ) ).b;
+        offsetVal += tex2D( _PaintMap , rotateUV( v.texcoord * _NoiseScale * 1.5 + .3 + floor( _Time.y * _NoiseSpeed ) , _NoiseSampleRotation + _NoiseSampleRotationSize ) ).g;
+
+
+
+        if ( _NoiseSampleChromaticSplit > 0 )
+        {
+            color.r = tex2D( _MainTex , v.texcoord + offsetVal * ( _NoiseSampleOffset + _NoiseSampleChromaticSplit * 0 ) ).r;
+            color.g = tex2D( _MainTex , v.texcoord + offsetVal * ( _NoiseSampleOffset + _NoiseSampleChromaticSplit * 1 ) ).g;
+            color.b = tex2D( _MainTex , v.texcoord + offsetVal * ( _NoiseSampleOffset + _NoiseSampleChromaticSplit * 2 ) ).b;
+        }
+        else
+        {
+            color = tex2D( _MainTex , v.texcoord + offsetVal * ( _NoiseSampleOffset + _NoiseSampleChromaticSplit * 0 ) );
+        }
+
+
 
         float fade = abs( v.texcoord.x - .5 ) * 2;
-        fade       = saturate( ( fade - .9 ) * 10 + offsetVal );;
-        fade       = max( fade , saturate( ( abs( v.texcoord.y - .5 ) * 2 - .9 ) * 10 + offsetVal ) );;
+        fade       = saturate( ( fade - _BorderSubtractor ) * _BorderMultiplier + offsetVal * _BorderNoiseAdder );;
+        fade       = max( fade , saturate( ( abs( v.texcoord.y - .5 ) * 2 - _BorderSubtractor ) * _BorderMultiplier + offsetVal * _BorderNoiseAdder ) );;
         // color      = fade;
 
-        color = lerp( color , 1 , fade );
+
+        //    color.xyz += ( nor ) * offsetVal * .03;
+        color = lerp( color , _BorderColor * ( color * .5 + .5 ) * 1 , fade );
+        //   color *= 2;
+        //  color -= saturate( 1 - shadowAttenuation ) * offsetVal * .1;
+        //color.xyz += ( nor ) * offsetVal * .03;
+
+
+
+
+        //color.xyz *= dotVal; //nor * .3 + .8;
+
 
         //  color.xyz = tex2D( _MainTex , offsetUV ).xyz;
 
         // color.xyz *= 1 + ( offsetVal - .5 ) * .1;
-        float d1 = distance;
-        float d2 = LinearEyeDepth( tex2D( _CameraDepthTexture , offsetUV ).r );
-
         // color.xyz -= saturate( abs( d2 - d1 ) * .01 );
         // color.xyz *= offsetVal;
 

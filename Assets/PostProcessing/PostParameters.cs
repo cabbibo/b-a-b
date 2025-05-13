@@ -48,9 +48,14 @@ public class PostParameters : ScriptableObject
     [Header( "Color Grading Settings" )]
     public Color colorFilter;
 
-    public float hueShift;
-    public float contrast;
-    public float postExposure;
+    public float   hueShift;
+    public float   saturation = 1;
+    public float   brightness = 1;
+    public float   contrast   = 1;
+    public float   postExposure;
+    public Vector4 lift  = new(1f , 1f , 1f , 0f);
+    public Vector4 gamma = new(1f , 1f , 1f , 0f);
+    public Vector4 gain  = new(1f , 1f , 1f , 0f);
 
 
     [Header( "Vignette Settings" )]
@@ -255,6 +260,14 @@ public class PostParameters : ScriptableObject
 
 
         colorGrading_Reference.colorFilter.value = colorFilter;
+        colorGrading_Reference.hueShift.value = hueShift;
+        colorGrading_Reference.contrast.value = contrast;
+        colorGrading_Reference.postExposure.value = postExposure;
+        colorGrading_Reference.saturation.value = saturation;
+        colorGrading_Reference.brightness.value = brightness;
+        colorGrading_Reference.lift.value = lift;
+        colorGrading_Reference.gamma.value = gamma;
+        colorGrading_Reference.gain.value = gain;
 
 
         vignette_Reference.intensity.value = vignetteIntensity;
@@ -292,7 +305,6 @@ public class PostParameters : ScriptableObject
         glitchEffect_Reference.speed.value = glitchSpeed;
         glitchEffect_Reference.split.value = glitchSplit;
 
-        Debug.Log( spaterFrameTexture );
         spaterPost_Reference.fade.value = spaterPostFade;
         spaterPost_Reference.frameTex.value = spaterFrameTexture;
         spaterPost_Reference.frameNoiseTex.value = spaterFrameNoiseTexture;
@@ -418,6 +430,15 @@ public class PostParameters : ScriptableObject
         p.bloomDirtIntensity = bloomDirtIntensity;
 
         p.colorFilter = colorFilter;
+        p.hueShift = hueShift;
+        p.saturation = saturation;
+        p.brightness = brightness;
+        p.contrast = contrast;
+        p.postExposure = postExposure;
+        p.lift = lift;
+        p.gamma = gamma;
+        p.gain = gain;
+
 
         p.vignetteIntensity = vignetteIntensity;
         p.vignetteSmoothness = vignetteSmoothness;

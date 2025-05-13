@@ -149,6 +149,9 @@ float4 triplanarSample( float3 p , float3 n )
 // painterly
 float4 _TextureShadingWeights;
 
+float4 _LowLightColor;
+float4 _HighLightColor;
+
 // m = match
 float4 PainterlyColor( float3 pos , float3 nor , float m , float2 uv )
 {
@@ -187,7 +190,7 @@ float4 PainterlyColor( float3 pos , float3 nor , float m , float2 uv )
     //fLCol = 1-fLCol;
 
     // fLCol = lerp( float4(1,.9,.6,1) * .7 + .1 , (float4(.4,.5,.8,1) * .8 + .2) * .3, 1-fLCol);
-    fLCol = lerp( float4( 1 , .9 , .8 , 1 ) * 1 , ( float4( .2 , .3 , .4 , 1 ) * .3 ) , 1 - pow( fLCol , 4 ) );
+    fLCol = lerp( _HighLightColor , _LowLightColor , 1 - pow( fLCol , 4 ) );
 
     return fLCol;
 }

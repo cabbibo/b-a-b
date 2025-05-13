@@ -8,6 +8,10 @@ Shader "Islands/Island/Ocean"
     {
         _PainterlyMap("Painterly Map", 2D) = "white" {}
         _TextureShadingWeights("Texture Shading Weights", Vector) = (0, 1, 2, 3)
+        _OutlineOffset("Outline Offset", Range(0.0, 10.0)) = 0.5
+        _OutlineColor("Outline Color", Color) = (0.0, 0.0, 0.0, 1.0)
+        _OverallMultiplier("Overall Multiplier", Range(0.0, 10.0)) = 1.0
+        _ColorMultiplier("Color Multiplier", Color) = (1.0, 1.0, 1.0, 1.0)
 
 
         [Header(Normals)]
@@ -258,6 +262,8 @@ Shader "Islands/Island/Ocean"
 
             sampler2D _PainterlyMap;
             float4    _TextureShadingWeights;
+            float4    _ColorMultiplier;
+            float     _OverallMultiplier;
 
             float4 PainterlyColor( float3 color1 , float3 color2 , float m , float2 uv )
             {
@@ -472,9 +478,9 @@ Shader "Islands/Island/Ocean"
                 if ( wt_smallerLod > 0.001 )
                 {
                     const float3 uv_slice_smallerLod = WorldToUV( positionXZWSUndisplaced , cascadeData0 ,
-             _LD_SliceIndex );
+      _LD_SliceIndex );
                     SampleDisplacementsNormals( _LD_TexArray_AnimatedWaves , uv_slice_smallerLod , wt_smallerLod ,
-        cascadeData0._oneOverTextureRes , cascadeData0._texelWidth , dummy , n_pixel.xz , sss );
+                                                                                                     cascadeData0._oneOverTextureRes , cascadeData0._texelWidth , dummy , n_pixel.xz , sss );
 
                     #if _FOAM_ON
                     SampleFoam(_LD_TexArray_Foam, uv_slice_smallerLod, wt_smallerLod, foam);
@@ -486,15 +492,15 @@ Shader "Islands/Island/Ocean"
 
 
                     SampleDisplacements( _LD_TexArray_AnimatedWaves , uv_slice_smallerLod , wt_smallerLod ,
-                                                                                                  displacement );
+                                                                                           displacement );
 
                 }
                 if ( wt_biggerLod > 0.001 )
                 {
                     const float3 uv_slice_biggerLod = WorldToUV( positionXZWSUndisplaced , cascadeData1 ,
-            _LD_SliceIndex + 1 );
+     _LD_SliceIndex + 1 );
                     SampleDisplacementsNormals( _LD_TexArray_AnimatedWaves , uv_slice_biggerLod , wt_biggerLod ,
-           cascadeData1._oneOverTextureRes , cascadeData1._texelWidth , dummy , n_pixel.xz , sss );
+                                                                                                       cascadeData1._oneOverTextureRes , cascadeData1._texelWidth , dummy , n_pixel.xz , sss );
 
                     #if _FOAM_ON
                     SampleFoam(_LD_TexArray_Foam, uv_slice_biggerLod, wt_biggerLod, foam);
@@ -506,7 +512,7 @@ Shader "Islands/Island/Ocean"
 
 
                     SampleDisplacements( _LD_TexArray_AnimatedWaves , uv_slice_biggerLod , wt_biggerLod ,
-                                                                                                displacement );
+                                                                                         displacement );
                 }
 
 
@@ -651,7 +657,7 @@ Shader "Islands/Island/Ocean"
                 #endif
                 {
                     ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha ,
-          col );
+   col );
                 }
 
                 // Override final result with white foam - bubbles on surface
@@ -771,12 +777,16 @@ Shader "Islands/Island/Ocean"
 
                 col = 0; // bubbleCol;
 
+
+                float4 whiteFoam = 0;
                 #if _FOAM_ON
                 /// col = foam ;
                 
                 col = lerp(col, whiteFoamCol.rgb, whiteFoamCol.a);
                 col = whiteFoamCol * foam;//whiteFoamCol.a;
                 col = whiteFoamCol.a * 10;
+                whiteFoam = whiteFoamCol;
+                
                 col = bubbleCol;
                 #endif
 
@@ -830,10 +840,10 @@ Shader "Islands/Island/Ocean"
 
                 col = PainterlyColor( float3( .1 , .1 , .1 ) , float3( .5 , .5 , .5 ) , lightMatch , uvPosition );
 
-                // col += bubbleCol;
+
                 if ( eyeMatch + noise( input.worldPos * 1 ) < .5 )
                 {
-                    discard;
+                    //  discard;
                 }
                 //col = normal; //eyeMatch.x;
                 //col *= _LightColor0.rgb;
@@ -855,10 +865,14 @@ Shader "Islands/Island/Ocean"
                 //  col = saturate(pow( reflMatch, 1000) * 4);
                 //  col *= shadow.y;
 
-                col *= float4( .6 , .8 , .9 , 1 );
+                col *= _ColorMultiplier;
+                col += bubbleCol * 10;
+                col += pow( whiteFoam.x , 2 );
+                col *= _OverallMultiplier;
                 col = saturate( col );
+                // col =
 
-                //  ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha , col );
+                ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha , col );
 
 
                 return half4( col , 1. );
@@ -923,6 +937,8 @@ Shader "Islands/Island/Ocean"
             #include "Assets/Resources/Shaders/Chunks/snoise.cginc"
             #include "Assets/Resources/Shaders/Chunks/noise.cginc"
 
+            float  _OutlineOffset;
+            float4 _OutlineColor;
 
             Varyings Vert( Attributes v )
             {
@@ -931,8 +947,8 @@ Shader "Islands/Island/Ocean"
                 //v.vertex += v.normal;
                 DoVert( v , o );
 
-                o.worldPos += float3( 0 , 2 , 0 );
-                o.worldPos -= 10 * normalize( _WorldSpaceCameraPos - o.worldPos );
+                o.worldPos += float3( 0 , 2 * _OutlineOffset , 0 );
+                o.worldPos -= ( 10 * _OutlineOffset + 1 ) * normalize( _WorldSpaceCameraPos - o.worldPos );
                 // view-projection
                 o.positionCS = mul( UNITY_MATRIX_VP , float4( o.worldPos , 1. ) );
 
@@ -952,7 +968,7 @@ Shader "Islands/Island/Ocean"
             float4 Frag( Varyings i ) : SV_Target
             {
 
-                return float4( .6 , .8 , .9 , 1 );
+                return _OutlineColor;
 
 
             }

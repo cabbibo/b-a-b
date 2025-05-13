@@ -2,7 +2,9 @@ Shader "Islands/Island/Terrain"
 {
     Properties
     {
-
+        _LowLightColor ("LowLightColor", Color) = (0,0,0,1)
+        _HighLightColor ("HighLightColor", Color) = (1,1,1,1)
+        _EdgeNoiseColor ("EdgeNoiseColor", Color) = (1,1,1,1)
         _Color ("Color", Color) = (1,1,1,1)
         _BackfaceColor("BackfaceColor", Color )= (1,1,1,1)
         _Size ("Size", float) = .01
@@ -54,6 +56,7 @@ Shader "Islands/Island/Terrain"
 
 
     CGINCLUDE
+    float4 _EdgeNoiseColor;
     #include "Assets/Resources/Shaders/Chunks/QuillShaderIncludes.cginc"
     ENDCG
 
@@ -91,6 +94,7 @@ Shader "Islands/Island/Terrain"
 
             sampler2D _FullNormalMap;
             float     _FullNormalStrength;
+
 
             float4 frag( varyings v ) : COLOR
             {
@@ -142,28 +146,24 @@ Shader "Islands/Island/Terrain"
                     ( GetXYInLightSpace( v.worldPos ) * _TriplanarMultiplier.xy )
                 );
 
-                float4 painterlyColor2 = PainterlyColor(
-                    v.worldPos ,
-                    triplanarNor ,
-                    ( lightMatch * shadow + reflectionMatch * 3 * shadow + pow( normalMatch , 10 ) * .4 ) ,
-                    ( GetXYInLightSpace( v.worldPos ) * _TriplanarMultiplier.xy ).yx
-                );
 
 
 
-                col = lerp( 1 , lerp( painterlyColor , painterlyColor2 , 1 ) , _PainterlyLightImportance );
 
-                col = lerp( float3( .2 , 0.2 , .4 ) , float3( 0 , .8 , 1 ) , painterlyColor.x );
-                col = generic_desaturate( col , .5 );
+                // col = lerp( 1 , lerp( painterlyColor , painterlyColor2 , 1 ) , _PainterlyLightImportance );
+
+                col = painterlyColor;
+                //col = lerp( _LowLightColor , _HighLightColor , painterlyColor.x );
+                // col = generic_desaturate( col , .5 );
                 col += shadowCol * .2 * ( 1 - shadow );
-                col *= v.color * 2.;
+                // col *= v.color * 2.;
 
 
                 col *= lerp( float3( .1 , .1 , .2 ) , float3( 1 , .9 , .9 ) , shadow * ( .4 + floor( lightMatch * 5 ) / 5 ) );
 
                 // col *= _LightColor0;
                 col *= _OverallMultiplier;
-                col *= tex2D( _MainTex , v.uv + ( 1 - ao ) * triplanarNor.x * .003 ).xyz;
+                col *= tex2D( _MainTex , v.uv + ( 1 - ao ) * triplanarNor.x * .003 );
                 //col = tex2D( _MainTex , v.uv ).xyz;
 
                 //col = floor( col * 20 ) / 20;
@@ -173,14 +173,14 @@ Shader "Islands/Island/Terrain"
 
                 if ( lightingData.eyeMatch - length( traceCol ) * .2 < .5 )
                 {
-                    col *= float3( 0.3 , 0.5 , .6 );
+                    //  col *= _EdgeNoiseColor;
 
                 }
 
                 if ( lightingData.eyeMatch - length( traceCol ) * .2 < .1 )
                 {
-                    col = 0;
-                    discard;
+                    // col = 0;
+                    col = _EdgeNoiseColor; //discard;
                 }
 
                 DoWrenDiscard( v.worldPos );
@@ -222,6 +222,7 @@ Shader "Islands/Island/Terrain"
 
             sampler2D _FullNormalMap;
             float     _FullNormalStrength;
+            float     _OutlineAmount;
 
 
             varyings SetVaryings2( inputData vert )
@@ -244,8 +245,8 @@ Shader "Islands/Island/Terrain"
                 o.nor = normalize( mul( unity_ObjectToWorld , float4( vert.normal , 0 ) ).xyz );
 
                 o.worldPos = wPos + windOffset; //windAmount;
-                o.worldPos += float3( 0 , 1 , 0 );
-                o.worldPos -= 7 * normalize( _WorldSpaceCameraPos - o.worldPos );
+                o.worldPos += o.nor * _OutlineAmount;
+                o.worldPos -= 40 * normalize( _WorldSpaceCameraPos - o.worldPos );
 
                 o.pos          = mul( UNITY_MATRIX_VP , float4( o.worldPos , 1.0f ) );
                 o.eye          = _WorldSpaceCameraPos - o.worldPos;
@@ -345,7 +346,7 @@ Shader "Islands/Island/Terrain"
                 // col *= _LightColor0;
                 col *= _OverallMultiplier;
                 col = generic_desaturate( col , 1.4 );
-                col *= tex2D( _MainTex , v.uv + ( 1 - ao ) * triplanarNor.x * .003 ).xyz;
+                col = tex2D( _MainTex , v.uv + ( 1 - ao ) * triplanarNor.x * .003 ).xyz;
                 //col = tex2D( _MainTex , v.uv ).xyz;
 
                 //col = floor( col * 20 ) / 20;
@@ -365,7 +366,7 @@ Shader "Islands/Island/Terrain"
                     // discard;
                 }
 
-                col *= 3;
+                // col *= 3;
                 DoWrenDiscard( v.worldPos );
 
 

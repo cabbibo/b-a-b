@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Island_Model_Shader
+  m_Name: Island_Model_Shader 1
   m_Shader: {fileID: 4800000, guid: 09250f4e16da0fb45b23bbd068c33038, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -88,11 +88,11 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
-    - _OutlineAmount: 1.46
-    - _OverallMultiplier: 2
-    - _PainterlyLightImportance: 0.92
+    - _OutlineAmount: 2
+    - _OverallMultiplier: 0.35
+    - _PainterlyLightImportance: 3
     - _Parallax: 0.02
-    - _ShadowStrength: 1
+    - _ShadowStrength: 0
     - _Size: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -107,12 +107,10 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
-    - _HighLightColor: {r: 0.9811321, g: 0.8501703, b: 0.6247775, a: 1}
-    - _LowLightColor: {r: 0, g: 0.12444244, b: 0.3962264, a: 1}
-    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _OutlineColor: {r: 1, g: 0, b: 0, a: 1}
     - _TextureShadingWeights: {r: 0, g: 1, b: 2, a: 3}
     - _TriplanarMultiplier: {r: 0.05, g: 0.03, b: 0.03, a: 1}
     - _WindDirection: {r: 11, g: 0, b: 0, a: 1}
