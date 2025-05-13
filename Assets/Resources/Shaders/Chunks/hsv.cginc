@@ -1,3 +1,6 @@
+
+#define HSV
+
 float3 hsv(float h, float s, float v)
 {
   return lerp( float3( 1.0 , 1, 1 ) , clamp( ( abs( frac(

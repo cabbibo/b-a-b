@@ -93,7 +93,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ReflectionCubemapOverride:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 8900000, guid: 18ec2d52be8f4524a97c25a2ed27838e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkyboxCubemap:
+        m_Texture: {fileID: 8900000, guid: f980e9d5017ad9240a7bfa6a2056023d, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkyboxCubemapNight:
+        m_Texture: {fileID: 8900000, guid: 18ec2d52be8f4524a97c25a2ed27838e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TriplanarMap:
@@ -208,7 +216,7 @@ Material:
     - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
     - _FoamBubbleColor: {r: 1, g: 1, b: 1, a: 1}
     - _FoamWhiteColor: {r: 1, g: 1, b: 1, a: 1}
-    - _OutlineColor: {r: 0.17937878, g: 0.19255202, b: 0.2735849, a: 1}
+    - _OutlineColor: {r: 0.41344783, g: 0.4596768, b: 0.5377358, a: 1}
     - _SkyAwayFromSun: {r: 1, g: 1, b: 1, a: 1}
     - _SkyBase: {r: 1, g: 1, b: 1, a: 1}
     - _SkyTowardsSun: {r: 1, g: 1, b: 1, a: 1}

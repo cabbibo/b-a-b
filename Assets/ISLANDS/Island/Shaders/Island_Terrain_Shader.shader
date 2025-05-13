@@ -57,6 +57,8 @@ Shader "Islands/Island/Terrain"
 
     CGINCLUDE
     float4 _EdgeNoiseColor;
+
+    samplerCUBE _Skybox;
     #include "Assets/Resources/Shaders/Chunks/QuillShaderIncludes.cginc"
     ENDCG
 
@@ -95,6 +97,25 @@ Shader "Islands/Island/Terrain"
             sampler2D _FullNormalMap;
             float     _FullNormalStrength;
 
+
+            uniform float4 _CustomSH9[ 9 ];
+
+            float3 EvalSH9( float3 n , float4 SH[ 9 ] )
+            {
+                float x = n.x, y = n.y, z = n.z;
+
+                float3 color = float3( 0 , 0 , 0 );
+                color += SH[ 0 ].xyz * 0.282095;
+                color += SH[ 1 ].xyz * 0.488603 * y;
+                color += SH[ 2 ].xyz * 0.488603 * z;
+                color += SH[ 3 ].xyz * 0.488603 * x;
+                color += SH[ 4 ].xyz * 1.092548 * x * y;
+                color += SH[ 5 ].xyz * 1.092548 * y * z;
+                color += SH[ 6 ].xyz * 0.315392 * ( 3 * z * z - 1 );
+                color += SH[ 7 ].xyz * 1.092548 * x * z;
+                color += SH[ 8 ].xyz * 0.546274 * ( x * x - y * y );
+                return color;
+            }
 
             float4 frag( varyings v ) : COLOR
             {
@@ -182,6 +203,10 @@ Shader "Islands/Island/Terrain"
                     // col = 0;
                     col = _EdgeNoiseColor; //discard;
                 }
+
+
+                col *= generic_desaturate( texCUBElod( _Skybox , float4( fNor , 6 ) ) , .6 ) * 2;
+
 
                 DoWrenDiscard( v.worldPos );
 
@@ -353,6 +378,7 @@ Shader "Islands/Island/Terrain"
 
                 //  col = triplanarNor;
                 //col = traceCol;
+
 
                 if ( lightingData.eyeMatch - length( traceCol ) * .2 < .5 )
                 {

@@ -13,6 +13,9 @@ Shader "Islands/Island/Ocean"
         _OverallMultiplier("Overall Multiplier", Range(0.0, 10.0)) = 1.0
         _ColorMultiplier("Color Multiplier", Color) = (1.0, 1.0, 1.0, 1.0)
 
+        _SkyboxCubemap("Skybox Cubemap", CUBE) = "" {}
+        _SkyboxCubemapNight("Skybox Cubemap Night", CUBE) = "" {}
+
 
         [Header(Normals)]
         // Strength of the final surface normal (includes both wave normal and normal map)
@@ -260,10 +263,11 @@ Shader "Islands/Island/Ocean"
             }
 
 
-            sampler2D _PainterlyMap;
-            float4    _TextureShadingWeights;
-            float4    _ColorMultiplier;
-            float     _OverallMultiplier;
+            sampler2D   _PainterlyMap;
+            float4      _TextureShadingWeights;
+            float4      _ColorMultiplier;
+            float       _OverallMultiplier;
+            samplerCUBE _Skybox;
 
             float4 PainterlyColor( float3 color1 , float3 color2 , float m , float2 uv )
             {
@@ -478,9 +482,9 @@ Shader "Islands/Island/Ocean"
                 if ( wt_smallerLod > 0.001 )
                 {
                     const float3 uv_slice_smallerLod = WorldToUV( positionXZWSUndisplaced , cascadeData0 ,
-      _LD_SliceIndex );
+                                           _LD_SliceIndex );
                     SampleDisplacementsNormals( _LD_TexArray_AnimatedWaves , uv_slice_smallerLod , wt_smallerLod ,
-                                                                                                     cascadeData0._oneOverTextureRes , cascadeData0._texelWidth , dummy , n_pixel.xz , sss );
+                       cascadeData0._oneOverTextureRes , cascadeData0._texelWidth , dummy , n_pixel.xz , sss );
 
                     #if _FOAM_ON
                     SampleFoam(_LD_TexArray_Foam, uv_slice_smallerLod, wt_smallerLod, foam);
@@ -492,15 +496,15 @@ Shader "Islands/Island/Ocean"
 
 
                     SampleDisplacements( _LD_TexArray_AnimatedWaves , uv_slice_smallerLod , wt_smallerLod ,
-                                                                                           displacement );
+                                                                                   displacement );
 
                 }
                 if ( wt_biggerLod > 0.001 )
                 {
                     const float3 uv_slice_biggerLod = WorldToUV( positionXZWSUndisplaced , cascadeData1 ,
-     _LD_SliceIndex + 1 );
+                                         _LD_SliceIndex + 1 );
                     SampleDisplacementsNormals( _LD_TexArray_AnimatedWaves , uv_slice_biggerLod , wt_biggerLod ,
-                                                                                                       cascadeData1._oneOverTextureRes , cascadeData1._texelWidth , dummy , n_pixel.xz , sss );
+                         cascadeData1._oneOverTextureRes , cascadeData1._texelWidth , dummy , n_pixel.xz , sss );
 
                     #if _FOAM_ON
                     SampleFoam(_LD_TexArray_Foam, uv_slice_biggerLod, wt_biggerLod, foam);
@@ -512,7 +516,7 @@ Shader "Islands/Island/Ocean"
 
 
                     SampleDisplacements( _LD_TexArray_AnimatedWaves , uv_slice_biggerLod , wt_biggerLod ,
-                                                                                         displacement );
+                                                                                 displacement );
                 }
 
 
@@ -657,7 +661,7 @@ Shader "Islands/Island/Ocean"
                 #endif
                 {
                     ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha ,
-   col );
+                col );
                 }
 
                 // Override final result with white foam - bubbles on surface
@@ -872,7 +876,11 @@ Shader "Islands/Island/Ocean"
                 col = saturate( col );
                 // col =
 
-                ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha , col );
+
+                //col = texCUBE( _Skybox , reflect( normalize( eye ) , normal ) ).xyz;
+
+
+                //    ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha , col );
 
 
                 return half4( col , 1. );
@@ -965,10 +973,15 @@ Shader "Islands/Island/Ocean"
             }
 
 
+            samplerCUBE _Skybox;
+
             float4 Frag( Varyings i ) : SV_Target
             {
+                float3 eye = _WorldSpaceCameraPos - i.worldPos;
 
-                return _OutlineColor;
+                float4 skyColor = texCUBE( _Skybox , -normalize( eye ) ) * _OutlineColor;
+
+                return skyColor;
 
 
             }

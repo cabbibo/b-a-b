@@ -4,12 +4,14 @@ Shader "Islands/Island/LighthouseRay"
     {
         _MainTex ("Texture", 2D) = "white" {}
         _Color("Color", Color) = (1,1,1,1)
-        
+
+        _Forwardness("Forwardness", Range(0, 20)) = 3
+
     }
     SubShader
     {
 
-        // Cull Off
+        Cull Off
         Blend One One
         // ZTest Always
         ZWrite Off
@@ -30,11 +32,14 @@ Shader "Islands/Island/LighthouseRay"
             #pragma multi_compile_fog
 
             #include "UnityCG.cginc"
+            #include "Assets/Resources/Shaders/Chunks/hash.cginc"
 
 
             uniform int   _Count;
             uniform float _Length;
             uniform float _Width;
+
+            uniform float _Forwardness;
 
             uniform float3 _Center;
 
@@ -68,6 +73,7 @@ Shader "Islands/Island/LighthouseRay"
             }
 
             float4x4 _LocalToWorld;
+
             //Our vertex function simply fetches a point from the buffer corresponding to the vertex index
             //which we transform with the view-projection matrix before passing to the pixel program.
             varyings vert( uint id : SV_VertexID )
@@ -78,7 +84,10 @@ Shader "Islands/Island/LighthouseRay"
                 int idInTri = id % 3;
                 int triID   = id / 3;
 
-                float3 center = mul( _LocalToWorld , float4( 0 , 0 , 0 , 1 ) ).xyz;
+                float3 center  = mul( _LocalToWorld , float4( 0 , 0 , 0 , 1 ) ).xyz;
+                float3 forward = normalize( mul( _LocalToWorld , float4( 0 , 0 , 1 , 0 ) ).xyz );
+                float3 right   = normalize( mul( _LocalToWorld , float4( 1 , 0 , 0 , 0 ) ).xyz );
+                float3 up      = normalize( mul( _LocalToWorld , float4( 0 , 1 , 0 , 0 ) ).xyz );
 
                 float3 z = UNITY_MATRIX_V[ 2 ].xyz; //normalize(toLookAt);
                 float3 x = UNITY_MATRIX_V[ 0 ].xyz; //normalize(cross(z,UNITY_MATRIX_V[1].xyz));
@@ -92,19 +101,27 @@ Shader "Islands/Island/LighthouseRay"
 
                 float3 dir = randomDirection( triID );
 
+                float angle  = hash( float( triID ) ) * 3.14 * 2;
+                float radius = hash( float( triID + 1 ) );
+
+                float2 randUV = float2( sin( angle ) , cos( angle ) ) * radius;
+
+                float3 fDir = forward * _Forwardness + right * randUV.x + up * randUV.y;
+                fDir        = normalize( fDir );
+
                 // dir = dir.x * x + dir.y * y + dir.z * z * .001;
                 //dir = normalize( dir );
 
 
-                float3 pos = dir * _Length + center;
+                float3 pos = fDir * _Length + center;
 
                 float3 f = UNITY_MATRIX_V[ 2 ].xyz;
                 float3 r = normalize( cross( dir ,UNITY_MATRIX_V[ 2 ].xyz ) );
                 float3 u = dir;
 
                 float3 p1 = center;
-                float3 p2 = center + dir * _Length + r * _Width;
-                float3 p3 = center + dir * _Length - r * _Width;
+                float3 p2 = center + fDir * _Length + r * _Width;
+                float3 p3 = center + fDir * _Length - r * _Width;
 
                 float3 fPos = p1;
                 float2 uv   = float2( .5 , 0 );
@@ -132,10 +149,13 @@ Shader "Islands/Island/LighthouseRay"
             fixed4 frag( varyings v ) : SV_Target
             {
                 // sample the texture
-                fixed4 col = _Color * .1;
+                fixed4 col = _Color;
 
-                col *= ( 1 - v.uv.y ) * ( .5 - abs( v.uv.x - .5 ) ) * 10; //  * .01;
-                col.a = .1;
+                col *= ( 1 - v.uv.y ) * ( .5 - abs( v.uv.x - .5 ) ); //  * .01;
+                col *= min( v.uv.y * 50 * 10 , pow( ( 1 - v.uv.y ) , 20 ) * 2 );
+                col.a = 1;
+
+                col = saturate( col );
                 // col   = 1 * .1;
                 return col;
             }

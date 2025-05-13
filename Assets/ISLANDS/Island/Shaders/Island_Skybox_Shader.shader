@@ -9,6 +9,7 @@
         _MapScale("MapScale", float) = 1
         _Fade("_Fade", float) = 1
         _CubeMap("_CubeMap" ,Cube) = "white" {}
+        _CubeMap2("_CubeMap2" ,Cube) = "white" {}
 
     }
 
@@ -19,16 +20,18 @@
         // Draw ourselves after all opaque geometry
         Tags
         {
-            "Queue" = "Geometry+10"
+            "Queue" = "Geometry+100"
         }
 
         // Grab the screen behind the object into _BackgroundTexture
         GrabPass
         {
-            "_BackgroundTexture"
+            // "_BackgroundTexture"
         }
 
         Cull Off
+
+
         Pass
         {
             CGPROGRAM
@@ -56,6 +59,7 @@
 
             sampler2D   _AudioMap;
             samplerCUBE _CubeMap;
+            samplerCUBE _CubeMap2;
 
             float3 _LightDir;
 
@@ -100,7 +104,9 @@
                 o.nor           = n; //normalize(mul (unity_ObjectToWorld, float4(n.xyz,0.0f)));; 
                 o.ro            = p; //worldPos.xyz;
                 o.rd            = mul( unity_ObjectToWorld , vertex.position ).xyz - _WorldSpaceCameraPos;
-                o.localPos      = p.xyz;
+                o.rd            = p; //mul( unity_ObjectToWorld , vertex.position ).xyz - _WorldSpaceCameraPos;
+
+                o.localPos = p.xyz;
 
 
 
@@ -113,7 +119,7 @@
             float3 hsv( float h , float s , float v )
             {
                 return lerp( float3( 1.0 , 1 , 1 ) , clamp( ( abs( frac(
-            h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ) , 0.0 , 1.0 ) , s ) * v;
+      h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ) , 0.0 , 1.0 ) , s ) * v;
             }
 
 
@@ -145,10 +151,13 @@
                 float oc = 1.0 - c;
 
                 return float4x4( oc * axis.x * axis.x + c , oc * axis.x * axis.y - axis.z * s , oc * axis.z * axis.x + axis.y * s , 0.0 ,
-              oc * axis.x * axis.y + axis.z * s , oc * axis.y * axis.y + c , oc * axis.y * axis.z - axis.x * s , 0.0 ,
-              oc * axis.z * axis.x - axis.y * s , oc * axis.y * axis.z + axis.x * s , oc * axis.z * axis.z + c , 0.0 ,
-              0.0 , 0.0 , 0.0 , 1.0 );
+        oc * axis.x * axis.y + axis.z * s , oc * axis.y * axis.y + c , oc * axis.y * axis.z - axis.x * s , 0.0 ,
+        oc * axis.z * axis.x - axis.y * s , oc * axis.y * axis.z + axis.x * s , oc * axis.z * axis.z + c , 0.0 ,
+        0.0 , 0.0 , 0.0 , 1.0 );
             }
+
+            float _DayNess;
+            float _NightNess;
 
             //Pixel function returns a solid color for each point.
             float4 frag( varyings v ) : COLOR
@@ -282,11 +291,18 @@
                 // offset += tex2D( _MainTex , float2( rd.y , atan2( rd.x , rd.z ) / 6.28 ) * .2 );
                 //offset += tex2D( _MainTex , float2( rd.y , atan2( rd.x , rd.z ) / 6.28 ) * 1.3 );
 
-                float3 cubeCol = texCUBE( _CubeMap , rd + float3( offset * .1 , 0 , offset * .1 ) ).xyz;
-                col            = 10 * pow( cubeCol , 2 ) * ( saturate( pow( saturate( rd.y ) , 2 ) ) + .1 ); //* 1;
-                col            = generic_desaturate( col , 0.1 );
+                float3 cubeCol  = texCUBE( _CubeMap , rd + float3( offset * .1 , 0 , offset * .1 ) ).xyz;
+                float3 cubeCol2 = texCUBE( _CubeMap2 , rd + float3( offset * .1 , 0 , offset * .1 ) ).xyz;
+
+
+                col = 10 * pow( cubeCol , 2 ) * ( saturate( pow( saturate( rd.y ) , 2 ) ) + .1 ); //* 1;
+                col = col * saturate( _DayNess * 10 ) + 3 * pow( cubeCol2 , 1 ) * saturate( _NightNess * 10 );
+                col = generic_desaturate( col , 0.1 );
                 //  col            = offset;
                 col = lerp( col * ( offset + 1 ) , col , rd.y * rd.y );
+
+                //col = float3( v.ro.x , v.ro.y * 1 , .3 ); // normalize( rd ) * .5; // + .5;
+
 
                 //col *= 10;
                 //col = saturate( col );

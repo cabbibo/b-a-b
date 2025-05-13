@@ -66,6 +66,8 @@ public class ShardTrail : MonoBehaviour
     public void Create()
     {
 
+        print( "hi" );
+
         if ( mpb == null ) {
             mpb = new MaterialPropertyBlock();
         }
@@ -133,9 +135,18 @@ public class ShardTrail : MonoBehaviour
 
             if ( j < uvs.Length ) {
 
+                print( "hasuvs" );
+
+                print( "hasuvs" );
+
                 values[j * 8 + 6] = uvs[j].x;
                 values[j * 8 + 7] = uvs[j].y;
             } else {
+
+                print( "no uves" );
+
+                print( "no uves" );
+
 
                 values[j * 8 + 6] = 0;
                 values[j * 8 + 7] = 0;
@@ -247,7 +258,7 @@ public class ShardTrail : MonoBehaviour
         mpb.SetInt( "_VertCount" , totalVerts );
         mpb.SetMatrix( "_Model" , wren.transform.localToWorldMatrix );
         Graphics.DrawProcedural( debugMaterial , new Bounds( transform.position , Vector3.one * 5000 ) ,
-            MeshTopology.Triangles , maxShards * totalTris , 1 , null , mpb , ShadowCastingMode.On , true ,
+            MeshTopology.Triangles , maxShards * totalTris , 1 , null , mpb , ShadowCastingMode.TwoSided , true ,
             LayerMask.NameToLayer( "Default" ) );
 
 
