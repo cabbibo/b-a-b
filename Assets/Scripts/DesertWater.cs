@@ -1,24 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using WrenUtils;
 
 [ExecuteAlways]
 public class DesertWater : MonoBehaviour
 {
-
     public Quest quest;
 
     public List<Transform> waterLocations;
-    public Transform locationToWater;
+    public Transform       locationToWater;
 
     public float amountWatered;
 
     public float pickUpRadius;
     public float dropRadius;
 
-    public bool wrenCarryingWater;
+    public bool       wrenCarryingWater;
     public GameObject wrenWithWater;
     public GameObject wrenGatheringWater;
 
@@ -36,25 +34,22 @@ public class DesertWater : MonoBehaviour
 
 
     // Start is called before the first frame update
-    void OnEnable()
+    private void OnEnable()
     {
 
+        print( gameObject.name );
 
-
-
-        if (quest.completed == false)
-        {
+        if ( quest.activity.numTimesCompleted == 0 ) {
             amountWatered = 0;
         }
 
 
-        if (quest.completed == true)
-        {
+        if ( quest.activity.numTimesCompleted > 0 ) {
             amountWatered = 1;
         }
 
         // wren shouldn't be on fire to start!
-        wrenWithWater.SetActive(false);
+        wrenWithWater.SetActive( false );
 
 
     }
@@ -67,70 +62,66 @@ public class DesertWater : MonoBehaviour
 
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
 
-        if (God.wren == null) { testTransform = debugWren; } else { testTransform = God.wren.transform; }
+        if ( God.wren == null ) {
+            testTransform = debugWren;
+        } else {
+            testTransform = God.wren.transform;
+        }
 
         isGathering = false;
 
 
-        for (int i = 0; i < waterLocations.Count; i++)
-        {
-            if (!wrenCarryingWater)
-            {
+        for ( int i = 0; i < waterLocations.Count; i++ ) {
+            if ( !wrenCarryingWater ) {
 
-                float d = Vector3.Distance(waterLocations[i].position, testTransform.position);
-                if (d < pickUpRadius)
-                {
-                    print("is gathering");
+                float d = Vector3.Distance( waterLocations[i].position , testTransform.position );
+
+                if ( d < pickUpRadius ) {
+                    print( "is gathering" );
                     isGathering = true;
-                    WhileWrenGatheringWater(i);
+                    WhileWrenGatheringWater( i );
                 }
 
             }
         }
 
-        if (isGathering == false)
-        {
+        if ( isGathering == false ) {
             whileGatheringLine.positionCount = 0;
         }
 
 
-
-        if (waterValue > 0 && isGathering == false)
-        {
+        if ( waterValue > 0 && isGathering == false ) {
             wrenCarryingWater = true;
         }
 
-        if (isGathering == true && waterValue >= maxWaterValue)
-        {
+        if ( isGathering == true && waterValue >= maxWaterValue ) {
             MaxWaterCollected();
         }
 
-        if (wrenCarryingWater)
-        {
+        if ( wrenCarryingWater ) {
             WhileWrenCarryingWater();
         }
 
-        wrenGatheringWater.SetActive(isGathering);
-        wrenWithWater.SetActive(wrenCarryingWater);
+        wrenGatheringWater.SetActive( isGathering );
+        wrenWithWater.SetActive( wrenCarryingWater );
 
     }
 
-    public void WhileWrenGatheringWater(int i)
+    public void WhileWrenGatheringWater( int i )
     {
         whileGatheringLine.positionCount = 2;
-        whileGatheringLine.SetPosition(0, testTransform.position);
-        whileGatheringLine.SetPosition(1, waterLocations[i].position);
+        whileGatheringLine.SetPosition( 0 , testTransform.position );
+        whileGatheringLine.SetPosition( 1 , waterLocations[i].position );
 
 
         wrenGatheringWater.transform.position = testTransform.position;
         waterValue += waterPickUpSpeed;
 
-        if (waterValue > maxWaterValue)
-        {
+        if ( waterValue > maxWaterValue ) {
             waterValue = maxWaterValue;
         }
 
@@ -138,8 +129,7 @@ public class DesertWater : MonoBehaviour
 
     public void WhileWrenCarryingWater()
     {
-        if (Vector3.Distance(locationToWater.position, testTransform.position) < dropRadius)
-        {
+        if ( Vector3.Distance( locationToWater.position , testTransform.position ) < dropRadius ) {
             DropOffWater();
         }
 
@@ -148,15 +138,11 @@ public class DesertWater : MonoBehaviour
         waterValue -= waterKillSpeed;
 
 
-        if (waterValue < 0)
-        {
+        if ( waterValue < 0 ) {
             waterValue = 0;
             wrenCarryingWater = false;
 
         }
-
-
-
 
 
     }
@@ -166,7 +152,7 @@ public class DesertWater : MonoBehaviour
         amountWatered += waterValue;
         waterValue = 0;
         wrenCarryingWater = false;
-        quest.SetCompletion(amountWatered);
+        quest.SetCompletion( amountWatered );
 
         onWaterParticles.Play();
     }
@@ -178,5 +164,4 @@ public class DesertWater : MonoBehaviour
         wrenCarryingWater = true;
 
     }
-
 }

@@ -187,7 +187,8 @@ public class InterfacePointer : MonoBehaviour
             UpdateAllPointers();
         }
 
-        if ( pointerList.Count != oPointerCount ) {
+        if ( pointerList.Count != oPointerCount || pointerList.Count != pointerTypes.Count ||
+             pointerList.Count != fades.Count || pointerList.Count != targetFades.Count || pointerList.Count != extraData.Count ) {
             RemakeBuffer();
         }
 
@@ -240,9 +241,13 @@ public class InterfacePointer : MonoBehaviour
 
             // Set object of interest just in the render buffer not anywhere else!
             if ( objectOfInterest != null ) {
+                print( objectOfInterest );
+                print( pointerList.IndexOf( objectOfInterest ) );
                 // if we have an object of interest, set its type to 0.5f
                 pointerTypeArray[pointerList.IndexOf( objectOfInterest )] = 10f;
 
+            } else {
+                //print( "noppe" );
             }
 
             _typeBuffer.SetData( pointerTypeArray );
@@ -333,7 +338,7 @@ public class InterfacePointer : MonoBehaviour
         if ( pointerList.Contains( pointer ) ) {
 
 
-           // print( "HAS POINTER" );
+            // print( "HAS POINTER" );
 
             if ( objectOfInterest != null ) {
 
@@ -407,7 +412,9 @@ public class InterfacePointer : MonoBehaviour
             fades.Add( 0 );
             extraData.Add( new Vector4( 0 , 0 , 0 , 0 ) );
         } else {
-            if ( type >= null ) {
+            if ( type < 0 ) {
+                print( "reassigningtype" );
+                print( pointerList.IndexOf( t ) );
                 pointerTypes[pointerList.IndexOf( t )] = (float)type;
             }
         }
@@ -432,6 +439,9 @@ public class InterfacePointer : MonoBehaviour
         } else {
 
             if ( type >= 0 ) {
+
+                // print( "reassigningtype" );
+                //print( pointerList.IndexOf( t ) );
                 pointerTypes[pointerList.IndexOf( t )] = (float)type;
             }
 
@@ -513,7 +523,7 @@ public class InterfacePointer : MonoBehaviour
             extraData.RemoveAt( pointerList.IndexOf( t ) );
             pointerList.Remove( t );
         } else {
-            //Debug.LogError("Pointer not found in list");
+            Debug.LogError( "Pointer not found in list" );
         }
     }
 
@@ -550,7 +560,7 @@ public class InterfacePointer : MonoBehaviour
         var allQuests = getAllOfTag( "Quest" );
         foreach (var quest in allQuests)
             AddPointer( quest.GetComponent<Quest>().portal.transform , 0 ,
-                quest.GetComponent<Quest>().completed ? 1 : 0 );
+                quest.GetComponent<Quest>().activity.completed ? 1 : 0 );
     }
 
 

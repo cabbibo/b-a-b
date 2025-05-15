@@ -5,44 +5,36 @@ using WrenUtils;
 
 public class TreeBiomeBugCatcher : MonoBehaviour
 {
-
-
     public ButterflySpawner[] butterflySpawners;
-    public Quest quest;
+    public Quest              quest;
 
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
 
     }
 
 
-    public void OnTriggerEnter(Collider c)
+    public void OnTriggerEnter( Collider c )
     {
 
 
-        print("LETS GO");
+        print( "LETS GO" );
 
-        if (God.IsOurWren(c))
-        {
-            if (!quest.started)
-            {
+        if ( God.IsOurWren( c ) ) {
+            if ( !quest.activity.started ) {
                 quest.StartQuest();
             }
         }
     }
 
 
-    public void OnBugAte(float v)
+    public void OnBugAte( float v )
     {
-        print("BUG ATE");
-        print(v);
-        quest.AddToCompletion(v);
+        print( "BUG ATE" );
+        print( v );
+        quest.AddToCompletion( v );
 
     }
-
-
-
-
 }

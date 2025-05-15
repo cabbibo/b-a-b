@@ -4,7 +4,7 @@ using UnityEngine;
 using WrenUtils;
 
 
-
+/*
 #if UNITY_EDITOR
 using UnityEditor;
 
@@ -19,7 +19,7 @@ public class QuestEditor : Editor
 
 
         if(GUILayout.Button("Set State")){
-            
+
         }
 
 
@@ -73,224 +73,145 @@ public class QuestEditor : Editor
             myScript.SetCompletion(0.5f);
         }
 
-        
+
 
     }
 }
 
 #endif
 
+*/
 
 
 public class Quest : MonoBehaviour
 {
+    public Activity activity;
+    public Portal   portal;
+    public float    amountComplete;
 
-    public bool discovered;
-    public bool started;
-    public bool completed;
-
-    public int id;
-
-    public Portal portal;
-    public float amountComplete;
+    public Slide discoveredSlide;
+    public Slide startedSlide;
+    public Slide completedSlide;
 
 
-    public PlayCutScene discoveredAnimation;
-    public PlayCutScene startedAnimation;
-    public PlayCutScene completedAnimation;
-
-    public List<GameObject> localObjects;
-
-
-    public void AddToCompletion(float amount)
+    public void AddToCompletion( float amount )
     {
         amountComplete += amount;
-
-        if (amountComplete >= 1)
-        {
-
-            print("Quest complete");
-            amountComplete = 1;
-            CompleteQuest();
-        }
+        activity.SetCompleteAmount( amountComplete );
     }
 
-    public void SetCompletion(float amount)
+    public void SetCompletion( float amount )
     {
         amountComplete = amount;
-        if (amountComplete >= 1)
-        {
-            print("Quest complete");
-            amountComplete = 1;
-            CompleteQuest();
-        }
-
+        activity.SetCompleteAmount( amountComplete );
     }
 
 
+    public void SetStartValues( Slide slide )
+    {
+        God.playableDirector.playableAsset = slide.timeline;
+        God.playableDirector.time = 0;
+        God.playableDirector.Evaluate();
+    }
+
+    public void SetEndValues( Slide slide )
+    {
+        God.playableDirector.playableAsset = slide.timeline;
+        God.playableDirector.time = slide.timeline.duration;
+        God.playableDirector.Evaluate();
+    }
 
     public void DiscoverQuest()
     {
 
 
-        if (discovered == false)
-        {
-            print("HELLOOO111");
-            discovered = true;
-            God.state.OnQuestDiscovered(id);
-            if (discoveredAnimation != null) { discoveredAnimation.Play(); }
-        }
-
     }
+
     public void CompleteQuest()
     {
 
-        if (completed == false)
-        {
-            print("HELLOOO");
+        portal.OpenPortal();
 
-            completed = true;
-            portal.OpenPortal();
-            if (completedAnimation != null) { completedAnimation.Play(); }
-        }
-        else
-        {
-            print("already completed");
-
-        }
 
     }
 
     public void StartQuest()
     {
 
-        if (started == false)
-        {
-            started = true;
-            God.state.OnQuestStarted(id);
-            if (startedAnimation != null) { startedAnimation.Play(); }
-        }
-        else
-        {
-            print("already started");
-        }
+
     }
 
-
-    public void Initialize()
+    public void SetVoidState()
     {
 
-        discovered = God.state.questsDiscovered[id];
-        started = God.state.questsStarted[id];
-        completed = God.state.questsCompleted[id];
-
-
-        if (completedAnimation != null) { completedAnimation.SetStartValues(); }
-        if (startedAnimation != null) { startedAnimation.SetStartValues(); }
-        if (discoveredAnimation != null) { discoveredAnimation.SetStartValues(); }
-
-
-        print(gameObject.name + " " + discovered + " " + started + " " + completed);
-
-        // Setting state from animations!
-        if (!discovered)
-        {
-            //            print("HELLO I AM NOT DISCOVERED");
-            if (discoveredAnimation != null) { discoveredAnimation.SetStartValues(); }
+        if ( completedSlide != null ) {
+            SetStartValues( completedSlide );
         }
 
-        if (discovered && !started)
-        {
-            print("discovered not started");
-            if (discoveredAnimation != null) { discoveredAnimation.SetEndValues(); }
-            if (startedAnimation != null) { startedAnimation.SetStartValues(); }
+        if ( startedSlide != null ) {
+            SetStartValues( startedSlide );
         }
 
-        if (discovered && started && !completed)
-        {
-            print("discovered started not completed");
-            if (discoveredAnimation != null) { discoveredAnimation.SetEndValues(); }
-            if (startedAnimation != null) { startedAnimation.SetEndValues(); }
-            if (completedAnimation != null) { completedAnimation.SetStartValues(); }
-        }
-
-        if (discovered && started && completed)
-        {
-            //print("Setting All End Values");
-            if (discoveredAnimation != null) { discoveredAnimation.SetEndValues(); }
-            if (startedAnimation != null) { startedAnimation.SetEndValues(); }
-            if (completedAnimation != null) { completedAnimation.SetEndValues(); }
-        }
-
-
-
-        if (!completed)
-        {
-
-            print("Turning off portal");
-            portal.SetPortalOff();
-        }
-        else
-        {
-            print("Turning on portal");
-            portal.SetPortalFull();
-        }
-
-        // print("HELLO I AM ENABLED");
-        //print(gameObject.name);
-        //print(discovered);
-        //print(started);
-        //print(completed);
-
-
-    }
-
-    public void OnEnterQuest()
-    {
-
-        //print("HELLO I AM ENTERED");
-
-        for (int i = 0; i < localObjects.Count; i++)
-        {
-            localObjects[i].SetActive(true);
-        }
-
-        if (!discovered)
-        {
-            DiscoverQuest();
-        }
-
-
-    }
-
-    public void OnExitQuest()
-    {
-        //print("HELLO I AM EXITED");
-
-        for (int i = 0; i < localObjects.Count; i++)
-        {
-            localObjects[i].SetActive(false);
+        if ( discoveredSlide != null ) {
+            SetStartValues( discoveredSlide );
         }
 
     }
 
-    public void OnCompletedAnimationFinished()
-    {
-        completed = true;
-        God.state.OnQuestCompleted(id);
-    }
-
-    public void Reset()
-    {
-        discovered = false;
-        started = false;
-        completed = false;
-        God.state.ResetQuest(id);
-    }
 
     public void SetState()
     {
-        God.state.SetQuestState(id, discovered, started, completed);
+
+        print( "setting state in quest" );
+        print( activity.completed );
+        SetVoidState();
+
+        if ( activity.discovered ) {
+            SetDiscoveredState();
+        }
+
+        if ( activity.started ) {
+            SetStartedState();
+        }
+
+        if ( activity.completed ) {
+            SetCompletedState();
+        }
+
+
     }
 
+    public void SetDiscoveredState()
+    {
+        portal.SetPortalOff();
+
+        print( "Set Discover State" );
+
+        if ( discoveredSlide != null ) {
+            SetEndValues( discoveredSlide );
+        }
+    }
+
+    public void SetStartedState()
+    {
+        portal.SetPortalOff();
+
+        print( "Set Start State" );
+
+        if ( startedSlide != null ) {
+            SetEndValues( startedSlide );
+        }
+    }
+
+    public void SetCompletedState()
+    {
+
+        print( "Set Complete State" );
+        portal.SetPortalFull();
+
+        if ( completedSlide != null ) {
+            SetEndValues( completedSlide );
+        }
+
+    }
 }

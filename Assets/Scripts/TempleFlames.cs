@@ -1,16 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using WrenUtils;
 
 [ExecuteAlways]
 public class TempleFlames : MonoBehaviour
 {
-
     public Quest quest;
 
-    public List<Transform> torches;
+    public List<Transform>  torches;
     public List<GameObject> flames;
 
     public List<bool> lit;
@@ -28,17 +26,15 @@ public class TempleFlames : MonoBehaviour
 
 
     // Start is called before the first frame update
-    void OnEnable()
+    private void OnEnable()
     {
 
 
         //        print("TEMPLE FLAMES ENABLED");
 
-        if (quest.completed == false)
-        {
-            for (int i = 0; i < torches.Count; i++)
-            {
-                flames[i].SetActive(false);
+        if ( quest.activity.completed == false ) {
+            for ( int i = 0; i < torches.Count; i++ ) {
+                flames[i].SetActive( false );
                 lit[i] = false;
             }
 
@@ -46,26 +42,20 @@ public class TempleFlames : MonoBehaviour
         }
 
 
-        if (quest.completed == true)
-        {
-            for (int i = 0; i < torches.Count; i++)
-            {
+        if ( quest.activity.completed == true ) {
+            for ( int i = 0; i < torches.Count; i++ ) {
                 lit[i] = true;
             }
         }
 
         // wren shouldn't be on fire to start!
-        wrenOnFire.SetActive(false);
+        wrenOnFire.SetActive( false );
 
-        for (int i = 0; i < torches.Count; i++)
-        {
-            if (!lit[i])
-            {
-                flames[i].SetActive(false);
-            }
-            else
-            {
-                flames[i].SetActive(true);
+        for ( int i = 0; i < torches.Count; i++ ) {
+            if ( !lit[i] ) {
+                flames[i].SetActive( false );
+            } else {
+                flames[i].SetActive( true );
             }
         }
 
@@ -76,44 +66,38 @@ public class TempleFlames : MonoBehaviour
     public Transform testTransform;
 
     public AnimationCurve fireScaleCurve;
-    public float fireScaleMultiplier;
+    public float          fireScaleMultiplier;
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
 
-        if (God.wren == null) { testTransform = debugWren; } else { testTransform = God.wren.transform; }
+        if ( God.wren == null ) {
+            testTransform = debugWren;
+        } else {
+            testTransform = God.wren.transform;
+        }
 
 
-        for (int i = 0; i < torches.Count; i++)
-        {
-            if (!wrenCarryingFlame)
-            {
-                if (lit[i] == true)
-                {
-                    if (Vector3.Distance(torches[i].position, testTransform.position) < pickUpRadius)
-                    {
-                        OnWrenPickUpFlame(i);
+        for ( int i = 0; i < torches.Count; i++ ) {
+            if ( !wrenCarryingFlame ) {
+                if ( lit[i] == true ) {
+                    if ( Vector3.Distance( torches[i].position , testTransform.position ) < pickUpRadius ) {
+                        OnWrenPickUpFlame( i );
                     }
                 }
-            }
-            else
-            {
+            } else {
                 // Relight anyway!
-                if (lit[i] == true)
-                {
-                    if (Vector3.Distance(torches[i].position, testTransform.position) < pickUpRadius)
-                    {
-                        OnWrenPickUpFlame(i);
+                if ( lit[i] == true ) {
+                    if ( Vector3.Distance( torches[i].position , testTransform.position ) < pickUpRadius ) {
+                        OnWrenPickUpFlame( i );
                     }
                 }
 
-                if (lit[i] == false)
-                {
-                    if (Vector3.Distance(torches[i].position, testTransform.position) < dropRadius)
-                    {
-                        OnLightTorch(i);
+                if ( lit[i] == false ) {
+                    if ( Vector3.Distance( torches[i].position , testTransform.position ) < dropRadius ) {
+                        OnLightTorch( i );
                     }
                 }
 
@@ -122,18 +106,15 @@ public class TempleFlames : MonoBehaviour
         }
 
 
-
-        if (wrenCarryingFlame)
-        {
+        if ( wrenCarryingFlame ) {
             wrenOnFire.transform.position = testTransform.position;
 
-            wrenOnFire.transform.localScale = Vector3.one * fireScaleCurve.Evaluate(1 - fireValue) * fireScaleMultiplier;
+            wrenOnFire.transform.localScale = Vector3.one * fireScaleCurve.Evaluate( 1 - fireValue ) * fireScaleMultiplier;
 
             fireValue -= fireKillSpeed;
 
 
-            if (fireValue <= 0)
-            {
+            if ( fireValue <= 0 ) {
                 OnWrenDropFlame();
             }
 
@@ -142,18 +123,17 @@ public class TempleFlames : MonoBehaviour
     }
 
     public int totalLitTorches = 0;
-    public void OnLightTorch(int i)
+
+    public void OnLightTorch( int i )
     {
         lit[i] = true;
-        flames[i].SetActive(true);
+        flames[i].SetActive( true );
 
         totalLitTorches = 0;
 
-        for (int j = 0; j < lit.Count; j++)
-        {
+        for ( int j = 0; j < lit.Count; j++ ) {
 
-            if (lit[j] == true)
-            {
+            if ( lit[j] == true ) {
                 totalLitTorches++;
             }
 
@@ -161,25 +141,23 @@ public class TempleFlames : MonoBehaviour
 
 
         float amount = (float)totalLitTorches / (float)lit.Count;
-        print(amount);
-        quest.SetCompletion(amount);
+        print( amount );
+        quest.SetCompletion( amount );
 
 
     }
 
-    public void OnWrenPickUpFlame(int i)
+    public void OnWrenPickUpFlame( int i )
     {
         wrenCarryingFlame = true;
-        wrenOnFire.SetActive(true);
+        wrenOnFire.SetActive( true );
         fireValue = 1;
     }
 
     public void OnWrenDropFlame()
     {
         wrenCarryingFlame = false;
-        wrenOnFire.SetActive(false);
+        wrenOnFire.SetActive( false );
         fireValue = 0;
     }
-
-
 }

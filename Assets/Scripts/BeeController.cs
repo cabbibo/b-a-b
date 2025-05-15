@@ -10,9 +10,9 @@ public class BeeController : MonoBehaviour
     public Quest quest;
 
     public List<Transform> bees;
-    public List<bool> droppedOff;
-    public List<bool> followingWren;
-    public List<bool> lockedOnTrunk;
+    public List<bool>      droppedOff;
+    public List<bool>      followingWren;
+    public List<bool>      lockedOnTrunk;
 
     public List<int> whichTemple;
 
@@ -20,7 +20,7 @@ public class BeeController : MonoBehaviour
     public List<Vector3> positionsOnTrunk;
 
     public Transform[] temples;
-    public Transform dropOffLocation;
+    public Transform   dropOffLocation;
 
 
     public int totalBees;
@@ -33,7 +33,7 @@ public class BeeController : MonoBehaviour
 
 
     public Transform debugWren;
-    public bool debug;
+    public bool      debug;
 
     public Transform toFollow;
 
@@ -45,18 +45,17 @@ public class BeeController : MonoBehaviour
     {
 
 
-
-        if (reset)
-        {
+        if ( reset ) {
 
             // RESETING THE QUEST TO 0 SO WE CAN RESET THE BEEEES
-            if (resetQuest) { quest.Reset(); }
+            Debug.LogError( "WAIT" );
 
-
-            while (beeHolder.childCount > 0)
-            {
-                DestroyImmediate(beeHolder.GetChild(0).gameObject);
+            if ( resetQuest ) {
+                quest.activity.SetCompleteAmount( 0 );
             }
+
+
+            while (beeHolder.childCount > 0) DestroyImmediate( beeHolder.GetChild( 0 ).gameObject );
 
 
             bees = new List<Transform>();
@@ -67,30 +66,27 @@ public class BeeController : MonoBehaviour
             positionsOnTrunk = new List<Vector3>();
             whichTemple = new List<int>();
 
-            for (int i = 0; i < totalBees; i++)
-            {
+            for ( int i = 0; i < totalBees; i++ ) {
 
 
-
-                whichTemple.Add(Random.Range(0, temples.Length));
+                whichTemple.Add( Random.Range( 0 , temples.Length ) );
                 // print(whichTemple[i]);
-                bees.Add(Instantiate(beePrefab, temples[whichTemple[i]].position + Random.insideUnitSphere, Quaternion.identity).transform);
+                bees.Add( Instantiate( beePrefab , temples[whichTemple[i]].position + Random.insideUnitSphere , Quaternion.identity )
+                    .transform );
                 bees[i].parent = beeHolder;
 
-                if (quest.completed)
-                {
-                    droppedOff.Add(true);
-                    followingWren.Add(false);
-                    lockedOnTrunk.Add(true);
+                if ( quest.activity.completed ) {
+                    droppedOff.Add( true );
+                    followingWren.Add( false );
+                    lockedOnTrunk.Add( true );
+                } else {
+                    droppedOff.Add( false );
+                    followingWren.Add( false );
+                    lockedOnTrunk.Add( false );
                 }
-                else
-                {
-                    droppedOff.Add(false);
-                    followingWren.Add(false);
-                    lockedOnTrunk.Add(false);
-                }
-                vels.Add(Vector3.zero);
-                positionsOnTrunk.Add(dropOffLocation.position + Random.insideUnitSphere * 4f);
+
+                vels.Add( Vector3.zero );
+                positionsOnTrunk.Add( dropOffLocation.position + Random.insideUnitSphere * 4f );
             }
 
 
@@ -104,7 +100,7 @@ public class BeeController : MonoBehaviour
     public float dropOffRadius;
     public float beeDampening = .9f;
 
-    public float followDampening = .9f;
+    public float followDampening  = .9f;
     public float toTrunkDampening = .9f;
 
 
@@ -113,110 +109,94 @@ public class BeeController : MonoBehaviour
     //
 
     public int totalLocked;
+
     public float completionAmount;
+
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
-        if (God.wren)
-        {
+        if ( God.wren ) {
             toFollow = God.wren.transform;
-        }
-        else
-        {
+        } else {
             toFollow = debugWren;
         }
 
 
         totalLocked = 0;
-        for (int i = 0; i < bees.Count; i++)
-        {
+
+        for ( int i = 0; i < bees.Count; i++ ) {
 
 
-            if (lockedOnTrunk[i])
-            {
+            if ( lockedOnTrunk[i] ) {
 
                 totalLocked++;
                 bees[i].transform.position = positionsOnTrunk[i];
                 continue;
             }
 
-            if (followingWren[i])
-            {
-                WhileFollowingWren(i);
+            if ( followingWren[i] ) {
+                WhileFollowingWren( i );
             }
 
-            if (droppedOff[i])
-            {
-                MoveTowardsTrunkPosition(i);
+            if ( droppedOff[i] ) {
+                MoveTowardsTrunkPosition( i );
             }
 
             // if we arent following wren and we havent' been dropped off ( and not locked by continue implication)
             // check to see if we should follow wren
-            if (!followingWren[i] && !droppedOff[i])
-            {
+            if ( !followingWren[i] && !droppedOff[i] ) {
 
-                WhileAtTemple(i);
+                WhileAtTemple( i );
 
 
             }
-
 
 
             bees[i].transform.position += vels[i];
 
-            if (!followingWren[i] && !droppedOff[i])
-            {
+            if ( !followingWren[i] && !droppedOff[i] ) {
                 vels[i] *= whileAtTempleDampening;
-            }
-            else
-            {
-                if (followingWren[i])
-                {
+            } else {
+                if ( followingWren[i] ) {
                     vels[i] *= followDampening;
                 }
 
-                if (droppedOff[i])
-                {
+                if ( droppedOff[i] ) {
                     vels[i] *= toTrunkDampening;
                 }
             }
 
             // check to see if we should lock
-            if (Vector3.Distance(bees[i].transform.position, positionsOnTrunk[i]) < 0.1f)
-            {
+            if ( Vector3.Distance( bees[i].transform.position , positionsOnTrunk[i] ) < 0.1f ) {
                 lockedOnTrunk[i] = true;
             }
-
 
 
         }
 
         completionAmount = (float)totalLocked / (float)bees.Count;
 
-        if (quest.completed == false)
-        {
-            quest.SetCompletion(completionAmount);
+        if ( quest.activity.completed == false ) {
+            quest.SetCompletion( completionAmount );
         }
 
     }
 
     public float moveTowardsTrunkForce;
-    public void MoveTowardsTrunkPosition(int i)
+
+    public void MoveTowardsTrunkPosition( int i )
     {
         vels[i] += (positionsOnTrunk[i] - bees[i].transform.position) * moveTowardsTrunkForce;
     }
 
-    public void WhileFollowingWren(int i)
+    public void WhileFollowingWren( int i )
     {
-        if (Vector3.Distance(bees[i].transform.position, dropOffLocation.position) < dropOffRadius)
-        {
-            print("dropped off");
+        if ( Vector3.Distance( bees[i].transform.position , dropOffLocation.position ) < dropOffRadius ) {
+            print( "dropped off" );
             droppedOff[i] = true;
             followingWren[i] = false;
-        }
-        else
-        {
+        } else {
             vels[i] += (toFollow.position - bees[i].transform.position) * followForce;
 
         }
@@ -233,23 +213,21 @@ public class BeeController : MonoBehaviour
 
     public float desiredRadius;
 
-    Vector3 tmp1; Vector3 tmp2;
-    public void WhileAtTemple(int i)
+    private Vector3 tmp1;
+    private Vector3 tmp2;
+
+    public void WhileAtTemple( int i )
     {
-        if (Vector3.Distance(bees[i].transform.position, toFollow.position) < pickUpRadius)
-        {
+        if ( Vector3.Distance( bees[i].transform.position , toFollow.position ) < pickUpRadius ) {
             followingWren[i] = true;
-        }
-        else
-        {
+        } else {
 
             tmp1 = temples[whichTemple[i]].position - bees[i].transform.position;
 
 
             float dist = tmp1.magnitude;
 
-            if (dist < desiredRadius)
-            {
+            if ( dist < desiredRadius ) {
                 tmp2 = Random.insideUnitSphere;
                 tmp2.Normalize();
 
@@ -259,12 +237,10 @@ public class BeeController : MonoBehaviour
                 vels[i] += tmp2 * templePushAway;
             }
 
-            vels[i] += Vector3.Cross(tmp1.normalized, Vector3.up) * templeCurl;
+            vels[i] += Vector3.Cross( tmp1.normalized , Vector3.up ) * templeCurl;
 
             vels[i] += (temples[whichTemple[i]].position - bees[i].transform.position) * whileAtTempleForce;
         }
 
     }
-
-
 }

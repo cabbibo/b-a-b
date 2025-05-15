@@ -65,7 +65,7 @@ public class IslandData : MonoBehaviour
         Shader.SetGlobalTexture( "_FoodMap" , foodMap );
 
         for ( int i = 0; i < quests.Length; i++ ) {
-            quests[i].Initialize();
+            //quests[i].Initialize();
         }
 
     }
@@ -243,8 +243,8 @@ public class IslandData : MonoBehaviour
 
     public bool onIsland = false;
 
-    public PlayCutScene islandDiscoveredCutScene;
-    public PlayCutScene islandCompleteCutScene;
+    //public PlayCutScene islandDiscoveredCutScene;
+    //public PlayCutScene islandCompleteCutScene;
 
 
     public void OnIslandEnter()
@@ -265,7 +265,7 @@ public class IslandData : MonoBehaviour
 
             God.state.OnIslandDiscovered();
             // TODO PLAY DISCOVERED ANIMATION
-            islandDiscoveredCutScene.Play();
+            //islandDiscoveredCutScene.Play();
         }
 
 

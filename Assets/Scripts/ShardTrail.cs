@@ -135,18 +135,9 @@ public class ShardTrail : MonoBehaviour
 
             if ( j < uvs.Length ) {
 
-                print( "hasuvs" );
-
-                print( "hasuvs" );
-
                 values[j * 8 + 6] = uvs[j].x;
                 values[j * 8 + 7] = uvs[j].y;
             } else {
-
-                print( "no uves" );
-
-                print( "no uves" );
-
 
                 values[j * 8 + 6] = 0;
                 values[j * 8 + 7] = 0;

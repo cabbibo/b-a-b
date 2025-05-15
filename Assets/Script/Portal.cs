@@ -2,22 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
 using WrenUtils;
 
 [ExecuteAlways]
-
 public class Portal : MonoBehaviour
 {
-
     public int sceneID;
 
     public bool demo;
 
+    public bool isOn;
 
-
-    public int biome;
-    public int questID;
+    public int       biome;
+    public int       questID;
     public Transform startPoint;
 
     public PortalCollision portalCollision;
@@ -35,12 +32,8 @@ public class Portal : MonoBehaviour
     public float portalShownAmount;
 
 
-
-
-
-    public Transform collisionPoint;
+    public Transform      collisionPoint;
     public ParticleSystem successParticles;
-
 
 
     public void OnEnable()
@@ -49,40 +42,35 @@ public class Portal : MonoBehaviour
     }
 
 
-    MaterialPropertyBlock portalMPB;
+    private MaterialPropertyBlock portalMPB;
+
     public void Update()
     {
 
-        if (portalMPB == null)
-        {
+        if ( portalMPB == null ) {
             portalMPB = new MaterialPropertyBlock();
         }
 
 
-        portalRenderer.GetPropertyBlock(portalMPB);
-        portalMPB.SetFloat("_OpenAmount", portalShownAmount);
-        portalRenderer.SetPropertyBlock(portalMPB);
+        portalRenderer.GetPropertyBlock( portalMPB );
+        portalMPB.SetFloat( "_OpenAmount" , portalShownAmount );
+        portalRenderer.SetPropertyBlock( portalMPB );
     }
 
 
-    public void OnCollision(Collision c)
+    public void OnCollision( Collision c )
     {
 
-        float l1 = Vector3.Distance(God.camera.transform.position, collisionPointFront.position);
-        float l2 = Vector3.Distance(God.camera.transform.position, collisionPointBack.position);
+        float l1 = Vector3.Distance( God.camera.transform.position , collisionPointFront.position );
+        float l2 = Vector3.Distance( God.camera.transform.position , collisionPointBack.position );
 
-        if (l1 < l2)
-        {
+        if ( l1 < l2 ) {
             collisionPoint = collisionPointFront;
-        }
-        else
-        {
+        } else {
             collisionPoint = collisionPointBack;
         }
 
         collision = c;
-
-
 
 
         /*
@@ -93,18 +81,16 @@ public class Portal : MonoBehaviour
 
         System.Action doEnd = () =>
         {
-            if (demo)
-            {
-                God.sceneController.EndDemo(this);
+            if ( demo ) {
+                God.sceneController.EndDemo( this );
+            } else {
+                God.sceneController.LoadSceneFromPortal( this );
             }
-            else
-            {
-                God.sceneController.LoadSceneFromPortal(this);
-            }
+
             collider.enabled = false;
         };
 
-        /* 
+        /*
         // NEEDED ONLY FOR FLYING TUTORIAL
         if (FlyingTutorialSequence.Instance)
          {
@@ -135,6 +121,7 @@ public class Portal : MonoBehaviour
 
     public void OpenPortal()
     {
+        isOn = true;
         collider.enabled = true;
         portalRenderer.enabled = true;
         portalShownAmount = 0;
@@ -143,7 +130,8 @@ public class Portal : MonoBehaviour
     public void SetPortalFull()
     {
 
-        print(gameObject.name + " SETTING FULL");
+        isOn = true;
+        print( gameObject.name + " SETTING FULL" );
         collider.enabled = true;
         portalRenderer.enabled = true;
         portalShownAmount = 1;
@@ -152,12 +140,10 @@ public class Portal : MonoBehaviour
 
     public void SetPortalOff()
     {
+        isOn = false;
         collider.enabled = false;
         portalRenderer.enabled = false;
         portalShownAmount = 0;
 
     }
-
-
-
 }

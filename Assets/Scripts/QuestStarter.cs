@@ -5,22 +5,18 @@ using WrenUtils;
 
 public class QuestStarter : MonoBehaviour
 {
-
     public Quest quest;
 
-    public void OnTriggerEnter(Collider c)
+    public void OnTriggerEnter( Collider c )
     {
 
 
-        print("LETS GO");
+        print( "LETS GO" );
 
-        if (God.IsOurWren(c))
-        {
-            if (!quest.started)
-            {
+        if ( God.IsOurWren( c ) ) {
+            if ( !quest.activity.started ) {
                 quest.StartQuest();
             }
         }
     }
-
 }

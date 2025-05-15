@@ -10,70 +10,70 @@ using Crest;
 [CreateAssetMenu( fileName = "PostParameters" , menuName = "PostParameters" , order = 1 )]
 public class PostParameters : ScriptableObject
 {
-    public bool mainPost;
-    public bool bloom;
-    public bool colorGrading;
-    public bool vignette;
-    public bool lensDistortion;
-    public bool chromaticAberration;
-    public bool fogEffect;
-    public bool depthOfField;
-    public bool glitchEffect;
-    public bool splatEffect;
-    public bool ambientOcclusion;
-    public bool spaterPost;
-    public bool astigma;
-    public bool sketchEffect;
-    public bool dithered;
+    public bool mainPost            = false;
+    public bool bloom               = false;
+    public bool colorGrading        = false;
+    public bool vignette            = false;
+    public bool lensDistortion      = false;
+    public bool chromaticAberration = false;
+    public bool fogEffect           = false;
+    public bool depthOfField        = false;
+    public bool glitchEffect        = false;
+    public bool splatEffect         = false;
+    public bool ambientOcclusion    = false;
+    public bool spaterPost          = false;
+    public bool astigma             = false;
+    public bool sketchEffect        = false;
+    public bool dithered            = false;
 
 
     [Header( "Main Post Settings" )]
-    public float mainHue;
+    public float mainHue = 0;
 
-    public float mainSaturation;
-    public float mainLightness;
-    public float mainBlend;
-    public float mainFade;
+    public float mainSaturation = 1;
+    public float mainLightness  = 1;
+    public float mainBlend      = 1;
+    public float mainFade       = 1;
 
-    public Texture2D biomeMap;
+    public Texture2D biomeMap = null; //Texture2D.blackTexture;
 
 
     [Header( "Bloom Settings" )]
-    public float bloomIntensity;
+    public float bloomIntensity = 1;
 
-    public float bloomThreshold;
-    public float bloomDirtIntensity;
+    public float bloomThreshold     = 1;
+    public float bloomDirtIntensity = 1;
 
 
     [Header( "Color Grading Settings" )]
-    public Color colorFilter;
+    public Color colorFilter = Color.white;
 
-    public float   hueShift;
-    public float   saturation = 1;
-    public float   brightness = 1;
-    public float   contrast   = 1;
-    public float   postExposure;
-    public Vector4 lift  = new(1f , 1f , 1f , 0f);
-    public Vector4 gamma = new(1f , 1f , 1f , 0f);
-    public Vector4 gain  = new(1f , 1f , 1f , 0f);
+    public float   hueShift     = 0;
+    public float   saturation   = 1;
+    public float   brightness   = 1;
+    public float   contrast     = 1;
+    public float   postExposure = 0;
+    public Vector4 lift         = new(1f , 1f , 1f , 0f);
+    public Vector4 gamma        = new(1f , 1f , 1f , 0f);
+    public Vector4 gain         = new(1f , 1f , 1f , 0f);
 
 
     [Header( "Vignette Settings" )]
-    public float vignetteIntensity;
+    public float vignetteIntensity = 1;
 
-    public float vignetteSmoothness;
-    public float vignetteRoundness;
-    public Color vignetteColor;
-    public bool  vignetteRounded;
+    public float vignetteSmoothness = 1;
+    public float vignetteRoundness  = 1;
+    public Color vignetteColor      = Color.black;
+    public bool  vignetteRounded    = false;
 
 
     [Header( "Lens Distortion Settings" )]
-    public float lensDistortionIntensity;
+    public float lensDistortionIntensity = 1;
 
-    public float lensDistortionScale;
+    public float lensDistortionScale = 1;
 
     [Header( "Chromatic Aberration Settings" )]
-    public float chromaticAberrationIntensity;
+    public float chromaticAberrationIntensity = 1;
 
 
     [Header( "Fog Settings" )]
@@ -96,89 +96,89 @@ public class PostParameters : ScriptableObject
     public float fogLightColorImportance = 1;
 
     [Header( "Depth Of Field Settings" )]
-    public float depthOfFieldAperture;
+    public float depthOfFieldAperture = 1;
 
-    public float depthOfFieldFocalLength;
-    public float depthOfFieldFocusDistance;
-    public bool  focusOnWren;
+    public float depthOfFieldFocalLength   = 1;
+    public float depthOfFieldFocusDistance = 10;
+    public bool  focusOnWren               = true;
 
 
     [Header( "Glitch Settings" )]
-    public float glitchIntensity;
+    public float glitchIntensity = 1;
 
-    public float glitchBlend;
-    public float glitchSize;
-    public float glitchAmount;
-    public float glitchSpeed;
-    public float glitchSplit;
+    public float glitchBlend  = 1;
+    public float glitchSize   = 1;
+    public float glitchAmount = 1;
+    public float glitchSpeed  = 1;
+    public float glitchSplit  = 1;
 
 
     [Header( "Splat Settings" )]
-    public bool renderBackground;
+    public bool renderBackground = true;
 
-    public int   splatAmount;
-    public float splatSize;
+    public int   splatAmount = 1111;
+    public float splatSize   = 1;
 
-    public float splatSpeed;
-    public float splatMatchAmount;
-    public float normalForce;
-    public float curlForce;
-    public float curlSize;
-    public float normalOffset;
-    public float splatHueRandomness;
-    public float splatSaturationRandomness;
-    public float splatLightnessRandomness;
-    public float splatColorMultiplier;
+    public float splatSpeed                = 1;
+    public float splatMatchAmount          = 0;
+    public float normalForce               = 0;
+    public float curlForce                 = 0;
+    public float curlSize                  = 0;
+    public float normalOffset              = 0;
+    public float splatHueRandomness        = 0;
+    public float splatSaturationRandomness = 0;
+    public float splatLightnessRandomness  = 0;
+    public float splatColorMultiplier      = 2;
 
 
     [Header( "Ambient Occlusion Settings" )]
-    public float ambientOcclusionIntensity;
+    public float ambientOcclusionIntensity = 1;
 
-    public Color ambientOcclusionColor;
+    public Color ambientOcclusionColor = Color.black;
 
 
     [Header( "Spater Post Settings" )]
-    public float spaterPostFade;
+    public float spaterPostFade = 1;
 
-    public Texture2D spaterFrameTexture;
-    public Texture2D spaterFrameNoiseTexture;
-    public Color     spaterFrameColor;
-    public float     spaterFrameNoiseScale;
-    public float     spaterFrameNoiseChangeSpeed;
-    public float     spaterFrameNoiseWeight;
-    public float     spaterOverallMultiplier;
-    public float     spaterAudioPower;
-    public float     spaterAudioBase;
-    public float     spaterAudioDistort;
-    public float     spaterAudioLookupSize;
-    public float     spaterFrameNoiseRotation;
+    public Texture2D spaterFrameTexture          = null; //Texture2D.blackTexture;
+    public Texture2D spaterFrameNoiseTexture     = null; //Texture2D.blackTexture;
+    public Color     spaterFrameColor            = Color.white;
+    public float     spaterFrameNoiseScale       = 1;
+    public float     spaterFrameNoiseChangeSpeed = 1;
+    public float     spaterFrameNoiseWeight      = 1;
+    public float     spaterOverallMultiplier     = 1;
+    public float     spaterAudioPower            = 1;
+    public float     spaterAudioBase             = 1;
+    public float     spaterAudioDistort          = 1;
+    public float     spaterAudioLookupSize       = 1;
+    public float     spaterFrameNoiseRotation    = 1;
 
 
     [Header( "Astigma Settings" )]
-    public float astigmaIntensity;
+    public float astigmaIntensity = 1;
 
-    public float astigmaScale;
-    public float astigmaCutoff;
-    public float astimgaAngle;
-    public float astigmaNumSamples;
-    public float astigmaNumDirections;
+    public float astigmaScale         = 1;
+    public float astigmaCutoff        = 1;
+    public float astimgaAngle         = 1;
+    public float astigmaNumSamples    = 10;
+    public float astigmaNumDirections = 6;
 
 
     [Header( "Sketch Settings" )]
-    public float sketchIntensity;
+    public float sketchIntensity = 1;
 
-    public float     sketchScale;
-    public float     sketchChangeSpeed;
-    public Texture2D sketchTexture;
+    public float     sketchScale       = 1;
+    public float     sketchChangeSpeed = 1;
+    public Texture2D sketchTexture     = Texture2D.blackTexture;
 
     [Header( "Dither Settings" )]
-    public float ditherIntensity;
+    public float ditherIntensity = 1;
 
-    public int       ditherPixelScale;
-    public Texture2D ditherPattern;
-    public Texture3D ditherPrimary;
-    public Texture3D ditherSecondary;
-    public float     ditherNoiseIntensity;
+    public int       ditherPixelScale     = 1;
+    public Texture2D ditherPattern        = Texture2D.whiteTexture;
+    public Texture3D ditherPrimary        = null;
+    public Texture3D ditherSecondary      = null;
+    public float     ditherNoiseIntensity = 0;
 
     public void SetValues(
         MainPost mainPost_Reference ,

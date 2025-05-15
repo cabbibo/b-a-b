@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using Crest;
+using UnityEngine.Playables;
 
 
 namespace WrenUtils
@@ -22,6 +23,8 @@ namespace WrenUtils
         public bool startInFlight;
 
         public ScenePostSettings postSettings;
+        public PlayableDirector  playableDirector;
+        public ActivityManager   activityManager;
 
 
         public void SceneLoaded( int newScene , bool loadedFromPortal )
@@ -36,6 +39,8 @@ namespace WrenUtils
             God.interfaceTutorial.SetOff();
             God.cameraManager.lerpManager.enabled = true;
             God.cameraManager.SetBaseState();
+
+            God.playableDirector = playableDirector;
 
 
             if ( newScene == 0 ) {
@@ -69,6 +74,7 @@ namespace WrenUtils
 
 
             postSettings.Set();
+            activityManager.Initialize();
 
 
             OnLoadEvent.Invoke();
