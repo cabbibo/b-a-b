@@ -73,10 +73,10 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
-    - _OverallMultiplier: 0.44
+    - _OverallMultiplier: 0.4
     - _Parallax: 0.02
     - _Ratio: 1
-    - _Size: 0.004
+    - _Size: 0.007
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1

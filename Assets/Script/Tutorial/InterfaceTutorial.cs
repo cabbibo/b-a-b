@@ -300,6 +300,7 @@ public class InterfaceTutorial : MonoBehaviour
         Gentle ,
         Boost ,
         Ping ,
+        Magnetize ,
         Wiggle ,
         TakeOff ,
         Carry ,
@@ -327,8 +328,7 @@ public class InterfaceTutorial : MonoBehaviour
     public ControllerUIFeedbackGroup groupRelease2;
 
     public ControllerUIFeedbackGroup groupGentle;
-    public ControllerUIFeedbackGroup groupBoost;
-    public ControllerUIFeedbackGroup groupPing;
+
     public ControllerUIFeedbackGroup groupWiggle;
     public ControllerUIFeedbackGroup groupTakeOff;
 
@@ -345,6 +345,10 @@ public class InterfaceTutorial : MonoBehaviour
     public ControllerUIFeedbackGroup groupGround_Forward;
     public ControllerUIFeedbackGroup groupGround_Back;
 
+
+    public ControllerUIFeedbackGroup groupBoost;
+    public ControllerUIFeedbackGroup groupPing;
+    public ControllerUIFeedbackGroup groupMagnetize;
 
     [Header( "Controller" )]
     public GameObject button1;
@@ -632,6 +636,10 @@ public class InterfaceTutorial : MonoBehaviour
             SetFeedbackGroup( groupGround_Back );
         }
 
+        if ( hint == ControllerHint.Magnetize ) {
+            SetFeedbackGroup( groupMagnetize );
+        }
+
 
         /*
         groupLeft.SetActive( hint == ControllerHint.Left );
@@ -703,6 +711,9 @@ public class InterfaceTutorial : MonoBehaviour
                     break;
                 case ControllerHint.Ping:
                     controllerText.text = "PING";
+                    break;
+                case ControllerHint.Magnetize:
+                    controllerText.text = "MAGNETIZE";
                     break;
                 case ControllerHint.Wiggle:
                     controllerText.text = "WIGGLE";

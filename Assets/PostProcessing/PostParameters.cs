@@ -169,13 +169,13 @@ public class PostParameters : ScriptableObject
 
     public float     sketchScale       = 1;
     public float     sketchChangeSpeed = 1;
-    public Texture2D sketchTexture     = Texture2D.blackTexture;
+    public Texture2D sketchTexture     = null; // Texture2D.blackTexture;
 
     [Header( "Dither Settings" )]
     public float ditherIntensity = 1;
 
     public int       ditherPixelScale     = 1;
-    public Texture2D ditherPattern        = Texture2D.whiteTexture;
+    public Texture2D ditherPattern        = null; //Texture2D.whiteTexture;
     public Texture3D ditherPrimary        = null;
     public Texture3D ditherSecondary      = null;
     public float     ditherNoiseIntensity = 0;

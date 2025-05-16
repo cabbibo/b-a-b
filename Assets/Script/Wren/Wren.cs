@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using TMPro;
 using Normal.Realtime;
@@ -47,10 +48,12 @@ public class Wren : MonoBehaviour
 
     public WrenWaterController waterController;
 
+
+    [Header( "input activities" )]
     public WrenInterfaceUtils interfaceUtils;
 
-
     public WrenDisintegrationManager disintegration;
+    public WrenMagnetize             magnetize;
 
 
     public Caller     caller;
@@ -292,14 +295,14 @@ public class Wren : MonoBehaviour
 
             // ALWAYS PING
             if ( input.o_triangle < .5 && input.triangle > .5 && God.wrenCanDo.ping ) {
-                if ( interfaceUtils != null ) {
-                    interfaceUtils.OnPing();
-                }
+
+                DoPing();
+
             }
 
             // ALWAYS DISINTEGRATE
             if ( input.o_square < .5 && input.square > .5 && God.wrenCanDo.disintegrate ) {
-                disintegration.Disintegrate();
+                DoDisintegrate();
             }
 
             if ( input.left1 > .1f || input.right1 > .1f ) {
@@ -372,8 +375,7 @@ public class Wren : MonoBehaviour
 
 
                 if ( input.o_ex < .5 && input.ex > .5 && physics.onGround == false && God.wrenCanDo.hover ) {
-                    God.audio.Play( God.sounds.takeoffClip );
-                    physics.ToggleHoverState();
+                    DoHover();
                 }
 
 
@@ -382,15 +384,19 @@ public class Wren : MonoBehaviour
 
                     God.audio.Play( God.sounds.takeoffClip );
                     state.TakeOff();
+
                 }
 
 
                 if ( input.o_circle < .5 && input.circle > .5 && physics.onGround == false &&
                      state.inInterface == false && shards.numShards > 0 && God.wrenCanDo.boost ) {
-                    God.audio.Play( God.sounds.boostClip );
-                    shards.DoBoost();
-                    ;
-                    physics.Boost();
+                    DoBoost();
+
+                }
+
+                if ( input.o_dRight < .5 && input.dRight > .5 && state.inInterface == false &&
+                     God.wrenCanDo.magnetize ) {
+                    DoMagnetize();
                 }
 
 
@@ -806,5 +812,54 @@ public class Wren : MonoBehaviour
         startingPosition.position = position;
         FullReset();
 
+    }
+
+
+    /*
+     *
+     *
+     * DOers
+     *
+     *
+     *
+     */
+
+    public void DoBoost()
+    {
+        God.audio.Play( God.sounds.boostClip );
+        shards.DoBoost();
+        physics.Boost();
+    }
+
+
+    public void DoMagnetize()
+    {
+
+        magnetize.DoMagnetize();
+        // physics.Magnetize();
+    }
+
+    public void DoDisintegrate()
+    {
+
+        disintegration.Disintegrate();
+
+
+    }
+
+    public void DoPing()
+    {
+
+        if ( interfaceUtils != null ) {
+            interfaceUtils.OnPing();
+        }
+
+    }
+
+    public void DoHover()
+    {
+
+        God.audio.Play( God.sounds.takeoffClip );
+        physics.ToggleHoverState();
     }
 }

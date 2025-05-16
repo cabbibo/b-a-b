@@ -74,13 +74,14 @@ Shader "Islands/Island/Terrain"
 
             // Giving our selves stencil info 
             // for our outline shader to use
-            Stencil
-            {
-                Ref [_StencilMask]
-                Comp always
-                Pass replace
-                ZFail keep
-            }
+            /* Stencil
+             {
+                 Ref [_StencilMask]
+                 Comp always
+                 Pass replace
+                 ZFail keep
+             }*/
+
             Tags
             {
                 "RenderType"="Opaque" "LightMode" = "ForwardBase"
@@ -220,6 +221,50 @@ Shader "Islands/Island/Terrain"
 
 
 
+
+
+
+
+
+        // shadow caster rendering pass, implemented manually
+        // using macros from UnityCG.cginc
+        Pass
+        {
+            Tags
+            {
+                "LightMode"="ShadowCaster"
+            }
+
+            Cull Off
+            CGPROGRAM
+            #pragma vertex SetShadowVaryings
+            #pragma fragment frag
+            #pragma multi_compile_shadowcaster
+
+            float4 frag( varyings i ) : SV_Target
+            {
+                LightingData lightingData;
+                GetLightingData( i.worldPos , i.eye , i.nor , _WorldSpaceLightPos0.xyz , lightingData );
+                SHADOW_CASTER_FRAGMENT( i );
+
+
+            }
+            ENDCG
+        }
+
+
+
+
+
+    }
+
+}
+
+
+
+
+
+/*
         Pass
         {
 
@@ -400,45 +445,4 @@ Shader "Islands/Island/Terrain"
             }
             ENDCG
         }
-
-
-
-
-
-
-
-
-
-        // shadow caster rendering pass, implemented manually
-        // using macros from UnityCG.cginc
-        Pass
-        {
-            Tags
-            {
-                "LightMode"="ShadowCaster"
-            }
-
-            Cull Off
-            CGPROGRAM
-            #pragma vertex SetShadowVaryings
-            #pragma fragment frag
-            #pragma multi_compile_shadowcaster
-
-            float4 frag( varyings i ) : SV_Target
-            {
-                LightingData lightingData;
-                GetLightingData( i.worldPos , i.eye , i.nor , _WorldSpaceLightPos0.xyz , lightingData );
-                SHADOW_CASTER_FRAGMENT( i );
-
-
-            }
-            ENDCG
-        }
-
-
-
-
-
-    }
-
-}
+*/

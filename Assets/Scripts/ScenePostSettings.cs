@@ -47,6 +47,7 @@ public class ScenePostSettings : MonoBehaviour
             // God.wren.bird.SetMaterial(birdMaterial);
             God.wren.bird.featherMaterial = birdMaterial;
             God.wren.shards.shardTrail.debugMaterial = shardTrail;
+            God.wren.physics.forceDebugMaterial = forcesMaterial;
         }
 
         God.postController.SetPostParameters( postParameters );

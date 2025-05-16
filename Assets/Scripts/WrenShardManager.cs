@@ -33,6 +33,8 @@ public class WrenShardManager : MonoBehaviour
 
 
     public float boostNumLost;
+    public float disintegrateNumLost;
+    public float magnetizeBoostNumLost;
     public float reverseNumLost;
     public float callNumLost;
 
@@ -41,6 +43,16 @@ public class WrenShardManager : MonoBehaviour
     {
         print( "SPEND" );
         SpendShards( (int)boostNumLost );
+    }
+
+    public void DoDisintegrate()
+    {
+        SpendShards( (int)disintegrateNumLost );
+    }
+
+    public void DoMagnetize()
+    {
+        SpendShards( (int)magnetizeBoostNumLost );
     }
 
     public void DoSkim( Vector3 location )
@@ -64,10 +76,6 @@ public class WrenShardManager : MonoBehaviour
         CollectShards( (int)gainedPerSkim , id , location );
     }
 
-    public void DoDisintegrate()
-    {
-
-    }
 
     public void DoCrash()
     {

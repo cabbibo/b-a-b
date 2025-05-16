@@ -27853,6 +27853,7 @@ MonoBehaviour:
   waterController: {fileID: 3650603336123196005}
   interfaceUtils: {fileID: 0}
   disintegration: {fileID: 0}
+  magnetize: {fileID: 0}
   caller: {fileID: 4017670710845976570}
   reseter: {fileID: 2762107815857605068}
   collection: {fileID: 0}
@@ -28599,11 +28600,14 @@ MonoBehaviour:
   gainedPerSkim: 0
   gainedWhileClose: 0
   boostNumLost: 0
+  disintegrateNumLost: 0
+  magnetizeBoostNumLost: 0
   reverseNumLost: 0
   callNumLost: 0
   bodyPercentage: 0
   shardPercentage: 0
   shardTrailPercentage: 0
+  trail: {fileID: 0}
   shardTrail: {fileID: 0}
 --- !u!1 &9160943688594033059
 GameObject:

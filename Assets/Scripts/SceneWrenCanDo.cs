@@ -5,14 +5,13 @@ using WrenUtils;
 
 public class SceneWrenCanDo : MonoBehaviour
 {
-
     public bool hover;
     public bool boost;
     public bool ping;
     public bool disintegrate;
 
     public bool call;
-    public bool magnitize;
+    public bool magnetize;
     public bool placeBeacon;
     public bool rewind;
 
@@ -28,8 +27,7 @@ public class SceneWrenCanDo : MonoBehaviour
     {
 
 
-        if (hardSet)
-        {
+        if ( hardSet ) {
 
             God.wrenCanDo.hover = hover;
             God.wrenCanDo.boost = boost;
@@ -37,32 +35,54 @@ public class SceneWrenCanDo : MonoBehaviour
             God.wrenCanDo.disintegrate = disintegrate;
 
             God.wrenCanDo.call = call;
-            God.wrenCanDo.magnitize = magnitize;
+            God.wrenCanDo.magnetize = magnetize;
             God.wrenCanDo.placeBeacon = placeBeacon;
             God.wrenCanDo.rewind = rewind;
 
             God.wrenCanDo.carry = carry;
 
-        }
-        else
-        {
-            if (hover) { God.wrenCanDo.hover = true; }
-            if (boost) { God.wrenCanDo.boost = true; }
-            if (ping) { God.wrenCanDo.ping = true; }
-            if (disintegrate) { God.wrenCanDo.disintegrate = true; }
+        } else {
+            if ( hover ) {
+                God.wrenCanDo.hover = true;
+            }
 
-            if (call) { God.wrenCanDo.call = true; }
-            if (magnitize) { God.wrenCanDo.magnitize = true; }
-            if (placeBeacon) { God.wrenCanDo.placeBeacon = true; }
-            if (rewind) { God.wrenCanDo.rewind = true; }
+            if ( boost ) {
+                God.wrenCanDo.boost = true;
+            }
 
-            if (carry) { God.wrenCanDo.carry = true; }
+            if ( ping ) {
+                God.wrenCanDo.ping = true;
+            }
+
+            if ( disintegrate ) {
+                God.wrenCanDo.disintegrate = true;
+            }
+
+            if ( call ) {
+                God.wrenCanDo.call = true;
+            }
+
+            if ( magnetize ) {
+                God.wrenCanDo.magnetize = true;
+            }
+
+            if ( placeBeacon ) {
+                God.wrenCanDo.placeBeacon = true;
+            }
+
+            if ( rewind ) {
+                God.wrenCanDo.rewind = true;
+            }
+
+            if ( carry ) {
+                God.wrenCanDo.carry = true;
+            }
         }
 
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
     }

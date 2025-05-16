@@ -2,10 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
+
 public class WrenDisintegrationManager : MonoBehaviour
 {
-
-
     public string layerWhole;
     public string layerDisintegrated;
 
@@ -17,50 +16,46 @@ public class WrenDisintegrationManager : MonoBehaviour
 
     public void OnEnable()
     {
-        SetLayer(layerWhole);
+        SetLayer( layerWhole );
     }
 
 
-    public bool isRunning = false;
-    Coroutine disintegrateRoutine;
+    public  bool      isRunning = false;
+    private Coroutine disintegrateRoutine;
+
     public void Disintegrate()
     {
+        God.audio.Play( God.sounds.disintegrateClip );
+        wren.shards.DoDisintegrate();
 
+        print( "disintegrate" );
+        SetLayer( layerDisintegrated );
 
-        print("disintegrate");
-        SetLayer(layerDisintegrated);
-        if (wren.state.onGround == true)
-        {
+        if ( wren.state.onGround == true ) {
 
-        }
-        else
-        {
+        } else {
             wren.bird.Reintegrate(); // only reintegrate if we are not on the ground
         }
 
         wren.bird.Disintegrate();
         StopAllCoroutines();
 
-        if (isRunning == true)
-        {
-            StopCoroutine(disintegrateRoutine);
+        if ( isRunning == true ) {
+            StopCoroutine( disintegrateRoutine );
         }
 
-        disintegrateRoutine = StartCoroutine(DisintegrateRoutine());
+        disintegrateRoutine = StartCoroutine( DisintegrateRoutine() );
 
     }
 
     public void Reintegrate()
     {
-        print("reintegrate");
-        SetLayer(layerWhole);
+        print( "reintegrate" );
+        SetLayer( layerWhole );
 
-        if (wren.state.onGround == true)
-        {
+        if ( wren.state.onGround == true ) {
 
-        }
-        else
-        {
+        } else {
             wren.bird.Reintegrate(); // only reintegrate if we are not on the ground
         }
     }
@@ -70,16 +65,16 @@ public class WrenDisintegrationManager : MonoBehaviour
 
         isRunning = true;
 
-        yield return new WaitForSeconds(disintegrationTime);
+        yield return new WaitForSeconds( disintegrationTime );
 
         // TODO see if there is a way to check if we are currently "inside" a mesh 
         // maybe ray case from way above, see what layer we hit, if its not terrain, wait to reintegrate?
         // ray cast from behind, and from in front, if they both hit same object we are in it? wait to reintegrate?
         // see how close wrens closest object is if its too close wait to reintegrate
 
-        print("startReintegrate");
-        print(God.wren.physics.rawDistToGround);
-        print(God.wren.physics.closestTag);
+        print( "startReintegrate" );
+        print( God.wren.physics.rawDistToGround );
+        print( God.wren.physics.closestTag );
 
         /*if( God.wren.physics.closestTag == "Terrain" && God.wren.physics.rawDistToGround < reintegrationDistance)
         {
@@ -90,21 +85,15 @@ public class WrenDisintegrationManager : MonoBehaviour
 
         bool canReintegrate = false;
 
-        string layer = LayerMask.LayerToName(God.wren.physics.closestObject.layer);
+        string layer = LayerMask.LayerToName( God.wren.physics.closestObject.layer );
+
         while (canReintegrate == false)
-        {
-
-            if (layer == "Terrain" || God.wren.physics.rawDistToGround > reintegrationDistance)
-            {
+            if ( layer == "Terrain" || God.wren.physics.rawDistToGround > reintegrationDistance ) {
                 canReintegrate = true;
-                yield return new WaitForSeconds(.1f);
+                yield return new WaitForSeconds( .1f );
+            } else {
+                yield return new WaitForSeconds( .1f );
             }
-            else
-            {
-                yield return new WaitForSeconds(.1f);
-            }
-
-        }
 
         /*
 
@@ -129,7 +118,7 @@ public class WrenDisintegrationManager : MonoBehaviour
 
                 }*/
 
-        print("next section before reintergate");
+        print( "next section before reintergate" );
 
 
         Reintegrate();
@@ -144,29 +133,29 @@ public class WrenDisintegrationManager : MonoBehaviour
     }
 
 
-    public void SetLayer(string layer)
+    public void SetLayer( string layer )
     {
         //  print("set layer " + layer);
-        wren.gameObject.layer = LayerMask.NameToLayer(layer);
+        wren.gameObject.layer = LayerMask.NameToLayer( layer );
 
-        SetGameLayerRecursive(wren.gameObject, LayerMask.NameToLayer(layer));
+        SetGameLayerRecursive( wren.gameObject , LayerMask.NameToLayer( layer ) );
     }
 
 
     // TODO: dont need to set all these
-    private void SetGameLayerRecursive(GameObject _go, int _layer)
+    private void SetGameLayerRecursive( GameObject _go , int _layer )
     {
         _go.layer = _layer;
-        foreach (Transform child in _go.transform)
-        {
+
+        foreach (Transform child in _go.transform) {
             child.gameObject.layer = _layer;
 
-            Transform _HasChildren = child.GetComponentInChildren<Transform>();
-            if (_HasChildren != null)
-                SetGameLayerRecursive(child.gameObject, _layer);
+            var _HasChildren = child.GetComponentInChildren<Transform>();
+
+            if ( _HasChildren != null ) {
+                SetGameLayerRecursive( child.gameObject , _layer );
+            }
 
         }
     }
-
-
 }

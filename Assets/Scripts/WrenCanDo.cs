@@ -11,7 +11,7 @@ public class WrenCanDo : MonoBehaviour
     public bool disintegrate;
 
     public bool call;
-    public bool magnitize;
+    public bool magnetize;
     public bool placeBeacon;
     public bool rewind;
 
@@ -26,7 +26,7 @@ public class WrenCanDo : MonoBehaviour
     public bool hasLearnedDisintegrate;
 
     public bool hasLearnedCall;
-    public bool hasLearnedMagnitize;
+    public bool hasLearnedMagnetize;
     public bool hasLearnedPlaceBeacon;
     public bool hasLearnedRewind;
 
@@ -44,7 +44,7 @@ public class WrenCanDo : MonoBehaviour
         PlayerPrefs.SetInt( "disintegrate" , disintegrate ? 1 : 0 );
 
         PlayerPrefs.SetInt( "call" , call ? 1 : 0 );
-        PlayerPrefs.SetInt( "magnitize" , magnitize ? 1 : 0 );
+        PlayerPrefs.SetInt( "magnetize" , magnetize ? 1 : 0 );
         PlayerPrefs.SetInt( "placeBeacon" , placeBeacon ? 1 : 0 );
         PlayerPrefs.SetInt( "rewind" , rewind ? 1 : 0 );
 
@@ -60,7 +60,7 @@ public class WrenCanDo : MonoBehaviour
         PlayerPrefs.SetInt( "hasLearnedDisintegrate" , hasLearnedDisintegrate ? 1 : 0 );
 
         PlayerPrefs.SetInt( "hasLearnedCall" , hasLearnedCall ? 1 : 0 );
-        PlayerPrefs.SetInt( "hasLearnedMagnitize" , hasLearnedMagnitize ? 1 : 0 );
+        PlayerPrefs.SetInt( "hasLearnedMagnetize" , hasLearnedMagnetize ? 1 : 0 );
         PlayerPrefs.SetInt( "hasLearnedPlaceBeacon" , hasLearnedPlaceBeacon ? 1 : 0 );
         PlayerPrefs.SetInt( "hasLearnedRewind" , hasLearnedRewind ? 1 : 0 );
 
@@ -79,7 +79,7 @@ public class WrenCanDo : MonoBehaviour
         disintegrate = PlayerPrefs.GetInt( "disintegrate" , 0 ) == 1;
 
         call = PlayerPrefs.GetInt( "call" , 0 ) == 1;
-        magnitize = PlayerPrefs.GetInt( "magnitize" , 0 ) == 1;
+        magnetize = PlayerPrefs.GetInt( "magnetize" , 0 ) == 1;
         placeBeacon = PlayerPrefs.GetInt( "placeBeacon" , 0 ) == 1;
         rewind = PlayerPrefs.GetInt( "rewind" , 0 ) == 1;
 
@@ -93,7 +93,7 @@ public class WrenCanDo : MonoBehaviour
         hasLearnedDisintegrate = PlayerPrefs.GetInt( "hasLearnedDisintegrate" , 0 ) == 1;
 
         hasLearnedCall = PlayerPrefs.GetInt( "hasLearnedCall" , 0 ) == 1;
-        hasLearnedMagnitize = PlayerPrefs.GetInt( "hasLearnedMagnitize" , 0 ) == 1;
+        hasLearnedMagnetize = PlayerPrefs.GetInt( "hasLearnedMagnetize" , 0 ) == 1;
         hasLearnedPlaceBeacon = PlayerPrefs.GetInt( "hasLearnedPlaceBeacon" , 0 ) == 1;
         hasLearnedRewind = PlayerPrefs.GetInt( "hasLearnedRewind" , 0 ) == 1;
 
@@ -114,7 +114,7 @@ public class WrenCanDo : MonoBehaviour
         disintegrate = false;
 
         call = false;
-        magnitize = false;
+        magnetize = false;
         placeBeacon = false;
         rewind = false;
 
@@ -129,7 +129,7 @@ public class WrenCanDo : MonoBehaviour
         hasLearnedDisintegrate = false;
 
         hasLearnedCall = false;
-        hasLearnedMagnitize = false;
+        hasLearnedMagnetize = false;
         hasLearnedPlaceBeacon = false;
         hasLearnedRewind = false;
 

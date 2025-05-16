@@ -110,6 +110,10 @@ public class Sounds : MonoBehaviour
     public AudioClip interfacePingClip;
 
     public AudioClip boostClip;
+    public AudioClip magnetizeClip;
+    public AudioClip disintegrateClip;
+    public AudioClip rewindClip;
+    public AudioClip hoverClip;
 
 
     public AudioClip crystalTogetherClip;
