@@ -129,6 +129,8 @@
             #include "Assets/Resources/Shaders/Chunks/noise.cginc"
             #include "Assets/Resources/Shaders/Chunks/generic_desaturate.cginc"
 
+            #include "UnityLightingCommon.cginc"
+
             float2 GetXYCoordsInPlane( float3 p1 , float3 v1 , float3 up )
             {
 
@@ -300,6 +302,40 @@
                 col = generic_desaturate( col , 0.1 );
                 //  col            = offset;
                 col = lerp( col * ( offset + 1 ) , col , rd.y * rd.y );
+
+                float lightMatch = dot( normalize( rd ) , _WorldSpaceLightPos0 );
+                lightMatch       = ( lightMatch + 1 ) / 2;
+                lightMatch *= .5;
+                lightMatch += .5;
+
+                col = col * ( ( _LightColor0 * lightMatch ) + ( 1 - lightMatch ) );
+                /* if ( lightMatch > .98 )
+                 {
+                     col = _LightColor0;
+                 }*/
+
+
+
+
+
+                for ( int i = 0; i < 3; i++ )
+                {
+                    float3 fPos = _WorldSpaceCameraPos * .1 + v.ro * 100 + rd * i * 30.1f;
+                    col += .5 * _LightColor0.xyz * float3( 1 , float( i ) * .2 + .8 , 1 ) * pow( noise( fPos * .1 ) , 1 ) * 10 * pow( saturate( dot( _LightDir , -normalize( rd ) ) ) , 101 );
+                    col += .2 * _LightColor0.xyz * float3( 1 , 1 , 1 - float( i ) * .2 ) * pow( noise( fPos * .4 ) , 1 ) * 10 * pow( saturate( dot( _LightDir , -normalize( rd ) ) ) , 101 );
+
+
+                    float2 xy = GetXYCoordsInPlane( _WorldSpaceCameraPos * .1 + v.ro * 400 + rd * i * 100.1f , _LightDir , float3( 0 , 1 , 0 ) );
+
+                    float ang = atan2( xy.y , xy.x );
+
+                    //col += .2 * float3( 1 , float( i ) * .2 + .4 , .2 ) * noise( ang * 10 + float3( 0 , _Time.y * ( i - 1.5 ) * .4 , 0 ) ) * pow( saturate( dot( -_LightDir , rd ) ) , 10 ) * 1; //length(xy) * .01;//length(xy) * .1;//1 / length( xy );// * .0001;
+
+
+                }
+
+
+                col = saturate( col ); // / .8;
 
                 //col = float3( v.ro.x , v.ro.y * 1 , .3 ); // normalize( rd ) * .5; // + .5;
 

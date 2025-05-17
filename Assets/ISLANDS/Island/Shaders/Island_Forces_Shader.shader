@@ -110,11 +110,11 @@ Shader "Islands/Island/Forces"
 
                     float3 p1 = -l;
                     float3 p2 = l;
-                    float3 p3 = l + u * 2*_Ratio;
+                    float3 p3 = l + u * 2 * _Ratio;
 
                     float3 p4 = -l;
-                    float3 p5 = l + u * 2*_Ratio;
-                    float3 p6 = -l + u * 2*_Ratio;
+                    float3 p5 = l + u * 2 * _Ratio;
+                    float3 p6 = -l + u * 2 * _Ratio;
 
                     if ( alternate == 0 )
                     {
@@ -171,6 +171,7 @@ Shader "Islands/Island/Forces"
             sampler2D _MainTex;
 
             float _OverallMultiplier;
+            #include "UnityLightingCommon.cginc"
 
             //Pixel function returns a solid color for each point.
             float4 frag( varyings v ) : COLOR
@@ -200,7 +201,7 @@ Shader "Islands/Island/Forces"
                 col *= ( .5 - abs( v.uv.x - .5 ) ) * 2;
                 col *= ( 1 - abs( v.uv.y ) ) * 2;
                 col *= tex.r;
-                col *= length( v.nor ) * _OverallMultiplier * _Color;
+                col *= length( v.nor ) * _OverallMultiplier * _Color * _LightColor0;
 
 
                 return float4( col , 1 );

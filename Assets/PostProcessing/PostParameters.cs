@@ -163,13 +163,27 @@ public class PostParameters : ScriptableObject
     public float astigmaNumSamples    = 10;
     public float astigmaNumDirections = 6;
 
+    public bool      astigmaUseTexture   = false;
+    public Texture2D astigmaBokehTexture = null; //Texture2D.whiteTexture;
+    public Color     astigmaColor        = Color.white;
+
 
     [Header( "Sketch Settings" )]
     public float sketchIntensity = 1;
 
-    public float     sketchScale       = 1;
-    public float     sketchChangeSpeed = 1;
-    public Texture2D sketchTexture     = null; // Texture2D.blackTexture;
+    public float     sketchScale                     = 1;
+    public float     sketchChangeSpeed               = 1;
+    public Texture2D sketchPaintMap                  = null; // Texture2D.blackTexture;
+    public float     sketchNoiseSpeed                = 6;
+    public float     sketchNoiseScale                = 4;
+    public float     sketchNoiseSampleRotation       = .5f;
+    public float     sketchNoiseSampleRotationSize   = .2f;
+    public float     sketchNoiseSampleChromaticSplit = .002f;
+    public float     sketchNoiseSampleOffset         = .00f;
+    public float     sketchBorderSubtractor          = .95f;
+    public float     sketchBorderMultiplier          = 20f;
+    public float     sketchBorderNoiseAdder          = .6f;
+    public Color     sketchBorderColor               = Color.white;
 
     [Header( "Dither Settings" )]
     public float ditherIntensity = 1;
@@ -250,6 +264,9 @@ public class PostParameters : ScriptableObject
         astigma_Reference.angle.value = astimgaAngle;
         astigma_Reference.numSamples.value = astigmaNumSamples;
         astigma_Reference.numDirections.value = astigmaNumDirections;
+        astigma_Reference.useTexture.value = astigmaUseTexture;
+        astigma_Reference.texture.value = astigmaBokehTexture;
+        astigma_Reference.color.value = astigmaColor;
 
 
         bloom_Reference.intensity.value = bloomIntensity;
@@ -320,10 +337,24 @@ public class PostParameters : ScriptableObject
         spaterPost_Reference.frameNoiseRotation.value = spaterFrameNoiseRotation;
 
 
-        sketchEffect_Reference.paintMap.value = sketchTexture;
+        sketchEffect_Reference.paintMap.value = sketchPaintMap;
         sketchEffect_Reference.intensity.value = sketchIntensity;
         sketchEffect_Reference.scale.value = sketchScale;
         sketchEffect_Reference.changeSpeed.value = sketchChangeSpeed;
+
+        sketchEffect_Reference._NoiseSpeed.value = sketchNoiseSpeed;
+        sketchEffect_Reference._NoiseScale.value = sketchNoiseScale;
+        sketchEffect_Reference._NoiseSampleRotation.value = sketchNoiseSampleRotation;
+        sketchEffect_Reference._NoiseSampleRotationSize.value = sketchNoiseSampleRotationSize;
+        sketchEffect_Reference._NoiseSampleChromaticSplit.value = sketchNoiseSampleChromaticSplit;
+        sketchEffect_Reference._NoiseSampleOffset.value = sketchNoiseSampleOffset;
+
+
+        sketchEffect_Reference._BorderSubtractor.value = sketchBorderSubtractor;
+        sketchEffect_Reference._BorderMultiplier.value = sketchBorderMultiplier;
+        sketchEffect_Reference._BorderNoiseAdder.value = sketchBorderNoiseAdder;
+        sketchEffect_Reference._BorderColor.value = sketchBorderColor;
+
 
         dither_Reference.intensity.value = ditherIntensity;
         dither_Reference.pixelScale.value = ditherPixelScale;
@@ -517,11 +548,25 @@ public class PostParameters : ScriptableObject
         p.astimgaAngle = astimgaAngle;
         p.astigmaNumSamples = astigmaNumSamples;
         p.astigmaNumDirections = astigmaNumDirections;
+        p.astigmaUseTexture = astigmaUseTexture;
+        p.astigmaBokehTexture = astigmaBokehTexture;
+        p.astigmaColor = astigmaColor;
 
         p.sketchIntensity = sketchIntensity;
         p.sketchScale = sketchScale;
         p.sketchChangeSpeed = sketchChangeSpeed;
-        p.sketchTexture = sketchTexture;
+        p.sketchPaintMap = sketchPaintMap;
+        p.sketchNoiseSpeed = sketchNoiseSpeed;
+        p.sketchNoiseScale = sketchNoiseScale;
+        p.sketchNoiseSampleRotation = sketchNoiseSampleRotation;
+        p.sketchNoiseSampleRotationSize = sketchNoiseSampleRotationSize;
+        p.sketchNoiseSampleChromaticSplit = sketchNoiseSampleChromaticSplit;
+        p.sketchNoiseSampleOffset = sketchNoiseSampleOffset;
+        p.sketchBorderSubtractor = sketchBorderSubtractor;
+        p.sketchBorderMultiplier = sketchBorderMultiplier;
+        p.sketchBorderNoiseAdder = sketchBorderNoiseAdder;
+        p.sketchBorderColor = sketchBorderColor;
+
 
         p.ditherIntensity = ditherIntensity;
         p.ditherPixelScale = ditherPixelScale;

@@ -4,6 +4,9 @@
     {
 
         _Color ("Color", Color) = (1,1,1,1)
+        _Color2 ("Color2", Color) = (1,1,1,1)
+        _Color3 ("Color3", Color) = (1,1,1,1)
+
         _Size ("Size", float) = .01
         _LifeDivider ("_LifeDivider", float) = 10
     }
@@ -219,6 +222,8 @@
             float       _LifeDivider;
             samplerCUBE _Skybox;
 
+            float4 _Color2;
+            float4 _Color3;
             //Pixel function returns a solid color for each point.
             float4 frag( varyings v ) : COLOR
             {
@@ -266,10 +271,17 @@
 
                 col = shadow * .3;
 
-                col = calcSparkles( v.worldPos * .1 , refracted );
-                col *= ( dot( _WorldSpaceLightPos0 , v.nor ) + 1 );
-                col *= col;
-                col *= .5;
+                col       = calcSparkles( v.worldPos * .1 , refracted );
+                float val = length( col );
+                //col = lerp( _Color , _Color2 , length( col ) );
+
+                col *= _Color3 * _LightColor0 * pow( saturate( 1 - dot( v.nor , normalize( v.eye ) ) ) , 10 ) * .5 * ( val + 3 );
+                col += _Color * _LightColor0 * saturate( ( dot( _WorldSpaceLightPos0 , v.nor ) + 1 ) ) * ( val + .5 );
+                col += _Color2 * _LightColor0 * pow( ( saturate( dot( _WorldSpaceLightPos0 , reflect( -normalize( v.eye ) , v.nor ) ) ) ) , 100 ) * 2 * ( val + .5 );
+
+                // col *= ( dot( _WorldSpaceLightPos0 , v.nor ) + 1 );
+                //  col *= col;
+                //col *= .5;
                 //col *= _LightColor0;
                 // col
                 //col = bgCol;

@@ -839,10 +839,10 @@ Shader "Islands/Island/Ocean"
                 //col = normal * .5 + .5;
 
                 //col = normal;// * .5 + .5;
-                col = lerp( float3( 0.2 , .3 , .6 ) * length( paint2 ) * .2 , float3( .8 , .9 , 1 ) * length( paint ) , 1 - pow( dot( normal , float3( 0 , 1 , 0 ) ) , 2 ) );
+                //col = lerp( float3( 0.2 , .3 , .6 ) * length( paint2 ) * .2 , float3( .8 , .9 , 1 ) * length( paint ) , 1 - pow( dot( normal , float3( 0 , 1 , 0 ) ) , 2 ) );
 
 
-                col = PainterlyColor( float3( .1 , .1 , .1 ) , float3( .5 , .5 , .5 ) , lightMatch , uvPosition );
+                //  col = PainterlyColor( float3( .1 , .1 , .1 ) , float3( .5 , .5 , .5 ) , lightMatch , uvPosition );
 
 
                 if ( eyeMatch + noise( input.worldPos * 1 ) < .5 )
@@ -869,15 +869,16 @@ Shader "Islands/Island/Ocean"
                 //  col = saturate(pow( reflMatch, 1000) * 4);
                 //  col *= shadow.y;
 
+                col = texCUBE( _Skybox , reflect( -normalize( eye ) , normal ) ).xyz;
                 col *= _ColorMultiplier;
                 col += bubbleCol * 10;
                 col += pow( whiteFoam.x , 2 );
+
                 col *= _OverallMultiplier;
                 col = saturate( col );
                 // col =
 
 
-                //col = texCUBE( _Skybox , reflect( normalize( eye ) , normal ) ).xyz;
 
 
                 //    ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha , col );
