@@ -71,11 +71,11 @@ Shader "REFERENCES/MODEL_REFERENCE"
 
 
             CGPROGRAM
-            #pragma vertex SetVaryings
+            #pragma vertex SetVaryings_UNITY
             #pragma fragment frag
             #include "Assets/Resources/Shaders/Chunks/SelfShadowingVertPragmas.cginc"
 
-            float4 frag( varyings v ) : COLOR
+            float4 frag( FullVaryingData v ) : COLOR
             {
 
 
@@ -168,11 +168,11 @@ Shader "REFERENCES/MODEL_REFERENCE"
 
             Cull Off
             CGPROGRAM
-            #pragma vertex SetShadowVaryings
+            #pragma vertex SetShadowVaryings_UNITY
             #pragma fragment frag
             #pragma multi_compile_shadowcaster
 
-            float4 frag( varyings i ) : SV_Target
+            float4 frag( FullVaryingData i ) : SV_Target
             {
                 LightingData lightingData;
                 GetLightingData( i.worldPos , i.eye , i.nor , _WorldSpaceLightPos0.xyz , lightingData );

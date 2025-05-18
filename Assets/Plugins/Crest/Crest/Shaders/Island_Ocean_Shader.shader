@@ -875,6 +875,7 @@ Shader "Islands/Island/Ocean"
                 col += pow( whiteFoam.x , 2 );
 
                 col *= _OverallMultiplier;
+                col *= length( _LightColor0.xyz );
                 col = saturate( col );
                 // col =
 

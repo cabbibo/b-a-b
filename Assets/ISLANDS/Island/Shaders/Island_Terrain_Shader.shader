@@ -91,34 +91,16 @@ Shader "Islands/Island/Terrain"
 
 
             CGPROGRAM
-            #pragma vertex SetVaryings
+            #pragma vertex SetVaryings_UNITY
             #pragma fragment frag
+
             #include "Assets/Resources/Shaders/Chunks/SelfShadowingVertPragmas.cginc"
 
             sampler2D _FullNormalMap;
             float     _FullNormalStrength;
 
 
-            uniform float4 _CustomSH9[ 9 ];
-
-            float3 EvalSH9( float3 n , float4 SH[ 9 ] )
-            {
-                float x = n.x, y = n.y, z = n.z;
-
-                float3 color = float3( 0 , 0 , 0 );
-                color += SH[ 0 ].xyz * 0.282095;
-                color += SH[ 1 ].xyz * 0.488603 * y;
-                color += SH[ 2 ].xyz * 0.488603 * z;
-                color += SH[ 3 ].xyz * 0.488603 * x;
-                color += SH[ 4 ].xyz * 1.092548 * x * y;
-                color += SH[ 5 ].xyz * 1.092548 * y * z;
-                color += SH[ 6 ].xyz * 0.315392 * ( 3 * z * z - 1 );
-                color += SH[ 7 ].xyz * 1.092548 * x * z;
-                color += SH[ 8 ].xyz * 0.546274 * ( x * x - y * y );
-                return color;
-            }
-
-            float4 frag( varyings v ) : COLOR
+            float4 frag( FullVaryingData v ) : COLOR
             {
 
 
@@ -168,17 +150,10 @@ Shader "Islands/Island/Terrain"
                     ( GetXYInLightSpace( v.worldPos ) * _TriplanarMultiplier.xy )
                 );
 
-
-
-
-
-                // col = lerp( 1 , lerp( painterlyColor , painterlyColor2 , 1 ) , _PainterlyLightImportance );
-
                 col = painterlyColor;
-                //col = lerp( _LowLightColor , _HighLightColor , painterlyColor.x );
-                // col = generic_desaturate( col , .5 );
+
+
                 col += shadowCol * .2 * ( 1 - shadow );
-                // col *= v.color * 2.;
 
 
                 col *= lerp( float3( .1 , .1 , .2 ) , float3( 1 , .9 , .9 ) , shadow * ( .4 + floor( lightMatch * 5 ) / 5 ) );
@@ -186,12 +161,6 @@ Shader "Islands/Island/Terrain"
                 // col *= _LightColor0;
                 col *= _OverallMultiplier;
                 col *= tex2D( _MainTex , v.uv + ( 1 - ao ) * triplanarNor.x * .003 );
-                //col = tex2D( _MainTex , v.uv ).xyz;
-
-                //col = floor( col * 20 ) / 20;
-
-                //  col = triplanarNor;
-                //col = traceCol;
 
                 if ( lightingData.eyeMatch - length( traceCol ) * .2 < .5 )
                 {
@@ -237,11 +206,11 @@ Shader "Islands/Island/Terrain"
 
             Cull Off
             CGPROGRAM
-            #pragma vertex SetShadowVaryings
+            #pragma vertex SetShadowVaryings_UNITY
             #pragma fragment frag
             #pragma multi_compile_shadowcaster
 
-            float4 frag( varyings i ) : SV_Target
+            float4 frag( FullVaryingData i ) : SV_Target
             {
                 LightingData lightingData;
                 GetLightingData( i.worldPos , i.eye , i.nor , _WorldSpaceLightPos0.xyz , lightingData );

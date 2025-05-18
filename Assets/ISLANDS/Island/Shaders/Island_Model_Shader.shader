@@ -85,11 +85,11 @@ Shader "Islands/Island/Model"
 
 
             CGPROGRAM
-            #pragma vertex SetVaryings
+            #pragma vertex SetVaryings_UNITY
             #pragma fragment frag
             #include "Assets/Resources/Shaders/Chunks/SelfShadowingVertPragmas.cginc"
 
-            float4 frag( varyings v ) : COLOR
+            float4 frag( FullVaryingData v ) : COLOR
             {
 
 
@@ -191,72 +191,11 @@ Shader "Islands/Island/Model"
              }*/
 
             CGPROGRAM
-            #pragma vertex vert2
+            #pragma vertex SetVaryingsOutline_UNITY
             #pragma fragment frag2
-            #pragma multi_compile_shadowcaster
-
-            float  _OutlineAmount;
-            float4 _OutlineColor;
-
-            varyings vert2( inputData vert )
-            {
-                varyings o;
-
-                UNITY_SETUP_INSTANCE_ID( vert );
-                UNITY_TRANSFER_INSTANCE_ID( vert , o ); // necessary only if you want to access instanced properties in the fragment Shader.
 
 
-
-                int instanceID = 0;
-                #if defined(UNITY_INSTANCING_ENABLED)
-                    instanceID = UNITY_GET_INSTANCE_ID(vert);
-                #endif
-
-                float3 wPos       = mul( unity_ObjectToWorld , float4( vert.vertex.xyz , 1 ) ).xyz;
-                float3 windOffset = GetWindOffset( instanceID , wPos );
-
-                o.eye          = _WorldSpaceCameraPos - wPos;
-                o.nor          = normalize( mul( unity_ObjectToWorld , float4( vert.normal , 0 ) ).xyz );
-                o.worldPos     = wPos + windOffset + o.nor * _OutlineAmount - 10 * normalize( o.eye ) * _OutlineAmount; //windAmount;
-                o.pos          = mul( UNITY_MATRIX_VP , float4( o.worldPos , 1.0f ) );
-                o.eye          = _WorldSpaceCameraPos - o.worldPos;
-                o.uv           = vert.texcoord.xy;
-                o.color        = vert.color;
-                o.tangent      = vert.tangent.xyz * vert.tangent.w;
-                o.offsetAmount = length( windOffset );
-
-                half3 wNormal  = o.nor;
-                half3 wTangent = mul( unity_ObjectToWorld , float4( vert.tangent.xyz , 0 ) ).xyz * vert.tangent.w;
-                // compute bitangent from cross product of normal and tangent
-                //half tangentSign = tangent.w * unity_WorldTransformParams.w;
-                half3 wBitangent = cross( wNormal , wTangent ); // * tangentSign;
-                // output the tangent space matrix
-                o.tspace0 = half3( wTangent.x , wBitangent.x , wNormal.x );
-                o.tspace1 = half3( wTangent.y , wBitangent.y , wNormal.y );
-                o.tspace2 = half3( wTangent.z , wBitangent.z , wNormal.z );
-
-
-                UNITY_TRANSFER_SHADOW( o , o.worldPos );
-                UNITY_TRANSFER_FOG( o , o.pos );
-
-                return o;
-            }
-
-            /*
-struct LightingData
-{
-    float3 flatNormal;
-    float  flatNormalMatch;
-    float  normalMatch;
-    float  lightMatch;
-    float  flatLightMatch;
-    float  eyeMatch;
-    float  reflectionMatch;
-};
-*/
-
-
-            float4 frag2( varyings v ) : SV_Target
+            float4 frag2( FullVaryingData v ) : SV_Target
             {
                 LightingData lightingData;
                 GetLightingData( v.worldPos , v.eye , v.nor , _WorldSpaceLightPos0.xyz , lightingData );
@@ -301,11 +240,11 @@ struct LightingData
 
             Cull Off
             CGPROGRAM
-            #pragma vertex SetShadowVaryings
+            #pragma vertex SetShadowVaryings_UNITY
             #pragma fragment frag
             #pragma multi_compile_shadowcaster
 
-            float4 frag( varyings i ) : SV_Target
+            float4 frag( FullVaryingData i ) : SV_Target
             {
                 LightingData lightingData;
                 GetLightingData( i.worldPos , i.eye , i.nor , _WorldSpaceLightPos0.xyz , lightingData );
