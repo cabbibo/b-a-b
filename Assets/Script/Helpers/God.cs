@@ -107,6 +107,21 @@ namespace WrenUtils
             }
         }
 
+        [RuntimeInitializeOnLoadMethod( RuntimeInitializeLoadType.BeforeSceneLoad )]
+        private static void Bootstrap()
+        {
+            if ( _instance == null ) {
+                _instance = FindObjectOfType<God>();
+
+                if ( _instance == null ) {
+                    Debug.LogError( "No God instance in scene at startup!" );
+                } else {
+                    if ( Application.isPlaying ) {
+                        DontDestroyOnLoad( _instance.gameObject );
+                    }
+                }
+            }
+        }
 
         private void Awake()
         {

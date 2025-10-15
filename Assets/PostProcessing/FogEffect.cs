@@ -73,11 +73,7 @@ public sealed class FogEffectRenderer : PostProcessEffectRenderer<FogEffect>
         Matrix4x4 projectionInverse = GL.GetGPUProjectionMatrix(context.camera.projectionMatrix, false).inverse;
         //Matrix4x4 projectionInverse = context.camera.projectionMatrix.inverse;
         Matrix4x4 viewInverse = context.camera.cameraToWorldMatrix;
-
-
-
-
-
+        
         Matrix4x4 inverseViewProjection = (projectionInverse * viewInverse);
 
         sheet.properties.SetTexture("_HeightMap", settings.heightMap);

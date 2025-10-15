@@ -16,6 +16,7 @@ public class Portal : MonoBehaviour
     public int       biome;
     public int       questID;
     public Transform startPoint;
+    public Transform portalBase;
 
     public PortalCollision portalCollision;
 
@@ -53,7 +54,11 @@ public class Portal : MonoBehaviour
 
 
         portalRenderer.GetPropertyBlock( portalMPB );
+        portalMPB.SetFloat( "_PortalOpen" , isOn ? 1 : 0 );
+        portalMPB.SetVector( "_BasePosition" , portalBase.position );
+        portalMPB.SetFloat( "_PortalAmountShown" , portalShownAmount );
         portalMPB.SetFloat( "_OpenAmount" , portalShownAmount );
+        portalMPB.SetTexture( "_OtherWorldCubemap" , God.sceneController.cubemaps[sceneID] );
         portalRenderer.SetPropertyBlock( portalMPB );
     }
 
@@ -73,48 +78,14 @@ public class Portal : MonoBehaviour
         collision = c;
 
 
-        /*
+        if ( demo ) {
+            print( "Testing" );
+            God.sceneController.EndDemo( this );
+        } else {
+            God.sceneController.LoadSceneFromPortal( this );
+        }
 
-        Flying tutorial!
-
-        */
-
-        System.Action doEnd = () =>
-        {
-            if ( demo ) {
-                God.sceneController.EndDemo( this );
-            } else {
-                God.sceneController.LoadSceneFromPortal( this );
-            }
-
-            collider.enabled = false;
-        };
-
-        /*
-        // NEEDED ONLY FOR FLYING TUTORIAL
-        if (FlyingTutorialSequence.Instance)
-         {
-             God.wren.physics.rb.velocity = Vector3.zero;
-             God.wren.physics.rb.angularVelocity = Vector3.zero;
-             FlyingTutorialSequence.Instance.TryEndDemo(endConfirmed =>
-             {
-                 if (endConfirmed)
-                 {
-                     doEnd();
-                 }
-                 else
-                 {
-                     God.wren.physics.rb.velocity = Vector3.zero;
-                     God.wren.physics.rb.angularVelocity = Vector3.zero;
-                     God.wren.PhaseShift(new Vector3(-5150, 507, -659));
-                 }
-             });
-         }
-         else
-         {
-         }*/
-
-        doEnd();
+        collider.enabled = false;
 
     }
 

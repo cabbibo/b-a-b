@@ -7,6 +7,7 @@ using UnityEditor;
 [ExecuteAlways]
 public class UpdateInEditMode : MonoBehaviour
 {
+#if UNITY_EDITOR
 
     public bool pause;
     // Start is called before the first frame update
@@ -24,9 +25,12 @@ public class UpdateInEditMode : MonoBehaviour
 
     public void Always()
     {
-        if (pause) { return; }
+        if ( pause ) {
+            return;
+        }
+
         EditorApplication.QueuePlayerLoopUpdate();
     }
 
-
+#endif
 }

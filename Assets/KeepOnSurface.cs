@@ -48,7 +48,7 @@ public class KeepOnSurface : MonoBehaviour
             _sampleHeightHelper.Sample( out displacement , out normal , out waterSurfaceVel );
 
 
-            print( displacement );
+//            print( displacement );
             float height = OceanRenderer.Instance.SeaLevel + displacement.y;
             float dif = height - transform.position.y;
 

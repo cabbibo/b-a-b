@@ -92,6 +92,8 @@ public class Carryable : RealtimeComponent<CarryableModel>
 
     public void SetPosition( Vector3 position )
     {
+        print( _realtimeView );
+        print( _realtimeTransform );
         _realtimeView.RequestOwnership();
         _realtimeTransform.RequestOwnership();
 
@@ -121,11 +123,20 @@ public class Carryable : RealtimeComponent<CarryableModel>
 
     public bool CheckAvailableToCarry( WrenCarrying carrier )
     {
-        /*   print( carrier );
-           print( carrier.GetNormalClientId() );
-           print( IdOfLastCarrier );
-           print( CarryCooldown );
-           print( TimeSinceLastCarried );*/
+
+        if ( model != null ) {
+            print( "model is not null" );
+        } else {
+            print( "model is null" );
+            return false;
+        }
+
+        print( carrier );
+        print( carrier.GetNormalClientId() );
+        print( model );
+        print( IdOfLastCarrier );
+        print( CarryCooldown );
+        print( TimeSinceLastCarried );
 
         if ( carrier.GetNormalClientId() != null ) {
             return !BeingCarried &&

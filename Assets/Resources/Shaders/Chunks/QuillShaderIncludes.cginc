@@ -3,10 +3,6 @@
 #include "UnityLightingCommon.cginc"
 #include "Lighting.cginc"
 
-#include "Assets/Resources/Shaders/Chunks/hsv.cginc"
-#include "Assets/Resources/Shaders/Chunks/noise.cginc"
-#include "Assets/Resources/Shaders/Chunks/snoise3D.cginc"
-
 
 uniform float4x4 _Transform;
 uniform int      _NumberMeshes;
@@ -26,6 +22,9 @@ float _ShadowStrength;
 float  _OutlineAmount;
 float4 _OutlineColor;
 
+#include "Assets/Resources/Shaders/Chunks/hsv.cginc"
+#include "Assets/Resources/Shaders/Chunks/noise.cginc"
+#include "Assets/Resources/Shaders/Chunks/snoise3D.cginc"
 
 #include "Assets/Resources/Shaders/Chunks/generic_desaturate.cginc"
 #include "Assets/Resources/Shaders/Chunks/hash33.cginc"

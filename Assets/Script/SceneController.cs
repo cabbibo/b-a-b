@@ -14,7 +14,8 @@ using WrenUtils;
 */
 public class SceneController : MonoBehaviour
 {
-    public string[] scenes;
+    public string[]  scenes;
+    public Cubemap[] cubemaps;
 
     //public int God.state.currentSceneID = -1;
     public int oldScene = 0;
@@ -474,7 +475,7 @@ public class SceneController : MonoBehaviour
         God.wren.Crash( portal.collisionPoint.position );
 
         God.wren.canMove = false;
-        Camera.main.gameObject.GetComponent<LerpTo>().enabled = false;
+        //   Camera.main.gameObject.GetComponent<LerpTo>().enabled = false;
 
         God.cameraManager.lerpManager.enabled = false;
         StartCoroutine( DemoAnimationOut( portal ) );

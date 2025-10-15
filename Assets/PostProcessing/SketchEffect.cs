@@ -76,6 +76,8 @@ public sealed class SketchPostRenderer : PostProcessEffectRenderer<SketchEffect>
         var viewInverse = context.camera.cameraToWorldMatrix;
 
         var inverseViewProjection = projectionInverse * viewInverse;
+        
+        
 
         sheet.properties.SetTexture( "_HeightMap" , settings.heightMap );
         sheet.properties.SetTexture( "_PaintMap" , settings.paintMap );
