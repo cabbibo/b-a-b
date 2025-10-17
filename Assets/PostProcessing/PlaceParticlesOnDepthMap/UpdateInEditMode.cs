@@ -29,7 +29,10 @@ public class UpdateInEditMode : MonoBehaviour
             return;
         }
 
-        EditorApplication.QueuePlayerLoopUpdate();
+
+        if ( !BuildPipeline.isBuildingPlayer ) {
+            EditorApplication.QueuePlayerLoopUpdate();
+        }
     }
 
 #endif

@@ -93,7 +93,6 @@ Shader "AcrossUniverse/PortalShader"
                 o.t3  = float3( fTan.z , fBi.z , fNor.z );
                 o.TBN = float3x3( fTan , fBi , fNor );
 
-                UNITY_TRANSFER_FOG( o , o.vertex );
                 return o;
             }
 

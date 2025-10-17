@@ -34,7 +34,7 @@ public class BirdSkeleton : MonoBehaviour
 
     private void UpdateBuffers()
     {
-//        print( "updaing buffers" );
+        print( "updaing buffers" );
 
         // Ensure submesh index is in range
         if ( instanceMesh != null ) {
@@ -87,6 +87,12 @@ public class BirdSkeleton : MonoBehaviour
 
     public void UpdateBones()
     {
+
+
+        if ( finalTransformBuffer == null ) {
+            return;
+        }
+
 
         //   print( "uppp" );
         fullBird.SetBirdParameters( transformShader );

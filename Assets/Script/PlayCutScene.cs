@@ -90,8 +90,6 @@ public class PlayCutScene : MonoBehaviour
 
         if ( Application.isEditor && Application.isPlaying != true && stealCameraInEditMode ) {
 
-            //print( this );
-            //print( cameraTarget.position );
             Camera.main.transform.position = cameraTarget.position;
             Camera.main.transform.rotation = cameraTarget.rotation;
         }

@@ -1,122 +1,323 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 using WrenUtils;
 using Crest;
 
-
 #if UNITY_EDITOR
 using UnityEditor;
+#endif
 
-
+#if UNITY_EDITOR
 [CustomEditor( typeof(PostController) )]
 public class PostControllerEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-
-        var myScript = (PostController)target;
+        var my = (PostController)target;
 
         if ( GUILayout.Button( "Fade Out" ) ) {
-            myScript.FadeOut();
+            my.FadeOut();
         }
 
         if ( GUILayout.Button( "Fade In" ) ) {
-            myScript.FadeIn();
+            my.FadeIn();
         }
 
         if ( GUILayout.Button( "Glitch Hit" ) ) {
-            myScript.GlitchHit();
+            my.GlitchHit();
         }
 
         if ( GUILayout.Button( "Worm Hole" ) ) {
-            myScript.WormHole();
+            my.WormHole();
         }
+
+        if ( GUILayout.Button( "Reset Clones" ) ) {
+            my.ResetClones();
+        }
+
+        EditorGUILayout.Space();
 
         DrawDefaultInspector();
 
-
+        if ( GUI.changed ) {
+            // Keep Edit-Mode preview snappy without mutating assets
+            my.ForceRefreshWorkingInstanceFromCurrentRef( true );
+        }
     }
 }
-
 #endif
-
 
 [ExecuteAlways]
 public class PostController : MonoBehaviour
 {
-    public PostParameters   currentPostParameterRef;
-    public PostParameters   tmpPostParameters;
+    [Header( "Preset References (immutable presets)" )]
+    public PostParameters currentPostParameterRef;
+
     public PostParameters[] postParameters;
 
+    [Header( "Optional: Template used only to seed working instance if no current preset is set" )]
+    public PostParameters initialTemplateForRuntime;
 
-    public PostProcessVolume volume;
-    public VolumeProfile     profile;
+    [Header( "Apply/Authoring Behavior" )]
+    public bool updateOnValidate = true;
 
-    public MainPost mainPost_Reference;
-    public Bloom    bloom_Reference;
+    // INTERNAL: runtime-only working copy (never an asset)
+    [HideInInspector]
+    public PostParameters workingInstance;
 
-    public ColorGrading        colorGrading_Reference;
-    public Vignette            vignette_Reference;
-    public LensDistortion      lensDistortion_Reference;
-    public ChromaticAberration chromaticAberration_Reference;
-    public FogEffect           fogEffect_Reference;
-    public DepthOfField        depthOfField_Reference;
+    // Post-process plumbing
+    public PostProcessVolume  volume;
+    public PostProcessProfile profile;
 
-    public GlitchEffect glitchEffect_Reference;
-
-    public AmbientOcclusion ambientOcclusion_Reference;
-
-    public SpaterPostSettings spaterPost_Reference;
-    public Astigma            astigma_Reference;
-
+    public MainPost             mainPost_Reference;
+    public Bloom                bloom_Reference;
+    public ColorGrading         colorGrading_Reference;
+    public Vignette             vignette_Reference;
+    public LensDistortion       lensDistortion_Reference;
+    public ChromaticAberration  chromaticAberration_Reference;
+    public FogEffect            fogEffect_Reference;
+    public DepthOfField         depthOfField_Reference;
+    public GlitchEffect         glitchEffect_Reference;
+    public AmbientOcclusion     ambientOcclusion_Reference;
+    public SpaterPostSettings   spaterPost_Reference;
+    public Astigma              astigma_Reference;
     public SketchEffect         sketchEffect_Reference;
     public QuickDither.Dithered dithered_Reference;
 
     // other controllers
-    public CustomFog          customFog;
-    public UnderwaterRenderer crestUnderwaterRenderer;
-
+    public CustomFog                customFog;
+    public UnderwaterRenderer       crestUnderwaterRenderer;
     public PlaceParticlesOnDepthMap placeParticlesOnDepthMap;
-
-    public bool updateOnValidate = true;
-
-    private void OnEnable()
-    {
-        volume = GetComponent<PostProcessVolume>();
-
-        volume.profile.TryGetSettings( out mainPost_Reference );
-        volume.profile.TryGetSettings( out bloom_Reference );
-        volume.profile.TryGetSettings( out colorGrading_Reference );
-        volume.profile.TryGetSettings( out vignette_Reference );
-        volume.profile.TryGetSettings( out lensDistortion_Reference );
-        volume.profile.TryGetSettings( out chromaticAberration_Reference );
-        volume.profile.TryGetSettings( out fogEffect_Reference );
-        volume.profile.TryGetSettings( out depthOfField_Reference );
-        volume.profile.TryGetSettings( out glitchEffect_Reference );
-        volume.profile.TryGetSettings( out ambientOcclusion_Reference );
-        volume.profile.TryGetSettings( out spaterPost_Reference );
-        volume.profile.TryGetSettings( out astigma_Reference );
-        volume.profile.TryGetSettings( out sketchEffect_Reference );
-        volume.profile.TryGetSettings( out dithered_Reference );
-
-
-    }
-
 
     public float angleOffset;
     public float sizeToFullSaturation;
 
+    // Fade/Glitch/Wormhole params (unchanged)
+    public float fadeInSpeed  = 1;
+    public float fadeOutSpeed = 1;
 
-    public void Update()
+    public float   glitchSpeed;
+    public float   maxLensDistortion      = -20;
+    public float   maxChromaticAberration = 20;
+    public float   maxBloomIntensity      = 100;
+    public float   maxBloomThreshold      = .1f;
+    public Vector2 wormHoleSpeed          = new(.03f , .1f);
+
+    public delegate void EmptyDelegate();
+
+    public EmptyDelegate emptyDelegate;
+    public EmptyDelegate emptyDelegate2;
+
+    public void ResetClones()
     {
+        if ( volume == null || volume.profile == null ) {
+            return;
+        }
+
+        var originalProfile = volume.profile;
+
+        // Force Unity to tear down internal cached states
+        volume.profile = null;
+        volume.profile = originalProfile;
+
+        // If you're holding a runtime clone, reset it too
+        if ( workingInstance != null ) {
+            DestroyImmediate( workingInstance );
+            workingInstance = Instantiate( currentPostParameterRef );
+        }
+
+        Debug.Log( "✅ PostProcessing clones cleared and instances reset." );
+    }
 
 
-//        print(placeParticlesOnDepthMap);
+    // ----------------------------------------------------
+// Clone-proof setting cache — lock first instance only
+// ----------------------------------------------------
+    private T CachePersistentSetting<T>( ref T field ) where T : PostProcessEffectSettings
+    {
+        if ( field != null ) {
+            return field; // Already locked
+        }
 
-        tmpPostParameters.SetValues(
+        if ( profile != null && profile.TryGetSettings( out T found ) ) {
+            field = found; // Lock Unity's first given reference
+            return field;
+        }
+
+        return null;
+    }
+
+    // ----------------------------------------------------
+    // LIFECYCLE
+    // ----------------------------------------------------
+    private void OnEnable()
+    {
+        // Cache volume/settings
+        if ( volume == null ) {
+            volume = GetComponent<PostProcessVolume>();
+        }
+
+
+        if ( volume.profile != null ) {
+
+            profile = volume.profile;
+            // profile.TryGetSettings( out mainPost_Reference );
+            CachePersistentSetting( ref mainPost_Reference );
+            CachePersistentSetting( ref bloom_Reference );
+            CachePersistentSetting( ref colorGrading_Reference );
+            CachePersistentSetting( ref vignette_Reference );
+            CachePersistentSetting( ref lensDistortion_Reference );
+            CachePersistentSetting( ref chromaticAberration_Reference );
+            CachePersistentSetting( ref fogEffect_Reference );
+            CachePersistentSetting( ref depthOfField_Reference );
+            CachePersistentSetting( ref glitchEffect_Reference );
+            CachePersistentSetting( ref ambientOcclusion_Reference );
+            CachePersistentSetting( ref spaterPost_Reference );
+            CachePersistentSetting( ref astigma_Reference );
+            CachePersistentSetting( ref sketchEffect_Reference );
+            CachePersistentSetting( ref dithered_Reference );
+        }
+
+        EnsureWorkingInstanceInitialized();
+        // Initial push so Edit Mode shows something
+        SafeApplyToPipeline();
+    }
+
+    private void OnDisable()
+    {
+        DestroyWorkingInstance();
+    }
+
+    private void Update()
+    {
+        // Keep the pipeline driven by the working instance
+        SafeApplyToPipeline();
+
+        // Handle splat / camera culling based on working values
+        if ( workingInstance != null && placeParticlesOnDepthMap != null ) {
+            if ( workingInstance.splatEffect ) {
+                placeParticlesOnDepthMap.enabled = true;
+
+                if ( workingInstance.renderBackground ) {
+                    LayerMask everything = ~0;
+
+                    if ( God.camera != null ) {
+                        God.camera.cullingMask = everything;
+                    }
+                } else {
+                    LayerMask debug = 1 << LayerMask.NameToLayer( "Splats" );
+
+                    if ( God.camera != null ) {
+                        God.camera.cullingMask = debug;
+                    }
+                }
+            } else {
+                placeParticlesOnDepthMap.enabled = false;
+                LayerMask everything = ~0;
+
+                if ( God.camera != null ) {
+                    God.camera.cullingMask = everything;
+                }
+            }
+        }
+    }
+
+    // ----------------------------------------------------
+    // WORKING INSTANCE MANAGEMENT
+    // ----------------------------------------------------
+    private void EnsureWorkingInstanceInitialized()
+    {
+        if ( workingInstance != null && !IsAsset( workingInstance ) ) {
+            return;
+        }
+
+        var seed = currentPostParameterRef != null
+            ? currentPostParameterRef
+            : initialTemplateForRuntime != null
+                ? initialTemplateForRuntime
+                : postParameters != null && postParameters.Length > 0
+                    ? postParameters[0]
+                    : null;
+
+        if ( seed == null ) {
+            Debug.LogWarning( "PostController: No PostParameters seed available to create working instance." );
+
+            if ( workingInstance == null ) {
+                workingInstance = ScriptableObject.CreateInstance<PostParameters>();
+            }
+
+            return;
+        }
+
+        workingInstance = Instantiate( seed );
+        MarkRuntimeOnly( workingInstance );
+    }
+
+    private void DestroyWorkingInstance()
+    {
+        if ( workingInstance == null ) {
+            return;
+        }
+
+        if ( Application.isPlaying ) {
+            Destroy( workingInstance );
+        } else {
+            DestroyImmediate( workingInstance );
+        }
+
+        workingInstance = null;
+    }
+
+    private bool IsAsset( PostParameters p )
+    {
+#if UNITY_EDITOR
+        return p != null && AssetDatabase.Contains( p );
+#else
+        return false;
+#endif
+    }
+
+    private void MarkRuntimeOnly( PostParameters p )
+    {
+#if UNITY_EDITOR
+        if ( p != null ) {
+            p.name = $"(runtime) {p.name}";
+        }
+#endif
+    }
+
+    // Non-destructive refresh when user tweaks the selected preset reference
+    public void ForceRefreshWorkingInstanceFromCurrentRef( bool editModeOnly = false )
+    {
+#if UNITY_EDITOR
+        if ( editModeOnly && Application.isPlaying ) {
+            return;
+        }
+#endif
+        if ( currentPostParameterRef == null ) {
+            return;
+        }
+
+        // Copy values into the working instance (do not replace reference so coroutines keep the same target)
+        EnsureWorkingInstanceInitialized();
+        currentPostParameterRef.CopyTo( workingInstance );
+    }
+
+    // ----------------------------------------------------
+    // APPLY TO PIPELINE
+    // ----------------------------------------------------
+    private void SafeApplyToPipeline()
+    {
+        if ( workingInstance == null ) {
+            return;
+        }
+
+        if ( volume.profile == null ) {
+            return;
+        }
+
+        workingInstance.SetValues(
             mainPost_Reference ,
             bloom_Reference ,
             colorGrading_Reference ,
@@ -133,65 +334,77 @@ public class PostController : MonoBehaviour
             dithered_Reference ,
             placeParticlesOnDepthMap
         );
-
-        if ( tmpPostParameters.splatEffect ) {
-            placeParticlesOnDepthMap.enabled = true;
-
-            if ( tmpPostParameters.renderBackground ) {
-                LayerMask everything = ~0;
-                God.camera.cullingMask = everything;
-            } else {
-
-                LayerMask debug = 1 << LayerMask.NameToLayer( "Splats" );
-                God.camera.cullingMask = debug;
-            }
-        } else {
-            placeParticlesOnDepthMap.enabled = false;
-
-            LayerMask everything = ~0;
-            God.camera.cullingMask = everything;
-        }
-
-
     }
 
-
+    // ----------------------------------------------------
+    // PRESET SELECTION (OLD BEHAVIOR: INSTANT SWITCH)
+    // ----------------------------------------------------
     public void SetPostParameters( string name )
     {
+        if ( postParameters == null ) {
+            return;
+        }
+
         foreach (var p in postParameters)
-            if ( p.name == name ) {
-                currentPostParameterRef = p;
-                p.CopyTo( tmpPostParameters );
+            if ( p != null && p.name == name ) {
+                SetPostParameters( p );
                 return;
             }
+
+        Debug.LogWarning( $"PostController: No PostParameters named '{name}' found." );
     }
 
     public void SetPostParameters( PostParameters p )
     {
-        currentPostParameterRef = p;
-        p.CopyTo( tmpPostParameters );
-    }
-
-
-    public void OnPostParametersValidate( PostParameters p )
-    {
-//        Debug.Log("OnPostParametersValidate");
-        if ( !updateOnValidate ) {
-            return;
-        }
-
         if ( p == null ) {
+            Debug.LogWarning( "PostController: SetPostParameters called with null." );
             return;
         }
 
-        if ( p != currentPostParameterRef ) {
-            return;
-        }
+        currentPostParameterRef = p;
 
-//   print("Made it here");
-        p.CopyTo( tmpPostParameters );
+        // Old behavior: instant swap — copy values into existing working instance
+        EnsureWorkingInstanceInitialized();
+        p.CopyTo( workingInstance );
+
+        // Immediate apply so it reflects this frame (both Play and Edit modes)
+        SafeApplyToPipeline();
     }
 
+    // ----------------------------------------------------
+    // VALIDATION HOOK (from PostParameters.OnValidate -> God.postController.OnPostParametersValidate)
+    // Only used during Play (matches your original)
+    // ----------------------------------------------------
+    public void OnPostParametersValidate( PostParameters asset )
+    {
+        if ( !updateOnValidate || asset == null ) {
+            return;
+        }
+
+        if ( asset != currentPostParameterRef ) {
+            return;
+        }
+
+        // Copy current preset values into working instance (non-destructive to asset)
+        EnsureWorkingInstanceInitialized();
+        asset.CopyTo( workingInstance );
+        SafeApplyToPipeline();
+    }
+
+    // ----------------------------------------------------
+    // EFFECTS (now target the workingInstance only)
+    // ----------------------------------------------------
+    public void SetFade( float f )
+    {
+        if ( mainPost_Reference != null ) {
+            mainPost_Reference._Fade.value = f;
+        }
+
+        // Keep working copy in sync so future blends start from the visual state
+        if ( workingInstance != null ) {
+            workingInstance.mainFade = f;
+        }
+    }
 
     public void FadeOut()
     {
@@ -203,42 +416,33 @@ public class PostController : MonoBehaviour
         StartCoroutine( DoFadeIn() );
     }
 
-    public float fadeInSpeed  = 1;
-    public float fadeOutSpeed = 1;
-
-    public void SetFade( float f )
-    {
-
-        mainPost_Reference._Fade.value = f;
-
-    }
-
     private IEnumerator DoFadeOut()
     {
-        float t = 0;
+        EnsureWorkingInstanceInitialized();
+        float t = workingInstance != null ? workingInstance.mainFade : 0f;
 
-        while (t < 1) {
+        while (t < 1f) {
             t += .03f * fadeOutSpeed;
             SetFade( t );
             yield return null;
         }
+
+        SetFade( 1f );
     }
 
     private IEnumerator DoFadeIn()
     {
-        float t = 1;
+        EnsureWorkingInstanceInitialized();
+        float t = workingInstance != null ? workingInstance.mainFade : 1f;
 
-        while (t > 0) {
+        while (t > 0f) {
             t -= .03f * fadeInSpeed;
             SetFade( t );
             yield return null;
         }
+
+        SetFade( 0f );
     }
-
-
-    [Space( 50 )]
-    [Header( "Post Processing Effects" )]
-    public float glitchSpeed;
 
     public void GlitchHit()
     {
@@ -247,30 +451,38 @@ public class PostController : MonoBehaviour
 
     private IEnumerator DoGlitchHit()
     {
-        bool tmpGlitch = tmpPostParameters.glitchEffect;
+        EnsureWorkingInstanceInitialized();
 
-        tmpPostParameters.glitchEffect = true;
-        tmpPostParameters.glitchIntensity = 0;
+        if ( workingInstance == null ) {
+            yield break;
+        }
+
+        bool tmpGlitch = workingInstance.glitchEffect;
+        float startInt = workingInstance.glitchIntensity;
+
+        workingInstance.glitchEffect = true;
+        workingInstance.glitchIntensity = 0;
 
         float t = 0;
 
-        while (t < 1) {
-            t += .03f * 1;
-            tmpPostParameters.glitchIntensity = t;
+        while (t < 1f) {
+            t += .03f * 1f;
+            workingInstance.glitchIntensity = t;
+            SafeApplyToPipeline();
             yield return null;
         }
 
-
-        while (t > 0) {
-            t -= .03f * 1;
-            tmpPostParameters.glitchIntensity = t;
+        while (t > 0f) {
+            t -= .03f * 1f;
+            workingInstance.glitchIntensity = t;
+            SafeApplyToPipeline();
             yield return null;
         }
 
-        tmpPostParameters.glitchEffect = tmpGlitch;
-
+        workingInstance.glitchEffect = tmpGlitch;
+        workingInstance.glitchIntensity = startInt;
+        SafeApplyToPipeline();
     }
-
 
     public void WormHole()
     {
@@ -293,114 +505,80 @@ public class PostController : MonoBehaviour
         StartCoroutine( DoWormHole() );
     }
 
-    public float maxLensDistortion      = -20;
-    public float maxChromaticAberration = 20;
-
-    public float maxBloomIntensity = 100;
-    public float maxBloomThreshold = .1f;
-
-    public Vector2 wormHoleSpeed = new(.03f , .1f);
-
-    public delegate void EmptyDelegate();
-
-    public EmptyDelegate emptyDelegate;
-    public EmptyDelegate emptyDelegate2;
-
-    public void test()
-    {
-        print( "hiiiiiiiii" );
-    }
-
     private IEnumerator DoWormHole()
     {
+        EnsureWorkingInstanceInitialized();
 
-
-        print( "hi9ii" );
-        bool tmpChromaticAberration = tmpPostParameters.chromaticAberration;
-        float tmpChromaticAberrationIntensity = tmpPostParameters.chromaticAberrationIntensity;
-
-        bool tmpLensDistortion = tmpPostParameters.lensDistortion;
-        float tmpLensDistortionIntensity = tmpPostParameters.lensDistortionIntensity;
-
-        bool tmpBloom = tmpPostParameters.bloom;
-        float tmpBloomIntensity = tmpPostParameters.bloomIntensity;
-        float tmpBloomThreshold = tmpPostParameters.bloomThreshold;
-
-
-        float startingChromaticIntensity = 0;
-
-        if ( tmpChromaticAberration ) {
-
-            startingChromaticIntensity = tmpChromaticAberrationIntensity;
+        if ( workingInstance == null ) {
+            yield break;
         }
 
-        float startingLensIntensity = 0;
+        bool tmpCA = workingInstance.chromaticAberration;
+        float tmpCA_I = workingInstance.chromaticAberrationIntensity;
 
-        if ( tmpLensDistortion ) {
-            startingLensIntensity = tmpLensDistortionIntensity;
-        }
+        bool tmpLD = workingInstance.lensDistortion;
+        float tmpLD_I = workingInstance.lensDistortionIntensity;
 
-        float startingBloomIntensity = 0;
-        float startingBloomThreshold = 1;
+        bool tmpB = workingInstance.bloom;
+        float tmpB_I = workingInstance.bloomIntensity;
+        float tmpB_T = workingInstance.bloomThreshold;
 
-        if ( tmpBloom ) {
-            startingBloomIntensity = tmpBloomIntensity;
-            startingBloomThreshold = tmpBloomThreshold;
-        }
+        float startCA = tmpCA ? tmpCA_I : 0f;
+        float startLD = tmpLD ? tmpLD_I : 0f;
+        float startBI = tmpB ? tmpB_I : 0f;
+        float startBT = tmpB ? tmpB_T : 1f;
 
+        workingInstance.chromaticAberration = true;
+        workingInstance.lensDistortion = true;
+        workingInstance.bloom = true;
+        workingInstance.chromaticAberrationIntensity = startCA;
+        workingInstance.lensDistortionIntensity = startLD;
+        workingInstance.bloomIntensity = startBI;
+        workingInstance.bloomThreshold = startBT;
 
-        tmpPostParameters.chromaticAberration = true;
-        tmpPostParameters.lensDistortion = true;
-
-        tmpPostParameters.chromaticAberrationIntensity = startingChromaticIntensity;
-        tmpPostParameters.lensDistortionIntensity = startingLensIntensity;
-
-        tmpPostParameters.bloom = true;
-        tmpPostParameters.bloomIntensity = startingBloomIntensity;
-        tmpPostParameters.bloomThreshold = startingBloomThreshold;
-
-
-        float val = startingChromaticIntensity / maxChromaticAberration;
-
-
+        float val = maxChromaticAberration != 0f ? startCA / maxChromaticAberration : 0f;
         float t = val;
 
-        while (t < 1) {
-
-            t += wormHoleSpeed.x * 1;
+        while (t < 1f) {
+            t += wormHoleSpeed.x;
 
             float ft = t * t;
-            tmpPostParameters.chromaticAberrationIntensity = Mathf.Lerp( 0 , maxChromaticAberration , ft );
-            tmpPostParameters.lensDistortionIntensity = Mathf.Lerp( 0 , maxLensDistortion , ft * t );
+            workingInstance.chromaticAberrationIntensity = Mathf.Lerp( 0 , maxChromaticAberration , ft );
+            workingInstance.lensDistortionIntensity = Mathf.Lerp( 0 , maxLensDistortion , ft * t );
+            workingInstance.bloomIntensity = Mathf.Lerp( startBI , maxBloomIntensity , ft * ft * ft );
+            workingInstance.bloomThreshold = Mathf.Lerp( startBT , maxBloomThreshold , ft * ft );
 
-            tmpPostParameters.bloomIntensity = Mathf.Lerp( startingBloomIntensity , maxBloomIntensity , ft * ft * ft );
-            tmpPostParameters.bloomThreshold = Mathf.Lerp( startingBloomThreshold , maxBloomThreshold , ft * ft );
-
+            SafeApplyToPipeline();
             yield return null;
         }
-
 
         if ( emptyDelegate != null ) {
             emptyDelegate();
         }
 
-        while (t > 0) {
-            t -= wormHoleSpeed.y * 1;
+        while (t > 0f) {
+            t -= wormHoleSpeed.y;
 
             float ft = t * t;
-            tmpPostParameters.chromaticAberrationIntensity = Mathf.Lerp( startingChromaticIntensity , maxChromaticAberration , ft );
-            tmpPostParameters.lensDistortionIntensity = Mathf.Lerp( startingLensIntensity , maxLensDistortion , ft * t );
+            workingInstance.chromaticAberrationIntensity = Mathf.Lerp( startCA , maxChromaticAberration , ft );
+            workingInstance.lensDistortionIntensity = Mathf.Lerp( startLD , maxLensDistortion , ft * t );
+            workingInstance.bloomIntensity = Mathf.Lerp( startBI , maxBloomIntensity , ft * ft * ft );
+            workingInstance.bloomThreshold = Mathf.Lerp( startBT , maxBloomThreshold , ft * ft );
 
-
-            tmpPostParameters.bloomIntensity = Mathf.Lerp( startingBloomIntensity , maxBloomIntensity , ft * ft * ft );
-            tmpPostParameters.bloomThreshold = Mathf.Lerp( startingBloomThreshold , maxBloomThreshold , ft * ft );
+            SafeApplyToPipeline();
             yield return null;
         }
 
         if ( emptyDelegate2 != null ) {
             emptyDelegate2();
         }
+    }
 
-
+    // ----------------------------------------------------
+    // UTIL
+    // ----------------------------------------------------
+    public void test()
+    {
+        Debug.Log( "hiiiiiiiii" );
     }
 }

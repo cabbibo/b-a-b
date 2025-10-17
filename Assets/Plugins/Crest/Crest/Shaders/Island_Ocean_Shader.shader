@@ -677,11 +677,11 @@ Shader "Islands/Island/Ocean"
 
 
                 #if CREST_UNDERWATER_BEFORE_TRANSPARENT
-                else
-                {
-                    // underwater - do depth fog
-                    col = lerp(col, scatterCol, saturate(1. - exp(-_DepthFogDensity.xyz * pixelZ)));
-                }
+                /* else
+                 {
+                     // underwater - do depth fog
+                     col = lerp(col, scatterCol, saturate(1. - exp(-_DepthFogDensity.xyz * pixelZ)));
+                 }*/
                 #endif
 
 

@@ -4,11 +4,8 @@ using UnityEngine;
 using WrenUtils;
 
 
-[ExecuteAlways]
 public class FoodSpawner : MonoBehaviour
 {
-
-
     public IslandController data;
 
     public int foodDataIndex;
@@ -27,55 +24,63 @@ public class FoodSpawner : MonoBehaviour
     public int numFoodToSpawnPerBurst = 1;
 
 
-
-
-
     public void OnEnable()
     {
 
         lastFoodSpawnTime = Time.time;
 
-        while (transform.childCount > 0)
-        {
-            DestroyImmediate(transform.GetChild(0).gameObject);
-        }
+        while (transform.childCount > 0) DestroyImmediate( transform.GetChild( 0 ).gameObject );
 
         currentActiveFood = 0;
 
+        print( gameObject.name );
+        // Print every up the whole hierarchy
+        bool isTop = false;
+        var t = transform;
+
+        while (!isTop)
+            if ( t.parent == null ) {
+                isTop = true;
+            } else {
+                t = t.parent;
+                print( t.name );
+            }
+
+
         foods = new Transform[maxFood];
         foodComponents = new Food[maxFood];
-        for (int i = 0; i < maxFood; i++)
-        {
-            foods[i] = Instantiate(foodPrefabs[Random.Range(0, foodPrefabs.Length)]).transform;
+
+        for ( int i = 0; i < maxFood; i++ ) {
+            foods[i] = Instantiate( foodPrefabs[Random.Range( 0 , foodPrefabs.Length )] ).transform;
             foods[i].parent = transform;
 
-            foods[i].gameObject.SetActive(false);
+            foods[i].gameObject.SetActive( false );
             foodComponents[i] = foods[i].GetComponent<Food>();
         }
 
     }
 
 
-    void OnDisable()
+    private void OnDisable()
     {
-        for (int i = this.transform.childCount; i > 0; --i)
-            DestroyImmediate(this.transform.GetChild(0).gameObject);
+        for ( int i = transform.childCount; i > 0; --i ) {
+            DestroyImmediate( transform.GetChild( 0 ).gameObject );
+        }
     }
 
-    void Destroy()
+    private void Destroy()
     {
-        for (int i = this.transform.childCount; i > 0; --i)
-            DestroyImmediate(this.transform.GetChild(0).gameObject);
+        for ( int i = transform.childCount; i > 0; --i ) {
+            DestroyImmediate( transform.GetChild( 0 ).gameObject );
+        }
     }
-
 
 
     public float lastFoodSpawnTime;
 
 
-
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
 
@@ -85,8 +90,7 @@ public class FoodSpawner : MonoBehaviour
         // print(v);
 
 
-        if (Time.time - lastFoodSpawnTime > foodSpawnTimeMultiplier / v && v2 > 0)
-        {
+        if ( Time.time - lastFoodSpawnTime > foodSpawnTimeMultiplier / v && v2 > 0 ) {
 
             //            print("helllo");
             SpawnFood();
@@ -99,34 +103,31 @@ public class FoodSpawner : MonoBehaviour
     public float foodSpawnTimeMultiplier;
     public float foodForwardDistance;
     public float foodRadiusSpawn;
+
     public void SpawnFood()
     {
 
         Vector3 spawnPosition;
 
-        if (God.wren == null)
-        {
+        if ( God.wren == null ) {
             spawnPosition = data.currentIsland.debugValueTransform.position;
-        }
-        else
-        {
+        } else {
             spawnPosition = God.wren.transform.position + God.wren.transform.forward * foodForwardDistance;
         }
 
-        for (int i = 0; i < numFoodToSpawnPerBurst; i++)
-        {
+        for ( int i = 0; i < numFoodToSpawnPerBurst; i++ ) {
 
 
             // todo Spawn basedOnMap;
             foods[currentActiveFood].position = spawnPosition + Random.insideUnitSphere * 10;
-            foods[currentActiveFood].gameObject.SetActive(true);
-            foodComponents[currentActiveFood].OnSpawn(spawnPosition + Random.insideUnitSphere * 10);
+            foods[currentActiveFood].gameObject.SetActive( true );
+            foodComponents[currentActiveFood].OnSpawn( spawnPosition + Random.insideUnitSphere * 10 );
             foodComponents[currentActiveFood].spawner = this;
 
 
             currentActiveFood++;
-            if (currentActiveFood >= maxFood)
-            {
+
+            if ( currentActiveFood >= maxFood ) {
                 currentActiveFood = 0;
             }
         }
@@ -137,7 +138,7 @@ public class FoodSpawner : MonoBehaviour
     }
 
     public ParticleSystem gotAteParticleSystem;
-    public AudioClip[] gotAteClips;
+    public AudioClip[]    gotAteClips;
 
     public float clipVolumeFalloff;
     public float clipPitchLow;
@@ -151,25 +152,25 @@ public class FoodSpawner : MonoBehaviour
 
     public int numCrystalsOnEat;
 
-    public void GotAte(Food f)
+    public void GotAte( Food f )
     {
 
         gotAteParticleSystem.Play();
         gotAteParticleSystem.transform.position = f.transform.position;
-        gotAteParticleSystem.transform.LookAt(WrenUtils.God.camera.transform.position);
+        gotAteParticleSystem.transform.LookAt( God.camera.transform.position );
 
-        float d = (f.transform.position - WrenUtils.God.wren.transform.position).magnitude;
-        float pitch = Mathf.Lerp(clipPitchLow, clipPitchHigh, (d - clipPitchDistanceLow) / (clipPitchDistanceHigh - clipPitchDistanceLow));
+        float d = (f.transform.position - God.wren.transform.position).magnitude;
+        float pitch = Mathf.Lerp( clipPitchLow , clipPitchHigh ,
+            (d - clipPitchDistanceLow) / (clipPitchDistanceHigh - clipPitchDistanceLow) );
 
 
-        WrenUtils.God.audio.Play(gotAteClips, 1, pitch);
+        God.audio.Play( gotAteClips , 1 , pitch );
 
-        WrenUtils.God.wren.stats.FullnessAdd(bugFullnessAdd);
-        WrenUtils.God.wren.stats.StaminaAdd(bugStaminaAdd);
+        God.wren.stats.FullnessAdd( bugFullnessAdd );
+        God.wren.stats.StaminaAdd( bugStaminaAdd );
 
-        WrenUtils.God.wren.shards.CollectShards(numCrystalsOnEat, (float)biomeDataIndex, f.transform.position);
+        God.wren.shards.CollectShards( numCrystalsOnEat , (float)biomeDataIndex , f.transform.position );
 
 
     }
-
 }

@@ -10,8 +10,6 @@ using UnityEngine.Timeline;
 using UnityEditor;
 
 
-
-[ExecuteAlways]
 public class Grid : MonoBehaviour
 {
 

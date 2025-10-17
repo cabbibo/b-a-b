@@ -582,7 +582,11 @@ public class PostParameters : ScriptableObject
     public void OnValidate()
     {
 //        Debug.Log("HIII");
-
+#if UNITY_EDITOR
+        if ( !Application.isPlaying || UnityEditor.BuildPipeline.isBuildingPlayer ) {
+            return;
+        }
+#endif
         God.postController.OnPostParametersValidate( this );
     }
 }

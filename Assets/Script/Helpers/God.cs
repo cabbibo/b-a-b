@@ -7,7 +7,6 @@ using UnityEngine.Playables;
 
 namespace WrenUtils
 {
-    [ExecuteAlways]
     public class God : MonoBehaviour
     {
         public MenuController _menu;
@@ -107,21 +106,44 @@ namespace WrenUtils
             }
         }
 
-        [RuntimeInitializeOnLoadMethod( RuntimeInitializeLoadType.BeforeSceneLoad )]
-        private static void Bootstrap()
-        {
-            if ( _instance == null ) {
-                _instance = FindObjectOfType<God>();
 
-                if ( _instance == null ) {
-                    Debug.LogError( "No God instance in scene at startup!" );
-                } else {
-                    if ( Application.isPlaying ) {
-                        DontDestroyOnLoad( _instance.gameObject );
-                    }
+        /*
+        [RuntimeInitializeOnLoadMethod( RuntimeInitializeLoadType.BeforeSceneLoad )]
+        private static void EnsureInstance()
+        {
+            if ( _instance != null ) {
+                return;
+            }
+
+            // Try to find one in the scene
+            var existing = FindObjectOfType<God>();
+
+            if ( existing != null ) {
+                _instance = existing;
+
+                if ( Application.isPlaying ) {
+                    DontDestroyOnLoad( _instance.gameObject );
                 }
+
+                return;
+            }
+
+            // Otherwise spawn one from prefab
+            var prefab = Resources.Load<God>( "God" );
+
+            if ( prefab != null ) {
+                _instance = Instantiate( prefab );
+                _instance.name = "God (AutoSpawned)";
+
+                if ( Application.isPlaying ) {
+                    DontDestroyOnLoad( _instance.gameObject );
+                }
+            } else {
+                Debug.LogError( "[God] No God found in scene and no God prefab at Resources/God.prefab — cannot auto-spawn." );
             }
         }
+*/
+
 
         private void Awake()
         {
@@ -453,7 +475,7 @@ namespace WrenUtils
 
 #if UNITY_EDITOR
             // Ensure continuous Update calls.
-            if ( !Application.isPlaying && updateInEdit ) {
+            if ( !Application.isPlaying && updateInEdit && !UnityEditor.BuildPipeline.isBuildingPlayer ) {
 
                 UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
                 UnityEditor.SceneView.RepaintAll();

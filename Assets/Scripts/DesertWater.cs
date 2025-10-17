@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
-[ExecuteAlways]
 public class DesertWater : MonoBehaviour
 {
     public Quest quest;

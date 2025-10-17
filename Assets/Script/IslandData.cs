@@ -6,7 +6,6 @@ using UnityEngine.Events;
 using UnityEngine.Playables;
 
 
-[ExecuteAlways]
 public class IslandData : MonoBehaviour
 {
     public float radius;

@@ -5,16 +5,14 @@ using UnityEngine.Playables;
 using WrenUtils;
 
 
-[ExecuteAlways]
 public class IslandController : MonoBehaviour
 {
-
     /*
 
         Info / Todo:
 
-        Each island has its own audio player that can fade out when we leave it. 
-        the spining up and spinning down process of turning the islands on and off should be able to exist across a few frames 
+        Each island has its own audio player that can fade out when we leave it.
+        the spining up and spinning down process of turning the islands on and off should be able to exist across a few frames
 
         Entering a new island should put you in a new room?
 
@@ -65,7 +63,6 @@ public class IslandController : MonoBehaviour
     */
 
 
-
     public float islandSizeBuffer;
 
 
@@ -73,68 +70,64 @@ public class IslandController : MonoBehaviour
 
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
 
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
+#if UNITY_EDITOR
+        if ( UnityEditor.BuildPipeline.isBuildingPlayer ) {
+            return;
+        }
+#endif
+        God.SetIslandController( this );
+        God.SetPlayableDirector( playableDirector );
 
-        God.SetIslandController(this);
-        God.SetPlayableDirector(playableDirector);
 
-
-
-       // print("SETTING WEATHER STUFF");
-        God.weatherManager.SetValues(weatherSettings);
-
+        // print("SETTING WEATHER STUFF");
+        God.weatherManager.SetValues( weatherSettings );
 
 
         islandDistances = new Vector2[islands.Length];
         islandUVs = new Vector2[islands.Length];
 
-        for (int i = 0; i < islands.Length; i++)
-        {
+        for ( int i = 0; i < islands.Length; i++ ) {
             islands[i].Initialize();
         }
 
-        OnNewIslandEntered(defaultIslandID);
-
+        OnNewIslandEntered( defaultIslandID );
 
 
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
 
-        if (God.wren)
-        {
+        if ( God.wren ) {
 
-            for (int i = 0; i < islands.Length; i++)
-            {
+            for ( int i = 0; i < islands.Length; i++ ) {
 
-                Vector3 wrenPos = God.wren.transform.position;
-                Vector3 islandPos = islands[i].transform.position;
+                var wrenPos = God.wren.transform.position;
+                var islandPos = islands[i].transform.position;
 
-                Vector3 difference = wrenPos - islandPos - Vector3.right * islands[i].size.x / 2 - Vector3.forward * islands[i].size.z / 2;
+                var difference = wrenPos - islandPos - Vector3.right * islands[i].size.x / 2 - Vector3.forward * islands[i].size.z / 2;
 
-                islandDistances[i] = new Vector2(difference.x, difference.z);
+                islandDistances[i] = new Vector2( difference.x , difference.z );
 
                 islandUVs[i] = new Vector2(
-                    (difference.x + islands[i].size.x / 2) / islands[i].size.x,
+                    (difference.x + islands[i].size.x / 2) / islands[i].size.x ,
                     (difference.z + islands[i].size.z / 2) / islands[i].size.z
                 );
 
 
-
                 if (
-                    Mathf.Abs(islandUVs[i].x - .5f) < .5f + islandSizeBuffer &&
-                    Mathf.Abs(islandUVs[i].y - .5f) < .5f + islandSizeBuffer &&
-                    islands[i].onIsland == false)
-                {
+                    Mathf.Abs( islandUVs[i].x - .5f ) < .5f + islandSizeBuffer &&
+                    Mathf.Abs( islandUVs[i].y - .5f ) < .5f + islandSizeBuffer &&
+                    islands[i].onIsland == false ) {
 
                     /* print(wrenPos);
                      print(islandPos);
@@ -143,17 +136,16 @@ public class IslandController : MonoBehaviour
                      print(Mathf.Abs(difference.z));
                      print(islands[i].size.z + islandSizeBuffer);
                      print("ENTERING ISLAND");*/
-                    OnNewIslandEntered(i);
+                    OnNewIslandEntered( i );
                     //break;
                 }
 
                 if (
-                    (Mathf.Abs(islandUVs[i].x - .5f) > .5f + islandSizeBuffer ||
-                    Mathf.Abs(islandUVs[i].y - .5f) > .5f + islandSizeBuffer) &&
-                    islands[i].onIsland == true)
-                {
-                    print("LEAVING ISLAND");
-                    OnIslandLeft(i);
+                    (Mathf.Abs( islandUVs[i].x - .5f ) > .5f + islandSizeBuffer ||
+                     Mathf.Abs( islandUVs[i].y - .5f ) > .5f + islandSizeBuffer) &&
+                    islands[i].onIsland == true ) {
+                    print( "LEAVING ISLAND" );
+                    OnIslandLeft( i );
                     //break;
                 }
 
@@ -161,13 +153,11 @@ public class IslandController : MonoBehaviour
         }
 
 
-
     }
 
 
-    public void OnNewIslandEntered(int islandIndex)
+    public void OnNewIslandEntered( int islandIndex )
     {
-
 
 
         currentIslandID = islandIndex;
@@ -182,25 +172,20 @@ public class IslandController : MonoBehaviour
         currentIslandSize = islands[islandIndex].size;
         currentIslandOffset = islands[islandIndex].transform.position;
 
-        God.SetIslandData(islands[islandIndex]);
+        God.SetIslandData( islands[islandIndex] );
         islands[islandIndex].OnIslandEnter();
-
 
 
         //OnIslandLeft(currentIslandID);
 
 
-
     }
 
-    public void OnIslandLeft(int islandIndex)
+    public void OnIslandLeft( int islandIndex )
     {
 
         islands[islandIndex].OnIslandLeave();
         God.UnsetIslandData();
 
     }
-
-
-
 }

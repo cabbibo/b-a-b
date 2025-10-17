@@ -41,6 +41,12 @@ public class ScenePostSettings : MonoBehaviour
     public void Set()
     {
 
+#if UNITY_EDITOR
+        if ( !Application.isPlaying || UnityEditor.BuildPipeline.isBuildingPlayer ) {
+            return;
+        }
+#endif
+
         God.skyboxUpdater.UpdateSkybox( skyboxMaterial );
 
         if ( God.wren != null ) {
@@ -50,7 +56,7 @@ public class ScenePostSettings : MonoBehaviour
             God.wren.physics.forceDebugMaterial = forcesMaterial;
         }
 
-        God.postController.SetPostParameters( postParameters );
+        //z God.postController.SetPostParameters( postParameters );
 
 
     }

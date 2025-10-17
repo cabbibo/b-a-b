@@ -202,9 +202,10 @@ public class SceneController : MonoBehaviour
         if ( scene.name == "BaseScene" ) {
             return;
         }
-        //        print("Scene Loaded");
-        //       print(scene);
-        //     print(scene.name);
+
+        print( "Scene Loaded" );
+        print( scene );
+        print( scene.name );
 
         var rootObjects = scene.GetRootGameObjects();
         //        print(rootObjects[0]);
@@ -223,10 +224,10 @@ public class SceneController : MonoBehaviour
             wrenScene.SceneLoaded( newScene , loadedFromPortal );
         }
 
-        //print(God.state);
-        //print(wrenScene.portals);
-        // print(God.state);
-        // print(wrenScene);
+        print( God.state );
+        print( wrenScene.portals );
+        print( God.state );
+        print( wrenScene );
 
         if ( wrenScene == null ) {
             Debug.LogError( "Scene not found : Make sure scene is top object in hierarchy!" );

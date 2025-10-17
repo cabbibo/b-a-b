@@ -4,13 +4,11 @@ using UnityEngine;
 using WrenUtils;
 
 
-[ExecuteAlways]
 public class LerpTo : BaseCameraManager
 {
-
     public Transform target;
-    public float lerpSpeed;
-    public float slerpSpeed;
+    public float     lerpSpeed;
+    public float     slerpSpeed;
 
     public float resetLerpSpeed;
     public float resetSlerpSpeed;
@@ -20,14 +18,18 @@ public class LerpTo : BaseCameraManager
     public Transform resetTarget;
 
     // Start is called before the first frame update
-    void OnEnable()
+    private void OnEnable()
     {
-
+#if UNITY_EDITOR
+        if ( !Application.isPlaying || UnityEditor.BuildPipeline.isBuildingPlayer ) {
+            return;
+        }
+#endif
         lerpSpeed = resetLerpSpeed;
         slerpSpeed = resetSlerpSpeed;
         resetTarget = God.instance.transform;
-        if (God.wren != null)
-        {
+
+        if ( God.wren != null ) {
             resetTarget = God.wren.cameraWork.camTarget;
         }
 
@@ -41,10 +43,9 @@ public class LerpTo : BaseCameraManager
 
     }
 
-    void Update()
+    private void Update()
     {
-        if (God.wren != null)
-        {
+        if ( God.wren != null ) {
             resetTarget = God.wren.cameraWork.camTarget;
         }
     }
@@ -53,43 +54,33 @@ public class LerpTo : BaseCameraManager
     {
 
 
-
-        if (God.wren != null)
-        {
+        if ( God.wren != null ) {
             FOV = God.wren.cameraWork.FOV;
             resetTarget = God.wren.cameraWork.camTarget;
-        }
-        else
-        {
+        } else {
             resetTarget = God.instance.transform;
             FOV = 60;
         }
 
 
-
-        if (wantsToRelease && Time.time - startLookTime > releaseTime)
-        {
+        if ( wantsToRelease && Time.time - startLookTime > releaseTime ) {
             lookTarget = null;
 
         }
-        if (target != null)
-        {
+
+        if ( target != null ) {
 
 
-            transform.position = Vector3.Lerp(transform.position, target.position, lerpSpeed);
+            transform.position = Vector3.Lerp( transform.position , target.position , lerpSpeed );
 
-            if (lookTarget != null)
-            {
+            if ( lookTarget != null ) {
 
-                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookTarget.position - transform.position, Vector3.up), slerpSpeed);
+                transform.rotation = Quaternion.Slerp( transform.rotation ,
+                    Quaternion.LookRotation( lookTarget.position - transform.position , Vector3.up ) , slerpSpeed );
+            } else {
+                transform.rotation = Quaternion.Slerp( transform.rotation , target.rotation , slerpSpeed );
             }
-            else
-            {
-                transform.rotation = Quaternion.Slerp(transform.rotation, target.rotation, slerpSpeed);
-            }
-        }
-        else
-        {
+        } else {
             // gives us a target if we dont have one!
             /*if( God.wren != null ){
                 target = God.wren.cameraWork.camTarget;
@@ -140,7 +131,7 @@ public class LerpTo : BaseCameraManager
         else
         {
             // gives us a target if we dont have one!
-          
+
 
         }
     }*/
@@ -151,9 +142,9 @@ public class LerpTo : BaseCameraManager
         //        print("disabled");
     }
 
-    public void SetLookTarget(Transform t)
+    public void SetLookTarget( Transform t )
     {
-        print("look target set");
+        print( "look target set" );
         lookTarget = t;
     }
 
@@ -164,16 +155,14 @@ public class LerpTo : BaseCameraManager
 
 
     public float startLookTime;
-    public bool wantsToRelease;
+    public bool  wantsToRelease;
     public float releaseTime;
 
-    public void SetLookReleaseTime(float time)
+    public void SetLookReleaseTime( float time )
     {
 
         wantsToRelease = true;
         startLookTime = Time.time;
         releaseTime = time;
     }
-
-
 }

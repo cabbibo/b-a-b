@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
-[ExecuteAlways]
 public class FullState : MonoBehaviour
 
 {
@@ -66,6 +65,13 @@ public class FullState : MonoBehaviour
 
     public void OnDestroy()
     {
+
+        // Dont call it while building
+#if UNITY_EDITOR
+        if ( UnityEditor.BuildPipeline.isBuildingPlayer ) {
+            return;
+        }
+#endif
         UpdateLastPosition();
         UpdateState();
 
@@ -87,7 +93,9 @@ public class FullState : MonoBehaviour
     public void UpdateState()
     {
 
-        //        print("Updating State");
+        print( "Updating State" );
+        print( currentSceneID );
+        print( "THE SCENE ID" );
         // TODO save all this to player prefs
 
         PlayerPrefsX.SetBool( "_GameStarted" , gameStarted );
@@ -142,6 +150,8 @@ public class FullState : MonoBehaviour
     {
 
 
+        print( "loading state" );
+
         // TODO load all this from player prefs
 
         tutorialFinished = PlayerPrefsX.GetBool( "_TutorialFinished" , false );
@@ -151,7 +161,7 @@ public class FullState : MonoBehaviour
         gameFinished = PlayerPrefsX.GetBool( "_GameFinished" , false );
         islandDiscovered = PlayerPrefsX.GetBool( "_IslandDiscovered" , false );
 
-        currentSceneID = PlayerPrefs.GetInt( "_CurrentScene" , 0 );
+        currentSceneID = PlayerPrefs.GetInt( "_CurrentScene" , 1 );
         currentBiomeID = PlayerPrefs.GetInt( "_CurrentBiome" , -1 );
         currentQuestID = PlayerPrefs.GetInt( "_CurrentQuest" , -1 );
 
@@ -215,6 +225,14 @@ public class FullState : MonoBehaviour
 
         totalTimeInGame = (float)PlayerPrefs.GetInt( "_TotalSecondsInGame" , 0 );
 
+
+        print( "currentSCeneID" );
+        print( currentSceneID );
+        print( "currentBiomeID" );
+        print( currentBiomeID );
+        print( "currentQuestID" );
+        print( currentQuestID );
+
         wrenCanDo.LoadState();
 
 
@@ -225,7 +243,9 @@ public class FullState : MonoBehaviour
     {
 
 
+        print( "Reseting all" );
         PlayerPrefs.DeleteAll();
+        PlayerPrefs.Save();
 
 
         currentSceneID = 1;

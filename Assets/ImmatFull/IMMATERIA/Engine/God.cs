@@ -8,34 +8,30 @@ namespace IMMATERIA
 {
     public class God : Cycle
     {
-
-        public bool AllInEditMode;
-        public bool PhysicsInEditMode;
-        private static God _instance;
+        public         bool AllInEditMode;
+        public         bool PhysicsInEditMode;
+        private static God  _instance;
 
         public bool started;
 
         public bool godPause;
 
-        public List<Form> forms;
-        public List<Life> lifes;
+        public List<Form>   forms;
+        public List<Life>   lifes;
         public List<Binder> binders;
 
         public override void Create()
         {
 
-            if (forms == null)
-            {
+            if ( forms == null ) {
                 forms = new List<Form>();
             }
 
-            if (lifes == null)
-            {
+            if ( lifes == null ) {
                 lifes = new List<Life>();
             }
 
-            if (binders == null)
-            {
+            if ( binders == null ) {
                 binders = new List<Binder>();
             }
 
@@ -44,16 +40,11 @@ namespace IMMATERIA
             binders.Clear();
 
 
-
-
             //    print( data);
-            if (data != null)
-            {
-                SafePrepend(data);
-            }
-            else
-            {
-                print("DUDE WHERE'S MY DATA");
+            if ( data != null ) {
+                SafePrepend( data );
+            } else {
+                print( "DUDE WHERE'S MY DATA" );
             }
 
             //Application.targetFrameRate = 60;
@@ -63,51 +54,40 @@ namespace IMMATERIA
 
         public override void OnBirthed()
         {
-            GetCycleInfo(this);
+            GetCycleInfo( this );
         }
 
-        public void GetCycleInfo(Cycle cycle)
+        public void GetCycleInfo( Cycle cycle )
         {
 
-            if (cycle is Form)
-            {
-                forms.Add((Form)cycle);
-            }
-            if (cycle is Life)
-            {
-                lifes.Add((Life)cycle);
+            if ( cycle is Form ) {
+                forms.Add( (Form)cycle );
             }
 
-            if (cycle is Binder)
-            {
-                binders.Add((Binder)cycle);
+            if ( cycle is Life ) {
+                lifes.Add( (Life)cycle );
             }
 
-            foreach (Cycle c in cycle.Cycles)
-            {
-                GetCycleInfo(c);
+            if ( cycle is Binder ) {
+                binders.Add( (Binder)cycle );
             }
+
+            foreach (var c in cycle.Cycles) GetCycleInfo( c );
 
         }
 
         public void SaveAllForms()
         {
-            foreach (Form f in forms)
-            {
-
-                if (Saveable.Check(f.saveName))
-                {
-                    Saveable.Delete(f.saveName);
+            foreach (var f in forms)
+                if ( Saveable.Check( f.saveName ) ) {
+                    Saveable.Delete( f.saveName );
                 }
-
-            }
 
             Saveable.ClearNames();
 
-            foreach (Form f in forms)
-            {
+            foreach (var f in forms) {
                 f.saveName = Saveable.GetSafeName();
-                Saveable.Save(f);
+                Saveable.Save( f );
             }
         }
 
@@ -115,13 +95,12 @@ namespace IMMATERIA
         public void FullRebuild()
         {
 
-            foreach (Form f in forms)
-            {
-                if (Saveable.Check(f.saveName))
-                {
-                    Saveable.Delete(f.saveName);
+            foreach (var f in forms) {
+                if ( Saveable.Check( f.saveName ) ) {
+                    Saveable.Delete( f.saveName );
                 }
-                new WaitForSeconds(5);
+
+                new WaitForSeconds( 5 );
 
                 f.alwaysRemake = true;
             }
@@ -134,74 +113,81 @@ namespace IMMATERIA
 
             Saveable.ClearNames();
 
-            foreach (Form f in forms)
-            {
+            foreach (var f in forms) {
                 f.saveName = Saveable.GetSafeName();
-                Saveable.Save(f);
+                Saveable.Save( f );
                 f.alwaysRemake = false;
 
             }
 
-            DebugThis("" + Saveable.CheckIfAllNamesSafe());
+            DebugThis( "" + Saveable.CheckIfAllNamesSafe() );
 
 
         }
-
 
 
         public void LateUpdate()
         {
 
-            if (!godPause)
-            {
+            if ( !godPause ) {
 
-                if (started == false)
-                {
+                if ( started == false ) {
                     _OnLive();
                     started = true;
                 }
 
-                if (gestating) { _WhileGestating(1); }
-                if (birthing) { _WhileBirthing(1); }
-                if (living) { _WhileLiving(1); }
-                if (dying) { _WhileDying(1); }
+                if ( gestating ) {
+                    _WhileGestating( 1 );
+                }
 
-                if (created) { _WhileDebug(); }
+                if ( birthing ) {
+                    _WhileBirthing( 1 );
+                }
+
+                if ( living ) {
+                    _WhileLiving( 1 );
+                }
+
+                if ( dying ) {
+                    _WhileDying( 1 );
+                }
+
+                if ( created ) {
+                    _WhileDebug();
+                }
             }
 
         }
-
-
 
 
         public void OnEnable()
         {
 
 
-
-
             started = false;
 
 
-            if (_instance == null) { _instance = this; }
+            if ( _instance == null ) {
+                _instance = this;
+            }
 
 #if UNITY_EDITOR
 
+            if ( BuildPipeline.isBuildingPlayer ) {
+                return;
+            }
 
-        EditorApplication.update += Always;
+            EditorApplication.update += Always;
 
-         Reset();
-        _Destroy(); 
-        _Create(); 
-        _OnGestate();
-        _OnGestated();
-        _OnBirth(); 
-        _OnBirthed();
+            Reset();
+            _Destroy();
+            _Create();
+            _OnGestate();
+            _OnGestated();
+            _OnBirth();
+            _OnBirthed();
 
 #else
-
-
-
             print("god enambles");
 
 
@@ -224,21 +210,19 @@ namespace IMMATERIA
         }
 
 
-
         public void OnDisable()
         {
 
 
             //print("god disabblee");
 #if UNITY_EDITOR
-        EditorApplication.update -= Always;
-        _OnLived();
-        _OnDie();
-        _OnDied();
-        _Destroy();   
+            EditorApplication.update -= Always;
+            _OnLived();
+            _OnDie();
+            _OnDied();
+            _Destroy();
 
 #else
-
             if (Application.isPlaying)
             {
                 _OnLived();
@@ -250,30 +234,27 @@ namespace IMMATERIA
         }
 
 
-
-        void Always()
+        private void Always()
         {
 #if UNITY_EDITOR
-  if( AllInEditMode || PhysicsInEditMode){
-    if(!godPause) EditorApplication.QueuePlayerLoopUpdate();
-  }
-
-  if( PhysicsInEditMode ){
-    if(!godPause) {
-              if (!Application.isPlaying)
-            {
-        Physics.autoSimulation = false;
-        Physics.Simulate(Time.fixedDeltaTime);
-        Physics.autoSimulation = true;
+            if ( AllInEditMode || (PhysicsInEditMode && !BuildPipeline.isBuildingPlayer) ) {
+                if ( !godPause ) {
+                    EditorApplication.QueuePlayerLoopUpdate();
+                }
             }
-    }
-  }
+
+            if ( PhysicsInEditMode ) {
+                if ( !godPause ) {
+                    if ( !Application.isPlaying ) {
+                        Physics.autoSimulation = false;
+                        Physics.Simulate( Time.fixedDeltaTime );
+                        Physics.autoSimulation = true;
+                    }
+                }
+            }
 
 #endif
         }
-
-
-
 
 
         public void Rebuild()
@@ -282,8 +263,5 @@ namespace IMMATERIA
             OnDisable();
             OnEnable();
         }
-
-
-
     }
 }

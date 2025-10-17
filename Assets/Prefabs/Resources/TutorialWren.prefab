@@ -1059,13 +1059,13 @@ MonoBehaviour:
   wren: {fileID: 9160943688313912041}
   bodyShader: {fileID: 7200000, guid: 57467b9a1aa3d474fbc328c1291ce57c, type: 3}
   wingShader: {fileID: 7200000, guid: a0db877c85463b9489bf7e6b4a374b1b, type: 3}
-  bodyMaterial: {fileID: 2100000, guid: 6a860df8eda2a9645b18f9d7fcfe9b3a, type: 2}
-  wingMaterial: {fileID: 2100000, guid: 3054a36d90778e94ba38b3b39891b201, type: 2}
+  featherMaterial: {fileID: 0}
   wingDebugMaterial: {fileID: 0}
   bodyDebugMaterial: {fileID: 0}
   wingDebugLineMaterial: {fileID: 0}
   bodyDebugLineMaterial: {fileID: 0}
   specialTarget: {fileID: 0}
+  skeleton: {fileID: 0}
   percentageRendered: 1
   _MiddleSecondaryFeatherScaleMultiplier: 2
   _BaseSecondaryFeatherScale: 4.5
@@ -1171,6 +1171,7 @@ MonoBehaviour:
   beak: {fileID: 7643670994601658526}
   _ResetLocation: {x: 0, y: 0, z: 0}
   totalShards: 0
+  featherStructSize: 36
   debug: 0
   debugHierarchyConnections: 0
   debugHierarchyBasis: 0
@@ -1178,6 +1179,7 @@ MonoBehaviour:
   drawBodyFeather: 0
   drawLeftWingFeathers: 0
   drawRightWingFeathers: 0
+  drawSkeleton: 0
   drawLeftFeatherLines: 0
   drawRightFeatherLines: 0
   drawLeftWingFeatherPoints: 0
@@ -16679,6 +16681,7 @@ MonoBehaviour:
   _CenterOrbFalloff: 1
   _CenterOrbFalloffSharpness: 1
   _CenterOrbImportance: 0.1
+  _DeltaStepSize: 0.1
 --- !u!1 &5102224230578975710
 GameObject:
   m_ObjectHideFlags: 0
@@ -26339,6 +26342,7 @@ MonoBehaviour:
   waterController: {fileID: 3650603336123196005}
   interfaceUtils: {fileID: 0}
   disintegration: {fileID: 0}
+  magnetize: {fileID: 0}
   caller: {fileID: 0}
   reseter: {fileID: 0}
   collection: {fileID: 0}
@@ -26450,10 +26454,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea98959e68e82034a9c14c836903b20b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onGround: 0
-  walking: 0
   input: {fileID: 6676056819307743982}
   wren: {fileID: 9160943688313912041}
+  currentParams: {fileID: 0}
   leftWing: {fileID: 9160943687160614091}
   rightWing: {fileID: 9160943686986551155}
   leftWingPivot: {fileID: 9160943687083677970}
@@ -26461,55 +26464,80 @@ MonoBehaviour:
   rb: {fileID: 9160943688313912040}
   terrainCollider: {fileID: 0}
   terrain: {fileID: 0}
+  showDebugForces: 0
+  name: 
   swapLR: 0
   invert: 0
   lockX: 0
   lockY: 0
+  reduceFlapOnStaminaStart: 0
+  reduceFlapOnStaminaMax: 0
+  maxAngleForY: 0
+  maxAngleForYMax: 0
+  maxAngleForYMaxReduction: 0
   gravityForce: 50
-  tuckAddToGravityVal: 0.7
   slowestTwistAngle: 40
   fastestTwistAngle: 40
   slowestBendAngle: 60
   fastestBendAngle: 60
   twistLerpSpeed: 0.3
   bendLerpSpeed: 0.3
+  slowestAmountToSide: 0.06
+  fastestAmountToSide: 0.05
+  twistForceVal: 3
   allFeathersMaxSpeed: 0
   noFeathersMaxSpeed: 0
   maxSpeed: 400
   maxSpeedDamper: 0.1
   baseSpeed: 3
   baseSpeedDamper: 0.001
-  twistForceVal: 3
-  slowestAmountToSide: 0.06
-  fastestAmountToSide: 0.05
-  tuckReduceLiftVal: 0
   closeForwardBoostVal: 100
   thrustForceMultiplier: 3
   strafeVal: 10
+  straightLiftForce: 0
+  velMatchMultiplier: 0
+  tuckAddToGravityVal: 0.7
+  tuckReduceLiftVal: 0
   tuckedAngularDrag: 0
   untuckedAngularDrag: 6
   tuckedDrag: 0
   untuckedDrag: 0.01
   tuckLerpSpeed: 0.6
-  flapToSide: 0.1
-  flapPowerUp: 300
-  flapPowerForward: 60
-  straightLiftForce: 0
+  forwardExtraBoostOnTuck: 0
+  tuckDampeningReduction: 0
+  tuckReduceUpdraftVal: 0.8
   horizonRightingForceVal: 0
   rightingForce: -8
   rightingDependentOnNotTouchingVal: 0.4
+  maxUpAngle: 0
+  maxUpAngleForceRightingMultiplier: 10
+  pushingBackThrustForceCorrector: 10
   closestHeight: 0
   furthestHeight: 150
   closestForce: 40
   furthestForce: 0
-  tuckReduceUpdraftVal: 0.8
-  windAmountToTheSide: 2
   groundForceTweenVal: 0.2
-  forwardExtraBoostOnTuck: 0
-  tuckDampeningReduction: 0
-  velMatchMultiplier: 0
+  windAmountToTheSide: 2
+  groundPower: 10
+  groundOut: 0.03
+  groundDampening: 0.9
+  rotateTowardsTargetOnGround: 1
+  groundUpForce: 40
+  groundUpVal: 10
+  flapToSide: 0.1
+  flapPowerUp: 300
+  flapPowerForward: 60
   bumperForce: 0
   bumperTorqueForce: 0
+  takeOffForwardForce: 10
+  takeOffUpForce: 10
+  carryingForceMultiplier: 0
+  carryingDragMultiplier: 0
+  paintedWindForceMultiplier: 1
+  skimForceUp: 50
+  skimForceForward: 50
+  skimImpulseMulitplier: 1
+  boostMultiplier: 0
   oceanForceMultiplier: 10
   oceanVelocityForceMaxHeight: 0
   oceanVelocityForceMultiplier: 0
@@ -26524,26 +26552,9 @@ MonoBehaviour:
   waveLiftForceMultiplier: 10
   oceanToFlatOnExit: 0.3
   velocityReductionOnEnterWater: 0.3
-  maxUpAngle: 0
-  maxUpAngleForceRightingMultiplier: 10
-  carryingForceMultiplier: 0
-  carryingDragMultiplier: 0
-  groundPower: 10
-  groundOut: 0.03
-  groundDampening: 0.9
-  rotateTowardsTargetOnGround: 1
-  groundUpForce: 40
-  groundUpVal: 10
-  takeOffForwardForce: 10
-  takeOffUpForce: 10
-  paintedWindForceMultiplier: 1
-  skimForceUp: 50
-  skimForceForward: 50
-  skimImpulseMulitplier: 1
-  boostMultiplier: 0
+  onGround: 0
   closestTag: 
   closestObject: {fileID: 0}
-  showDebugForces: 0
   reset: 0
   distToGround: 0
   rawDistToGround: 0
@@ -26642,6 +26653,7 @@ MonoBehaviour:
   doBasicGroundControls: 0
   basicGroundLookControls_lookSpeed: 0
   basicGroundLookControls_moveSpeed: 0
+  hovering: 0
   totalForcesApplied: 0
   forceBufferArray: []
   maxForces: 0
@@ -26666,6 +26678,8 @@ MonoBehaviour:
   rightExtraNetworkData: {fileID: 2930793301573149146}
   finalExtraNetworkData: {fileID: 8254302847936220619}
   invertY: 0
+  swapLR: 0
+  maxAngle: 0.7
   leftX: 0
   leftY: 0
   left2: 0
@@ -26781,6 +26795,11 @@ MonoBehaviour:
   backDistCarrying: -1.4
   CarriedItems: []
   FeetCarriedItems: 
+  lineRendererL: {fileID: 0}
+  lineRendererR: {fileID: 0}
+  carryableObjects: []
+  canCarryLineRenderer: {fileID: 0}
+  carryingLineResolution: 30
 --- !u!114 &7282418919974470726
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26837,16 +26856,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wren: {fileID: 9160943688313912041}
-  paramFiles:
-  - controlSet34861
-  - controlSet45938
-  - FriendlyBird
-  - NoGravity
-  - NoGravity2
-  - SmallBird
-  - Tutorial1
-  - TutorialWrenRippedDemo(Clone)
-  paramSetName: 
+  physicsParams: []
+  physicsParamsID: 0
+  physicsParamsSetName: 
+  currentPhysicsParams: {fileID: 0}
 --- !u!114 &3856516255870990745
 MonoBehaviour:
   m_ObjectHideFlags: 0

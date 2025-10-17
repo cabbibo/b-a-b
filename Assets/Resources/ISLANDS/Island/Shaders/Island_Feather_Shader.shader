@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
-Shader "Islands/Tutorial/Feathers"
+Shader "Islands/Island/Feathers"
 {
     Properties
     {
@@ -18,10 +18,9 @@ Shader "Islands/Tutorial/Feathers"
 
 
     CGINCLUDE
+    #pragma skip_variants SHADOWS_CUBE SHADOWS_DEPTH
     #include "AutoLight.cginc"
     #include "UnityLightingCommon.cginc"
-
-
     #include "Assets/Resources/Shaders/Chunks/hsv.cginc"
 
     //A simple input struct for our pixel shader step containing a position.
@@ -246,7 +245,8 @@ Shader "Islands/Tutorial/Feathers"
             #include "Assets/Resources/Shaders/Chunks/snoise.cginc"
 
 
-            sampler2D _BackgroundTexture1;
+            sampler2D   _BackgroundTexture1;
+            samplerCUBE _Skybox;
 
 
             //Pixel function returns a solid color for each point.
@@ -352,8 +352,8 @@ Shader "Islands/Tutorial/Feathers"
 
                 float minBary = min( barys.x , min( barys.y , barys.z ) );
 
-                col = lerp( 1 , 0 , saturate( minBary * 10 ) );
-                col *= hsv( v.collectionType / 7 , 1 , 1 );
+                //col = lerp( 1 , 0 , saturate( minBary * 10 ) );
+                //  col *= hsv( v.collectionType / 7 , 1 , 1 );
 
 
                 //col = bgCol.xyz + col*col *col*col * 10;
@@ -361,6 +361,13 @@ Shader "Islands/Tutorial/Feathers"
 
                 //col = bgCol;
 
+                col *= tex2D( _MainTex , v.uv );
+                col *= texCUBElod( _Skybox , float4( normalize( v.nor ) , 6 ) ).xyz;
+                col *= 3;
+
+                //col = shadow;
+                //col = dot( _WorldSpaceLightPos0 , v.nor );
+                // col += ( 1 - shadow ) * float3( 1 , 0 , 0 );
 
                 //col = v.nor * .5 +.5;
                 return float4( col , 1 );

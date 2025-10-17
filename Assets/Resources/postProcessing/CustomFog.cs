@@ -12,9 +12,9 @@ public class CustomFog : MonoBehaviour
 {
     public Camera camera;
 
-    public  PostProcessVolume volume;
-    private FogEffect         fog;
-    private SketchEffect      sketchEffect;
+    public PostController postController;
+
+    public PostProcessVolume volume;
 
     private VolumeProfile profile;
 
@@ -27,19 +27,11 @@ public class CustomFog : MonoBehaviour
 
     public Camera cam;
 
-    private void OnEnable()
-    {
-        volume = GetComponent<PostProcessVolume>();
-
-        volume.profile.TryGetSettings( out fog );
-        volume.profile.TryGetSettings( out sketchEffect );
-
-    }
 
     private void Update()
     {
 
-        fog.intensity.value = _Intensity;
+        postController.fogEffect_Reference.intensity.value = _Intensity;
         heightMap = God.terrainData.heightmapTexture;
         mapSize = God.terrainData.size;
         mapOffset = God.terrainOffset;
@@ -49,16 +41,16 @@ public class CustomFog : MonoBehaviour
 
         //       print("helloa");
         //        print(heightMap);
-        fog.heightMap.value = heightMap;
-        fog.mapSize.value = mapSize;
-        fog.mapOffset.value = mapOffset;
+        postController.fogEffect_Reference.heightMap.value = heightMap;
+        postController.fogEffect_Reference.mapSize.value = mapSize;
+        postController.fogEffect_Reference.mapOffset.value = mapOffset;
 
 
         // glitch.blend.value = blend;
 
-        sketchEffect.heightMap.value = heightMap;
-        sketchEffect.mapSize.value = mapSize;
-        sketchEffect.mapOffset.value = mapOffset;
+        postController.sketchEffect_Reference.heightMap.value = heightMap;
+        postController.sketchEffect_Reference.mapSize.value = mapSize;
+        postController.sketchEffect_Reference.mapOffset.value = mapOffset;
 
     }
 }
