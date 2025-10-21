@@ -96,7 +96,10 @@
     float getTerrainHeight( float3 p )
     {
         float2 samplePosition = p.xz - _MapOffset.xz;
-        float2 uv             = ( samplePosition + _MapSize.xz / 2 ) / _MapSize.xz;
+
+        samplePosition = p.xz - _MapSize.xz / 2;
+
+        float2 uv = ( samplePosition + _MapSize.xz / 2 ) / _MapSize.xz;
 
         float h = tex2D( _HeightMap , uv ) * _MapSize.y * 2;
 

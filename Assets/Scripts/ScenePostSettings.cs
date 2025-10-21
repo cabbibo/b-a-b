@@ -42,7 +42,7 @@ public class ScenePostSettings : MonoBehaviour
     {
 
 #if UNITY_EDITOR
-        if ( !Application.isPlaying || UnityEditor.BuildPipeline.isBuildingPlayer ) {
+        if ( UnityEditor.BuildPipeline.isBuildingPlayer ) {
             return;
         }
 #endif
@@ -56,7 +56,7 @@ public class ScenePostSettings : MonoBehaviour
             God.wren.physics.forceDebugMaterial = forcesMaterial;
         }
 
-        //z God.postController.SetPostParameters( postParameters );
+        God.postController.SetPostParameters( postParameters );
 
 
     }

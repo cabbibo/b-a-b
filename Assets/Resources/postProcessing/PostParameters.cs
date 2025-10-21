@@ -581,9 +581,9 @@ public class PostParameters : ScriptableObject
 
     public void OnValidate()
     {
-//        Debug.Log("HIII");
+
 #if UNITY_EDITOR
-        if ( !Application.isPlaying || UnityEditor.BuildPipeline.isBuildingPlayer ) {
+        if ( UnityEditor.BuildPipeline.isBuildingPlayer ) {
             return;
         }
 #endif

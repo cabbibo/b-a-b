@@ -523,7 +523,7 @@ public class InterfacePointer : MonoBehaviour
             extraData.RemoveAt( pointerList.IndexOf( t ) );
             pointerList.Remove( t );
         } else {
-            Debug.LogError( "Pointer not found in list" );
+            Debug.Log( "Pointer not found: " + t.gameObject.name );
         }
     }
 

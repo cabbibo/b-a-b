@@ -12699,8 +12699,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b837b7e23018c8d42bf11704faca7abe, type: 2}
   - {fileID: 11400000, guid: ecb395c822e247844b3e2e968506460a, type: 2}
   initialTemplateForRuntime: {fileID: 0}
-  updateOnValidate: 1
   workingInstance: {fileID: 0}
+  updateOnValidate: 1
   volume: {fileID: 8489540983590714719}
   profile: {fileID: 0}
   mainPost_Reference: {fileID: 0}
@@ -12720,8 +12720,6 @@ MonoBehaviour:
   customFog: {fileID: 3464314134721847616}
   crestUnderwaterRenderer: {fileID: 3574243286826504403}
   placeParticlesOnDepthMap: {fileID: 4355192861394326052}
-  angleOffset: 0
-  sizeToFullSaturation: 0
   fadeInSpeed: 1
   fadeOutSpeed: 1
   glitchSpeed: 0
@@ -12808,6 +12806,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   camera: {fileID: 607012332318317710}
+  postController: {fileID: 0}
   volume: {fileID: 8489540983590714719}
   _Intensity: 11
   _InverseProjection:

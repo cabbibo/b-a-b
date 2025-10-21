@@ -36,8 +36,13 @@ public class CustomFog : MonoBehaviour
         mapSize = God.terrainData.size;
         mapOffset = God.terrainOffset;
 
+        //   print( "Map offset" );
+
 
         //fog.inverseProjection.value = _InverseProjection;
+
+//        print( heightMap );
+        // print( postController.fogEffect_Reference.heightMap.value );
 
         //       print("helloa");
         //        print(heightMap);

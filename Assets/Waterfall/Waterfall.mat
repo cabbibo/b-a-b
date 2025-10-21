@@ -8,8 +8,8 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Waterfall
-  m_Shader: {fileID: 4800000, guid: 94c1aa702cafc2847bbb8ea19a41fa10, type: 3}
-  m_Parent: {fileID: 2100000, guid: 631cd9262c9608b468447005cd214ca2, type: 2}
+  m_Shader: {fileID: 4800000, guid: 2c1f6e948c608ef47bf03f0ff22199c8, type: 3}
+  m_Parent: {fileID: 2100000, guid: a6b1f7f3ff0b62e4eb69600903c00f4a, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -29,7 +29,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Size: 1
+    - _Size: 7.66
     - _SpriteSize: 1
     m_Colors: []
   m_BuildTextureStacks: []
