@@ -232,6 +232,9 @@ public class FullState : MonoBehaviour
         print( currentBiomeID );
         print( "currentQuestID" );
         print( currentQuestID );
+        print( "Tutorial finished" );
+        print( tutorialFinished );
+
 
         wrenCanDo.LoadState();
 
