@@ -335,7 +335,7 @@ Shader "Islands/Canyon/Skybox"
                 }
 
 
-                col.xyz *= float3( 0.3 , 3 , .7 );
+                col.xyz *= float3( 3 , 2 , .4 );
                 col = saturate( col ); // / .8;
 
                 //col = float3( v.ro.x , v.ro.y * 1 , .3 ); // normalize( rd ) * .5; // + .5;

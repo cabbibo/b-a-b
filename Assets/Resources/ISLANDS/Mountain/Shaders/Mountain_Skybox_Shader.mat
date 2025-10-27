@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Mountain_Skybox_Shader
-  m_Shader: {fileID: 4800000, guid: a2daaae402e2e6a4e8ecd42f0f12f0ac, type: 3}
+  m_Shader: {fileID: 4800000, guid: 5736f6232de758d4dbd9e6a31c8ffb72, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -52,7 +52,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 135843dc04274e14393b54d16cf9c709, type: 3}
+        m_Texture: {fileID: 2800000, guid: 5d9534be66b4a2d4f9c4df626dede92f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:

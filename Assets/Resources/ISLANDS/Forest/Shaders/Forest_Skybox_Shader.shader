@@ -335,7 +335,8 @@
                 }
 
 
-                col.xyz *= float3( 0.3 , 3 , .7 );
+                col = length( col );
+                col.xyz *= float3( 0.3 , 1 , .3 );
                 col = saturate( col ); // / .8;
 
                 //col = float3( v.ro.x , v.ro.y * 1 , .3 ); // normalize( rd ) * .5; // + .5;

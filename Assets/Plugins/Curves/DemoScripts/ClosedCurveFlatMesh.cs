@@ -57,6 +57,7 @@ public class ClosedCurveFlatMesh : MonoBehaviour
     private void BuildMesh( Curve c )
     {
 
+        print( "Building" );
 
         totalVertCount = lengthSegments * widthSegments;
         totalTriCount = lengthSegments * (widthSegments - 1) * 3 * 2;
@@ -148,6 +149,8 @@ public class ClosedCurveFlatMesh : MonoBehaviour
         lCenter.y += verticalOffset;
         center = centerObject.TransformPoint( lCenter );
 
+        var aveNormal = new float3( 0 , 0 , 0 );
+
         for ( int i = 0; i < lengthSegments; i++ ) {
 
 
@@ -163,10 +166,24 @@ public class ClosedCurveFlatMesh : MonoBehaviour
                 lEP.z = lCenter.z + verticalOffset;
             }
 
+
             // lEP.y = lCenter.y;
             edgePositions[i] = centerObject.TransformPoint( lEP );
 
+
         }
+
+        for ( int i = 0; i < lengthSegments; i++ ) {
+
+            var nextDir = edgePositions[(i + 1) % lengthSegments] - edgePositions[i];
+            var prevDir = edgePositions[i] - edgePositions[(i - 1 + lengthSegments) % lengthSegments];
+
+            var normal = normalize( cross( nextDir , prevDir ) );
+
+            aveNormal += normal;
+        }
+
+        aveNormal = normalize( aveNormal );
 
 
         float3 nor = centerObject.forward;
@@ -178,7 +195,6 @@ public class ClosedCurveFlatMesh : MonoBehaviour
         } else if ( flatnessDirection == 1 ) {
             nor = centerObject.up;
         } else if ( flatnessDirection == 2 ) {
-
             nor = centerObject.forward;
         }
 
@@ -206,7 +222,7 @@ public class ClosedCurveFlatMesh : MonoBehaviour
 
                 positions[index] = transform.InverseTransformPoint( fPos );
                 tangents[index] = float4( transform.InverseTransformDirection( tangent.xyz ) , 1 );
-                normals[index] = nor; //transform.InverseTransformDirection(normal);
+                normals[index] = transform.InverseTransformDirection( aveNormal ); //transform.InverseTransformDirection(normal);
                 uvs[index] = uv;
 
                 if ( twoSided ) {

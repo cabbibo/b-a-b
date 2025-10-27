@@ -192,6 +192,11 @@ public class InterfacePointer : MonoBehaviour
             RemakeBuffer();
         }
 
+        if ( pointerList.Count != pointerTypes.Count ) {
+            ClearPointers();
+            UpdateAllPointers();
+        }
+
 
         bool noneOn = true;
 

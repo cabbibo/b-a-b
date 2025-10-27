@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using WrenUtils;
 
+[ExecuteAlways]
 public class Portal : MonoBehaviour
 {
     public int sceneID;

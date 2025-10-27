@@ -279,6 +279,8 @@
                 col += _Color * _LightColor0 * saturate( ( dot( _WorldSpaceLightPos0 , v.nor ) + 1 ) ) * ( val + .5 );
                 col += _Color2 * _LightColor0 * pow( ( saturate( dot( _WorldSpaceLightPos0 , reflect( -normalize( v.eye ) , v.nor ) ) ) ) , 100 ) * 2 * ( val + .5 );
 
+                col.xyz *= float3( 1 , 3 , 1 );
+
                 // col *= ( dot( _WorldSpaceLightPos0 , v.nor ) + 1 );
                 //  col *= col;
                 //col *= .5;

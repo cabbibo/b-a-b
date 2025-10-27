@@ -15,8 +15,6 @@ public class ScenePostSettings : MonoBehaviour
     public Material shardTrail;
     public Material forcesMaterial;
 
-    public Gradient sunGradient;
-    public Gradient moonGradient;
 
     public PostParameters postParameters;
 

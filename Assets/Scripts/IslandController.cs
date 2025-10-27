@@ -5,6 +5,7 @@ using UnityEngine.Playables;
 using WrenUtils;
 
 
+[ExecuteAlways]
 public class IslandController : MonoBehaviour
 {
     /*

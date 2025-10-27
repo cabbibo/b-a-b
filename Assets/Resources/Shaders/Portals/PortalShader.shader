@@ -30,6 +30,7 @@ Shader "AcrossUniverse/PortalShader"
 
             #include "UnityCG.cginc"
             #include "Assets/Resources/Shaders/Chunks/triNoise3D.cginc"
+            #include "Assets/Resources/Shaders/Chunks/snoise3D.cginc"
 
             samplerCUBE _OtherWorldCubemap;
             sampler2D   _NormalMap;
@@ -109,58 +110,110 @@ Shader "AcrossUniverse/PortalShader"
                 return normalize( lerp( nor , normalize( n ) , val ) );
             }
 
+            float4 _Color;
+            float  _Multiplier;
+
             fixed4 frag( v2f v ) : SV_Target
             {
+
+                // Ddx ddy for nor
+
+                float3 nor = normalize( cross( ddx( v.world ) , ddy( v.world ) ) );
+
+                float3 flatNor = nor;
+
+
+                nor = v.nor;
+                if ( dot( UNITY_MATRIX_V._m20_m21_m22 , nor ) < 0 )
+                {
+                    nor = -nor;
+                }
+
+
+
                 // sample the texture
                 float3 col = tex2D( _MainTex , v.uv );
 
                 float3 normalTex = tex2D( _NormalMap , v.uv ).xyz * 2 - 1;
                 float3 normal    = normalize( mul( v.TBN , normalTex ) );
 
-                normal = lerp( normal , v.nor , 0.95 );
+
+
 
                 float norSizeMult = .01 * _PortalNoiseSize;
-                float norAdder    = .1;
+                float norAdder    = 1.5;
 
                 float3 eye = v.world - _WorldSpaceCameraPos;
-                normal     = v.nor;
-
-                if ( dot( UNITY_MATRIX_V._m20_m21_m22 , normal ) < 0 )
-                {
-                    normal = -normal;
-                }
+                // normal     = v.nor;
 
 
 
                 float3 norOffset =
-                    +triNoise3D( v.world * norSizeMult , 1 , _Time.y ) * float3( 1 , 0 , 0 )
-                    + triNoise3D( v.world * norSizeMult , 2 , _Time.y ) * float3( 0 , 1 , 0 )
-                    + triNoise3D( v.world * norSizeMult , 3 , _Time.y ) * float3( 0 , 0 , 1 );
+                    +triNoise3D( v.world * norSizeMult + 10 , 1 , _Time.y ) * float3( 1 , 0 , 0 )
+                    + triNoise3D( v.world * norSizeMult + 333 , 1 , _Time.y ) * float3( 0 , 1 , 0 )
+                    + triNoise3D( v.world * norSizeMult + 21.2 , 1 , _Time.y ) * float3( 0 , 0 , 1 );
 
-                normal += norOffset * norAdder;
+                float speedMult = 4;
+                float sizeMult  = .3;
+
+                norOffset = snoise( v.world * sizeMult + float3( _Time.x * .9 * speedMult , 0 , 0 ) ) * float3( 1 , 0 , 0 ) + snoise( v.world * 1.3 * sizeMult + float3( 0 , _Time.x * .8 * speedMult , 0 ) ) * float3( 0 , 1 , 0 ) + snoise( v.world * 1.7 * sizeMult + float3( 0 , 0 , _Time.x * 1.1 * speedMult ) ) * float3( 0 , 0 , 1 );
 
 
+                norOffset = normalize( norOffset );
 
-                float3 refr = normalize( refract( normalize( v.eye ) , normalize( normal ) , 1 ) );
+                float m = dot( nor , norOffset );
+
+                //norOffset = MapNormal( v.nor , v.t1 , v.t2 , v.t3 , v.uv , 1 ); // )mul( v.TBN , norOffset ); // normal += norOffset * norAdder;
+                // normal += norOffset * .1;
 
 
-                col = texCUBE( _OtherWorldCubemap , refr );
-                col += pow( length( norOffset ) , 10 ) * .3;
+                normal = nor;
+                normal += norOffset * .2;
+                normal = normalize( normal );
+
+                float m2 = dot( -normal , normalize( v.eye ) );
+
+
+                float3 refrR = normalize( refract( normalize( v.eye ) , normalize( normal ) , .95 ) );
+                float3 refrG = normalize( refract( normalize( v.eye ) , normalize( normal ) , .9 ) );
+                float3 refrB = normalize( refract( normalize( v.eye ) , normalize( normal ) , .85 ) );
+
+
+                col   = texCUBE( _OtherWorldCubemap , refrR );
+                col.g = texCUBE( _OtherWorldCubemap , refrG ).g;
+                col.b = texCUBE( _OtherWorldCubemap , refrB ).b;
+
+                col *= pow( m2 , 10 ) * 20 * v.uv.y * v.uv.y * v.uv.y; //abs( m );
+
+                col *= _Color;
+                col *= _Multiplier;
+
+                //   col = nor * .5 + .5;
+                //  col = flatNor * .5 + .5;
+                // col += pow( length( norOffset ) , 10 ) * .3;
 
                 float distToEdge = ( length( v.world - _BasePosition ) + length( norOffset ) * 10 ) - _PortalAmountShown * _PortalFadeNormalizer;
 
-                if ( distToEdge > 0 )
+
+                /* if ( distToEdge > 0 )
+                 {
+                     discard; //
+                     //col = float3( 1 , 0 , 0 );
+                 }
+                 else
+                 {
+                     if ( distToEdge > -1 )
+                     {
+                         // col *= col * ( 100 * ( 2 - ( -distToEdge / 1 ) ) );
+                     }
+                 }*/
+
+                if ( v.uv.y < 0 )
                 {
-                    discard; //
-                    //col = float3( 1 , 0 , 0 );
+                    discard;
                 }
-                else
-                {
-                    if ( distToEdge > -1 )
-                    {
-                        col *= col * ( 100 * ( 2 - ( -distToEdge / 1 ) ) );
-                    }
-                }
+
+                //col *= ( v.uv.y - norOffset.y * .5 ) * 5;
 
 
                 //col = normal * .5 + .5;
@@ -169,9 +222,13 @@ Shader "AcrossUniverse/PortalShader"
 
                 // col = normal * .5 + .5;
                 //col = normalize( v.eye ) * .5 + .5;
+
                 return float4( col , 1 );
             }
             ENDCG
         }
+
     }
+
+    Fallback "Diffuse"
 }

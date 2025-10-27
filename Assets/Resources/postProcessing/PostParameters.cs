@@ -373,6 +373,8 @@ public class PostParameters : ScriptableObject
             placeParticlesOnDepthMap.Reset();
         }
 
+        placeParticlesOnDepthMap.enabled = splatEffect;
+
         placeParticlesOnDepthMap.renderBackground = renderBackground;
         placeParticlesOnDepthMap.splatAmount = splatAmount;
         placeParticlesOnDepthMap.splatSize = splatSize;
