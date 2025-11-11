@@ -10,7 +10,7 @@ public class WrenShardManager : MonoBehaviour
     public int numShards = 0;
     public int maxShards = 100000;
 
-    public int numExtraShards = 0;
+    public int numExtraShards => Mathf.Max( 0 , numShards - numShardsInBody );
 
     public Wren wren;
 

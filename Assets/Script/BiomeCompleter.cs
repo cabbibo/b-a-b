@@ -8,8 +8,8 @@ public class BiomeCompleter : MonoBehaviour
 
     public void OnComplete()
     {
-        WrenUtils.God.state.OnBiomeCompleted(biome);
+
+        Debug.LogError( "BiomeCompleter OnComplete whyyyy" );
+        // WrenUtils.God.state.OnBiomeCompleted(biome);
     }
-
 }
-

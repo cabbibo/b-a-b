@@ -67,6 +67,7 @@ public class EtherTutorialStateManager : TutorialStateManager
             postTutorialIslandCutScene.Play();
 
         } else {
+
             // TODO check to see what other islands have been visited / completed
 
             print( "AFTER" );
@@ -98,13 +99,16 @@ public class EtherTutorialStateManager : TutorialStateManager
 
     public void StateCheck()
     {
-        if ( God.state.newIslandDiscovered != -1 ) {
-            DoNewIslandDiscovered( God.state.newIslandDiscovered );
-        }
+        for ( int i = 0; i < God.state.numIslands; i++ ) {
+            if ( God.state.islandsCompleted[i] == false &&
+                 God.state.crystalsCollectedPerIsland[i] > God.state.crystalsNeededForIslandCompletion[i] ) {
 
-        if ( God.state.newIslandCompleted != -1 ) {
-            DoNewIslandCompleted( God.state.newIslandCompleted );
+                DoNewIslandCompleted( i );
+                break;
+            }
         }
+        
+        
 
 
     }
@@ -114,19 +118,10 @@ public class EtherTutorialStateManager : TutorialStateManager
     {
         // do it
         // Check which 
-
         cutScenes[islandID].Play();
+        God.state.CompleteIsland( islandID );
 
         God.state.ResetIslandCompleted();
-    }
-
-    public void DoNewIslandDiscovered( int islandID )
-    {
-        // do it
-
-
-        God.state.ResetIslandDiscovered();
-
     }
 
 

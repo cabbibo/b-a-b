@@ -1,0 +1,183 @@
+#pragma kernel NewTruth
+
+#include "../Chunks/safeID.cginc"
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
+#include "../Chunks/hash.cginc"
+
+
+struct Vert
+{
+    float3 pos;
+    float3 vel;
+    float3 nor;
+    float3 tan;
+    float2 uv;
+    float  isBeingAdded;
+    float  type;
+};
+
+
+RWStructuredBuffer<Vert> _VertBuffer;
+int                      _VertBuffer_COUNT;
+
+
+StructuredBuffer<int> _NumCrystalsBuffer;
+
+
+int   _Count;
+float _DT;
+
+float _StreamWidth;
+float _StreamHeight;
+
+//#include "../Chunks/nanCheckFeather.cginc"
+#define NR_THREADS 128
+
+float4x4 _Transform;
+float4x4 _TruthAdder;
+
+int _ToAdd;
+int _ToAddID;
+
+[numthreads(NR_THREADS,1,1)]
+void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , uint3 id : SV_DispatchThreadID )
+{
+
+
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
+
+    pID = safeID( pID , _VertBuffer_COUNT );
+
+    Vert vert = _VertBuffer[ pID ];
+
+
+    int  type    = 6;
+    int  isExtra = -1;
+    int  currCrystals;
+    bool isBeingAdded = false;
+    for ( int i = 0; i < 7; i++ )
+    {
+
+        if ( pID >= currCrystals && pID < currCrystals + _NumCrystalsBuffer[ i ] )
+        {
+            vert.type = float( i );
+
+            if ( _ToAddID == i )
+            {
+
+                if ( pID > currCrystals + _NumCrystalsBuffer[ i ] - _ToAdd )
+                {
+                    isBeingAdded = true;
+                }
+
+            }
+
+            break;
+        }
+
+        currCrystals += _NumCrystalsBuffer[ i ];
+
+    }
+
+    if ( isBeingAdded )
+    {
+        vert.isBeingAdded = 1;
+    }
+    else
+    {
+        vert.isBeingAdded = 0;
+    }
+
+
+
+
+    int row    = vert.type;
+    int column = pID - currCrystals;
+
+    float3 startPos = float3( float( column ) * .01 , float( row ) * .1 , isBeingAdded * .1 );
+    startPos *= 1;
+
+
+    float3 targetPos = mul( _Transform , float3( 0 , 0 , 0 ) ).xyz;
+
+    float3 rand = float3( hash( float2( pID , 0 ) ) , hash( float2( pID , 1 ) ) , hash( float2( pID , 2 ) ) );
+    rand *= 100;
+    // pull towards the being added target
+    if ( isBeingAdded )
+    {
+        targetPos = mul( _TruthAdder , float4( rand , 1 ) ).xyz;
+
+    }
+    else
+    {
+        targetPos = mul( _Transform , float4( rand , 1 ) ).xyz;
+    }
+
+
+
+    if ( vert.pos.x == 0 || vert.pos.y == 0 || vert.pos.z == 0 )
+    {
+        vert.pos = targetPos;
+        vert.vel = rand * 10;;
+    }
+
+    float3 force    = 0;
+    float3 toTarget = targetPos - vert.pos;
+    force += toTarget * 100;
+    force -= normalize( toTarget ) * 30;
+    force += curlNoise( vert.pos );
+
+    int tmpCurrCrystals = 0;
+    int otherID         = 0;
+    for ( int i = 0; i < 7; i++ )
+    {
+
+        for ( int j = 0; j < _NumCrystalsBuffer[ i ]; j++ )
+        {
+
+            otherID = tmpCurrCrystals + j;
+
+            if ( otherID != pID )
+            {
+                float3 otherPos = _VertBuffer[ tmpCurrCrystals + j ].pos;
+                float3 diff     = vert.pos - otherPos;
+                float  distSqr  = dot( diff , diff ) + 0.1;
+
+                if ( length( diff ) < .00001 )
+                {
+                    diff = float3( 0 , 1 , 0 );
+                }
+                if ( i == int( vert.type ) )
+                {
+
+
+                    force += normalize( diff ) * 0.1 / distSqr;
+
+                }
+                else
+                {
+                    force -= normalize( diff );
+                }
+            }
+        }
+
+        tmpCurrCrystals += _NumCrystalsBuffer[ i ];
+
+    }
+
+
+    float dt = .001;
+
+    //vert.vel += force * dt;
+    //vert.pos += vert.vel * dt;
+    //vert.vel *= .9;
+
+
+
+
+
+
+    _VertBuffer[ pID ] = vert;
+
+}

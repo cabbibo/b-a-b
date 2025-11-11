@@ -11,38 +11,34 @@ public class FullState : MonoBehaviour
     public bool tutorialIslandFinished;
     public bool islandDiscovered;
 
-    public bool[] biomesDiscovered;
-    public bool[] biomesStarted;
-    public bool[] biomesCompleted;
-
-
-    public bool[] questsDiscovered;
-    public bool[] questsStarted;
-    public bool[] questsCompleted;
-
-    public int numQuests = 7;
-
-
-    public bool[] activitiesDiscovered;
-    public bool[] activitiesStarted;
-    public bool[] activitiesCompleted;
-
-
-    public int numActivities = 100;
-
-
     public bool gameFinished;
-
 
     public int currentSceneID;
     public int currentBiomeID;
     public int currentQuestID;
 
+    public int   numIslands = 7;
+    public int[] crystalsNeededForIslandCompletion;
+    public int[] crystalsCollectedPerIsland;
 
-    public int numBiomes = 7;
+    public int TotalCrystals
+    {
+        get
+        {
+            int total = 0;
+
+            for ( int i = 0; i < crystalsCollectedPerIsland.Length; i++ ) {
+                total += crystalsCollectedPerIsland[i];
+            }
+
+            return total;
+        }
+    }
+
+    public bool[] islandsCompleted;
+
 
     public Vector3 lastPosition;
-
 
     public float totalTimeInGame;
 
@@ -105,14 +101,14 @@ public class FullState : MonoBehaviour
 
         PlayerPrefsX.SetBool( "_GameFinished" , gameFinished );
 
-        PlayerPrefsX.SetBoolArray( "_BiomesStarted" , biomesStarted );
-        PlayerPrefsX.SetBoolArray( "_BiomesCompleted" , biomesCompleted );
-        PlayerPrefsX.SetBoolArray( "_BiomesDiscovered" , biomesDiscovered );
+        /*  PlayerPrefsX.SetBoolArray( "_BiomesStarted" , biomesStarted );
+          PlayerPrefsX.SetBoolArray( "_BiomesCompleted" , biomesCompleted );
+          PlayerPrefsX.SetBoolArray( "_BiomesDiscovered" , biomesDiscovered );
 
 
-        PlayerPrefsX.SetBoolArray( "_QuestsStarted" , questsStarted );
-        PlayerPrefsX.SetBoolArray( "_QuestsCompleted" , questsCompleted );
-        PlayerPrefsX.SetBoolArray( "_QuestsDiscovered" , questsDiscovered );
+          PlayerPrefsX.SetBoolArray( "_QuestsStarted" , questsStarted );
+          PlayerPrefsX.SetBoolArray( "_QuestsCompleted" , questsCompleted );
+          PlayerPrefsX.SetBoolArray( "_QuestsDiscovered" , questsDiscovered );*/
 
 
         PlayerPrefs.SetInt( "_CurrentScene" , currentSceneID );
@@ -123,6 +119,9 @@ public class FullState : MonoBehaviour
 
         PlayerPrefs.SetInt( "_NewIslandDiscovered" , newIslandDiscovered );
         PlayerPrefs.SetInt( "_NewIslandCompleted" , newIslandCompleted );
+
+        PlayerPrefsX.SetIntArray( "_CrystalsCollectedPerIsland" , crystalsCollectedPerIsland );
+        PlayerPrefsX.SetBoolArray( "_IslandsCompleted" , islandsCompleted );
 
         wrenCanDo.SaveState();
 
@@ -168,7 +167,7 @@ public class FullState : MonoBehaviour
         ///        print("Loading last Position");
         lastPosition = PlayerPrefsX.GetVector3( "_LastPosition" , Vector3.zero );
 
-
+/*
         biomesStarted = PlayerPrefsX.GetBoolArray( "_BiomesStarted" );
         biomesCompleted = PlayerPrefsX.GetBoolArray( "_BiomesCompleted" );
         biomesDiscovered = PlayerPrefsX.GetBoolArray( "_BiomesDiscovered" );
@@ -218,6 +217,7 @@ public class FullState : MonoBehaviour
         if ( activitiesDiscovered.Length != numActivities ) {
             activitiesDiscovered = new bool[numActivities];
         }
+        */
 
 
         newIslandDiscovered = PlayerPrefs.GetInt( "_NewIslandDiscovered" , -1 );
@@ -225,6 +225,8 @@ public class FullState : MonoBehaviour
 
         totalTimeInGame = (float)PlayerPrefs.GetInt( "_TotalSecondsInGame" , 0 );
 
+
+        crystalsCollectedPerIsland = PlayerPrefsX.GetIntArray( "_CrystalsCollectedPerIsland" );
 
         print( "currentSCeneID" );
         print( currentSceneID );
@@ -261,6 +263,8 @@ public class FullState : MonoBehaviour
         islandDiscovered = false;
         lastPosition = Vector3.zero;
 
+
+        /*
         biomesDiscovered = new bool[numBiomes];
         biomesStarted = new bool[numBiomes];
         biomesCompleted = new bool[numBiomes];
@@ -273,6 +277,10 @@ public class FullState : MonoBehaviour
         activitiesDiscovered = new bool[numQuests];
         activitiesStarted = new bool[numQuests];
         activitiesCompleted = new bool[numQuests];
+*/
+
+        islandsCompleted = new bool[numIslands];
+        crystalsCollectedPerIsland = new int[numIslands];
 
         totalTimeInGame = 0;
 
@@ -301,123 +309,133 @@ public class FullState : MonoBehaviour
         UpdateState();
     }
 
-    public void OnBiomeDiscovered( int i )
-    {
-        biomesDiscovered[i] = true;
-        UpdateState();
-    }
+    /*  public void OnBiomeDiscovered( int i )
+      {
+          biomesDiscovered[i] = true;
+          UpdateState();
+      }
 
-    public void OnBiomeStarted( int i )
-    {
-        biomesStarted[i] = true;
-        UpdateState();
-    }
-
-
-    public void OnBiomeCompleted( int i )
-    {
-        biomesCompleted[i] = true;
+      public void OnBiomeStarted( int i )
+      {
+          biomesStarted[i] = true;
+          UpdateState();
+      }
 
 
-        bool allCompleted = true;
-
-        for ( int j = 0; j < biomesCompleted.Length; j++ ) {
-            if ( !biomesCompleted[j] ) {
-                allCompleted = false;
-            }
-        }
-
-        if ( allCompleted ) {
-            OnGameFinish();
-        }
-
-        UpdateState();
-    }
+      public void OnBiomeCompleted( int i )
+      {
+          biomesCompleted[i] = true;
 
 
-    public void OnQuestDiscovered( int i )
-    {
-        questsDiscovered[i] = true;
-        UpdateState();
-    }
+          bool allCompleted = true;
 
-    public void OnQuestStarted( int i )
-    {
-        questsStarted[i] = true;
-        UpdateState();
-    }
+          for ( int j = 0; j < biomesCompleted.Length; j++ ) {
+              if ( !biomesCompleted[j] ) {
+                  allCompleted = false;
+              }
+          }
 
-    public void OnQuestCompleted( int i )
-    {
-        questsCompleted[i] = true;
+          if ( allCompleted ) {
+              OnGameFinish();
+          }
 
-
-        bool allCompleted = true;
-
-        for ( int j = 0; j < questsCompleted.Length; j++ ) {
-            if ( !questsCompleted[j] ) {
-                allCompleted = false;
-            }
-        }
-
-        if ( allCompleted ) {
-            OnGameFinish();
-        }
-
-        UpdateState();
-    }
+          UpdateState();
+      }
 
 
-    public void ResetQuest( int i )
-    {
-        questsDiscovered[i] = false;
-        questsStarted[i] = false;
-        questsCompleted[i] = false;
-        UpdateState();
-    }
+      public void OnQuestDiscovered( int i )
+      {
+          questsDiscovered[i] = true;
+          UpdateState();
+      }
+
+      public void OnQuestStarted( int i )
+      {
+          questsStarted[i] = true;
+          UpdateState();
+      }
+
+      public void OnQuestCompleted( int i )
+      {
+          questsCompleted[i] = true;
 
 
-    public void SetQuestState( int i , bool discovered , bool started , bool completed )
-    {
-        questsDiscovered[i] = discovered;
-        questsStarted[i] = started;
-        questsCompleted[i] = completed;
-        UpdateState();
-    }
+          bool allCompleted = true;
+
+          for ( int j = 0; j < questsCompleted.Length; j++ ) {
+              if ( !questsCompleted[j] ) {
+                  allCompleted = false;
+              }
+          }
+
+          if ( allCompleted ) {
+              OnGameFinish();
+          }
+
+          UpdateState();
+      }
 
 
-    public void OnActivityDiscovered( int i )
-    {
-        activitiesDiscovered[i] = true;
-        UpdateState();
-    }
-
-    public void OnActivityStarted( int i )
-    {
-        activitiesStarted[i] = true;
-        UpdateState();
-    }
-
-    public void OnActivityCompleted( int i )
-    {
-        activitiesCompleted[i] = true;
+      public void ResetQuest( int i )
+      {
+          questsDiscovered[i] = false;
+          questsStarted[i] = false;
+          questsCompleted[i] = false;
+          UpdateState();
+      }
 
 
-        bool allCompleted = true;
+      public void SetQuestState( int i , bool discovered , bool started , bool completed )
+      {
+          questsDiscovered[i] = discovered;
+          questsStarted[i] = started;
+          questsCompleted[i] = completed;
+          UpdateState();
+      }
 
-        for ( int j = 0; j < activitiesCompleted.Length; j++ ) {
-            if ( !activitiesCompleted[j] ) {
-                allCompleted = false;
-            }
-        }
 
-        if ( allCompleted ) {
-            OnGameFinish();
-        }
+      public void OnActivityDiscovered( int i )
+      {
+          activitiesDiscovered[i] = true;
+          UpdateState();
+      }
 
-        UpdateState();
-    }
+      public void OnActivityStarted( int i )
+      {
+          activitiesStarted[i] = true;
+          UpdateState();
+      }
 
+      public void OnActivityCompleted( int i )
+      {
+          activitiesCompleted[i] = true;
+
+
+          bool allCompleted = true;
+
+          for ( int j = 0; j < activitiesCompleted.Length; j++ ) {
+              if ( !activitiesCompleted[j] ) {
+                  allCompleted = false;
+              }
+          }
+
+          if ( allCompleted ) {
+              OnGameFinish();
+          }
+
+          UpdateState();
+      }
+  */
+
+    /*
+public void ResetActivity( int i )
+{
+    activitiesDiscovered[i] = false;
+    activitiesStarted[i] = false;
+    activitiesCompleted[i] = false;
+    UpdateState();
+}
+*/
 
     public void OnIslandDiscovered( int islandID )
     {
@@ -444,13 +462,6 @@ public class FullState : MonoBehaviour
         UpdateState();
     }
 
-    public void ResetActivity( int i )
-    {
-        activitiesDiscovered[i] = false;
-        activitiesStarted[i] = false;
-        activitiesCompleted[i] = false;
-        UpdateState();
-    }
 
     public void OnGameStart()
     {
@@ -488,8 +499,21 @@ public class FullState : MonoBehaviour
 
     public void LoadLocalState()
     {
-
         LoadState();
+    }
+
+    public void AddToCrystalCount( int islandIndex , int amount )
+    {
+
+        crystalsCollectedPerIsland[islandIndex] += amount;
+        UpdateState();
+
+    }
+
+    public void CompleteIsland( int islandIndex )
+    {
+        islandsCompleted[islandIndex] = true;
+        UpdateState();
     }
 
 
