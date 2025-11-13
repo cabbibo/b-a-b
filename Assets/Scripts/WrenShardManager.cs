@@ -58,7 +58,7 @@ public class WrenShardManager : MonoBehaviour
     public void DoSkim( Vector3 location )
     {
 
-//        print( location );
+        print( location );
 
         int id = Random.Range( -1 , 7 );
 
@@ -214,7 +214,7 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShards( int amount , float type , Vector3 position )
     {
-        //  print( "collected custom" );
+        print( "collected custom" );
 
         numShards += amount;
         collectType = type;

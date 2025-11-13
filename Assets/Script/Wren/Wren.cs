@@ -683,11 +683,15 @@ public class Wren : MonoBehaviour
     public void Skim( Collision c )
     {
 
+        print( "doSkiming" );
+
         if ( !state.onGround ) {
             God.audio.Play( God.sounds.skimGroundClip , c.impulse.magnitude / 10f );
             God.feedbackSystems.skimParticles.transform.position = c.contacts[0].point;
             God.feedbackSystems.skimParticles.Emit( 100 );
             // Get biome ID
+
+            print( "doskim2" );
 
             shards.DoSkim( c.contacts[0].point );
             physics.Skim( c );
