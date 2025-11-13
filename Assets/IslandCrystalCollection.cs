@@ -12,7 +12,10 @@ public class IslandCrystalCollection : MonoBehaviour
     public float radiusForLineRenderer = 1.0f;
     public float lineWidth             = 0.1f;
     public int   segmentCount          = 50;
-    public int crystalCount => God.state.crystalsCollectedPerIsland[portal.biome];
+
+    public int crystalCount =>
+        God.state.crystalsCollectedPerIsland[portal.biome] + God.state.tmpCrystalsCollectedPerIsland[portal.biome];
+
     public float crystalPercent => (float)crystalCount / (float)God.state.crystalsNeededForIslandCompletion[portal.biome];
 
 
@@ -30,8 +33,8 @@ public class IslandCrystalCollection : MonoBehaviour
 
         lineRenderer.SetWidth( lineWidth , lineWidth );
 
-        print( portal.biome );
-        print( God.state.crystalsCollectedPerIsland.Length );
+//        print( portal.biome );
+        //      print( God.state.crystalsCollectedPerIsland.Length );
         UpdateRepresentation();
     }
 
@@ -49,9 +52,9 @@ public class IslandCrystalCollection : MonoBehaviour
 
         int currentExtraShards = God.wren.shards.numExtraShards;
 
-        print( currentExtraShards );
+        ///        print( currentExtraShards );
 
-        God.state.AddToCrystalCount( portal.biome , currentExtraShards );
+        God.state.AddToTMPCrystalCount( portal.biome , currentExtraShards );
         God.wren.shards.SpendExtraShards();
         UpdateRepresentation();
 
@@ -61,8 +64,13 @@ public class IslandCrystalCollection : MonoBehaviour
     public void UpdateRepresentation()
     {
 
-        print( crystalPercent );
+//        print( crystalPercent );
 
         lineRenderer.material.SetFloat( "_FillAmount" , crystalPercent );
+    }
+
+    public void Update()
+    {
+        UpdateRepresentation();
     }
 }

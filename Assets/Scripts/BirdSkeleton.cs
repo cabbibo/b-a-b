@@ -34,7 +34,7 @@ public class BirdSkeleton : MonoBehaviour
 
     private void UpdateBuffers()
     {
-        print( "updaing buffers" );
+//        print( "updaing buffers" );
 
         // Ensure submesh index is in range
         if ( instanceMesh != null ) {
@@ -153,7 +153,11 @@ public class BirdSkeleton : MonoBehaviour
         instanceMaterial.SetBuffer( "_FinalTransformBuffer" , finalTransformBuffer );
 
         Graphics.DrawMeshInstancedIndirect( instanceMesh , subMeshIndex , instanceMaterial ,
-            new Bounds( Vector3.zero , new Vector3( 10000.0f , 10000.0f , 10000.0f ) ) , argsBuffer );
+            new Bounds( Vector3.zero , new Vector3( 10000.0f , 10000.0f , 10000.0f ) ) , argsBuffer , 0 ,
+            null ,
+            ShadowCastingMode.On ,
+            true ,
+            LayerMask.NameToLayer( "Wren" ) );
 
     }
 }

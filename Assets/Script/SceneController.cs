@@ -103,12 +103,13 @@ public class SceneController : MonoBehaviour
 
     }
 
+    public IEnumerator portalAnimation;
 
     public void LoadSceneFromPortal( Portal portal )
     {
 
 
-        print( "LOADING FROM PORTAL" );
+//        print( "LOADING FROM PORTAL" );
         // make it so we dont hurt ourselves
         God.wren.inEther = true;
         God.wren.Crash( portal.collisionPoint.position );
@@ -119,9 +120,23 @@ public class SceneController : MonoBehaviour
 
         loadedFromPortal = true;
         // Lerps out of scene via a portal
-        StartCoroutine( PortalAnimationOut( portal ) );
+
+        print( "Creating portal animation" );
+        portalAnimation = PortalAnimationOut( portal );
+        StartCoroutine( portalAnimation );
 
 
+    }
+
+
+    public void EndPortalAnimation()
+    {
+
+        print( "ending portal animation" );
+
+        if ( portalAnimation != null ) {
+            StopCoroutine( portalAnimation );
+        }
     }
 
 
@@ -193,19 +208,22 @@ public class SceneController : MonoBehaviour
 
     }
 
+    public bool blockAnimation = false;
+
     private void OnSceneLoaded( UnityEngine.SceneManagement.Scene scene , LoadSceneMode mode )
     {
 
-        print( "============= SCENE LOADED ==============" );
+        blockAnimation = false;
+//        print( "============= SCENE LOADED ==============" );
 
         // dont do anything if we are in the base scene
         if ( scene.name == "BaseScene" ) {
             return;
         }
 
-        print( "Scene Loaded" );
-        print( scene );
-        print( scene.name );
+        // print( "Scene Loaded" );
+        // print( scene );
+        // print( scene.name );
 
         var rootObjects = scene.GetRootGameObjects();
         //        print(rootObjects[0]);
@@ -224,10 +242,10 @@ public class SceneController : MonoBehaviour
             wrenScene.SceneLoaded( newScene , loadedFromPortal );
         }
 
-        print( God.state );
-        print( wrenScene.portals );
-        print( God.state );
-        print( wrenScene );
+//        print( God.state );
+        //       print( wrenScene.portals );
+        //       print( God.state );
+        //      print( wrenScene );
 
         if ( wrenScene == null ) {
             Debug.LogError( "Scene not found : Make sure scene is top object in hierarchy!" );
@@ -235,9 +253,18 @@ public class SceneController : MonoBehaviour
 
         // Only animate in if we have animation!
         if ( God.state.currentBiomeID >= 0 && God.state.currentBiomeID < wrenScene.portals.Length && God.wren != null ) {
-            print( "============= STARTING PORTAL ANIMATION IN ==============" );
+//            print( "============= STARTING PORTAL ANIMATION IN ==============" );
             //   print("starting portal animation in");
-            StartCoroutine( PortalAnimationIn( wrenScene.portals[God.state.currentBiomeID] ) );
+
+            if ( blockAnimation == false ) {
+                print( "Creating portal animation 2" );
+                portalAnimation = PortalAnimationIn( wrenScene.portals[God.state.currentBiomeID] );
+                StartCoroutine( portalAnimation );
+            } else {
+                print( "animation creation blocked" );
+                OnFadedIn();
+
+            }
         } else {
             print( "============= BASE ANIMATION IN ==============" );
             //            print("starting base animation in");
@@ -293,7 +320,7 @@ public class SceneController : MonoBehaviour
     private IEnumerator PortalAnimationOut( Portal portal )
     {
 
-        print( "=============== PORTAL ANIMATION OUT ================" );
+//        print( "=============== PORTAL ANIMATION OUT ================" );
 
         float StartTime = Time.time;
 
@@ -316,10 +343,10 @@ public class SceneController : MonoBehaviour
         }
 
 
-        print( "============= SET BIOME INFO ==============" );
-        print( " pb " + portal.biome );
-        print( " ps " + portal.sceneID );
-        print( " pq " + portal.questID );
+//        print( "============= SET BIOME INFO ==============" );
+        //      print( " pb " + portal.biome );
+        //    print( " ps " + portal.sceneID );
+        //  print( " pq " + portal.questID );
 
         God.state.SetCurrentBiome( portal.biome );
         God.state.SetCurrentQuest( portal.questID );
@@ -352,6 +379,7 @@ public class SceneController : MonoBehaviour
         var startRot = God.wren.cameraWork.camTarget.rotation; //portal.startPoint.rotation;
 
         while (Time.time - StartTime < fadeInLength) {
+
 
             float val = (Time.time - StartTime) / fadeInLength;
             //God.fade
@@ -423,6 +451,10 @@ public class SceneController : MonoBehaviour
     {
 
         God.wren.canMove = true;
+
+        // Call the stuff we want to call after fading in
+
+
     }
 
 

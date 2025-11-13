@@ -13,7 +13,7 @@ public class DoubleSideMeshCollision : MonoBehaviour
     private void OnEnable()
     {
 
-        print( meshCollider );
+//        print( meshCollider );
         var mesh = meshCollider.sharedMesh;
         mesh.SetIndices( mesh.GetIndices( 0 ).Concat( mesh.GetIndices( 0 ).Reverse() ).ToArray() , MeshTopology.Triangles , 0 );
         meshCollider.sharedMesh = mesh;

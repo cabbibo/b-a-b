@@ -101,8 +101,9 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
 
     float3 targetPos = mul( _Transform , float3( 0 , 0 , 0 ) ).xyz;
 
-    float3 rand = float3( hash( float2( pID , 0 ) ) , hash( float2( pID , 1 ) ) , hash( float2( pID , 2 ) ) );
-    rand *= 100;
+    float3 rand = float3( hash( float2( pID , 0 ) ) , hash( float2( pID * 10 , 1 ) ) , hash( float2( pID * 20 , 2 ) ) );
+    rand -= .5;
+    // rand *= 100;
     // pull towards the being added target
     if ( isBeingAdded )
     {
@@ -119,59 +120,120 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
     if ( vert.pos.x == 0 || vert.pos.y == 0 || vert.pos.z == 0 )
     {
         vert.pos = targetPos;
-        vert.vel = rand * 10;;
+        vert.vel = rand * 100;;
     }
 
     float3 force    = 0;
     float3 toTarget = targetPos - vert.pos;
-    force += toTarget * 100;
-    force -= normalize( toTarget ) * 30;
-    force += curlNoise( vert.pos );
 
-    int tmpCurrCrystals = 0;
-    int otherID         = 0;
-    for ( int i = 0; i < 7; i++ )
+    if ( length( toTarget ) < 0.00001 )
     {
+        vert.pos = targetPos;
+        //vert.vel = 0;
+    }
+    else
+    {
+        force += toTarget * 100;
 
-        for ( int j = 0; j < _NumCrystalsBuffer[ i ]; j++ )
+        if ( isBeingAdded )
         {
-
-            otherID = tmpCurrCrystals + j;
-
-            if ( otherID != pID )
-            {
-                float3 otherPos = _VertBuffer[ tmpCurrCrystals + j ].pos;
-                float3 diff     = vert.pos - otherPos;
-                float  distSqr  = dot( diff , diff ) + 0.1;
-
-                if ( length( diff ) < .00001 )
-                {
-                    diff = float3( 0 , 1 , 0 );
-                }
-                if ( i == int( vert.type ) )
-                {
-
-
-                    force += normalize( diff ) * 0.1 / distSqr;
-
-                }
-                else
-                {
-                    force -= normalize( diff );
-                }
-            }
+            force += toTarget * 3000;
         }
 
-        tmpCurrCrystals += _NumCrystalsBuffer[ i ];
-
+        force -= normalize( toTarget ) * 30;
     }
 
 
-    float dt = .001;
 
-    //vert.vel += force * dt;
-    //vert.pos += vert.vel * dt;
-    //vert.vel *= .9;
+
+    force += curlNoise( vert.pos ) * 100;
+
+    float3 centerSimForce = 0;
+
+    int tmpCurrCrystals = 0;
+    int otherID         = 0;
+
+    float3 center       = 0;
+    int    totalCounted = 0;
+    /* for ( int i = 0; i < 7; i++ )
+     {
+ 
+         for ( int j = 0; j < _NumCrystalsBuffer[ i ]; j++ )
+         {
+ 
+             otherID = tmpCurrCrystals + j;
+ 
+             if ( otherID != pID && !isBeingAdded && _VertBuffer[ otherID ].isBeingAdded < 0.5 )
+             {
+                 float3 otherPos = _VertBuffer[ tmpCurrCrystals + j ].pos;
+                 float3 diff     = vert.pos - otherPos;
+                 float  distSqr  = dot( diff , diff ) + 0.1;
+ 
+                 center += otherPos;
+                 totalCounted += 1;
+ 
+                 if ( length( diff ) < .00001 )
+                 {
+                     diff = float3( 0 , 1 , 0 );
+                 }
+ 
+                 if ( i == int( vert.type ) )
+                 {
+ 
+                     centerSimForce += 10 * normalize( diff ) * 0.1 / distSqr;
+ 
+                 }
+                 else
+                 {
+                     centerSimForce -= 1 * normalize( diff );
+                 }
+             }
+         }
+ 
+         tmpCurrCrystals += _NumCrystalsBuffer[ i ];
+ 
+     }*/
+
+    center /= float( totalCounted );
+
+    center = mul( _Transform , float4( center , 1 ) ).xyz;
+
+    float3 centerDif = vert.pos - center;
+
+    if ( length( centerDif ) < .00001 )
+    {
+        centerDif = float3( 0 , .0001 , 0 );
+    }
+
+    if ( length( centerDif ) < 1 )
+    {
+
+        centerSimForce -= 100 * normalize( center - vert.pos ) / ( .01 + length( centerDif ) ); //* 100;
+    }
+
+
+
+    float dt = .002;
+
+
+    if ( !isBeingAdded )
+    {
+        force += centerSimForce;
+    }
+
+    if ( length( force ) > 100000 )
+    {
+        force = normalize( force ) * 100000;
+    }
+
+    if ( length( vert.vel ) > 100000 )
+    {
+        vert.vel = normalize( vert.vel ) * 100000;
+    }
+
+    vert.vel += force * dt;
+    vert.pos += vert.vel * dt;
+    vert.vel *= .9;
 
 
 

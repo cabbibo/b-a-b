@@ -116,6 +116,8 @@ public class PostParameters : ScriptableObject
     [Header( "Splat Settings" )]
     public bool renderBackground = true;
 
+    public Color splatsBackgroundColor = Color.black;
+
     public int   splatAmount = 1111;
     public float splatSize   = 1;
 
@@ -373,8 +375,9 @@ public class PostParameters : ScriptableObject
             placeParticlesOnDepthMap.Reset();
         }
 
-        placeParticlesOnDepthMap.enabled = splatEffect;
+        placeParticlesOnDepthMap.isActive = splatEffect;
 
+        placeParticlesOnDepthMap.backgroundColor = splatsBackgroundColor;
         placeParticlesOnDepthMap.renderBackground = renderBackground;
         placeParticlesOnDepthMap.splatAmount = splatAmount;
         placeParticlesOnDepthMap.splatSize = splatSize;
@@ -512,6 +515,7 @@ public class PostParameters : ScriptableObject
         p.glitchSplit = glitchSplit;
 
         p.renderBackground = renderBackground;
+        p.splatsBackgroundColor = splatsBackgroundColor;
         p.splatAmount = splatAmount;
         p.splatSize = splatSize;
         p.splatSpeed = splatSpeed;

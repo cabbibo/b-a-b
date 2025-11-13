@@ -30,7 +30,7 @@ namespace WrenUtils
         public void SceneLoaded( int newScene , bool loadedFromPortal )
         {
 
-            print( "======= SCENE LOADED =======" );
+//            print( "======= SCENE LOADED =======" );
 
             // Set WrenState
             God.wren.state.inInterface = false;
@@ -85,7 +85,7 @@ namespace WrenUtils
 
         public void SetWrenStartPosition( bool loadedFromPortal )
         {
-            print( "======= SETTING POSITION  =======" );
+//            print( "======= SETTING POSITION  =======" );
 
             var startPos = new Vector3( 1000 , 0 , 0 );
 
@@ -93,15 +93,15 @@ namespace WrenUtils
             // If we dont load from the portal, we grab the last saved position!
             // Otherwise we use the portal!
             if ( loadedFromPortal == false ) {
-                print( "======= NOT LOADED FROM PORTAL =======" );
+//                print( "======= NOT LOADED FROM PORTAL =======" );
                 //                print("loaded from portal false");
                 // loading from last position
                 startPos = God.state.lastPosition;
             } else {
                 if ( God.state.currentQuestID >= 0 ) {
 
-                    print( "======= HAVE A QUEST ID  =======" );
-                    print( "qid " + God.state.currentQuestID );
+                    //                  print( "======= HAVE A QUEST ID  =======" );
+//                    print( "qid " + God.state.currentQuestID );
 
                     if ( God.state.currentQuestID >= portals.Length ) {
                         print( "TOO HIGH" );
@@ -109,7 +109,7 @@ namespace WrenUtils
                         God.state.SetCurrentBiome( -1 );
                     } else {
 
-                        print( "LOADING FROM PORTAL" );
+//                        print( "LOADING FROM PORTAL" );
                         God.state.SetLastPosition( portals[God.state.currentQuestID].startPoint.position );
                         // return / spawn at gate that is our current biome!
                         // when bird dies, we respawn at our first starting position

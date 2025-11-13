@@ -13,19 +13,21 @@ public class BindNewTruthData : Binder
     public int toAddID = -1;
     public int total;
 
+    public Transform truthAdder;
+
     public ComputeBuffer numCrystalsBuffer;
 
     public override void Create()
     {
         GetTotal();
-        form.count = total;
+        form.count = Mathf.Max( 1 , total );
     }
 
     public void GetTotal()
     {
 
         total = WrenUtils.God.state.TotalCrystals;
-        print( "totalCrystals + " + total );
+//        print( "totalCrystals + " + total );
         numCrystalsBuffer = new ComputeBuffer( 7 , sizeof(int) );
         numCrystalsBuffer.SetData( WrenUtils.God.state.crystalsCollectedPerIsland );
 
@@ -39,6 +41,8 @@ public class BindNewTruthData : Binder
         toBind.BindInt( "_Total" , () => total );
         toBind.BindBuffer( "_NumCrystalsBuffer" , () => numCrystalsBuffer );
         toBind.BindInt( "_ToAddID" , () => toAddID );
+
+        toBind.BindMatrix( "_TruthAdder" , () => truthAdder.localToWorldMatrix );
 
     }
 

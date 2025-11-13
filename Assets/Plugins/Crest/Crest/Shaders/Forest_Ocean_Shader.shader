@@ -871,11 +871,11 @@ Shader "Islands/Forest/Ocean"
 
                 col = texCUBE( _Skybox , reflect( -normalize( eye ) , normal ) ).xyz;
                 col *= _ColorMultiplier;
-                col += bubbleCol * 10;
-                col += pow( whiteFoam.x , 2 );
+                col += float3( 0 , 1 , .5 ) * bubbleCol * 10;
+                col += float3( 1 , 0 , 0 ) * pow( whiteFoam.x , 10 ) * 100;
 
                 col *= _OverallMultiplier;
-                col *= length( _LightColor0.xyz );
+                //col *= length( _LightColor0.xyz );
                 col = saturate( col );
                 // col =
 
@@ -926,74 +926,74 @@ Shader "Islands/Forest/Ocean"
 
 
 
-
-        // shadow caster rendering pass, implemented manually
-        // using macros from UnityCG.cginc
-        Pass
-        {
-
-            // Culling user defined - can be inverted for under water
-            Cull [_CullMode]
-
-            Tags
-            {
-                // Tell Unity we're going to render water in forward manner and we're going to do lighting and it will set
-                // the appropriate uniforms.
-                "LightMode"="ForwardBase"
-            }
-
-            CGPROGRAM
-            #include "Underwater/CustomShared.hlsl"
-            #include "Assets/Resources/Shaders/Chunks/snoise.cginc"
-            #include "Assets/Resources/Shaders/Chunks/noise.cginc"
-
-            float  _OutlineOffset;
-            float4 _OutlineColor;
-
-            Varyings Vert( Attributes v )
-            {
-                Varyings o;
-
-                //v.vertex += v.normal;
-                DoVert( v , o );
-
-                o.worldPos += float3( 0 , 2 * _OutlineOffset , 0 );
-                o.worldPos -= ( 10 * _OutlineOffset + 1 ) * normalize( _WorldSpaceCameraPos - o.worldPos );
-                // view-projection
-                o.positionCS = mul( UNITY_MATRIX_VP , float4( o.worldPos , 1. ) );
-
-                UNITY_TRANSFER_FOG( o , o.positionCS );
-
-                // unfortunate hoop jumping - this is inputs for refraction. depending on whether HDR is on or off, the grabbed scene
-                // colours may or may not come from the backbuffer, which means they may or may not be flipped in y. use these macros
-                // to get the right results, every time.
-                o.grabPos      = ComputeGrabScreenPos( o.positionCS );
-                o.screenPosXYW = ComputeScreenPos( o.positionCS ).xyw;
-
-
-                return o;
-            }
-
-
-            samplerCUBE _Skybox;
-
-            float4 Frag( Varyings i ) : SV_Target
-            {
-                float3 eye = _WorldSpaceCameraPos - i.worldPos;
-
-                float4 skyColor = texCUBE( _Skybox , -normalize( eye ) ) * _OutlineColor;
-
-                return skyColor;
-
-
-            }
-            ENDCG
-        }
-
-
-
-
-
+        /*
+                // shadow caster rendering pass, implemented manually
+                // using macros from UnityCG.cginc
+                Pass
+                {
+        
+                    // Culling user defined - can be inverted for under water
+                    Cull [_CullMode]
+        
+                    Tags
+                    {
+                        // Tell Unity we're going to render water in forward manner and we're going to do lighting and it will set
+                        // the appropriate uniforms.
+                        "LightMode"="ForwardBase"
+                    }
+        
+                    CGPROGRAM
+                    #include "Underwater/CustomShared.hlsl"
+                    #include "Assets/Resources/Shaders/Chunks/snoise.cginc"
+                    #include "Assets/Resources/Shaders/Chunks/noise.cginc"
+        
+                    float  _OutlineOffset;
+                    float4 _OutlineColor;
+        
+                    Varyings Vert( Attributes v )
+                    {
+                        Varyings o;
+        
+                        //v.vertex += v.normal;
+                        DoVert( v , o );
+        
+                        o.worldPos += float3( 0 , 2 * _OutlineOffset , 0 );
+                        o.worldPos -= ( 10 * _OutlineOffset + 1 ) * normalize( _WorldSpaceCameraPos - o.worldPos );
+                        // view-projection
+                        o.positionCS = mul( UNITY_MATRIX_VP , float4( o.worldPos , 1. ) );
+        
+                        UNITY_TRANSFER_FOG( o , o.positionCS );
+        
+                        // unfortunate hoop jumping - this is inputs for refraction. depending on whether HDR is on or off, the grabbed scene
+                        // colours may or may not come from the backbuffer, which means they may or may not be flipped in y. use these macros
+                        // to get the right results, every time.
+                        o.grabPos      = ComputeGrabScreenPos( o.positionCS );
+                        o.screenPosXYW = ComputeScreenPos( o.positionCS ).xyw;
+        
+        
+                        return o;
+                    }
+        
+        
+                    samplerCUBE _Skybox;
+        
+                    float4 Frag( Varyings i ) : SV_Target
+                    {
+                        float3 eye = _WorldSpaceCameraPos - i.worldPos;
+        
+                        float4 skyColor = texCUBE( _Skybox , -normalize( eye ) ) * _OutlineColor;
+        
+                        return skyColor;
+        
+        
+                    }
+                    ENDCG
+                }
+        
+        
+        
+        
+        */
 
 
 

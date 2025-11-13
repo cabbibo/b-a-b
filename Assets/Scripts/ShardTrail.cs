@@ -66,7 +66,7 @@ public class ShardTrail : MonoBehaviour
     public void Create()
     {
 
-        print( "hi" );
+//        print( "hi" );
 
         if ( mpb == null ) {
             mpb = new MaterialPropertyBlock();
@@ -250,7 +250,7 @@ public class ShardTrail : MonoBehaviour
         mpb.SetMatrix( "_Model" , wren.transform.localToWorldMatrix );
         Graphics.DrawProcedural( debugMaterial , new Bounds( transform.position , Vector3.one * 5000 ) ,
             MeshTopology.Triangles , maxShards * totalTris , 1 , null , mpb , ShadowCastingMode.TwoSided , true ,
-            LayerMask.NameToLayer( "Default" ) );
+            LayerMask.NameToLayer( "Wren" ) );
 
 
     }

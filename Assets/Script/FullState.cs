@@ -20,6 +20,7 @@ public class FullState : MonoBehaviour
     public int   numIslands = 7;
     public int[] crystalsNeededForIslandCompletion;
     public int[] crystalsCollectedPerIsland;
+    public int[] tmpCrystalsCollectedPerIsland;
 
     public int TotalCrystals
     {
@@ -89,9 +90,9 @@ public class FullState : MonoBehaviour
     public void UpdateState()
     {
 
-        print( "Updating State" );
-        print( currentSceneID );
-        print( "THE SCENE ID" );
+//        print( "Updating State" );
+        //      print( currentSceneID );
+        //    print( "THE SCENE ID" );
         // TODO save all this to player prefs
 
         PlayerPrefsX.SetBool( "_GameStarted" , gameStarted );
@@ -121,6 +122,7 @@ public class FullState : MonoBehaviour
         PlayerPrefs.SetInt( "_NewIslandCompleted" , newIslandCompleted );
 
         PlayerPrefsX.SetIntArray( "_CrystalsCollectedPerIsland" , crystalsCollectedPerIsland );
+        PlayerPrefsX.SetIntArray( "_TMPCrystalsCollectedPerIsland" , tmpCrystalsCollectedPerIsland );
         PlayerPrefsX.SetBoolArray( "_IslandsCompleted" , islandsCompleted );
 
         wrenCanDo.SaveState();
@@ -149,7 +151,7 @@ public class FullState : MonoBehaviour
     {
 
 
-        print( "loading state" );
+//        print( "loading state" );
 
         // TODO load all this from player prefs
 
@@ -227,8 +229,10 @@ public class FullState : MonoBehaviour
 
 
         crystalsCollectedPerIsland = PlayerPrefsX.GetIntArray( "_CrystalsCollectedPerIsland" );
+        tmpCrystalsCollectedPerIsland = PlayerPrefsX.GetIntArray( "_TMPCrystalsCollectedPerIsland" );
+        islandsCompleted = PlayerPrefsX.GetBoolArray( "_IslandsCompleted" );
 
-        print( "currentSCeneID" );
+/*        print( "currentSCeneID" );
         print( currentSceneID );
         print( "currentBiomeID" );
         print( currentBiomeID );
@@ -236,7 +240,7 @@ public class FullState : MonoBehaviour
         print( currentQuestID );
         print( "Tutorial finished" );
         print( tutorialFinished );
-
+*/
 
         wrenCanDo.LoadState();
 
@@ -502,6 +506,14 @@ public void ResetActivity( int i )
         LoadState();
     }
 
+    public void AddToTMPCrystalCount( int islandIndex , int amount )
+    {
+
+        tmpCrystalsCollectedPerIsland[islandIndex] += amount;
+        UpdateState();
+
+    }
+
     public void AddToCrystalCount( int islandIndex , int amount )
     {
 
@@ -510,9 +522,29 @@ public void ResetActivity( int i )
 
     }
 
+    public void ConsumeCrystals()
+    {
+        print( "Consuming" );
+
+        for ( int i = 0; i < crystalsCollectedPerIsland.Length; i++ ) {
+            crystalsCollectedPerIsland[i] += tmpCrystalsCollectedPerIsland[i];
+            tmpCrystalsCollectedPerIsland[i] = 0;
+        }
+
+        UpdateState();
+    }
+
+
     public void CompleteIsland( int islandIndex )
     {
         islandsCompleted[islandIndex] = true;
+        UpdateState();
+    }
+
+
+    public void FinishGame()
+    {
+        gameFinished = true;
         UpdateState();
     }
 

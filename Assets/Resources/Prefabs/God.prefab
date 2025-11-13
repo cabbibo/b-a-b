@@ -53486,6 +53486,7 @@ MonoBehaviour:
   OnSceneLoadEvent:
     m_PersistentCalls:
       m_Calls: []
+  blockAnimation: 0
   portalAnimationOutLength: 3
   fadeInLength: 3
   demoEnder: {fileID: 5560358861742559117}
@@ -53512,6 +53513,7 @@ MonoBehaviour:
   numIslands: 7
   crystalsNeededForIslandCompletion: 
   crystalsCollectedPerIsland: 
+  tmpCrystalsCollectedPerIsland: 
   islandsCompleted: 
   lastPosition: {x: 725.1808, y: 2651.0457, z: 753.0488}
   totalTimeInGame: 448.74606
@@ -53679,6 +53681,7 @@ MonoBehaviour:
   pointOfInterest: {fileID: 0}
   distanceFromBird: 10
   requestSpeed: 0
+  lockToBird: 0
 --- !u!1 &5310904620592384995
 GameObject:
   m_ObjectHideFlags: 0

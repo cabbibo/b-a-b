@@ -158,7 +158,7 @@ Material:
     - _OcclusionStrength: 1
     - _OutlineAmount: 1.46
     - _OutlineOffset: 0.33
-    - _OverallMultiplier: 1.16
+    - _OverallMultiplier: 0.28
     - _OverrideReflectionCubemap: 0
     - _PainterlyLightImportance: 0.92
     - _Parallax: 0.02
@@ -207,7 +207,7 @@ Material:
     m_Colors:
     - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _ColorMultiplier: {r: 1, g: 1, b: 1, a: 1}
+    - _ColorMultiplier: {r: 0, g: 0.68666863, b: 1, a: 1}
     - _DepthFogDensity: {r: 0.9, g: 0.3, b: 0.35, a: 1}
     - _Diffuse: {r: 0, g: 0.0026954073, b: 0.16981128, a: 1}
     - _DiffuseGrazing: {r: 0, g: 0.003921569, b: 0.16862735, a: 1}

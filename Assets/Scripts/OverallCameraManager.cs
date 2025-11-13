@@ -140,7 +140,11 @@ public class OverallCameraManager : MonoBehaviour
 
     public void RequestPriority( BaseCameraManager cm )
     {
+
+        print( "Requesting priority for " + cm.name );
+
         if ( currentPriority != cm ) {
+            print( "requestiong NOW" );
             currentPriority = cm;
             priorityRequestTime = Time.time;
             priorityRequestSpeed = priorityRequestSpeedDefault;
@@ -152,6 +156,7 @@ public class OverallCameraManager : MonoBehaviour
 
     public void ReleasePriority( BaseCameraManager cm , float fadeTime )
     {
+
 
         if ( currentPriority == cm ) {
             // dont actullay need fade time if we want default
@@ -189,6 +194,8 @@ public class OverallCameraManager : MonoBehaviour
 
     public void SetBaseState()
     {
+
+        print( "setting base state" );
         currentPriority = defaultPriority;
         priorityRequestTime = Time.time;
         priorityRequestSpeed = priorityRequestSpeedDefault;

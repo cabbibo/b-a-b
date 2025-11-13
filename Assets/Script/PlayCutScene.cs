@@ -90,6 +90,7 @@ public class PlayCutScene : MonoBehaviour
 
         if ( Application.isEditor && Application.isPlaying != true && stealCameraInEditMode ) {
 
+
             Camera.main.transform.position = cameraTarget.position;
             Camera.main.transform.rotation = cameraTarget.rotation;
         }
@@ -100,6 +101,11 @@ public class PlayCutScene : MonoBehaviour
     private void Update()
     {
 
+
+        if ( playNextFrame ) {
+            playNextFrame = false;
+            God.cameraManager.cutSceneManager.SetCutScene( this );
+        }
 
         if ( playing ) {
 
@@ -132,7 +138,7 @@ public class PlayCutScene : MonoBehaviour
         // Move the wren to the correct position?
         if ( transitioning ) {
 
-            print( "transitioning" );
+//            print( "transitioning" );
 
             if ( God.wren != null ) {
                 God.wren.canMove = false;
@@ -205,7 +211,7 @@ public class PlayCutScene : MonoBehaviour
     public void OnFinish()
     {
 
-//        print( "finished " );
+        print( "finished " );
         God.instance.inCutScene = false;
 
         CutSceneFinished.Invoke();
@@ -251,8 +257,19 @@ public class PlayCutScene : MonoBehaviour
                 }
             }
 
-            God.cameraManager.cutSceneManager.SetCutScene( this );
+            DoPlayNextFrame();
+
+
         }
+    }
+
+    // This is to make sure we have a frame to catch up between cut scenes
+    public bool playNextFrame = false;
+
+    public void DoPlayNextFrame()
+    {
+        playNextFrame = true;
+
     }
 
 
@@ -261,7 +278,7 @@ public class PlayCutScene : MonoBehaviour
     public void SetEndValues()
     {
 
-        print( "setting end values" );
+//        print( "setting end values" );
         director.time = director.playableAsset.duration;
         director.Evaluate();
 
@@ -271,7 +288,7 @@ public class PlayCutScene : MonoBehaviour
     public void SetStartValues()
     {
 
-        print( "setting start values" );
+//        print( "setting start values" );
         director.time = 0;
         director.Evaluate();
 

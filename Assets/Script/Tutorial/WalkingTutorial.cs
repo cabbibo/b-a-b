@@ -48,12 +48,12 @@ public class WalkingTutorial : TutorialCoroutine
     public override bool ConditionsForCompleted()
     {
 
-        print( "checking state" );
+        //     print( "checking state" );
 
         if ( God.wrenCanDo.hasLearnedWalk ) {
-            print( "has learned walk" );
+//            print( "has learned walk" );
         } else {
-            print( "has NOT learned walk" );
+            //           print( "has NOT learned walk" );
         }
 
         return God.wrenCanDo.hasLearnedWalk;
