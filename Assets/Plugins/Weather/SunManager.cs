@@ -5,7 +5,6 @@ using UnityEngine;
 [ExecuteAlways]
 public class SunManager : MonoBehaviour
 {
-
     public bool osscilate;
 
     public bool auto;
@@ -14,9 +13,8 @@ public class SunManager : MonoBehaviour
 
     public Transform lookTarget;
     public Transform targetPosition;
-    public Light sun;
-    public Material sky;
-
+    public Light     sun;
+    public Material  sky;
 
 
     public float daySpeed = 30;
@@ -33,7 +31,7 @@ public class SunManager : MonoBehaviour
     public float timeInNight;
     public float nightNess;
 
-    public float sunRadius;
+    public float     sunRadius;
     public Transform sunRotator;
 
     public float rawTimeInCycle;
@@ -50,14 +48,10 @@ public class SunManager : MonoBehaviour
     public float osscilateSize;
     public float osscilateSpeed;
 
-    public bool showSunRenderer;
+    public bool     showSunRenderer;
     public Renderer sunRenderer;
 
     public Material sunMaterial;
-
-
-
-
 
 
     public void OnEnable()
@@ -65,7 +59,6 @@ public class SunManager : MonoBehaviour
         sky = RenderSettings.skybox;
 
         totalCycleLength = daySpeed + nightSpeed;
-
 
 
     }
@@ -78,58 +71,51 @@ public class SunManager : MonoBehaviour
         totalCycleLength = daySpeed + nightSpeed;
 
 
-        if (auto)
-        {
+        if ( auto ) {
 
-            rawTimeInCycle = Time.time % totalCycleLength;
-        }
-        else
-        {
+            rawTimeInCycle += Time.deltaTime;
+            rawTimeInCycle = rawTimeInCycle % totalCycleLength;
+
+        } else {
             rawTimeInCycle = rawTimeInCycle % totalCycleLength;
         }
 
-        if (osscilate)
-        {
-            rawTimeInCycle = osscilateBase + Mathf.Sin(Time.time * osscilateSpeed) * osscilateSize;
+        if ( osscilate ) {
+            rawTimeInCycle = osscilateBase + Mathf.Sin( Time.time * osscilateSpeed ) * osscilateSize;
         }
 
         float normalizedTimeInCycle = rawTimeInCycle / totalCycleLength;
 
-        timeInDay = dayRemapper.Evaluate(Mathf.Clamp01(rawTimeInCycle / daySpeed));
+        timeInDay = dayRemapper.Evaluate( Mathf.Clamp01( rawTimeInCycle / daySpeed ) );
 
-        dayNess = 1 - Mathf.Abs(timeInDay - 0.5f) * 2;
+        dayNess = 1 - Mathf.Abs( timeInDay - 0.5f ) * 2;
 
-        timeInNight = nightRemapper.Evaluate(Mathf.Clamp01((rawTimeInCycle - daySpeed) / nightSpeed));
+        timeInNight = nightRemapper.Evaluate( Mathf.Clamp01( (rawTimeInCycle - daySpeed) / nightSpeed ) );
 
-        nightNess = 1 - Mathf.Abs(timeInNight - 0.5f) * 2;
+        nightNess = 1 - Mathf.Abs( timeInNight - 0.5f ) * 2;
 
 
-        sunRotator.localRotation = Quaternion.Euler(new Vector3(200 * timeInDay + 170, 0, 0));
-        sun.transform.localPosition = new Vector3(0, 0, sunRadius);
+        sunRotator.localRotation = Quaternion.Euler( new Vector3( 200 * timeInDay + 170 , 0 , 0 ) );
+        sun.transform.localPosition = new Vector3( 0 , 0 , sunRadius );
         //sun.transform.LookAt(new Vector3(-2048, 0, -2048));
 
 
-        if (useLookTarget)
-        {
+        if ( useLookTarget ) {
             sun.transform.position = targetPosition.position;
-            sun.transform.LookAt(lookTarget.position);
+            sun.transform.LookAt( lookTarget.position );
 
         }
 
 
+        if ( timeInDay < .00001f || timeInDay > .99999f ) {
+            sunRotator.localRotation = Quaternion.Euler( new Vector3( 200 * timeInNight + 170 , 0 , 0 ) );
+            sun.transform.localPosition = new Vector3( 0 , 0 , sunRadius );
+            sun.color = nightColor.Evaluate( timeInNight );
+        } else {
 
-        if (timeInDay < .00001f || timeInDay > .99999f)
-        {
-            sunRotator.localRotation = Quaternion.Euler(new Vector3(200 * timeInNight + 170, 0, 0));
-            sun.transform.localPosition = new Vector3(0, 0, sunRadius);
-            sun.color = nightColor.Evaluate(timeInNight);
-        }
-        else
-        {
-
-            sunRotator.localRotation = Quaternion.Euler(new Vector3(200 * timeInDay + 170, 0, 0));
-            sun.transform.localPosition = new Vector3(0, 0, sunRadius);
-            sun.color = dayColor.Evaluate(timeInDay);
+            sunRotator.localRotation = Quaternion.Euler( new Vector3( 200 * timeInDay + 170 , 0 , 0 ) );
+            sun.transform.localPosition = new Vector3( 0 , 0 , sunRadius );
+            sun.color = dayColor.Evaluate( timeInDay );
         }
 
 
@@ -137,14 +123,14 @@ public class SunManager : MonoBehaviour
         sunRenderer.material = sunMaterial;
 
 
-        Shader.SetGlobalFloat("_DayNess", dayNess);
-        Shader.SetGlobalFloat("_NightNess", nightNess);
-        Shader.SetGlobalFloat("_TimeInDay", timeInDay);
-        Shader.SetGlobalFloat("_TimeInNight", timeInNight);
+        Shader.SetGlobalFloat( "_DayNess" , dayNess );
+        Shader.SetGlobalFloat( "_NightNess" , nightNess );
+        Shader.SetGlobalFloat( "_TimeInDay" , timeInDay );
+        Shader.SetGlobalFloat( "_TimeInNight" , timeInNight );
 
-        Shader.SetGlobalVector("_SunDirection", -sun.transform.forward);
-        Shader.SetGlobalVector("_SunColor", sun.color);
-        Shader.SetGlobalVector("_SunPosition", sun.transform.position);
+        Shader.SetGlobalVector( "_SunDirection" , -sun.transform.forward );
+        Shader.SetGlobalVector( "_SunColor" , sun.color );
+        Shader.SetGlobalVector( "_SunPosition" , sun.transform.position );
 
 
     }
@@ -163,8 +149,4 @@ public class SunManager : MonoBehaviour
         rawTimeInCycle = daySpeed + nightSpeed / 2;
 
     }
-
-
-
-
 }

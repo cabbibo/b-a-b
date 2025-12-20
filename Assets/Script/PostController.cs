@@ -79,10 +79,12 @@ public class PostController : MonoBehaviour
     public SketchEffect         sketchEffect_Reference;
     public QuickDither.Dithered dithered_Reference;
 
+
     // Other controllers
     public CustomFog                customFog;
     public UnderwaterRenderer       crestUnderwaterRenderer;
     public PlaceParticlesOnDepthMap placeParticlesOnDepthMap;
+    public PushableCloudsPost       pushableCloudsPost;
 
     public float fadeInSpeed  = 1;
     public float fadeOutSpeed = 1;
@@ -317,6 +319,32 @@ public class PostController : MonoBehaviour
         EnsureWorkingInstanceInitialized();
         p.CopyTo( workingInstance );
         SafeApplyToPipeline();
+        ApplySunSettings( p );
+    }
+
+    private void ApplySunSettings( PostParameters p )
+    {
+        if ( p == null ) {
+            return;
+        }
+
+        var sunManager = God.weatherManager?.sunManager;
+
+        if ( sunManager == null ) {
+            return;
+        }
+
+        sunManager.auto = p.sunAutoUpdate;
+        sunManager.daySpeed = p.daySpeed;
+        sunManager.nightSpeed = p.nightSpeed;
+        sunManager.dayColor = p.sunGradient;
+        sunManager.nightColor = p.moonGradient;
+
+        // Set start position: convert normalized [0,1] to raw time in cycle
+        float totalCycleLength = p.daySpeed + p.nightSpeed;
+
+        print( p.startNormalizedPosition );
+        sunManager.rawTimeInCycle = p.startNormalizedPosition * totalCycleLength;
     }
 
     // ----------------------------------------------------

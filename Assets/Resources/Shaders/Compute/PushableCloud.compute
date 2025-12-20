@@ -1,0 +1,165 @@
+#pragma kernel Initialize
+#pragma kernel Simulate
+
+#include "../Chunks/safeID.cginc"
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
+#include "../Chunks/hash.cginc"
+
+
+struct CloudParticle
+{
+    float3 homePos; // Original grid position
+    float3 pos; // Current position
+    float3 vel; // Velocity
+    float  size; // Particle size (can be affected by push)
+    float  life; // For fade effects
+    float  debug;
+};
+
+RWStructuredBuffer<CloudParticle> _ParticleBuffer;
+
+// Grid parameters
+int    _GridSizeX;
+int    _GridSizeY;
+int    _GridSizeZ;
+float  _GridSpacing;
+float3 _GridCenter;
+
+// Wren interaction
+float3 _WrenPosition;
+float3 _WrenVelocity;
+float  _PushRadius;
+float  _PushForce;
+
+// Physics
+float _DT;
+float _Damping;
+float _ReturnForce;
+float _Time;
+
+// Size
+float _BaseSize;
+float _SizeVariation;
+
+
+#define NR_THREADS 128
+
+[numthreads(NR_THREADS, 1, 1)]
+void Initialize( uint3 id : SV_DispatchThreadID )
+{
+    uint pID            = id.x;
+    uint totalParticles = _GridSizeX * _GridSizeY * _GridSizeZ;
+
+    if ( pID >= totalParticles ) return;
+
+    // Calculate grid position from flat index
+    int z         = pID / ( _GridSizeX * _GridSizeY );
+    int remainder = pID % ( _GridSizeX * _GridSizeY );
+    int y         = remainder / _GridSizeX;
+    int x         = remainder % _GridSizeX;
+
+    // Calculate world position centered on _GridCenter
+    float3 gridOffset = float3(
+        ( x - _GridSizeX * 0.5 ) * _GridSpacing ,
+        ( y - _GridSizeY * 0.5 ) * _GridSpacing ,
+        ( z - _GridSizeZ * 0.5 ) * _GridSpacing
+    );
+
+    // Add some noise to make it look more organic
+    float  noiseOffset = hash( float( pID * 1234 ) ) * 0.5;
+    float3 noisePos    = float3(
+        snoise( float3( x * 0.3 , y * 0.3 , z * 0.3 ) ) * _GridSpacing * 0.3 ,
+        snoise( float3( x * 0.3 + 100 , y * 0.3 , z * 0.3 ) ) * _GridSpacing * 0.3 ,
+        snoise( float3( x * 0.3 , y * 0.3 + 100 , z * 0.3 ) ) * _GridSpacing * 0.3
+    );
+
+    float3 homePos = _GridCenter + gridOffset + noisePos;
+
+    CloudParticle p;
+    p.homePos = homePos;
+    p.pos     = homePos;
+    p.vel     = float3( 0 , 0 , 0 );
+    p.size    = _BaseSize + hash( float( pID * 5678 ) ) * _SizeVariation;
+    p.life    = 1.0;
+
+    _ParticleBuffer[ pID ] = p;
+}
+
+
+[numthreads(NR_THREADS, 1, 1)]
+void Simulate( uint3 id : SV_DispatchThreadID )
+{
+    uint pID            = id.x;
+    uint totalParticles = _GridSizeX * _GridSizeY * _GridSizeZ;
+
+    if ( pID >= totalParticles ) return;
+
+    CloudParticle p = _ParticleBuffer[ pID ];
+
+    // Calculate distance to wren
+    float3 toParticle = p.pos - _WrenPosition;
+    float  dist       = length( toParticle );
+
+    // Push force from wren
+    if ( dist < _PushRadius && dist > 0.001 )
+    {
+        float3 pushDir = normalize( toParticle );
+
+        // Falloff based on distance
+        float falloff = 1.0 - saturate( dist / _PushRadius );
+        falloff       = falloff * falloff; // Quadratic falloff for smoother feel
+
+        // Add wren's velocity influence for more dynamic pushes
+        float3 wrenInfluence = _WrenVelocity * 0.1;
+
+        // Apply push force
+        float3 pushForce = pushDir * _PushForce * falloff;
+        pushForce += wrenInfluence * falloff;
+
+        p.vel += pushForce * _DT;
+
+        // Temporarily shrink when pushed
+        p.size = lerp( p.size , _BaseSize * 0.5 , falloff * 0.1 );
+    }
+    else
+    {
+        // Slowly restore size
+        float targetSize = _BaseSize + hash( float( pID * 5678 ) ) * _SizeVariation;
+        p.size           = lerp( p.size , targetSize , _DT * 2.0 );
+    }
+
+    // Spring force back to home position
+    float3 toHome   = p.homePos - p.pos;
+    float  homeDist = length( toHome );
+
+    if ( homeDist > 0.01 )
+    {
+        float3 returnForce = normalize( toHome ) * homeDist * _ReturnForce;
+        p.vel += returnForce * _DT;
+    }
+
+    // Apply damping
+    p.vel *= ( 1.0 - _Damping * _DT );
+
+    // Add subtle floating motion
+    float  floatTime   = _Time + hash( float( pID * 999 ) ) * 100.0;
+    float3 floatOffset = float3(
+        sin( floatTime * 0.5 ) * 0.02 ,
+        sin( floatTime * 0.7 + 1.0 ) * 0.03 ,
+        sin( floatTime * 0.3 + 2.0 ) * 0.02
+    );
+
+    // Integrate position
+    p.pos += p.vel * _DT;
+    p.pos += floatOffset * _DT;
+
+    // Clamp velocity to prevent explosion
+    float maxVel = 50.0;
+    if ( length( p.vel ) > maxVel )
+    {
+        p.vel = normalize( p.vel ) * maxVel;
+    }
+
+    _ParticleBuffer[ pID ] = p;
+}

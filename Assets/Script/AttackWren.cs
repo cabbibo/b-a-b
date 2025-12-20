@@ -5,23 +5,29 @@ using WrenUtils;
 
 public class AttackWren : MonoBehaviour
 {
-    
-
     public float forceTowardsWren;
     public float maxLength = 200;
 
 
-    Rigidbody rigidbody;
-    // Update is called once per frame
-    void Update()
-    {
-        if( rigidbody == null ){ rigidbody = GetComponent<Rigidbody>(); }
-        Wren wren = God.ClosestWren(transform.position);
-        if( wren ){
-            Vector3 delta = wren.transform.position - transform.position;
+    private Rigidbody rigidbody;
 
-            if( delta.magnitude < maxLength ){
-            rigidbody.AddForce( delta * forceTowardsWren );
+    // Update is called once per frame
+    private void Update()
+    {
+        if ( rigidbody == null ) {
+            rigidbody = GetComponent<Rigidbody>();
+        }
+
+        var wren = God.ClosestWren( transform.position );
+
+        if ( wren ) {
+            //print( "helllo" );
+            var delta = wren.transform.position - transform.position;
+
+            if ( delta.magnitude < maxLength ) {
+
+                // print( "helllo2" );
+                rigidbody.AddForce( delta * forceTowardsWren );
             }
 
         }

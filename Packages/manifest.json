@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.madsbangh.easybuttons": "https://github.com/madsbangh/EasyButtons.git#upm",
     "com.normalvr.normcore": "2.13.2",
     "com.nullkal.unisense": "https://github.com/nullkal/UniSense.git",
     "com.unity.2d.sprite": "1.0.0",
