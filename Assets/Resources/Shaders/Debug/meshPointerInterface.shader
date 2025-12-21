@@ -183,6 +183,11 @@ Shader "Debug/MeshPointerInterface"
 
                 float sizeMultiplier = _TypeSizeMultiplier[ intType ]; //+ 1;
 
+                // bugs
+                if ( intType == 4 )
+                {
+                    sizeMultiplier = .5;
+                }
                 if ( intType == 10 )
                 {
                     sizeMultiplier = 10;
@@ -205,29 +210,29 @@ Shader "Debug/MeshPointerInterface"
 
 
                 float wrenToCamMultiplier = lerp( _WrenToCameraScaleMin , _WrenToCameraScaleMax , saturate(
-                        ( distWrenToCam - _WrenToCameraMin ) / (
-                            _WrenToCameraMax -
-                            _WrenToCameraMin ) ) );
+                                                                                                       ( distWrenToCam - _WrenToCameraMin ) / (
+                                                                                                           _WrenToCameraMax -
+                                                                                                           _WrenToCameraMin ) ) );
 
 
 
                 float wrenToCamOffset = lerp( _WrenToCameraOffsetMin , _WrenToCameraOffsetMax ,
-                                          saturate(
-                                              ( distWrenToCam - _WrenToCameraMin ) / (
-                                                  _WrenToCameraMax -
-                                                  _WrenToCameraMin ) ) );
+                                                                            saturate(
+                                                                                ( distWrenToCam - _WrenToCameraMin ) / (
+                                                                                    _WrenToCameraMax -
+                                                                                    _WrenToCameraMin ) ) );
 
                 float wrenToCamUpOffset = lerp( _WrenToCameraUpOffsetMin , _WrenToCameraUpOffsetMax ,
-                                                                saturate(
-                                                                    ( distWrenToCam - _WrenToCameraMin ) / (
-                                                                        _WrenToCameraMax -
-                                                                        _WrenToCameraMin ) ) );
+                                                                             saturate(
+                                                                                 ( distWrenToCam - _WrenToCameraMin ) / (
+                                                                                     _WrenToCameraMax -
+                                                                                     _WrenToCameraMin ) ) );
 
                 float wrenToCamForwardOffset = lerp( _WrenToCameraForwardOffsetMin , _WrenToCameraForwardOffsetMax ,
-                    saturate(
-                        ( distWrenToCam - _WrenToCameraMin ) / (
-                            _WrenToCameraMax -
-                            _WrenToCameraMin ) ) );
+                        saturate(
+                            ( distWrenToCam - _WrenToCameraMin ) / (
+                                _WrenToCameraMax -
+                                _WrenToCameraMin ) ) );
 
                 float scale = _Size;
 

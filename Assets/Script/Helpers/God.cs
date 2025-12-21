@@ -86,7 +86,9 @@ namespace WrenUtils
 
         public InterfaceTutorial _interfaceTutorial;
 
+        public IMMATERIA.God _ImmateriaGod;
 
+        public static IMMATERIA.God ImmateriaGod => instance._ImmateriaGod;
         private static God _instance;
 
         public static God instance

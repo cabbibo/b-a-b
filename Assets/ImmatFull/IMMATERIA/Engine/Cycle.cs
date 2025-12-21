@@ -9,38 +9,69 @@ namespace IMMATERIA
     [ExecuteInEditMode]
     public class Cycle : MonoBehaviour
     {
+        [HideInInspector]
+        public bool created = false;
 
-        [HideInInspector] public bool created = false;
+        [HideInInspector]
+        public bool begunGestation = false;
 
-        [HideInInspector] public bool begunGestation = false;
-        [HideInInspector] public bool gestating = false;
-        [HideInInspector] public bool gestated = false;
+        [HideInInspector]
+        public bool gestating = false;
 
-        [HideInInspector] public bool begunBirth = false;
-        [HideInInspector] public bool birthing = false;
-        [HideInInspector] public bool birthed = false;
+        [HideInInspector]
+        public bool gestated = false;
 
-        [HideInInspector] public bool begunLive = false;
-        [HideInInspector] public bool living = false;
-        [HideInInspector] public bool lived = false;
+        [HideInInspector]
+        public bool begunBirth = false;
 
-        [HideInInspector] public bool begunDeath = false;
-        [HideInInspector] public bool dying = false;
-        [HideInInspector] public bool died = false;
+        [HideInInspector]
+        public bool birthing = false;
 
-        [HideInInspector] public bool destroyed = true;
+        [HideInInspector]
+        public bool birthed = false;
+
+        [HideInInspector]
+        public bool begunLive = false;
+
+        [HideInInspector]
+        public bool living = false;
+
+        [HideInInspector]
+        public bool lived = false;
+
+        [HideInInspector]
+        public bool begunDeath = false;
+
+        [HideInInspector]
+        public bool dying = false;
+
+        [HideInInspector]
+        public bool died = false;
+
+        [HideInInspector]
+        public bool destroyed = true;
 
 
-        public bool dontPropogate = false;
-        public bool debug = false;
-        public bool active = false;
-        private bool oActive = false;
+        public  bool dontPropogate = false;
+        public  bool debug         = false;
+        public  bool active        = false;
+        private bool oActive       = false;
 
         public Cycle parent;
-        public Data data;
+        public Data  data;
 
         public List<Cycle> Cycles;
 
+
+        public void PercolateData( Data newData )
+        {
+            data = newData;
+
+            foreach (var c in Cycles) {
+                CheckSelfCycle( c );
+                c.PercolateData( newData );
+            }
+        }
 
         public void DeleteAllCycle()
         {
@@ -61,7 +92,6 @@ namespace IMMATERIA
         }*/
 
 
-
         /*
 
           Creation
@@ -70,10 +100,19 @@ namespace IMMATERIA
 
         public void Awake()
         {
-            if (Cycles == null) { Cycles = new List<Cycle>(); }
+            if ( Cycles == null ) {
+                Cycles = new List<Cycle>();
+            }
         }
-        public virtual void _Create() { DoCreate(); }
-        public virtual void Create() { }
+
+        public virtual void _Create()
+        {
+            DoCreate();
+        }
+
+        public virtual void Create()
+        {
+        }
 
         protected void DoCreate()
         {
@@ -83,13 +122,17 @@ namespace IMMATERIA
             //print("DOCREAS");
 
 
-
             //_Destroy();
             // SetStates();
             //  print( this );
 
-            if (created) { DebugThis("Created Multiple Times"); }
-            if (debug) { DebugThis("DoCreate"); }
+            if ( created ) {
+                DebugThis( "Created Multiple Times" );
+            }
+
+            if ( debug ) {
+                DebugThis( "DoCreate" );
+            }
 
             destroyed = false;
             created = true;
@@ -97,40 +140,34 @@ namespace IMMATERIA
             Create();
 
 
-
-            for (int i = Cycles.Count - 1; i >= 0; i--)
-            {
-                if (Cycles[i] == null)
-                {
-                    Cycles.RemoveAt(i);
+            for ( int i = Cycles.Count - 1; i >= 0; i-- ) {
+                if ( Cycles[i] == null ) {
+                    Cycles.RemoveAt( i );
                 }
             }
 
 
-
-            foreach (Cycle c in Cycles)
-            {
-
-                if (c == null)
-                {
-                    DebugThis("SOME CYCLE NULL");
+            foreach (var c in Cycles)
+                if ( c == null ) {
+                    DebugThis( "SOME CYCLE NULL" );
                     // Cycles.Remove( c );
-                }
-                else
-                {
+                } else {
 
 
+                    CheckSelfCycle( c );
 
-                    CheckSelfCycle(c);
 
+                    if ( c.data == null ) {
+                        c.data = data;
+                    }
 
-                    if (c.data == null) { c.data = data; }
-                    if (data == null) { print("fuhhh"); }
+                    if ( data == null ) {
+                        print( "fuhhh" );
+                    }
+
                     c._Create();
 
                 }
-            }
-
 
 
         }
@@ -141,23 +178,35 @@ namespace IMMATERIA
 
         */
 
-        public virtual void _OnGestate() { DoGestate(); }
-        public virtual void OnGestate() { }
+        public virtual void _OnGestate()
+        {
+            DoGestate();
+        }
+
+        public virtual void OnGestate()
+        {
+        }
 
         protected void DoGestate()
         {
 
-            if (begunGestation) { DebugThis("On Gestate Multiple Times"); }
-            if (debug) { DebugThis("DoGestate"); }
+            if ( begunGestation ) {
+                DebugThis( "On Gestate Multiple Times" );
+            }
+
+            if ( debug ) {
+                DebugThis( "DoGestate" );
+            }
+
             begunGestation = true;
 
             _Bind();
 
             OnGestate();
-            foreach (Cycle c in Cycles)
-            {
 
-                CheckSelfCycle(c);
+            foreach (var c in Cycles) {
+
+                CheckSelfCycle( c );
                 c._OnGestate();
             }
 
@@ -165,45 +214,68 @@ namespace IMMATERIA
 
         }
 
-        public virtual void _Bind() { Bind(); }
-        public virtual void Bind() { }
-
-        public virtual void _WhileGestating(float v) { DoGestating(v); }
-        public virtual void WhileGestating(float v) { }
-
-        protected void DoGestating(float v)
+        public virtual void _Bind()
         {
-            WhileGestating(v);
-            foreach (Cycle c in Cycles)
-            {
+            Bind();
+        }
 
-                CheckSelfCycle(c);
-                c._WhileGestating(v);
+        public virtual void Bind()
+        {
+        }
+
+        public virtual void _WhileGestating( float v )
+        {
+            DoGestating( v );
+        }
+
+        public virtual void WhileGestating( float v )
+        {
+        }
+
+        protected void DoGestating( float v )
+        {
+            WhileGestating( v );
+
+            foreach (var c in Cycles) {
+
+                CheckSelfCycle( c );
+                c._WhileGestating( v );
             }
         }
 
 
+        public virtual void _OnGestated()
+        {
+            DoGestated();
+        }
 
-        public virtual void _OnGestated() { DoGestated(); }
-        public virtual void OnGestated() { }
+        public virtual void OnGestated()
+        {
+        }
 
         protected void DoGestated()
         {
 
-            if (gestated) { DebugThis("On Gestated Multiple Times"); }
-            if (debug) { DebugThis("DoGestated"); }
+            if ( gestated ) {
+                DebugThis( "On Gestated Multiple Times" );
+            }
+
+            if ( debug ) {
+                DebugThis( "DoGestated" );
+            }
+
             gestating = false;
             OnGestated();
-            foreach (Cycle c in Cycles)
-            {
 
-                CheckSelfCycle(c);
+            foreach (var c in Cycles) {
+
+                CheckSelfCycle( c );
                 c._OnGestated();
             }
+
             gestated = true;
 
         }
-
 
 
         /*
@@ -213,55 +285,83 @@ namespace IMMATERIA
         */
 
 
-        public virtual void _OnBirth() { DoBirth(); }
-        public virtual void OnBirth() { }
+        public virtual void _OnBirth()
+        {
+            DoBirth();
+        }
+
+        public virtual void OnBirth()
+        {
+        }
 
         protected void DoBirth()
         {
-            if (begunBirth) { DebugThis("begunBirth multiple times"); }
-            if (debug) { DebugThis("DoBirth"); }
+            if ( begunBirth ) {
+                DebugThis( "begunBirth multiple times" );
+            }
+
+            if ( debug ) {
+                DebugThis( "DoBirth" );
+            }
+
             begunBirth = true;
             OnBirth();
-            foreach (Cycle c in Cycles)
-            {
 
-                CheckSelfCycle(c);
+            foreach (var c in Cycles) {
+
+                CheckSelfCycle( c );
                 c._OnBirth();
             }
+
             birthing = true;
         }
 
 
-
-        public virtual void _WhileBirthing(float v) { DoBirthing(v); }
-        public virtual void WhileBirthing(float v) { }
-
-        protected void DoBirthing(float v)
+        public virtual void _WhileBirthing( float v )
         {
-            WhileBirthing(v);
-            foreach (Cycle c in Cycles)
-            {
+            DoBirthing( v );
+        }
 
-                CheckSelfCycle(c);
-                c._WhileBirthing(v);
+        public virtual void WhileBirthing( float v )
+        {
+        }
+
+        protected void DoBirthing( float v )
+        {
+            WhileBirthing( v );
+
+            foreach (var c in Cycles) {
+
+                CheckSelfCycle( c );
+                c._WhileBirthing( v );
             }
         }
 
 
-        public virtual void _OnBirthed() { DoBirthed(); }
-        public virtual void OnBirthed() { }
+        public virtual void _OnBirthed()
+        {
+            DoBirthed();
+        }
+
+        public virtual void OnBirthed()
+        {
+        }
 
         protected void DoBirthed()
         {
-            if (birthed) { DebugThis("On Birthed Multiple Times"); }
+            if ( birthed ) {
+                DebugThis( "On Birthed Multiple Times" );
+            }
+
             birthing = false;
             OnBirthed();
-            foreach (Cycle c in Cycles)
-            {
 
-                CheckSelfCycle(c);
+            foreach (var c in Cycles) {
+
+                CheckSelfCycle( c );
                 c._OnBirthed();
             }
+
             birthed = true;
         }
 
@@ -272,46 +372,57 @@ namespace IMMATERIA
 
         */
 
-        public virtual void _OnLive() { DoLive(); }
-        public virtual void OnLive() { }
+        public virtual void _OnLive()
+        {
+            DoLive();
+        }
+
+        public virtual void OnLive()
+        {
+        }
 
         protected void DoLive()
         {
-            if (living) { DebugThis("BegunLive Multiple Times"); }
+            if ( living ) {
+                DebugThis( "BegunLive Multiple Times" );
+            }
+
             begunLive = true;
             OnLive();
-            foreach (Cycle c in Cycles)
-            {
 
-                CheckSelfCycle(c);
+            foreach (var c in Cycles) {
+
+                CheckSelfCycle( c );
                 c._OnLive();
             }
+
             living = true;
         }
 
-        public virtual void _WhileLiving(float v) { DoLiving(v); }
-        public virtual void WhileLiving(float v) { }
+        public virtual void _WhileLiving( float v )
+        {
+            DoLiving( v );
+        }
 
-        protected void DoLiving(float v)
+        public virtual void WhileLiving( float v )
+        {
+        }
+
+        protected void DoLiving( float v )
         {
 
-            if (active)
-            {
-                WhileLiving(v);
+            if ( active ) {
+                WhileLiving( v );
 
-                foreach (Cycle c in Cycles)
-                {
-                    CheckSelfCycle(c);
-                    c._WhileLiving(v);
+                foreach (var c in Cycles) {
+                    CheckSelfCycle( c );
+                    c._WhileLiving( v );
                 }
             }
 
-            if (oActive == false && active == true)
-            {
+            if ( oActive == false && active == true ) {
                 _Activate();
-            }
-            else if (oActive == true && active == false)
-            {
+            } else if ( oActive == true && active == false ) {
                 _Deactivate();
             }
 
@@ -319,23 +430,32 @@ namespace IMMATERIA
 
         }
 
-        public virtual void _OnLived() { DoLived(); }
-        public virtual void OnLived() { }
-
-        void DoLived()
+        public virtual void _OnLived()
         {
-            if (lived) { DebugThis("on lived Multiple Times"); }
-            living = false;
-            OnLived();
-            foreach (Cycle c in Cycles)
-            {
-
-                CheckSelfCycle(c);
-                c._OnLived();
-            }
-            lived = true;
+            DoLived();
         }
 
+        public virtual void OnLived()
+        {
+        }
+
+        private void DoLived()
+        {
+            if ( lived ) {
+                DebugThis( "on lived Multiple Times" );
+            }
+
+            living = false;
+            OnLived();
+
+            foreach (var c in Cycles) {
+
+                CheckSelfCycle( c );
+                c._OnLived();
+            }
+
+            lived = true;
+        }
 
 
         /*
@@ -345,93 +465,122 @@ namespace IMMATERIA
         */
 
 
-        public virtual void _OnDie() { DoDie(); }
-        public virtual void OnDie() { }
+        public virtual void _OnDie()
+        {
+            DoDie();
+        }
+
+        public virtual void OnDie()
+        {
+        }
 
         protected void DoDie()
         {
-            if (begunDeath) { DebugThis("On Die Multiple Times"); }
+            if ( begunDeath ) {
+                DebugThis( "On Die Multiple Times" );
+            }
+
             begunDeath = true;
             OnDie();
-            foreach (Cycle c in Cycles)
-            {
 
-                CheckSelfCycle(c);
+            foreach (var c in Cycles) {
+
+                CheckSelfCycle( c );
                 c._OnDie();
             }
+
             dying = true;
         }
 
-        public virtual void _WhileDying(float v) { DoDying(v); }
-        public virtual void WhileDying(float v) { }
+        public virtual void _WhileDying( float v )
+        {
+            DoDying( v );
+        }
 
-        protected void DoDying(float v)
+        public virtual void WhileDying( float v )
+        {
+        }
+
+        protected void DoDying( float v )
         {
 
-            WhileDying(v);
-            foreach (Cycle c in Cycles)
-            {
+            WhileDying( v );
 
-                CheckSelfCycle(c);
-                c._WhileDying(v);
+            foreach (var c in Cycles) {
+
+                CheckSelfCycle( c );
+                c._WhileDying( v );
             }
         }
 
-        public virtual void _OnDied() { DoDied(); }
-        public virtual void OnDied() { }
+        public virtual void _OnDied()
+        {
+            DoDied();
+        }
+
+        public virtual void OnDied()
+        {
+        }
 
         protected void DoDied()
         {
-            if (died) { DebugThis("On Died Multiple Times"); }
+            if ( died ) {
+                DebugThis( "On Died Multiple Times" );
+            }
+
             dying = false;
             OnDied();
-            foreach (Cycle c in Cycles)
-            {
 
-                CheckSelfCycle(c);
+            foreach (var c in Cycles) {
+
+                CheckSelfCycle( c );
                 c._OnDied();
             }
+
             died = true;
         }
-
 
 
         /*
             Destroy
         */
 
-        public virtual void _Destroy() { DoDestroy(); }
-        public virtual void Destroy() { }
+        public virtual void _Destroy()
+        {
+            DoDestroy();
+        }
+
+        public virtual void Destroy()
+        {
+        }
 
         protected void DoDestroy()
         {
             //   print( Cycles );
-            for (int i = Cycles.Count - 1; i >= 0; i--)
-            {
-                if (Cycles[i] == null)
-                {
-                    Cycles.RemoveAt(i);
+            for ( int i = Cycles.Count - 1; i >= 0; i-- ) {
+                if ( Cycles[i] == null ) {
+                    Cycles.RemoveAt( i );
                 }
             }
 
-            foreach (Cycle c in Cycles)
-            {
+            foreach (var c in Cycles)
+                if ( c == null ) {
 
-                if (c == null)
-                {
+                    DebugThis( "Some Cycle Null" );
+                } else {
 
-                    DebugThis("Some Cycle Null");
-                }
-                else
-                {
+                    if ( c.data == null ) {
+                        c.data = data;
+                    }
 
-                    if (c.data == null) { c.data = data; }
-                    if (data == null) { print("fuhhh"); }
-                    CheckSelfCycle(c);
+                    if ( data == null ) {
+                        print( "fuhhh" );
+                    }
+
+                    CheckSelfCycle( c );
                     c._Destroy();
 
                 }
-            }
 
 
             Destroy();
@@ -440,7 +589,6 @@ namespace IMMATERIA
 
 
         }
-
 
 
         /*
@@ -452,74 +600,76 @@ namespace IMMATERIA
         public virtual void _Activate()
         {
             Activate();
-            if (!dontPropogate)
-            {
-                foreach (Cycle c in Cycles)
-                {
 
-                    CheckSelfCycle(c);
+            if ( !dontPropogate ) {
+                foreach (var c in Cycles) {
+
+                    CheckSelfCycle( c );
                     c._Activate();
                 }
             }
+
             active = true;
         }
 
 
         // Making it so we can activate this object and not every one of the children!
-        public virtual void _Activate(bool propogate)
+        public virtual void _Activate( bool propogate )
         {
             Activate();
 
-            if (propogate)
-            {
-                foreach (Cycle c in Cycles)
-                {
+            if ( propogate ) {
+                foreach (var c in Cycles) {
 
-                    CheckSelfCycle(c);
+                    CheckSelfCycle( c );
                     c._Activate();
                 }
             }
+
             active = true;
         }
 
 
-        public virtual void Activate() { }
+        public virtual void Activate()
+        {
+        }
 
 
         public virtual void _Deactivate()
         {
             Deactivate();
-            if (!dontPropogate)
-            {
-                foreach (Cycle c in Cycles)
-                {
-                    CheckSelfCycle(c);
+
+            if ( !dontPropogate ) {
+                foreach (var c in Cycles) {
+                    CheckSelfCycle( c );
                     c._Deactivate();
                 }
             }
+
             active = false;
         }
 
 
-        public virtual void _Deactivate(bool propogate)
+        public virtual void _Deactivate( bool propogate )
         {
             Deactivate();
 
-            if (propogate)
-            {
-                foreach (Cycle c in Cycles)
-                {
-                    CheckSelfCycle(c);
+            if ( propogate ) {
+                foreach (var c in Cycles) {
+                    CheckSelfCycle( c );
                     c._Deactivate();
                 }
             }
+
             active = false;
         }
 
-        public virtual void Deactivate() { }
+        public virtual void Deactivate()
+        {
+        }
 
 
-        void SetStates()
+        private void SetStates()
         {
 
             created = false;
@@ -542,17 +692,24 @@ namespace IMMATERIA
               DEBUG
         */
 
-        public virtual void _WhileDebug() { DoDebug(); }
-        public virtual void WhileDebug() { }
+        public virtual void _WhileDebug()
+        {
+            DoDebug();
+        }
+
+        public virtual void WhileDebug()
+        {
+        }
 
         protected void DoDebug()
         {
 
-            if (debug) { WhileDebug(); }
+            if ( debug ) {
+                WhileDebug();
+            }
 
-            foreach (Cycle c in Cycles)
-            {
-                CheckSelfCycle(c);
+            foreach (var c in Cycles) {
+                CheckSelfCycle( c );
                 // print(c);
                 c._WhileDebug();
 
@@ -561,33 +718,37 @@ namespace IMMATERIA
         }
 
 
-        public void SafeInsert(Cycle c2)
+        public void SafeInsert( Cycle c2 )
         {
 
             bool can = true;
 
-            foreach (Cycle c in Cycles)
-            {
-                if (c == c2) can = false;
+            foreach (var c in Cycles)
+                if ( c == c2 ) {
+                    can = false;
+                }
+
+
+            if ( can ) {
+                Cycles.Insert( Cycles.Count , c2 );
             }
-
-
-            if (can) Cycles.Insert(Cycles.Count, c2);
 
         }
 
-        public void SafePrepend(Cycle c2)
+        public void SafePrepend( Cycle c2 )
         {
 
             bool can = true;
 
-            foreach (Cycle c in Cycles)
-            {
-                if (c == c2) can = false;
+            foreach (var c in Cycles)
+                if ( c == c2 ) {
+                    can = false;
+                }
+
+
+            if ( can ) {
+                Cycles.Insert( 0 , c2 );
             }
-
-
-            if (can) Cycles.Insert(0, c2);
 
         }
 
@@ -613,7 +774,6 @@ namespace IMMATERIA
         }
 
 
-
         public void SpinUp()
         {
             _Destroy();
@@ -632,59 +792,57 @@ namespace IMMATERIA
         }
 
 
-
         /*
           Helpers
         */
-        public void DebugThis(string s)
+        public void DebugThis( string s )
         {
-            Debug.Log("Object Name : " + this.gameObject.name + "     || Script Name : " + this.GetType() + "     || Message: " + s, this.gameObject);
+            Debug.Log( "Object Name : " + gameObject.name + "     || Script Name : " + GetType() + "     || Message: " + s ,
+                gameObject );
         }
 
-        public void CheckSelfCycle(Cycle c)
+        public void CheckSelfCycle( Cycle c )
         {
-            if (c == this)
-            {
-                Debug.LogError("YOU CYCLED YOURSELF!" + c);
+            if ( c == this ) {
+                Debug.LogError( "YOU CYCLED YOURSELF!" + c );
 
-                Cycles.Remove(c);
+                Cycles.Remove( c );
             }
         }
 
 
-        public void SafeGet(ref dynamic toGet, Type myType)
+        public void SafeGet( ref dynamic toGet , Type myType )
         {
 
 #if UNITY_EDITOR
-    print( toGet );
-    if( toGet == null ){
-      toGet = GetComponent(myType);
-      if( toGet == null ){
-        DebugThis("Couldn't Auto Assign " + toGet );
-      }else{
-        print( toGet );
-        EditorGUIUtility.PingObject(toGet);
-        DebugThis("Auto-Assigned " + toGet );
-      }
-    }
+            print( toGet );
+
+            if ( toGet == null ) {
+                toGet = GetComponent( myType );
+
+                if ( toGet == null ) {
+                    DebugThis( "Couldn't Auto Assign " + toGet );
+                } else {
+                    print( toGet );
+                    EditorGUIUtility.PingObject( toGet );
+                    DebugThis( "Auto-Assigned " + toGet );
+                }
+            }
 
 #endif
 
         }
 
 
-
-        public void JumpStart(Cycle c)
+        public void JumpStart( Cycle c )
         {
-            if (data != null)
-            {
+            if ( data != null ) {
                 c.data = data;
+            } else {
+                DebugThis( "NO DATA BAD BAD" );
             }
-            else
-            {
-                DebugThis("NO DATA BAD BAD");
-            }
-            SafeInsert(c);
+
+            SafeInsert( c );
 
             c._Destroy();
             c.Reset();
@@ -701,124 +859,110 @@ namespace IMMATERIA
         // Add an array of cycles, to this cycle
         // making sure that they get executed in
         // order correctly
-        public void JumpStart(Cycle[] c)
+        public void JumpStart( Cycle[] c )
         {
 
 
-            for (int i = 0; i < c.Length; i++)
-            {
-                if (data != null)
-                {
+            for ( int i = 0; i < c.Length; i++ ) {
+                if ( data != null ) {
                     c[i].data = data;
-                }
-                else
-                {
-                    DebugThis("NO DATA BAD BAD");
+                } else {
+                    DebugThis( "NO DATA BAD BAD" );
                 }
             }
 
 
-            for (int i = 0; i < c.Length; i++)
-            {
-                SafeInsert(c[i]);
+            for ( int i = 0; i < c.Length; i++ ) {
+                SafeInsert( c[i] );
             }
 
-            for (int i = 0; i < c.Length; i++)
-            {
+            for ( int i = 0; i < c.Length; i++ ) {
                 c[i]._Destroy();
             }
 
-            for (int i = 0; i < c.Length; i++)
-            {
+            for ( int i = 0; i < c.Length; i++ ) {
                 c[i].Reset();
             }
 
-            for (int i = 0; i < c.Length; i++)
-            {
+            for ( int i = 0; i < c.Length; i++ ) {
                 c[i]._Create();
             }
 
-            for (int i = 0; i < c.Length; i++)
-            {
+            for ( int i = 0; i < c.Length; i++ ) {
                 c[i]._OnGestate();
             }
 
-            for (int i = 0; i < c.Length; i++)
-            {
+            for ( int i = 0; i < c.Length; i++ ) {
                 c[i]._OnGestated();
             }
 
-            for (int i = 0; i < c.Length; i++)
-            {
+            for ( int i = 0; i < c.Length; i++ ) {
                 c[i]._OnBirth();
             }
 
-            for (int i = 0; i < c.Length; i++)
-            {
+            for ( int i = 0; i < c.Length; i++ ) {
                 c[i]._OnBirthed();
             }
 
 
-            for (int i = 0; i < c.Length; i++)
-            {
+            for ( int i = 0; i < c.Length; i++ ) {
                 c[i]._Activate();
             }
 
         }
 
 
-        public void JumpDeath(Cycle c)
+        public void JumpDeath( Cycle c )
         {
 
-            if (data != null)
-            {
+            if ( data != null ) {
                 c.data = data;
+            } else {
+                DebugThis( "NO DATA BAD BAD" );
             }
-            else
-            {
-                DebugThis("NO DATA BAD BAD");
-            }
+
             c._Deactivate();
             c._OnDie();
             c._OnDied();
             c._Destroy();
-            Cycles.Remove(c);
+            Cycles.Remove( c );
         }
 
 
-        public void JumpDeath(Cycle[] c)
+        public void JumpDeath( Cycle[] c )
         {
-            for (int i = 0; i < c.Length; i++)
-            {
-                if (data != null)
-                {
-                    if (c[i] != null)
-                    {
+            for ( int i = 0; i < c.Length; i++ ) {
+                if ( data != null ) {
+                    if ( c[i] != null ) {
                         c[i].data = data;
+                    } else {
+                        DebugThis( "NO CYCLE REF BAD BAD" );
                     }
-                    else
-                    {
-                        DebugThis("NO CYCLE REF BAD BAD");
-                    }
-                }
-                else
-                {
-                    DebugThis("NO DATA BAD BAD");
+                } else {
+                    DebugThis( "NO DATA BAD BAD" );
                 }
             }
-            for (int i = 0; i < c.Length; i++)
-            {
+
+            for ( int i = 0; i < c.Length; i++ ) {
                 c[i]._Deactivate();
             }
 
 
-            for (int i = 0; i < c.Length; i++)
-            {
+            for ( int i = 0; i < c.Length; i++ ) {
                 c[i]._OnDie();
             }
-            for (int i = 0; i < c.Length; i++) { c[i]._OnDied(); }
-            for (int i = 0; i < c.Length; i++) { c[i]._Destroy(); }
-            for (int i = 0; i < c.Length; i++) { Cycles.Remove(c[i]); }
+
+            for ( int i = 0; i < c.Length; i++ ) {
+                c[i]._OnDied();
+            }
+
+            for ( int i = 0; i < c.Length; i++ ) {
+                c[i]._Destroy();
+            }
+
+            for ( int i = 0; i < c.Length; i++ ) {
+                Cycles.Remove( c[i] );
+            }
         }
 
 
@@ -829,29 +973,19 @@ namespace IMMATERIA
 
             string parentString = "";
 
-            Cycle parentCycle = this;
-            while (hasParent == true)
-            {
+            var parentCycle = this;
 
-                if (parentCycle.parent != null)
-                {
+            while (hasParent == true)
+                if ( parentCycle.parent != null ) {
                     parentString += " || " + parentCycle.gameObject + ":" + parentCycle.GetType();
                     parentCycle = parentCycle.parent;
-                }
-                else
-                {
+                } else {
                     hasParent = false;
                 }
 
-            }
 
-
-
-            DebugThis(parentString);
+            DebugThis( parentString );
 
         }
-
-
-
     }
 }

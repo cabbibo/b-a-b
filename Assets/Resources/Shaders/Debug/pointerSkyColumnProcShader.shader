@@ -91,13 +91,21 @@ Shader "Debug/PointerSkyColumnProcShader1"
 
                     float sizeMultiplier = ( 200 + length( center - _WrenPos ) ) / _Size;
 
-                    float fSize = sizeMultiplier * _Size * .05;
+                    float fSize        = sizeMultiplier * _Size * .05;
+                    float upMultiplier = 40;
 
+
+                    // its the bugs
+                    if ( _TypeBuffer[ base ] == 4 )
+                    {
+                        fSize *= .1;
+                        upMultiplier *= .1;
+                    }
 
                     float3 p1 = center - left * ( fSize );
                     float3 p2 = center + left * ( fSize );
-                    float3 p3 = center - left * ( fSize ) + up * ( fSize * 40 );
-                    float3 p4 = center + left * ( fSize ) + up * ( fSize * 40 );
+                    float3 p3 = center - left * ( fSize ) + up * ( fSize * upMultiplier );
+                    float3 p4 = center + left * ( fSize ) + up * ( fSize * upMultiplier );
 
                     /*float3 p1 = center - up *_Size;
                     float3 p2 =  pos  - up *_Size;
@@ -150,6 +158,8 @@ Shader "Debug/PointerSkyColumnProcShader1"
                     o.worldPos = extra;
 
 
+
+
                     // mul(_Transform, float4((v.pos) ,1));
                     ///o.worldPos +=  extra * _Size;
 
@@ -167,6 +177,8 @@ Shader "Debug/PointerSkyColumnProcShader1"
                     {
                         o.pos = 0;
                     }
+
+
 
                 }
 
@@ -235,6 +247,10 @@ Shader "Debug/PointerSkyColumnProcShader1"
                 float3 fCol    = 0; //hsv(v.type*.1,.5,1) * v.fade;
 
                 float baseY = saturate( v.uv.y * 20 );
+                if ( v.type == 4 )
+                {
+                    baseY = saturate( v.uv.y * 2 );
+                }
 
                 if ( baseY >= 1 )
                 {

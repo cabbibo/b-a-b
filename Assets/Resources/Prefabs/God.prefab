@@ -53435,6 +53435,7 @@ MonoBehaviour:
   _text: {fileID: 6046194326799112557}
   _weatherManager: {fileID: 3248906032553670005}
   _interfaceTutorial: {fileID: 1468340856966976844}
+  _ImmateriaGod: {fileID: 0}
   _currentScene: {fileID: 0}
 --- !u!114 &5380628324570399114
 MonoBehaviour:

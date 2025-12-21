@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using WrenUtils;
+using System.Collections.Generic;
 
-[ExecuteAlways]
 public class PreyManager : MonoBehaviour
 {
     /*
@@ -15,7 +15,7 @@ public class PreyManager : MonoBehaviour
     public bool spawnMaxOnWrenEnter;
 
 
-    [Header("Spawn Settings")]
+    [Header( "Spawn Settings" )]
     public float spawnTime;
 
     public float spawnDistance;
@@ -31,26 +31,19 @@ public class PreyManager : MonoBehaviour
     public Vector2 spawnFoward;
 
 
-
     public float lastSpawnTime;
 
 
-    [Header("On Eat Effects")]
-    public AudioClip gotAteClip;
-
-    public ParticleSystem gotAteParticleSystem;
-
+    [Header( "On Eat Effects" )]
     public float preyFullnessIncrease;
 
-    public float preyStaminaIncrease;
-
+    public float        preyStaminaIncrease;
     public PreyConfigSO preyConfig;
 
 
     public bool wrenInside;
 
     public Transform preyHolder;
-
 
 
     public Transform cage;
@@ -61,30 +54,25 @@ public class PreyManager : MonoBehaviour
     public Transform[] objectsOfInterest;
 
 
-
     public bool wrenEnterOnEnabled;
+
+    public List<Transform[]> clusters;
+
     public void OnEnable()
     {
         lastSpawnTime = Time.time - spawnTime;
-        while (preyHolder.childCount > 0)
-        {
-            DestroyImmediate(preyHolder.GetChild(0).gameObject);
-        }
+        while (preyHolder.childCount > 0) DestroyImmediate( preyHolder.GetChild( 0 ).gameObject );
 
-        if (wrenEnterOnEnabled)
-        {
+        if ( wrenEnterOnEnabled ) {
             OnWrenEnter();
         }
 
 
-
-
     }
 
-    public void OnTriggerEnter(Collider other)
+    public void OnTriggerEnter( Collider other )
     {
-        if (God.IsOurWren(other))
-        {
+        if ( God.IsOurWren( other ) ) {
 
             OnWrenEnter();
 
@@ -92,10 +80,9 @@ public class PreyManager : MonoBehaviour
 
     }
 
-    public void OnTriggerExit(Collider other)
+    public void OnTriggerExit( Collider other )
     {
-        if (God.IsOurWren(other))
-        {
+        if ( God.IsOurWren( other ) ) {
             OnWrenExit();
 
         }
@@ -103,7 +90,8 @@ public class PreyManager : MonoBehaviour
 
 
     public int currentNumberOfPrey;
-    void Update()
+
+    private void Update()
     {
 
         currentNumberOfPrey = preyHolder.childCount;
@@ -114,8 +102,7 @@ public class PreyManager : MonoBehaviour
 
     public virtual void CheckForNewPrey()
     {
-        if (Time.time - lastSpawnTime > spawnTime && wrenInside)
-        {
+        if ( Time.time - lastSpawnTime > spawnTime && wrenInside ) {
             SpawnNewBug();
         }
     }
@@ -154,89 +141,72 @@ public class PreyManager : MonoBehaviour
     }
 
 
-    public int bugsPerCluster = 1;
-    public float clusterRadius = 0;
+    public int   bugsPerCluster = 1;
+    public float clusterRadius  = 0;
 
 
     public enum SpawnType
     {
-        RandomNearCenter,
-        RandomWithinBounds,
-        InFrontOfWren,
-        BehindWren,
+        RandomNearCenter ,
+        RandomWithinBounds ,
+        InFrontOfWren ,
+        BehindWren ,
         Clustered
     }
 
     public enum AltitudeType
     {
-        RandomRange,
-        DesiredAltitude,
+        RandomRange ,
+        DesiredAltitude ,
         OnGround
-
     }
 
-    public SpawnType spawnType;
+    public SpawnType    spawnType;
     public AltitudeType altitudeType;
 
     public virtual void SpawnNewBug()
     {
 
 
-
         // destroy any over max
-        while (preyHolder.childCount >= maxPray)
-        {
-            DestroyImmediate(preyHolder.GetChild(0).gameObject);
-        }
+        while (preyHolder.childCount >= maxPray) DestroyImmediate( preyHolder.GetChild( 0 ).gameObject );
 
 
+        var spawnPos = transform.position;
 
-        Vector3 spawnPos = transform.position;
 
-
-        if (spawnType == SpawnType.RandomNearCenter)
-        {
+        if ( spawnType == SpawnType.RandomNearCenter ) {
             spawnPos = SpawnRandomNearCenter();
-        }
-        else if (spawnType == SpawnType.RandomWithinBounds)
-        {
+        } else if ( spawnType == SpawnType.RandomWithinBounds ) {
             spawnPos = SpawnRandomWithinBounds();
-        }
-        else if (spawnType == SpawnType.InFrontOfWren)
-        {
+        } else if ( spawnType == SpawnType.InFrontOfWren ) {
             spawnPos = SpawnInFrontOfWren();
         }
 
-        Vector3 groundPos = spawnPos;
+        var groundPos = spawnPos;
         groundPos.y = 10000;
         RaycastHit hit;
-        if (Physics.Raycast(spawnPos, Vector3.down, out hit, 20000))
-        {
+
+        if ( Physics.Raycast( spawnPos , Vector3.down , out hit , 20000 ) ) {
             groundPos = hit.point + Vector3.up * spawnRadius * 2;
         }
 
-        if (altitudeType == AltitudeType.RandomRange)
-        {
-            spawnPos.y = groundPos.y + preyConfig.minAltitude + Random.Range(0, preyConfig.maxAltitude - preyConfig.minAltitude);
-        }
-        else if (altitudeType == AltitudeType.DesiredAltitude)
-        {
+        if ( altitudeType == AltitudeType.RandomRange ) {
+            spawnPos.y = groundPos.y + preyConfig.minAltitude + Random.Range( 0 , preyConfig.maxAltitude - preyConfig.minAltitude );
+        } else if ( altitudeType == AltitudeType.DesiredAltitude ) {
             spawnPos.y = groundPos.y + preyConfig.desiredAltitude;
-        }
-        else if (altitudeType == AltitudeType.OnGround)
-        {
+        } else if ( altitudeType == AltitudeType.OnGround ) {
             spawnPos.y = groundPos.y;
         }
 
-        for (int i = 0; i < bugsPerCluster; i++)
-        {
+        for ( int i = 0; i < bugsPerCluster; i++ ) {
 
-            Vector3 extraOffset = Random.insideUnitSphere * clusterRadius;
+            var extraOffset = Random.insideUnitSphere * clusterRadius;
             spawnPos += extraOffset;
 
-            PreyController newPrey = Instantiate(preyPrefab, spawnPos, Quaternion.identity).GetComponent<PreyController>();
+            var newPrey = Instantiate( preyPrefab , spawnPos , Quaternion.identity ).GetComponent<PreyController>();
 
-            newPrey.Initialize(preyConfig, this);
+            newPrey.Initialize( preyConfig , this );
 
 
             newPrey.transform.parent = preyHolder;
@@ -251,9 +221,9 @@ public class PreyManager : MonoBehaviour
 
     public Vector3 SpawnRandomNearCenter()
     {
-        Vector3 spawnPos = transform.position;
+        var spawnPos = transform.position;
 
-        Vector3 offset = Random.insideUnitSphere * spawnRadius;
+        var offset = Random.insideUnitSphere * spawnRadius;
 
         spawnPos += offset;
 
@@ -263,10 +233,13 @@ public class PreyManager : MonoBehaviour
 
     public Vector3 rangeBoundsForSpawnMin;
     public Vector3 rangeBoundsForSpawnMax;
+
     public Vector3 SpawnRandomWithinBounds()
     {
 
-        Vector3 spawnPos = new Vector3(Random.Range(rangeBoundsForSpawnMin.x, rangeBoundsForSpawnMax.x), Random.Range(rangeBoundsForSpawnMin.y, rangeBoundsForSpawnMax.y), Random.Range(rangeBoundsForSpawnMin.z, rangeBoundsForSpawnMax.z));
+        var spawnPos = new Vector3( Random.Range( rangeBoundsForSpawnMin.x , rangeBoundsForSpawnMax.x ) ,
+            Random.Range( rangeBoundsForSpawnMin.y , rangeBoundsForSpawnMax.y ) ,
+            Random.Range( rangeBoundsForSpawnMin.z , rangeBoundsForSpawnMax.z ) );
 
         return spawnPos;
 
@@ -274,18 +247,18 @@ public class PreyManager : MonoBehaviour
 
     public Vector3 SpawnInFrontOfWren()
     {
-        Vector3 spawnPos = God.wren.transform.position + God.wren.transform.forward * spawnDistance;
+        var spawnPos = God.wren.transform.position + God.wren.transform.forward * spawnDistance;
 
         spawnPos.y = 10000;
 
         RaycastHit hit;
-        if (Physics.Raycast(spawnPos, Vector3.down, out hit, 20000))
-        {
+
+        if ( Physics.Raycast( spawnPos , Vector3.down , out hit , 20000 ) ) {
             spawnPos = hit.point + Vector3.up * spawnRadius * 2;
         }
 
 
-        Vector3 offset = Random.insideUnitSphere * spawnRadius;
+        var offset = Random.insideUnitSphere * spawnRadius;
 
         spawnPos += offset;
 
@@ -294,20 +267,17 @@ public class PreyManager : MonoBehaviour
     }
 
 
-
-
-    public virtual void PreyGotAte(PreyController b)
+    public virtual void PreyGotAte( PreyController b )
     {
-        gotAteParticleSystem.Play();
-        gotAteParticleSystem.transform.position = b.transform.position;
 
-        God.audio.Play(gotAteClip);
+        God.particleSystems.smallCollectionParticleSystem.transform.position = b.transform.position;
+        God.particleSystems.smallCollectionParticleSystem.Play();
 
-        God.wren.stats.FullnessAdd(preyFullnessIncrease);
+        God.audio.Play( God.sounds.eatClip );
+        God.wren.stats.FullnessAdd( preyFullnessIncrease );
 
-        God.wren.shards.CollectShards(b.numCrystals, b.crystalType, b.transform.position);
-        // God.wren.stats.StaminaAdd(preyStaminaIncrease);
+        God.wren.shards.CollectShards( b.parameters.numCrystals , b.parameters.crystalType , b.transform.position );
+
 
     }
-
 }

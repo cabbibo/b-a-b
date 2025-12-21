@@ -69,8 +69,9 @@ public class InterfacePointer : MonoBehaviour
     TYPES
     0 = Quest
     1 = Activity
-    2 = other wren
-    3 = birds ( 3.0 = butterflies , 2.25 = small birds, 2.5 = medium birds, 2.75 = large birds)
+    2 = Portal
+    3 = other wren
+    4 = birds
     4 = mana pools
     5 = windRings
     6 = windTunnels
@@ -556,6 +557,7 @@ public class InterfacePointer : MonoBehaviour
         AddAllQuests();
         AddAllActivities();
         AddAllPortals();
+        AddAllBugs();
 
     }
 
@@ -589,10 +591,15 @@ public class InterfacePointer : MonoBehaviour
         }
     }
 
+
     // This one will update Dynamically?
 
-    public void AddAllBirds()
+    public void AddAllBugs()
     {
+        var allBugs = getAllOfTag( "Bug" );
+        foreach (var bug in allBugs)
+            AddPointer( bug.transform , 4 );
+
 
     }
 

@@ -6,11 +6,12 @@ using IMMATERIA;
 [ExecuteAlways]
 public class SelfCycle : Cycle
 {
-
-
     public void OnEnable()
     {
 
+
+        PercolateData( WrenUtils.God.ImmateriaGod.data );
+        parent = WrenUtils.God.ImmateriaGod.data;
         Reset();
         _Destroy();
         _Create();
@@ -19,22 +20,37 @@ public class SelfCycle : Cycle
         _OnBirth();
         _OnBirthed();
         _OnLive();
+
+
     }
 
 
     public void LateUpdate()
     {
-        if (gestating) { _WhileGestating(1); }
-        if (birthing) { _WhileBirthing(1); }
-        if (living) { _WhileLiving(1); }
-        if (dying) { _WhileDying(1); }
+        if ( gestating ) {
+            _WhileGestating( 1 );
+        }
 
-        if (created) { _WhileDebug(); }
+        if ( birthing ) {
+            _WhileBirthing( 1 );
+        }
+
+        if ( living ) {
+            _WhileLiving( 1 );
+        }
+
+        if ( dying ) {
+            _WhileDying( 1 );
+        }
+
+        if ( created ) {
+            _WhileDebug();
+        }
     }
 
     public void OnDisable()
     {
-        _WhileDying(1);
+        _WhileDying( 1 );
         _OnDied();
         _Destroy();
     }

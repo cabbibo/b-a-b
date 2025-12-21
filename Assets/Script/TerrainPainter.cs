@@ -223,6 +223,7 @@ public class TerrainPainter : Simulation
 
     public override void WhileDebug()
     {
+        print( "Debugging" );
         DrawValues();
     }
 

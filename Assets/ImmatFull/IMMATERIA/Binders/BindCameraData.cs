@@ -1,12 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-namespace IMMATERIA {
-public class BindCameraData : Binder
+
+namespace IMMATERIA
 {
-    
-  public override void Bind() {
-    data.BindCameraData(toBind);
-  }
-}
+    public class BindCameraData : Binder
+    {
+        public override void Bind()
+        {
+            data.BindCameraData( toBind );
+        }
+
+        public override void WhileLiving( float v )
+        {
+//            print( "binding camera data" );
+        }
+    }
 }

@@ -214,7 +214,7 @@ public class WrenShardManager : MonoBehaviour
 
     public void CollectShards( int amount , float type , Vector3 position )
     {
-        print( "collected custom" );
+//        print( "collected custom" );
 
         numShards += amount;
         collectType = type;

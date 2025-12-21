@@ -166,6 +166,12 @@ Shader "Debug/PointerInterfaceProcShader1"
 
                     float sizeMultiplier = _TypeSizeMultiplier[ intType ]; //+ 1;
 
+
+                    // BUGS
+                    if ( intType == 4 )
+                    {
+                        sizeMultiplier = .5;
+                    }
                     if ( intType == 10 )
                     {
                         sizeMultiplier = 10;

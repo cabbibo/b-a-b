@@ -5,13 +5,12 @@ using IMMATERIA;
 
 public class BindWindPaintInfo : Binder
 {
-
     public IslandData islandData;
 
     public override void Bind()
     {
-        toBind.BindTexture("_WindTexture", () => WrenUtils.God.islandData.windMap);
+        
+        print(WrenUtils.God.islandData.windMap  );
+        toBind.BindTexture( "_WindMap" , () => WrenUtils.God.islandData.windMap );
     }
-
-
 }

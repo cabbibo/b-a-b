@@ -255,7 +255,7 @@ float3 DoForce3( inout Vert vert , int pID){
     }
     
     force += targetPos - vert.pos;
-    force *= .01;//* ((1-nID)* .8 + .2);
+    force *= .1;//* ((1-nID)* .8 + .2);
 
     float life = head.life;
     
