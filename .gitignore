@@ -48,6 +48,8 @@ ExportedObj/
 *.mdb
 *.opendb
 *.VC.db
+*.asd
+*.asd.meta
 
 # Visual Studio code
 .vscode/*
