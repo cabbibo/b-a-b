@@ -16,6 +16,7 @@ bl_info = {
 
 import bpy
 import bmesh
+import re
 from bpy.props import (
     StringProperty,
     BoolProperty,
@@ -52,9 +53,14 @@ class GPLOD_OT_empty_with_cube(bpy.types.Operator):
             elif child.name.startswith(active.name) and "_LOD" in child.name:
                 children_to_delete.append(child)
         
-        # Delete collected objects
+        # Delete collected objects and their mesh data
         for obj in children_to_delete:
+            # Store mesh reference before deleting object
+            mesh_to_delete = obj.data if obj.type == 'MESH' else None
             bpy.data.objects.remove(obj, do_unlink=True)
+            # Delete mesh if it has no remaining users
+            if mesh_to_delete and mesh_to_delete.users == 0:
+                bpy.data.meshes.remove(mesh_to_delete)
         
         # Create an empty object with the same name
         empty_obj = bpy.data.objects.new(active.name, None)
@@ -139,7 +145,19 @@ class GPLOD_OT_empty_with_cube(bpy.types.Operator):
                 if obj not in separated_objects:
                     separated_objects.append(obj)
             
-            # Rename them as LOD0, LOD1, etc.
+            # Sort objects by LOD number extracted from material names
+            def get_lod_number(obj):
+                """Extract LOD number from material name like 'vertex_color_LOD1'"""
+                for slot in obj.material_slots:
+                    if slot.material:
+                        match = re.search(r'LOD(\d+)', slot.material.name)
+                        if match:
+                            return int(match.group(1))
+                return 999  # Objects without matching material go to end
+            
+            separated_objects.sort(key=get_lod_number)
+            
+            # Rename them as LOD0, LOD1, etc. (sequential based on sorted order)
             original_name = active.name
             for i, obj in enumerate(separated_objects):
                 obj.name = f"{original_name}_LOD{i}"
@@ -159,6 +177,83 @@ class GPLOD_OT_empty_with_cube(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class GPLOD_OT_export_to_unity(bpy.types.Operator):
+    """Export selected hierarchy to Unity folder"""
+    bl_idname = "gplod.export_to_unity"
+    bl_label = "Export to Unity Folder"
+    bl_description = "Export selected hierarchy as FBX to ../Resources/ISLANDS/[BlendFileName]/Models/ObjectName.fbx"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        import os
+        
+        active = context.view_layer.objects.active
+        
+        if not active:
+            self.report({"WARNING"}, "No active object selected.")
+            return {"CANCELLED"}
+        
+        # Get the blend file path
+        blend_path = bpy.data.filepath
+        if not blend_path:
+            self.report({"ERROR"}, "Please save the .blend file first.")
+            return {"CANCELLED"}
+        
+        # Get blend file directory and name (without extension)
+        blend_dir = os.path.dirname(blend_path)
+        blend_name = os.path.splitext(os.path.basename(blend_path))[0]
+        
+        # Build export path: ../Resources/ISLANDS/[BlendFileName]/Models/ObjectName.fbx
+        parent_dir = os.path.dirname(blend_dir)
+        export_dir = os.path.join(parent_dir, "Resources", "ISLANDS", blend_name, "Models")
+        
+        # Create directory if it doesn't exist
+        os.makedirs(export_dir, exist_ok=True)
+        
+        # Get the object to export - if it's a grease pencil, find its LOD child empty
+        export_obj = active
+        object_name = active.name
+        
+        # If active is grease pencil, look for the LOD parent child
+        if active.type == 'GPENCIL':
+            for child in active.children:
+                if child.type == 'EMPTY' and child.name.startswith(active.name):
+                    export_obj = child
+                    break
+        # If active is an empty parented to a grease pencil, use the grease pencil's name
+        elif active.type == 'EMPTY' and active.parent and active.parent.type == 'GPENCIL':
+            object_name = active.parent.name
+        
+        # Select the hierarchy for export
+        bpy.ops.object.select_all(action='DESELECT')
+        
+        # Select export_obj and all its descendants
+        def select_hierarchy(obj):
+            obj.select_set(True)
+            for child in obj.children:
+                select_hierarchy(child)
+        
+        select_hierarchy(export_obj)
+        context.view_layer.objects.active = export_obj
+        
+        # Build full export path
+        export_path = os.path.join(export_dir, f"{object_name}.fbx")
+        
+        # Export as FBX
+        bpy.ops.export_scene.fbx(
+            filepath=export_path,
+            use_selection=True,
+            object_types={'EMPTY', 'MESH'},
+            use_mesh_modifiers=True,
+            add_leaf_bones=False,
+            bake_space_transform=True,
+            path_mode='AUTO'
+        )
+        
+        self.report({"INFO"}, f"Exported to: {export_path}")
+        return {"FINISHED"}
+
+
 class GPLOD_OT_popup(bpy.types.Operator):
     """Open GP LOD Helpers popup"""
     bl_idname = "gplod.popup"
@@ -173,9 +268,14 @@ class GPLOD_OT_popup(bpy.types.Operator):
         layout = self.layout
         
         col = layout.column(align=True)
-        col.label(text="Create Child", icon="EMPTY_DATA")
+        col.label(text="Build LODs", icon="MESH_DATA")
         box = col.box()
         box.operator("gplod.empty_with_cube", icon="MESH_CUBE")
+        
+        col = layout.column(align=True)
+        col.label(text="Export", icon="EXPORT")
+        box = col.box()
+        box.operator("gplod.export_to_unity", icon="FILE_FOLDER")
 
     def execute(self, context):
         return {"FINISHED"}
@@ -199,8 +299,12 @@ class GPLOD_PT_sidebar(bpy.types.Panel):
         
         # Direct access to tools
         box = layout.box()
-        box.label(text="Create Child", icon="EMPTY_DATA")
+        box.label(text="Build LODs", icon="MESH_DATA")
         box.operator("gplod.empty_with_cube", icon="MESH_CUBE")
+        
+        box = layout.box()
+        box.label(text="Export", icon="EXPORT")
+        box.operator("gplod.export_to_unity", icon="FILE_FOLDER")
         
         # Info about selected object
         active = context.view_layer.objects.active
@@ -212,6 +316,7 @@ class GPLOD_PT_sidebar(bpy.types.Panel):
 # Registration
 classes = (
     GPLOD_OT_empty_with_cube,
+    GPLOD_OT_export_to_unity,
     GPLOD_OT_popup,
     GPLOD_PT_sidebar,
 )
