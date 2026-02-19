@@ -2139,34 +2139,34 @@ MonoBehaviour:
     e31: 0
     e32: 0
     e33: 1
-  - e00: 0.14660722
-    e01: -0.21436484
-    e02: 0.42726347
+  - e00: 0.18312547
+    e01: 0.40548897
+    e02: -0.22813128
     e03: 1259.6516
-    e10: -0.23869371
-    e11: 0.3543753
-    e12: 0.25969887
+    e10: 0.46504313
+    e11: -0.16697985
+    e12: 0.076503225
     e13: 716.42755
-    e20: -0.4141638
-    e21: -0.28011766
-    e22: 0.001572907
+    e20: -0.014144108
+    e21: -0.240201
+    e22: -0.4382961
     e23: 1979.1223
     e30: 0
     e31: 0
     e32: 0
     e33: 1
-  - e00: 0.05864291
-    e01: 0.17090541
-    e02: 0.08574593
-    e03: 1259.6001
-    e10: -0.095477484
-    e11: 0.10387953
-    e12: -0.14175014
-    e13: 716.3919
-    e20: -0.1656655
-    e21: 0.0006291941
-    e22: 0.1120471
-    e23: 1979.1246
+  - e00: 0.07325017
+    e01: -0.09125255
+    e02: -0.16219562
+    e03: 1259.6765
+    e10: 0.18601726
+    e11: 0.03060128
+    e12: 0.06679193
+    e13: 716.4195
+    e20: -0.005657656
+    e21: -0.17531845
+    e22: 0.096080445
+    e23: 1979.1793
     e30: 0
     e31: 0
     e32: 0
@@ -2644,7 +2644,7 @@ LineRenderer:
   - {x: 1259.9606, y: 716.3544, z: 1978.9294}
   - {x: 1259.6516, y: 716.42755, z: 1979.1223}
   - {x: 1259.6516, y: 716.42755, z: 1979.1223}
-  - {x: 1259.6604, y: 716.4415, z: 1979.1829}
+  - {x: 1259.6766, y: 716.4194, z: 1979.1793}
   - {x: 1259.5272, y: 716.4596, z: 1979.1754}
   - {x: 1259.4119, y: 716.4894, z: 1979.2247}
   - {x: 1259.3071, y: 716.51636, z: 1979.2694}
@@ -3478,7 +3478,8 @@ MonoBehaviour:
   - {x: 1256.1793, y: 717.3227, z: 1980.6045}
   - {x: 1256.1436, y: 717.3319, z: 1980.6198}
   debugLineRenderer: {fileID: 5083185910036669614}
-  shardMesh: {fileID: 4300000, guid: e18f2461cbb71904abe770a504646de6, type: 2}
+  shardMesh: {fileID: -7885815378070878257, guid: c8877eacb870c5e4a96736fe6c820cea,
+    type: 3}
   numGroups: 44
   numThreads: 128
   totalVerts: 156
@@ -3929,7 +3930,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1796573163053325612}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.4398138, y: 0.43913403, z: 0.43981925, w: 0.6482933}
+  m_LocalRotation: {x: 0.55087674, y: 0.5500166, z: 0.55087173, w: -0.30092683}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -10726,12 +10727,11 @@ MonoBehaviour:
   _sceneViewUUID: 
   _viewUUID: 
   _sceneViewPreventOwnershipTakeover: 0
-  _sceneViewDestroyWhenOwnerOrLastClientLeaves: 1
-  _sceneViewDestroyWhenOwnerOrLastClientLeavesMigrated: 1
   _sceneViewDestroyWhenLastClientLeaves: 1
   _components:
   - componentID: 2
     component: {fileID: 4238527597282027633}
+    isDeprecated: 0
   _childViews: []
 --- !u!114 &4238527597282027633
 MonoBehaviour:
@@ -11452,35 +11452,35 @@ MonoBehaviour:
   _VortexNoiseSize: 2
   _GroundVortexForce: 0
   _GroundVortexHeight: 0
-  _ResetValue: 1
+  _ResetValue: 0
   _OnGround: 0
   _LockedValue: 0
   _ExplosionValue: 0
   _ExplosionVector: {x: 0, y: 1, z: 0}
   _LockStartTime: 0
   _Velocity: {x: 0, y: 0, z: 0}
-  _NumPrimaryFeathers: 30
-  _NumPrimaryCoverts: 40
-  _NumLesserCovertsRows: 30
-  _NumLesserCovertsCols: 30
-  _NumScapularRows: 41
-  _NumScapularColumns: 61
-  _NumMantleRows: 10
-  _NumMantleColumns: 10
-  _NumTailFeathers: 30
-  primaryFeather: {fileID: -8145997450464849627, guid: 56cc2d0fb34ef684c8e8d58e4ef092ed,
+  _NumPrimaryFeathers: 20
+  _NumPrimaryCoverts: 30
+  _NumLesserCovertsRows: 15
+  _NumLesserCovertsCols: 15
+  _NumScapularRows: 20
+  _NumScapularColumns: 30
+  _NumMantleRows: 5
+  _NumMantleColumns: 5
+  _NumTailFeathers: 20
+  primaryFeather: {fileID: -8145997450464849627, guid: 6287605b2ba3a964a8355ef5477a0cef,
     type: 3}
-  secondaryFeather: {fileID: -8145997450464849627, guid: 56cc2d0fb34ef684c8e8d58e4ef092ed,
+  secondaryFeather: {fileID: -8145997450464849627, guid: 6287605b2ba3a964a8355ef5477a0cef,
     type: 3}
-  primaryCovert: {fileID: -8145997450464849627, guid: 56cc2d0fb34ef684c8e8d58e4ef092ed,
+  primaryCovert: {fileID: -8145997450464849627, guid: 6287605b2ba3a964a8355ef5477a0cef,
     type: 3}
-  secondaryCovert: {fileID: -8145997450464849627, guid: 56cc2d0fb34ef684c8e8d58e4ef092ed,
+  secondaryCovert: {fileID: -8145997450464849627, guid: 6287605b2ba3a964a8355ef5477a0cef,
     type: 3}
-  lesserCovert: {fileID: -8145997450464849627, guid: 56cc2d0fb34ef684c8e8d58e4ef092ed,
+  lesserCovert: {fileID: -8145997450464849627, guid: 6287605b2ba3a964a8355ef5477a0cef,
     type: 3}
-  tailFeather: {fileID: -8145997450464849627, guid: 56cc2d0fb34ef684c8e8d58e4ef092ed,
+  tailFeather: {fileID: -8145997450464849627, guid: 6287605b2ba3a964a8355ef5477a0cef,
     type: 3}
-  scapularFeather: {fileID: -8145997450464849627, guid: 56cc2d0fb34ef684c8e8d58e4ef092ed,
+  scapularFeather: {fileID: -8145997450464849627, guid: 6287605b2ba3a964a8355ef5477a0cef,
     type: 3}
   pose: {fileID: 6934135449871210189}
   leftWing: {fileID: 2880514451504289711}
@@ -11751,6 +11751,7 @@ MonoBehaviour:
   _syncScale: 0
   _syncVelocity: 1
   _maintainOwnershipWhileSleeping: 0
+  _autoRequestOwnership: 0
 --- !u!114 &3018291671553849756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11767,12 +11768,11 @@ MonoBehaviour:
   _sceneViewUUID: 
   _viewUUID: 
   _sceneViewPreventOwnershipTakeover: 0
-  _sceneViewDestroyWhenOwnerOrLastClientLeaves: 1
-  _sceneViewDestroyWhenOwnerOrLastClientLeavesMigrated: 1
   _sceneViewDestroyWhenLastClientLeaves: 1
   _components:
   - componentID: 1
     component: {fileID: 5591118457475554067}
+    isDeprecated: 0
   _childViews: []
 --- !u!1 &3524325682862469749
 GameObject:
@@ -12369,6 +12369,7 @@ MonoBehaviour:
   _syncScale: 0
   _syncVelocity: 1
   _maintainOwnershipWhileSleeping: 0
+  _autoRequestOwnership: 0
 --- !u!114 &1511860040879672775
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12385,12 +12386,11 @@ MonoBehaviour:
   _sceneViewUUID: 
   _viewUUID: 
   _sceneViewPreventOwnershipTakeover: 0
-  _sceneViewDestroyWhenOwnerOrLastClientLeaves: 1
-  _sceneViewDestroyWhenOwnerOrLastClientLeavesMigrated: 1
   _sceneViewDestroyWhenLastClientLeaves: 1
   _components:
   - componentID: 1
     component: {fileID: 3496962711582287068}
+    isDeprecated: 0
   _childViews: []
 --- !u!1 &3893722374906829939
 GameObject:
@@ -12687,6 +12687,7 @@ MonoBehaviour:
   _syncScale: 0
   _syncVelocity: 1
   _maintainOwnershipWhileSleeping: 0
+  _autoRequestOwnership: 0
 --- !u!114 &4451536874580110172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12703,12 +12704,11 @@ MonoBehaviour:
   _sceneViewUUID: 
   _viewUUID: 
   _sceneViewPreventOwnershipTakeover: 0
-  _sceneViewDestroyWhenOwnerOrLastClientLeaves: 1
-  _sceneViewDestroyWhenOwnerOrLastClientLeavesMigrated: 1
   _sceneViewDestroyWhenLastClientLeaves: 1
   _components:
   - componentID: 1
     component: {fileID: 377231191345988594}
+    isDeprecated: 0
   _childViews: []
 --- !u!1 &4111171715640244363
 GameObject:
@@ -20839,6 +20839,7 @@ MonoBehaviour:
   _syncScale: 0
   _syncVelocity: 1
   _maintainOwnershipWhileSleeping: 0
+  _autoRequestOwnership: 0
 --- !u!114 &6796013655447504479
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20855,12 +20856,11 @@ MonoBehaviour:
   _sceneViewUUID: 
   _viewUUID: 
   _sceneViewPreventOwnershipTakeover: 0
-  _sceneViewDestroyWhenOwnerOrLastClientLeaves: 1
-  _sceneViewDestroyWhenOwnerOrLastClientLeavesMigrated: 1
   _sceneViewDestroyWhenLastClientLeaves: 1
   _components:
   - componentID: 1
     component: {fileID: 6676731466365079191}
+    isDeprecated: 0
   _childViews: []
 --- !u!1 &6508942542991287132
 GameObject:
@@ -26303,25 +26303,30 @@ MonoBehaviour:
   _sceneViewUUID: 
   _viewUUID: 
   _sceneViewPreventOwnershipTakeover: 0
-  _sceneViewDestroyWhenOwnerOrLastClientLeaves: 1
-  _sceneViewDestroyWhenOwnerOrLastClientLeavesMigrated: 1
   _sceneViewDestroyWhenLastClientLeaves: 1
   _components:
   - componentID: 2
     component: {fileID: 6711473522082632705}
+    isDeprecated: 0
   _childViews:
   - componentID: 1
     component: {fileID: 6796013655447504479}
+    isDeprecated: 0
   - componentID: 2
     component: {fileID: 1511860040879672775}
+    isDeprecated: 0
   - componentID: 3
     component: {fileID: 3458242821038868491}
+    isDeprecated: 0
   - componentID: 4
     component: {fileID: 4451536874580110172}
+    isDeprecated: 0
   - componentID: 5
     component: {fileID: 7442987456114877378}
+    isDeprecated: 0
   - componentID: 6
     component: {fileID: 3018291671553849756}
+    isDeprecated: 0
 --- !u!114 &6711473522082632705
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26340,6 +26345,7 @@ MonoBehaviour:
   _syncScale: 1
   _syncVelocity: 1
   _maintainOwnershipWhileSleeping: 1
+  _autoRequestOwnership: 0
 --- !u!114 &8215229437021733713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26947,8 +26953,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d297911d9b576d49a3249a558de3cca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numShards: 4471
-  maxShards: 10000
+  numShards: 0
+  maxShards: 5000
   wren: {fileID: 6951865465235407638}
   fullBird: {fileID: 3880365654864790025}
   numShardsInBody: 4471
@@ -27330,6 +27336,7 @@ MonoBehaviour:
   _syncScale: 0
   _syncVelocity: 1
   _maintainOwnershipWhileSleeping: 0
+  _autoRequestOwnership: 0
 --- !u!114 &3458242821038868491
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27346,12 +27353,11 @@ MonoBehaviour:
   _sceneViewUUID: 
   _viewUUID: 
   _sceneViewPreventOwnershipTakeover: 0
-  _sceneViewDestroyWhenOwnerOrLastClientLeaves: 1
-  _sceneViewDestroyWhenOwnerOrLastClientLeavesMigrated: 1
   _sceneViewDestroyWhenLastClientLeaves: 1
   _components:
   - componentID: 1
     component: {fileID: 9062720940795608711}
+    isDeprecated: 0
   _childViews: []
 --- !u!1 &7193269618362196648
 GameObject:
