@@ -9250,6 +9250,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22b4eed13dbf8c64eb57099a606982a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  offlineMode: 0
   AvatarPrefabName: WrenMain
   connected: 1
   wrens: []

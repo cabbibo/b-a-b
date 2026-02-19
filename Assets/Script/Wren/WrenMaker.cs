@@ -11,8 +11,12 @@ using System;
  using System.Collections.Generic;
  using WrenUtils;
 
-    public class WrenMaker : MonoBehaviour {
-        private Realtime _realtime;
+    public class WrenMaker : MonoBehaviour
+    {
+
+        public bool offlineMode;
+        
+        public Realtime _realtime;
         public string AvatarPrefabName = "WrenAvatar";
         public bool connected;
         public List<Wren> wrens;
@@ -49,11 +53,41 @@ using System;
             wrens = new List<Wren>();
 
             onGameStart.Invoke();
-            // Get the Realtime component on this game object
-            _realtime = GetComponent<Realtime>();
 
             // Notify us when Realtime successfully connects to the room
-            _realtime.didConnectToRoom += DidConnectToRoom;
+            _realtime.didConnectToRoom += DidConnectToRoomTest;
+
+            if (offlineMode)
+            {
+                /*Room.ConnectOptions options = new Room.ConnectOptions({
+                    offlineMode = true;
+                })*/
+                
+                print("testtt");
+                
+                
+                
+                
+                // Connect to "My Room" in offline mode
+                _realtime.Connect(
+                    "BIRDBOY", 
+                        new Room.ConnectOptions {
+                        offlineMode = true
+                    }
+                    );
+            }
+            else
+            {
+                _realtime.Connect("BIRDBOY");
+            }
+            
+            
+        }
+        
+        private void DidConnectToRoomTest(Realtime realtime) {
+            if (realtime.room.offlineMode) {
+                Debug.Log($"Connected to room in offline mode!");
+            }
         }
         void Update(){
 
@@ -118,7 +152,8 @@ using System;
 
 
         private void OfflineStart(){
-
+    
+            print("did conenct offline timeount");
             connected = true;
 
             GameObject g = GameObject.Instantiate(offlineWren);
@@ -128,6 +163,10 @@ using System;
 
         private void DidConnectToRoom(Realtime realtime) {
 
+            if (realtime.room.offlineMode) {
+                Debug.Log($"Connected to room in offline mode!");
+            }
+            print("diddd connect test");
             if( connected == false ){
 
                 connected = true;
