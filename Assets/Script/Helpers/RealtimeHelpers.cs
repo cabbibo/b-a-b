@@ -7,7 +7,7 @@ using Normal.Realtime;
 
 
 public static class RealtimeHelpers {
-    public static bool TryGetEntry<T>(this RealtimeDictionary<T> dic, uint key, out T value) where T : IModel, new()
+    public static bool TryGetEntry<T>(this RealtimeDictionary<T> dic, uint key, out T value) where T : RealtimeModel, new()
     {
         foreach(var kvp in dic) {
             if (kvp.Key == key) {

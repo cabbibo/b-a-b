@@ -55,7 +55,7 @@ using System;
             onGameStart.Invoke();
 
             // Notify us when Realtime successfully connects to the room
-            _realtime.didConnectToRoom += DidConnectToRoomTest;
+            _realtime.didConnectToRoom += DidConnectToRoom;
 
             if (offlineMode)
             {
