@@ -17,12 +17,62 @@ bl_info = {
 import bpy
 import bmesh
 import re
-import mathutils
-from mathutils import Vector, Matrix
+import os
 from bpy.props import (
     StringProperty,
     BoolProperty,
 )
+
+# Support both Blender 3.x ('GPENCIL') and Blender 4.x ('GREASEPENCIL')
+GP_TYPES = {'GPENCIL', 'GREASEPENCIL'}
+
+def is_grease_pencil(obj):
+    """Check if object is a grease pencil (works for both Blender 3.x and 4.x)"""
+    return obj.type in GP_TYPES
+
+
+class GPLOD_Preferences(bpy.types.AddonPreferences):
+    """Addon preferences for GP LOD Helpers"""
+    bl_idname = __name__
+
+    asset_library_path: StringProperty(
+        name="Asset Library Path",
+        description="Path to the .blend file containing the GreasePencilToMesh node group",
+        subtype='FILE_PATH',
+        default=""
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        layout.label(text="Asset Library Settings:")
+        layout.prop(self, "asset_library_path")
+        layout.label(text="Set this to the .blend file containing your GreasePencilToMesh node group")
+
+
+def get_or_load_node_group(node_group_name="GreasePencilToMesh"):
+    """Get the node group, loading it from asset library if needed"""
+    node_group = bpy.data.node_groups.get(node_group_name)
+    
+    if node_group:
+        return node_group
+    
+    # Try to load from asset library
+    addon_prefs = bpy.context.preferences.addons.get(__name__)
+    if not addon_prefs:
+        return None
+    
+    asset_path = addon_prefs.preferences.asset_library_path
+    if not asset_path or not os.path.exists(bpy.path.abspath(asset_path)):
+        return None
+    
+    asset_path = bpy.path.abspath(asset_path)
+    
+    # Append the node group from the library
+    with bpy.data.libraries.load(asset_path, link=False) as (data_from, data_to):
+        if node_group_name in data_from.node_groups:
+            data_to.node_groups = [node_group_name]
+    
+    return bpy.data.node_groups.get(node_group_name)
 
 
 class GPLOD_OT_empty_with_cube(bpy.types.Operator):
@@ -34,15 +84,15 @@ class GPLOD_OT_empty_with_cube(bpy.types.Operator):
 
     def execute(self, context):
         # Get all selected objects at the start - ONLY process grease pencil objects
-        selected_objects = [obj for obj in context.selected_objects if obj.type == 'GPENCIL']
+        selected_objects = [obj for obj in context.selected_objects if is_grease_pencil(obj)]
         
         if not selected_objects:
             self.report({"WARNING"}, "No grease pencil objects selected.")
             return {"CANCELLED"}
         
-        node_group = bpy.data.node_groups.get("GreasePencilToMesh")
+        node_group = get_or_load_node_group("GreasePencilToMesh")
         if not node_group:
-            self.report({"WARNING"}, "GreasePencilToMesh node group not found")
+            self.report({"WARNING"}, "GreasePencilToMesh node group not found. Set the asset library path in addon preferences (Edit > Preferences > Add-ons > GP LOD Helpers).")
             return {"CANCELLED"}
         
         created_empties = []
@@ -52,7 +102,7 @@ class GPLOD_OT_empty_with_cube(bpy.types.Operator):
             children_to_delete = []
             for child in active.children:
                 # SAFETY: Never delete grease pencil objects
-                if child.type == 'GPENCIL':
+                if is_grease_pencil(child):
                     continue
                     
                 # Check if it's an empty with the same name (our created empty)
@@ -61,7 +111,7 @@ class GPLOD_OT_empty_with_cube(bpy.types.Operator):
                     def collect_descendants(obj):
                         descendants = []
                         # SAFETY: Never include grease pencil objects
-                        if obj.type == 'GPENCIL':
+                        if is_grease_pencil(obj):
                             return descendants
                         descendants.append(obj)
                         for c in obj.children:
@@ -74,12 +124,12 @@ class GPLOD_OT_empty_with_cube(bpy.types.Operator):
                     children_to_delete.append(child)
             
             # SAFETY: Final verification - filter out any grease pencil objects
-            children_to_delete = [obj for obj in children_to_delete if obj.type != 'GPENCIL']
+            children_to_delete = [obj for obj in children_to_delete if not is_grease_pencil(obj)]
             
             # Delete collected objects and their mesh data
             for obj in children_to_delete:
                 # SAFETY: Double-check we're not deleting a grease pencil
-                if obj.type == 'GPENCIL':
+                if is_grease_pencil(obj):
                     continue
                 # Store mesh reference before deleting object
                 mesh_to_delete = obj.data if obj.type == 'MESH' else None
@@ -212,7 +262,7 @@ class GPLOD_OT_delete_mesh_lods(bpy.types.Operator):
 
     def execute(self, context):
         # Get all selected objects at the start - ONLY process grease pencil objects
-        selected_objects = [obj for obj in context.selected_objects if obj.type == 'GPENCIL']
+        selected_objects = [obj for obj in context.selected_objects if is_grease_pencil(obj)]
         
         if not selected_objects:
             self.report({"WARNING"}, "No grease pencil objects selected.")
@@ -226,7 +276,7 @@ class GPLOD_OT_delete_mesh_lods(bpy.types.Operator):
             children_to_delete = []
             for child in active.children:
                 # SAFETY: Never delete grease pencil objects
-                if child.type == 'GPENCIL':
+                if is_grease_pencil(child):
                     continue
                     
                 # Check if it's an empty with the same name (our created empty)
@@ -235,7 +285,7 @@ class GPLOD_OT_delete_mesh_lods(bpy.types.Operator):
                     def collect_descendants(obj):
                         descendants = []
                         # SAFETY: Never include grease pencil objects
-                        if obj.type == 'GPENCIL':
+                        if is_grease_pencil(obj):
                             return descendants
                         descendants.append(obj)
                         for c in obj.children:
@@ -248,7 +298,7 @@ class GPLOD_OT_delete_mesh_lods(bpy.types.Operator):
                     children_to_delete.append(child)
             
             # SAFETY: Final verification - filter out any grease pencil objects
-            children_to_delete = [obj for obj in children_to_delete if obj.type != 'GPENCIL']
+            children_to_delete = [obj for obj in children_to_delete if not is_grease_pencil(obj)]
             
             if children_to_delete:
                 objects_processed += 1
@@ -257,7 +307,7 @@ class GPLOD_OT_delete_mesh_lods(bpy.types.Operator):
                 # Delete collected objects and their mesh data
                 for obj in children_to_delete:
                     # SAFETY: Double-check we're not deleting a grease pencil
-                    if obj.type == 'GPENCIL':
+                    if is_grease_pencil(obj):
                         continue
                     # Store mesh reference before deleting object
                     mesh_to_delete = obj.data if obj.type == 'MESH' else None
@@ -323,13 +373,13 @@ class GPLOD_OT_export_to_unity(bpy.types.Operator):
             object_name = active.name
             
             # If active is grease pencil, look for the LOD parent child
-            if active.type == 'GPENCIL':
+            if is_grease_pencil(active):
                 for child in active.children:
                     if child.type == 'EMPTY' and child.name.startswith(active.name):
                         export_obj = child
                         break
             # If active is an empty parented to a grease pencil, use the grease pencil's name
-            elif active.type == 'EMPTY' and active.parent and active.parent.type == 'GPENCIL':
+            elif active.type == 'EMPTY' and active.parent and is_grease_pencil(active.parent):
                 object_name = active.parent.name
             
             # Select the hierarchy for export
@@ -361,158 +411,6 @@ class GPLOD_OT_export_to_unity(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class GPLOD_OT_align_grease_pencils(bpy.types.Operator):
-    """Align two grease pencil objects based on matching strokes"""
-    bl_idname = "gplod.align_grease_pencils"
-    bl_label = "Align Grease Pencils"
-    bl_description = "Align the second selected grease pencil to the first based on matching strokes"
-    bl_options = {"REGISTER", "UNDO"}
-
-    def get_stroke_data(self, gp_obj):
-        """Extract stroke data from a grease pencil object in world space"""
-        strokes_data = []
-        gp_data = gp_obj.data
-        world_matrix = gp_obj.matrix_world
-        
-        for layer in gp_data.layers:
-            if layer.hide:
-                continue
-            for frame in layer.frames:
-                for stroke in frame.strokes:
-                    if len(stroke.points) < 2:
-                        continue
-                    
-                    points_world = [world_matrix @ Vector((p.co.x, p.co.y, p.co.z)) for p in stroke.points]
-                    
-                    total_length = 0
-                    for i in range(len(points_world) - 1):
-                        total_length += (points_world[i+1] - points_world[i]).length
-                    
-                    centroid = sum(points_world, Vector()) / len(points_world)
-                    
-                    strokes_data.append({
-                        'points': points_world,
-                        'point_count': len(points_world),
-                        'length': total_length,
-                        'centroid': centroid,
-                        'start': points_world[0],
-                        'end': points_world[-1],
-                        'layer': layer.info,
-                        'stroke': stroke,
-                    })
-        
-        return strokes_data
-
-    def calculate_stroke_similarity(self, stroke1, stroke2):
-        """Calculate similarity score between two strokes (lower = more similar)"""
-        point_count_diff = abs(stroke1['point_count'] - stroke2['point_count'])
-        length_diff = abs(stroke1['length'] - stroke2['length'])
-        
-        if stroke1['length'] > 0 and stroke2['length'] > 0:
-            length_ratio = min(stroke1['length'], stroke2['length']) / max(stroke1['length'], stroke2['length'])
-        else:
-            length_ratio = 0
-        
-        point_ratio = min(stroke1['point_count'], stroke2['point_count']) / max(stroke1['point_count'], stroke2['point_count'])
-        
-        similarity = (1 - length_ratio) * 100 + (1 - point_ratio) * 50 + point_count_diff * 2
-        
-        return similarity
-
-    def find_best_matching_strokes(self, strokes1, strokes2):
-        """Find the best matching stroke pair between two sets of strokes"""
-        best_match = None
-        best_score = float('inf')
-        
-        for s1 in strokes1:
-            for s2 in strokes2:
-                if abs(s1['point_count'] - s2['point_count']) > max(3, s1['point_count'] * 0.3):
-                    continue
-                
-                score = self.calculate_stroke_similarity(s1, s2)
-                if score < best_score:
-                    best_score = score
-                    best_match = (s1, s2)
-        
-        return best_match, best_score
-
-    def calculate_alignment_transform(self, source_stroke, target_stroke):
-        """Calculate the transformation to align source stroke to target stroke"""
-        source_start = source_stroke['start']
-        source_end = source_stroke['end']
-        target_start = target_stroke['start']
-        target_end = target_stroke['end']
-        
-        source_vec = source_end - source_start
-        target_vec = target_end - target_start
-        
-        source_len = source_vec.length
-        target_len = target_vec.length
-        
-        if source_len < 0.0001 or target_len < 0.0001:
-            return Matrix.Identity(4), Vector()
-        
-        scale_factor = target_len / source_len
-        
-        source_vec_norm = source_vec.normalized()
-        target_vec_norm = target_vec.normalized()
-        
-        rotation_quat = source_vec_norm.rotation_difference(target_vec_norm)
-        rotation_matrix = rotation_quat.to_matrix().to_4x4()
-        
-        scale_matrix = Matrix.Scale(scale_factor, 4)
-        
-        transform = rotation_matrix @ scale_matrix
-        
-        rotated_scaled_start = transform @ source_start
-        translation = target_start - rotated_scaled_start
-        
-        return transform, translation
-
-    def execute(self, context):
-        selected_gps = [obj for obj in context.selected_objects if obj.type == 'GPENCIL']
-        
-        if len(selected_gps) != 2:
-            self.report({"WARNING"}, "Please select exactly 2 grease pencil objects.")
-            return {"CANCELLED"}
-        
-        active = context.view_layer.objects.active
-        if active not in selected_gps:
-            self.report({"WARNING"}, "Active object must be one of the selected grease pencils.")
-            return {"CANCELLED"}
-        
-        target_gp = active
-        source_gp = [gp for gp in selected_gps if gp != active][0]
-        
-        target_strokes = self.get_stroke_data(target_gp)
-        source_strokes = self.get_stroke_data(source_gp)
-        
-        if not target_strokes:
-            self.report({"WARNING"}, f"No strokes found in target '{target_gp.name}'")
-            return {"CANCELLED"}
-        
-        if not source_strokes:
-            self.report({"WARNING"}, f"No strokes found in source '{source_gp.name}'")
-            return {"CANCELLED"}
-        
-        match, score = self.find_best_matching_strokes(target_strokes, source_strokes)
-        
-        if match is None:
-            self.report({"WARNING"}, "Could not find matching strokes between the two grease pencils.")
-            return {"CANCELLED"}
-        
-        target_stroke, source_stroke = match
-        
-        transform, translation = self.calculate_alignment_transform(source_stroke, target_stroke)
-        
-        translation_matrix = Matrix.Translation(translation)
-        
-        source_gp.matrix_world = translation_matrix @ transform @ source_gp.matrix_world
-        
-        self.report({"INFO"}, f"Aligned '{source_gp.name}' to '{target_gp.name}' (match score: {score:.2f})")
-        return {"FINISHED"}
-
-
 class GPLOD_OT_popup(bpy.types.Operator):
     """Open GP LOD Helpers popup"""
     bl_idname = "gplod.popup"
@@ -531,11 +429,6 @@ class GPLOD_OT_popup(bpy.types.Operator):
         box = col.box()
         box.operator("gplod.empty_with_cube", icon="MESH_CUBE")
         box.operator("gplod.delete_mesh_lods", icon="TRASH")
-        
-        col = layout.column(align=True)
-        col.label(text="Grease Pencil Tools", icon="GREASEPENCIL")
-        box = col.box()
-        box.operator("gplod.align_grease_pencils", icon="CON_LOCLIKE")
         
         col = layout.column(align=True)
         col.label(text="Export", icon="EXPORT")
@@ -569,10 +462,6 @@ class GPLOD_PT_sidebar(bpy.types.Panel):
         box.operator("gplod.delete_mesh_lods", icon="TRASH")
         
         box = layout.box()
-        box.label(text="Grease Pencil Tools", icon="GREASEPENCIL")
-        box.operator("gplod.align_grease_pencils", icon="CON_LOCLIKE")
-        
-        box = layout.box()
         box.label(text="Export", icon="EXPORT")
         box.operator("gplod.export_to_unity", icon="FILE_FOLDER")
         
@@ -585,10 +474,10 @@ class GPLOD_PT_sidebar(bpy.types.Panel):
 
 # Registration
 classes = (
+    GPLOD_Preferences,
     GPLOD_OT_empty_with_cube,
     GPLOD_OT_delete_mesh_lods,
     GPLOD_OT_export_to_unity,
-    GPLOD_OT_align_grease_pencils,
     GPLOD_OT_popup,
     GPLOD_PT_sidebar,
 )
