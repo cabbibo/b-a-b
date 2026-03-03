@@ -11,7 +11,7 @@ public class SetGlobalTerrainShaderInfo : MonoBehaviour
     void OnEnable()
     {
 
-          Shader.SetGlobalTexture( "_HeightMap" ,  God.terrainData.heightmapTexture );
+        Shader.SetGlobalTexture( "_HeightMap" ,  God.terrainData.heightmapTexture );
         Shader.SetGlobalVector("_MapSize",  God.terrainData.size);
     }
 

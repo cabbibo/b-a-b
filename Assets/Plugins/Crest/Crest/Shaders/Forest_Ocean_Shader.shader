@@ -842,7 +842,7 @@ Shader "Islands/Forest/Ocean"
                 //col = lerp( float3( 0.2 , .3 , .6 ) * length( paint2 ) * .2 , float3( .8 , .9 , 1 ) * length( paint ) , 1 - pow( dot( normal , float3( 0 , 1 , 0 ) ) , 2 ) );
 
 
-                //  col = PainterlyColor( float3( .1 , .1 , .1 ) , float3( .5 , .5 , .5 ) , lightMatch , uvPosition );
+                col = PainterlyColor( float3( .1 , .1 , .1 ) , float3( .5 , .5 , .5 ) , lightMatch , uvPosition );
 
 
                 if ( eyeMatch + noise( input.worldPos * 1 ) < .5 )
@@ -877,12 +877,20 @@ Shader "Islands/Forest/Ocean"
                 col *= _OverallMultiplier;
                 //col *= length( _LightColor0.xyz );
                 col = saturate( col );
+
+
+                col = floor( 100 * texCUBE( _Skybox , reflect( -normalize( eye ) , normal ) ).xyz ) / 100;
+                //col = PainterlyColor( float3( .1 , .1 , .1 ) , float3( .5 , .5 , .5 ) , lightMatch , uvPosition );
+
                 // col =
 
 
 
 
-                //    ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha , col );
+                col += saturate( floor( length( pow( bubbleCol , 2 ) * 10 ) ) );
+
+
+                //  ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha , col );
 
 
                 return half4( col , 1. );

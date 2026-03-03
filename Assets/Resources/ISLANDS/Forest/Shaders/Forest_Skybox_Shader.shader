@@ -188,7 +188,7 @@
                 col      = ( cx + cy + cz ).xyz;
                 //col *= 10;
 
-                float sunCol = pow( saturate( m ) , 1000 ) * 20;
+                float sunCol = pow( saturate( m ) , 10000 ) * 10;
                 //col = hsv(col.x * .2 + sunCol + dot( _WorldSpaceLightPos0.xyz , float3(0,-1,0)), 0, saturate(col.x * 5- 5*saturate(sunCol)));
                 //col += hsv(dot( _WorldSpaceLightPos0.xyz , float3(0,-1,0)),1,saturate(sunCol) ) * 11.8;
 
@@ -317,12 +317,16 @@
 
 
 
+                col = generic_desaturate( pow( texCUBE( _CubeMap , rd ).xyz , 1 ) , 1 );
+                //  col *= _LightColor0.xyz;
+                //col
 
-                for ( int i = 0; i < 3; i++ )
+                // col = 0;
+                for ( int i = 0; i < 1; i++ )
                 {
                     float3 fPos = _WorldSpaceCameraPos * .1 + v.ro * 100 + rd * i * 30.1f;
-                    col += .5 * _LightColor0.xyz * float3( 1 , float( i ) * .2 + .8 , 1 ) * pow( noise( fPos * .1 ) , 1 ) * 10 * pow( saturate( dot( _LightDir , -normalize( rd ) ) ) , 101 );
-                    col += .2 * _LightColor0.xyz * float3( 1 , 1 , 1 - float( i ) * .2 ) * pow( noise( fPos * .4 ) , 1 ) * 10 * pow( saturate( dot( _LightDir , -normalize( rd ) ) ) , 101 );
+                    col += 1 * _LightColor0.xyz * 1 * pow( saturate( dot( _LightDir , -normalize( rd ) ) ) , 300 );
+                    col += .1 * _LightColor0.xyz * 1 * pow( saturate( dot( _LightDir , -normalize( rd ) ) ) , 300 );
 
 
                     float2 xy = GetXYCoordsInPlane( _WorldSpaceCameraPos * .1 + v.ro * 400 + rd * i * 100.1f , _LightDir , float3( 0 , 1 , 0 ) );
@@ -330,13 +334,13 @@
                     float ang = atan2( xy.y , xy.x );
 
                     //col += .2 * float3( 1 , float( i ) * .2 + .4 , .2 ) * noise( ang * 10 + float3( 0 , _Time.y * ( i - 1.5 ) * .4 , 0 ) ) * pow( saturate( dot( -_LightDir , rd ) ) , 10 ) * 1; //length(xy) * .01;//length(xy) * .1;//1 / length( xy );// * .0001;
-
+                    //  col += noise( ang * 10 ) * .1;
 
                 }
 
 
-                col = length( col );
-                col.xyz *= float3( 0.3 , 1 , .3 );
+                // col = length( col );
+                //col.xyz *= float3( .5 , 1 , .7 );
                 col = saturate( col ); // / .8;
 
                 //col = float3( v.ro.x , v.ro.y * 1 , .3 ); // normalize( rd ) * .5; // + .5;
@@ -355,6 +359,7 @@
                 // col *= .5;
                 // col += .5;
                 // = sin(atan2( rd.x , rd.z) * 10) * .1;
+                // col = 0;
                 return float4( col.xyz , 1 ); //saturate(float4(col,3*length(col) ));
 
 

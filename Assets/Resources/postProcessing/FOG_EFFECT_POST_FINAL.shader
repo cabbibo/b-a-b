@@ -76,9 +76,9 @@
     float4 _FogColorFar;
     float4 _FogColorDistant;
     float  _OceanHeight;
-
-    float _LightColorImportance;
-    int   _FogSamples;
+    float  _LightToDarkMultiplier;
+    float  _LightColorImportance;
+    int    _FogSamples;
     #define _FogSamples 40
 
     const float e = 2.7182818284590452353602874713527;
@@ -255,9 +255,17 @@
 
             //totalFog += sVal *(noise(p * .01)+1)* 1/(pow( d+3, _FogHeightPower));// GetSunShadowsAttenuation_PCF5x5(p,1,0);
             //  totalFog += ni*sVal * .1;//* _FogHeightMultiplier/(pow( d+2, _FogHeightPower))* lerp(_FogDensityAtNear, _FogDensityAtFar, ni);;// GetSunShadowsAttenuation_PCF5x5(p,1,0);
-            float fogAmountThisStep = clamp( deltaSVal , 0 , 1 ) * ( 3 / ( ni * 2 + 1 ) ) * _FogHeightMultiplier / ( pow( d + 2 , _FogHeightPower ) );
-            fogAmountThisStep += fogDensity * sVal * _FogHeightMultiplier / ( pow( d + 2 , _FogHeightPower ) );
-            fogAmountThisStep += .1 * offsetN * _FogHeightMultiplier / ( pow( d + 2 , _FogHeightPower ) );
+
+            float heightMultiplier = _FogHeightMultiplier / ( pow( d + 2 , _FogHeightPower ) );
+
+            if ( _FogHeightPower < .01 )
+            {
+                heightMultiplier = _FogHeightMultiplier;
+            }
+            float fogAmountThisStep = _LightToDarkMultiplier * fogDensity * 1 * clamp( abs( deltaSVal ) , 0 , 1 ) * ( 3 / ( ni * 2 + 1 ) );
+            fogAmountThisStep += fogDensity * sVal;
+            fogAmountThisStep += .1 * offsetN;
+            fogAmountThisStep *= heightMultiplier;
 
 
             totalFog += fogAmountThisStep; //* fogDensity;
@@ -311,6 +319,7 @@
         // color = shadowAttenuation;
 
         fixed4 cascadeWeights = GET_CASCADE_WEIGHTS( worldPos.xyz , 0 );
+
 
         //color =  unity_sampleShadowmap(GET_SHADOW_COORDINATES(float4(worldPos.xyz, 1), cascadeWeights));
 

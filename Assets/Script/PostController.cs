@@ -78,6 +78,7 @@ public class PostController : MonoBehaviour
     public Astigma              astigma_Reference;
     public SketchEffect         sketchEffect_Reference;
     public QuickDither.Dithered dithered_Reference;
+    public DistanceFogEffect    distanceFogEffect_Reference;
 
 
     // Other controllers
@@ -117,6 +118,7 @@ public class PostController : MonoBehaviour
         astigma_Reference = null;
         sketchEffect_Reference = null;
         dithered_Reference = null;
+        distanceFogEffect_Reference = null;
 
         // Reset the working instance too (optional)
         DestroyWorkingInstance();
@@ -179,6 +181,7 @@ public class PostController : MonoBehaviour
         CachePersistentSetting( ref astigma_Reference );
         CachePersistentSetting( ref sketchEffect_Reference );
         CachePersistentSetting( ref dithered_Reference );
+        CachePersistentSetting( ref distanceFogEffect_Reference );
 
         EnsureWorkingInstanceInitialized();
         SafeApplyToPipeline();
@@ -286,6 +289,7 @@ public class PostController : MonoBehaviour
             astigma_Reference ,
             sketchEffect_Reference ,
             dithered_Reference ,
+            distanceFogEffect_Reference ,
             placeParticlesOnDepthMap
         );
     }
@@ -324,6 +328,8 @@ public class PostController : MonoBehaviour
 
     private void ApplySunSettings( PostParameters p )
     {
+
+
         if ( p == null ) {
             return;
         }

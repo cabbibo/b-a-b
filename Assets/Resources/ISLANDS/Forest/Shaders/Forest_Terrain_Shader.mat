@@ -88,7 +88,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 10699fff51d94294ba42e7a9428bc431, type: 3}
+        m_Texture: {fileID: 2800000, guid: 61d810ac29f478b4c941a8346da62f98, type: 3}
         m_Scale: {x: 1, y: -1}
         m_Offset: {x: 0, y: 0}
     - _MainTexture:
@@ -120,7 +120,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 5d9534be66b4a2d4f9c4df626dede92f, type: 3}
+        m_Texture: {fileID: 2800000, guid: 86f7d07dde38b154188fd60359df541e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalsAndAOMap:
@@ -209,7 +209,7 @@ Material:
     - _FogNoiseAmount: 0
     - _FogNoiseScale: 1
     - _FogStart: 100
-    - _FullNormalStrength: 12.43
+    - _FullNormalStrength: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -236,10 +236,10 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _StencilMask: 9
-    - _TriplanarNormalWeight: 0.39
-    - _TriplanarSharpness: 1
+    - _TriplanarNormalWeight: 1
+    - _TriplanarSharpness: 0
     - _UVSec: 0
-    - _WindAmount: 0.2
+    - _WindAmount: 0
     - _WindChangeSize: 0.0001
     - _WindChangeSpeed: 5
     - _WrenShadowRadius: 1
@@ -304,14 +304,14 @@ Material:
     - _ForestLowHigh: {r: 700, g: 1000, b: 0, a: 0}
     - _ForestSpecialColor: {r: 1, g: 1, b: 1, a: 1}
     - _HeightFogColor: {r: 1, g: 1, b: 1, a: 1}
-    - _HighLightColor: {r: 0.43676576, g: 0.54532117, b: 0.6132076, a: 1}
+    - _HighLightColor: {r: 1, g: 0.8159724, b: 0.759434, a: 1}
     - _IslandColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandFlatColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandLowHigh: {r: 700, g: 1000, b: 0, a: 0}
     - _IslandSpecialColor: {r: 1, g: 1, b: 1, a: 1}
-    - _LowLightColor: {r: 0.21760415, g: 0.25576273, b: 0.2830189, a: 1}
+    - _LowLightColor: {r: 0.3584906, g: 0, b: 0, a: 1}
     - _MeadowColor: {r: 1, g: 1, b: 1, a: 1}
     - _MossColor1: {r: 1, g: 1, b: 1, a: 1}
     - _MossColor2: {r: 1, g: 1, b: 1, a: 1}
@@ -323,7 +323,7 @@ Material:
     - _MountainSpecialColor: {r: 1, g: 1, b: 1, a: 1}
     - _OutlineColor: {r: 1, g: 0, b: 0, a: 1}
     - _TextureShadingWeights: {r: 0, g: 1, b: 2, a: 3}
-    - _TriplanarMultiplier: {r: 0.003, g: 0.003, b: 0.003, a: 1}
+    - _TriplanarMultiplier: {r: 0.0001, g: 0.0001, b: 0.0001, a: 0.1}
     - _ValleyColor: {r: 1, g: 1, b: 1, a: 1}
     - _ValleyFlatColor: {r: 1, g: 1, b: 1, a: 1}
     - _ValleyHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}

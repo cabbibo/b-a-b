@@ -139,9 +139,11 @@ Shader "Islands/Forest/Terrain"
 
                 col = v.color; //lerp( v.color * (shadowCol * .5+.5) ,shadowCol,1-shadow);
 
+                float3 reflection = reflect( -_WorldSpaceLightPos0 , triplanarNor );
+
                 float  lightMatch      = saturate( dot( _WorldSpaceLightPos0 , triplanarNor ) );
                 float  normalMatch     = saturate( dot( v.eye , triplanarNor ) );
-                float  reflectionMatch = saturate( dot( reflect( -_WorldSpaceLightPos0 , triplanarNor ) , normalize( v.eye ) ) );
+                float  reflectionMatch = saturate( dot( reflection , normalize( v.eye ) ) );
                 float  scale           = length( ObjectScale() );
                 float4 painterlyColor  = PainterlyColor(
                     v.worldPos ,
@@ -174,8 +176,13 @@ Shader "Islands/Forest/Terrain"
                     col = _EdgeNoiseColor; //discard;
                 }
 
+                float lightMatch2 = saturate( dot( _WorldSpaceLightPos0 , floor( ( triplanarNor * .2 + v.nor ) * 3 ) / 3 ) );
 
-                col *= generic_desaturate( texCUBElod( _Skybox , float4( fNor , 6 ) ) , .6 ) * 2;
+                col = lerp( _LowLightColor , _HighLightColor , lightMatch2 );
+
+                //  col = generic_desaturate( texCUBElod( _Skybox , float4( fNor , 6 ) ) , .6 ) * 2;]
+
+                col *= tex2D( _MainTex , v.uv );
 
 
                 DoWrenDiscard( v.worldPos );

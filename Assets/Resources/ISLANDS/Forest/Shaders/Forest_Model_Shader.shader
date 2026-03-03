@@ -157,9 +157,16 @@ Shader "Islands/Forest/Model"
 
                 if ( lightingData.eyeMatch - length( traceCol ) * .2 < .3 )
                 {
-                    discard;
+                    // discard;
                 }
 
+                col = v.color;
+
+                //col *= lerp( _HighLightColor , _LowLightColor , 1 - shadow );
+
+                col *= lerp( _LowLightColor , _HighLightColor , floor( shadow * .5 + 2 * lightingData.lightMatch * 3 ) / 5 );
+
+                col = 2 * v.color * v.color * ( ( shadow * 3 ) );
                 DoWrenDiscard( v.worldPos );
 
                 return float4( col , 1 );
@@ -171,58 +178,58 @@ Shader "Islands/Forest/Model"
 
         // shadow caster rendering pass, implemented manually
         // using macros from UnityCG.cginc
-        Pass
-        {
-
-
-            Cull OFF
-            ZWrite ON
-            ZTest ON
-
-            // Here is where we set the values 
-            // so the outline will only show *outside* 
-            // the object
-            /* Stencil
-             {
-                 Ref [_StencilMask]
-                 Comp notequal
-                 Fail keep
-                 Pass replace
-             }*/
-
-            CGPROGRAM
-            #pragma vertex SetVaryingsOutline_UNITY
-            #pragma fragment frag2
-
-
-            float4 frag2( FullVaryingData v ) : SV_Target
-            {
-                LightingData lightingData;
-                GetLightingData( v.worldPos , v.eye , v.nor , _WorldSpaceLightPos0.xyz , lightingData );
-
-                float3 traceCol = 0;
-                float3 eye      = v.eye;
-                for ( int i = 0; i < 3; i++ )
+        /*   Pass
+           {
+   
+   
+               Cull OFF
+               ZWrite ON
+               ZTest ON
+   
+               // Here is where we set the values 
+               // so the outline will only show *outside* 
+               // the object
+               /* Stencil
                 {
-                    float  ni   = (float)i / 3;
-                    float3 fPos = v.worldPos - normalize( eye ) * float( i ) * 1.3;
-                    float  v    = snoise( fPos * ( ni * 10 + 2 ) );
-                    traceCol += v;
-                }
-                if ( lightingData.eyeMatch - length( traceCol ) * .2 < .3 )
-                {
-                    discard;
-                }
-
-                // float4 col = float4( _OutlineColor.xyz * v.color * 6 * ( 1 - lightingData.eyeMatch ) , 1 );
-                float4 col = float4( _OutlineColor.xyz * v.color , 1 );
-                col.xyz    = generic_desaturate( col , 2 );
-                return col;
-
-            }
-            ENDCG
-        }
-
+                    Ref [_StencilMask]
+                    Comp notequal
+                    Fail keep
+                    Pass replace
+                }*/
+   
+               CGPROGRAM
+               #pragma vertex SetVaryingsOutline_UNITY
+               #pragma fragment frag2
+   
+   
+               float4 frag2( FullVaryingData v ) : SV_Target
+               {
+                   LightingData lightingData;
+                   GetLightingData( v.worldPos , v.eye , v.nor , _WorldSpaceLightPos0.xyz , lightingData );
+   
+                   float3 traceCol = 0;
+                   float3 eye      = v.eye;
+                   for ( int i = 0; i < 3; i++ )
+                   {
+                       float  ni   = (float)i / 3;
+                       float3 fPos = v.worldPos - normalize( eye ) * float( i ) * 1.3;
+                       float  v    = snoise( fPos * ( ni * 10 + 2 ) );
+                       traceCol += v;
+                   }
+                   if ( lightingData.eyeMatch - length( traceCol ) * .2 < .3 )
+                   {
+                       discard;
+                   }
+   
+                   // float4 col = float4( _OutlineColor.xyz * v.color * 6 * ( 1 - lightingData.eyeMatch ) , 1 );
+                   float4 col = float4( _OutlineColor.xyz * v.color , 1 );
+                   col.xyz    = generic_desaturate( col , 2 );
+                   return col;
+   
+               }
+               ENDCG
+           }
+   */
 
 
 

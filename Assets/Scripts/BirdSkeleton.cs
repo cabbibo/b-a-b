@@ -7,6 +7,7 @@ using UnityEngine.Rendering;
 
 public class BirdSkeleton : MonoBehaviour
 {
+    public bool           debug;
     public FullBird       fullBird;
     public DebugHierarchy debugHierarchy;
 
@@ -123,7 +124,9 @@ public class BirdSkeleton : MonoBehaviour
         transformShader.Dispatch( 0 , numGroups , 1 , 1 );
 
 
-        finalTransformBuffer.GetData( values );
+        if ( debug ) {
+            finalTransformBuffer.GetData( values );
+        }
 
     }
 

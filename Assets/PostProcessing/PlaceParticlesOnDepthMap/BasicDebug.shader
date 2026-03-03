@@ -12,11 +12,14 @@ Shader "Unlit/BasicDebug"
     {
 
         Cull Off
-        // Blend One One
-        Blend SrcAlpha OneMinusSrcAlpha
+        Blend One One
+        //Blend SrcAlpha OneMinusSrcAlpha
         //     ZWrite Off
         //  ZTest Always
-        //  Tags { "Queue" = "Transparent" }
+        Tags
+        {
+            "Queue" = "Transparent"
+        }
         Pass
         {
 
@@ -205,7 +208,7 @@ Shader "Unlit/BasicDebug"
             float3 hsv( float h , float s , float v )
             {
                 return lerp( float3( 1.0 , 1 , 1 ) , clamp( ( abs( frac(
-                                                   h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ) , 0.0 , 1.0 ) , s ) * v;
+               h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ) , 0.0 , 1.0 ) , s ) * v;
             }
 
             float3 rgb2hsv( float3 c )
@@ -256,9 +259,9 @@ Shader "Unlit/BasicDebug"
                 float4 col = tex2D( _MainTex , v.uv2 );
 
 
-                float val = col.x;
+                float val = 1 - col.x;
 
-                if ( col.x < .5 )
+                if ( 1 - col.x < .5 )
                 {
                     discard;
                 }
@@ -287,6 +290,8 @@ Shader "Unlit/BasicDebug"
                 col.xyz *= v.lifeSize;
                 col *= 2;
                 col.xyz = ApplyHue( col.xyz , val * .4 ); // hsv( val,1,1);
+
+                col = 1;
                 // col.xyz *= hsv( hue + .3*sin(v.id) ,.4,(sin(v.id * 10)+1) /4 + .5) ;
                 col *= _ColorMultiplier;
                 return float4( col.xyz , 1 );
