@@ -304,14 +304,14 @@ Material:
     - _ForestLowHigh: {r: 700, g: 1000, b: 0, a: 0}
     - _ForestSpecialColor: {r: 1, g: 1, b: 1, a: 1}
     - _HeightFogColor: {r: 1, g: 1, b: 1, a: 1}
-    - _HighLightColor: {r: 1, g: 0.8159724, b: 0.759434, a: 1}
+    - _HighLightColor: {r: 0.7881991, g: 0.99215686, b: 0.7411765, a: 1}
     - _IslandColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandFlatColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandLowHigh: {r: 700, g: 1000, b: 0, a: 0}
     - _IslandSpecialColor: {r: 1, g: 1, b: 1, a: 1}
-    - _LowLightColor: {r: 0.3584906, g: 0, b: 0, a: 1}
+    - _LowLightColor: {r: 0.37116012, g: 0.35224634, b: 0.78113204, a: 1}
     - _MeadowColor: {r: 1, g: 1, b: 1, a: 1}
     - _MossColor1: {r: 1, g: 1, b: 1, a: 1}
     - _MossColor2: {r: 1, g: 1, b: 1, a: 1}

@@ -166,7 +166,7 @@ Shader "Islands/Forest/Model"
 
                 col *= lerp( _LowLightColor , _HighLightColor , floor( shadow * .5 + 2 * lightingData.lightMatch * 3 ) / 5 );
 
-                col = 2 * v.color * v.color * ( ( shadow * 3 ) );
+                col = 2 * v.color * v.color * ( ( shadow * 3 ) );//* lerp ( float3(0,1,0), float3(0,0,1), shadow);
                 DoWrenDiscard( v.worldPos );
 
                 return float4( col , 1 );

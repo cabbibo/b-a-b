@@ -19,7 +19,7 @@ public class BiomePaintPreyManager : PreyManager
         // biome
         float currentBiomeValue = islandController.currentIsland.currentBiomeValues[biomeType];
 
-        print( value );
+w        print( value );
 
         if ( value >= 0 && currentBiomeValue >= 0 ) {
             if ( Time.time - lastSpawnTime > spawnTime ) {

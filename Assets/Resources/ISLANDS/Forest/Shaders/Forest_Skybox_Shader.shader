@@ -318,7 +318,9 @@
 
 
                 col = generic_desaturate( pow( texCUBE( _CubeMap , rd ).xyz , 1 ) , 1 );
-                //  col *= _LightColor0.xyz;
+                //col *= float3(1,.6,.3);
+                col *= hsv( length(col) * .5 + .7,.7,length(col)/.3).xyz;
+               // col *= .3;
                 //col
 
                 // col = 0;

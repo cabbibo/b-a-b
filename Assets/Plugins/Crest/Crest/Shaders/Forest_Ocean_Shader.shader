@@ -886,7 +886,7 @@ Shader "Islands/Forest/Ocean"
 
 
 
-
+             //   col = float3(0.0, .0,1.8) * 1 *pow(length(col),1);
                 col += saturate( floor( length( pow( bubbleCol , 2 ) * 10 ) ) );
 
 
