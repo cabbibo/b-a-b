@@ -230,7 +230,7 @@ Material:
     - _OverallMultiplier: 3.44
     - _PainterlyLightImportance: 0.99
     - _Parallax: 0.02
-    - _ShadowStrength: 1
+    - _ShadowStrength: 1.5
     - _Size: 0.01
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -304,14 +304,14 @@ Material:
     - _ForestLowHigh: {r: 700, g: 1000, b: 0, a: 0}
     - _ForestSpecialColor: {r: 1, g: 1, b: 1, a: 1}
     - _HeightFogColor: {r: 1, g: 1, b: 1, a: 1}
-    - _HighLightColor: {r: 0.7881991, g: 0.99215686, b: 0.7411765, a: 1}
+    - _HighLightColor: {r: 0.57155573, g: 0.7924528, b: 0.51957995, a: 1}
     - _IslandColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandFlatColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandHighAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandLowAltitudeColor: {r: 1, g: 1, b: 1, a: 1}
     - _IslandLowHigh: {r: 700, g: 1000, b: 0, a: 0}
     - _IslandSpecialColor: {r: 1, g: 1, b: 1, a: 1}
-    - _LowLightColor: {r: 0.37116012, g: 0.35224634, b: 0.78113204, a: 1}
+    - _LowLightColor: {r: 0.15634611, g: 0.13705947, b: 0.5283019, a: 1}
     - _MeadowColor: {r: 1, g: 1, b: 1, a: 1}
     - _MossColor1: {r: 1, g: 1, b: 1, a: 1}
     - _MossColor2: {r: 1, g: 1, b: 1, a: 1}

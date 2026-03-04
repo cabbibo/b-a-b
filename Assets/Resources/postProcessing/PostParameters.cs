@@ -217,6 +217,8 @@ public class PostParameters : ScriptableObject
     [UnityEngine.Range( 0f , 1f )]
     public float startNormalizedPosition = 0.25f; // 0.25 = midday
 
+    public Vector3 sunAxis;
+
     public Gradient sunGradient = new()
     {
         colorKeys = new GradientColorKey[]
@@ -656,6 +658,7 @@ public class PostParameters : ScriptableObject
         p.sunAutoUpdate = sunAutoUpdate;
         p.daySpeed = daySpeed;
         p.nightSpeed = nightSpeed;
+        p.sunAxis = sunAxis;
         p.startNormalizedPosition = startNormalizedPosition;
         p.sunGradient = sunGradient;
         p.moonGradient = moonGradient;

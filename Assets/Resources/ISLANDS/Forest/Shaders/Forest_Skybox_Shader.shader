@@ -10,6 +10,8 @@
         _Fade("_Fade", float) = 1
         _CubeMap("_CubeMap" ,Cube) = "white" {}
         _CubeMap2("_CubeMap2" ,Cube) = "white" {}
+        _HueSize("_HueSize",float) = 1
+        _HueStart("_HueStart",float)= 0
 
     }
 
@@ -62,6 +64,10 @@
             samplerCUBE _CubeMap2;
 
             float3 _LightDir;
+
+            float _HueSize;
+            float _HueStart;
+
 
             //A simple input struct for our pixel shader step containing a position.
             struct varyings
@@ -130,6 +136,15 @@
             #include "Assets/Resources/Shaders/Chunks/generic_desaturate.cginc"
 
             #include "UnityLightingCommon.cginc"
+
+            // If your plane passes through origin (P0 = vec3(0)):
+            float3 ProjectPointOnPlane_Origin( float3 P , float3 N )
+            {
+                float nn = dot( N , N );
+                if ( nn <= 1e-20 ) return P;
+                return P - N * ( dot( P , N ) / nn );
+            }
+
 
             float2 GetXYCoordsInPlane( float3 p1 , float3 v1 , float3 up )
             {
@@ -258,6 +273,7 @@
 
                 }
 
+
                 //  col = floor(col * 5) / 5;
 
                 col *= pow( saturate( 1 - abs( rd.y + noise( v.ro - float3( 0 , _Time.y * .12 , 0 ) ) - noise( v.ro * 2 + float3( 0 , _Time.y * .1 , 0 ) ) ) ) , 1 );
@@ -286,9 +302,9 @@
                 col *= col;
                 col *= _Fade;
 
-                float offset = tex2D( _MainTex , float2( rd.y * .1 , ( atan2( rd.x , rd.z ) + 3.14 ) / 6.28 ) * 10 );
-                offset += tex2D( _MainTex , float2( rd.y * .1 , ( atan2( rd.x , rd.z ) + 3.14 ) / 6.28 ) * 20 ) * .8;
-                offset += tex2D( _MainTex , float2( rd.y * .1 , ( atan2( rd.x , rd.z ) + 3.14 ) / 6.28 ) * 30 ) * .4;
+                float offset = tex2D( _MainTex , float2( rd.y * .2 , ( atan2( rd.x , rd.z ) + 3.14 ) / 6.28 ) * 1 );
+                offset += tex2D( _MainTex , float2( rd.y * .2 , ( atan2( rd.x , rd.z ) + 3.14 ) / 6.28 ) * 2 ) * .8;
+                offset += tex2D( _MainTex , float2( rd.y * .2 , ( atan2( rd.x , rd.z ) + 3.14 ) / 6.28 ) * 3 ) * .4;
 
                 // offset += tex2D( _MainTex , float2( rd.y , atan2( rd.x , rd.z ) / 6.28 ) * .2 );
                 //offset += tex2D( _MainTex , float2( rd.y , atan2( rd.x , rd.z ) / 6.28 ) * 1.3 );
@@ -317,28 +333,48 @@
 
 
 
-                col = generic_desaturate( pow( texCUBE( _CubeMap , rd ).xyz , 1 ) , 1 );
+                float3 planeVal = ProjectPointOnPlane_Origin( rd , _WorldSpaceLightPos0 );
+
+                cubeCol    = texCUBE( _CubeMap , rd + float3( offset * .1 , 0 , offset * .1 ) ).xyz;
+                col        = generic_desaturate( pow( texCUBE( _CubeMap , offset ).xyz , 1 ) , 1 );
+                float tmpC = cubeCol;
+                //col = generic_desaturate( pow( texCUBE( _CubeMap , rd ).xyz , 1 ) , 0 );
+                col = .1;
+                col *= float3( 2 , 2 , 2 );
                 //col *= float3(1,.6,.3);
-                col *= hsv( length(col) * .5 + .7,.7,length(col)/.3).xyz;
-               // col *= .3;
+                col *= hsv( -pow( length( tmpC ) , 1 ) * _HueSize + _HueStart + offset * .03 * ( 1 - rd.y ) , .7 , length( tmpC ) + offset * .1 * ( 1 - rd.y ) ).xyz;
+                col *= 5;
+
                 //col
 
                 // col = 0;
                 for ( int i = 0; i < 1; i++ )
                 {
+
+                    float ang = atan2( planeVal.y , planeVal.x );
+
                     float3 fPos = _WorldSpaceCameraPos * .1 + v.ro * 100 + rd * i * 30.1f;
-                    col += 1 * _LightColor0.xyz * 1 * pow( saturate( dot( _LightDir , -normalize( rd ) ) ) , 300 );
-                    col += .1 * _LightColor0.xyz * 1 * pow( saturate( dot( _LightDir , -normalize( rd ) ) ) , 300 );
+
+                    float3 sunVal = 0;
+                    sunVal += ( noise( ang * 30 + .2 * _Time.y ) ) * 1 * _LightColor0.xyz * 1 * pow( saturate( dot( _LightDir , -normalize( rd ) ) ) , 30 );
+
+                    sunVal += ( noise( ( ang + 2 ) * 10 - .2 * _Time.y ) ) * 1 * _LightColor0.xyz * 1 * pow( saturate( dot( _LightDir , -normalize( rd ) ) ) , 30 );
+
+                    sunVal += 10 * _LightColor0.xyz * 1 * pow( saturate( dot( _LightDir , -normalize( rd ) ) ) , 300 );
+
+                    col += ( col * .8 + .2 ) * sunVal * .4;
 
 
-                    float2 xy = GetXYCoordsInPlane( _WorldSpaceCameraPos * .1 + v.ro * 400 + rd * i * 100.1f , _LightDir , float3( 0 , 1 , 0 ) );
+                    // float2 xy = GetXYCoordsInPlane( _WorldSpaceCameraPos * .1 + v.ro * 400 + rd * i * 100.1f , _LightDir , float3( 0 , 1 , 0 ) );
 
-                    float ang = atan2( xy.y , xy.x );
+                    //  float ang = atan2( xy.y , xy.x );
 
                     //col += .2 * float3( 1 , float( i ) * .2 + .4 , .2 ) * noise( ang * 10 + float3( 0 , _Time.y * ( i - 1.5 ) * .4 , 0 ) ) * pow( saturate( dot( -_LightDir , rd ) ) , 10 ) * 1; //length(xy) * .01;//length(xy) * .1;//1 / length( xy );// * .0001;
                     //  col += noise( ang * 10 ) * .1;
 
                 }
+
+
 
 
                 // col = length( col );

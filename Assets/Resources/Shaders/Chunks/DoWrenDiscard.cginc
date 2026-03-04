@@ -13,8 +13,11 @@ void DoWrenDiscard( float3 worldPos )
 
     // Discards around bird!
 
-    float capDistance = sdCapsule( worldPos , _WorldSpaceCameraPos , _WrenPos , 1 );
+
+    float3 dir         = ( _WorldSpaceCameraPos - _WrenPos );
+    float  capDistance = sdCapsule( worldPos , _WorldSpaceCameraPos , _WrenPos + normalize( dir ) * 2 , 1 );
     capDistance -= snoise( worldPos ) * .2;
+
 
     if ( capDistance < 0 )
     {

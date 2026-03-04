@@ -2,6 +2,7 @@
 
 Shader "Islands/Forest/Feathers"
 {
+
     Properties
     {
 
@@ -9,6 +10,11 @@ Shader "Islands/Forest/Feathers"
         _Size ("Size", float) = .01
         _Saturation ("Saturation", float) = .01
 
+
+        _HighlightColor("_HighlightColor", Color)=(1,1,1,1)
+
+
+        _LowlightColor("_LowlightColor", Color)=(0,0,0,1)
 
 
         _IsBody("Is body" , float ) = 0
@@ -18,69 +24,7 @@ Shader "Islands/Forest/Feathers"
 
 
     CGINCLUDE
-    #pragma skip_variants SHADOWS_CUBE SHADOWS_DEPTH
-    #include "AutoLight.cginc"
-    #include "UnityLightingCommon.cginc"
-    #include "Assets/Resources/Shaders/Chunks/hsv.cginc"
-
-    //A simple input struct for our pixel shader step containing a position.
-    struct varyings
-    {
-        float4 pos : SV_POSITION;
-        float3 nor : TEXCOORD0;
-        float3 worldPos : TEXCOORD1;
-        float3 eye : TEXCOORD2;
-        float3 debug : TEXCOORD3;
-        float2 uv : TEXCOORD4;
-        float2 uv2 : TEXCOORD6;
-        float  id : TEXCOORD5;
-        float  randID : TEXCOORD13;
-        float  hue : TEXCOORD10;
-        float  offset : TEXCOORD11;
-        float  baseHue : TEXCOORD12;
-        int    feather:TEXCOORD7;
-        float4 data1:TEXCOORD9;
-        float  collectionType:TEXCOORD14;
-        float3 barycentric : TEXCOORD15;
-        UNITY_SHADOW_COORDS( 8 )
-    };
-
-
-    [maxvertexcount(3)]
-    void geom( triangle varyings input[ 3 ] , inout TriangleStream<varyings> triStream )
-    {
-        varyings o;
-        //  float3 normal = normalize(cross(input[1].vertex - input[0].vertex, input[2].vertex - input[0].vertex));
-
-        float3 normal = float3( 0 , 1 , 0 );
-
-
-        o             = input[ 0 ];
-        o.barycentric = float3( 1 , 0 , 0 );
-        triStream.Append( o );
-
-        o             = input[ 1 ];
-        o.barycentric = float3( 0 , 1 , 0 );
-        triStream.Append( o );
-
-        o             = input[ 2 ];
-        o.barycentric = float3( 0 , 0 , 1 );
-        triStream.Append( o );
-
-
-        triStream.RestartStrip();
-    }
-
-
-    float getGrid( float3 barys , float size , float offset )
-    {
-
-        float val = max( max( sin( barys.x * size ) , sin( barys.y * size ) ) , sin( barys.z * size ) );
-        val -= offset;
-        val /= ( 1 - offset );
-        val = clamp( val , 0 , 1 );
-        return val;
-    }
+    #include "Assets/Resources/Shaders/Chunks/FeatherCommon.cginc"
     ENDCG
 
 
@@ -121,132 +65,20 @@ Shader "Islands/Forest/Feathers"
             #pragma multi_compile_fogV
             #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 
-            #include "UnityCG.cginc"
-
-
-            uniform int    _Count;
-            uniform float  _Size;
-            uniform float3 _Color;
-
-            float _Saturation;
-
-            uniform int _TrisPerMesh;
-
-            struct Vert
-            {
-                float3 pos;
-                float3 nor;
-                float2 uv;
-            };
-
-
-            #include "Assets/Resources/Shaders/Chunks/FeatherStruct.cginc"
-
-            StructuredBuffer<Vert>    _VertBuffer;
-            StructuredBuffer<int>     _TriBuffer;
-            StructuredBuffer<Feather> _FeatherBuffer;
-
-
-            uniform float _BodyShardRendered;
-
-            bool GetShown( int id )
-            {
-
-            }
-
-
-            //uniform float4x4 worldMat;
-
-            sampler2D _MainTex;
-
-
-            #include "Assets/Resources/Shaders/Chunks/hash.cginc"
-            uniform float4x4 _Transform;
-            uniform int      _NumberMeshes;
-
-            float _Hue1;
-            float _Hue2;
-            float _Hue3;
-            float _Hue4;
-
-            float _IsBody;
-
-
-            float _TotalShardsInBody;
-            float _NumShards;
-            float _TmpNumShards;
-            float _ONumShards;
 
             //Our vertex function simply fetches a point from the buffer corresponding to the vertex index
             //which we transform with the view-projection matrix before passing to the pixel program.
             varyings vert( uint id : SV_VertexID )
             {
 
-                varyings o;
-
-                int     base      = id / _TrisPerMesh;
-                int     alternate = id % _TrisPerMesh;
-                Feather feather   = _FeatherBuffer[ base ];
-
-                int whichMesh = int( feather.featherType );
-                //int(floor(hash(float(base)) * float(_NumberMeshes)));// %4;
 
 
-                float4x4 baseMatrix = feather.ltw;
-                Vert     v          = _VertBuffer[ _TriBuffer[ alternate + whichMesh * _TrisPerMesh ] ];
-
-
-                float3 pos = v.pos;
-
-                if ( feather.id > _NumShards )
-                {
-                    //pos *= 0;
-                }
-
-
-
-
-                // o.data1 = feather.newData1;
-                o.worldPos = mul( baseMatrix , float4( pos , 1 ) ).xyz; //extra;
-                o.id       = float( base );
-                o.feather  = whichMesh;
-
-                o.baseHue = _Hue1;
-
-                o.hue    = _Hue1;
-                o.randID = feather.id;
-
-
-
-                if ( whichMesh == 1 ) { o.hue = _Hue2; }
-                if ( whichMesh == 2 ) { o.hue = _Hue3; }
-                if ( whichMesh == 3 ) { o.hue = _Hue4; }
-                if ( whichMesh == 4 ) { o.hue = _Hue4; }
-
-                o.collectionType = feather.type;
-
-
-
-
-
-                //o.data1 = feather.newData1;
-                o.nor = normalize( mul( baseMatrix , float4( v.nor , 0 ) ).xyz );
-                o.pos = mul( UNITY_MATRIX_VP , float4( o.worldPos , 1.0f ) );
-                o.uv  = v.uv;
-                o.eye = _WorldSpaceCameraPos - o.worldPos;
-                UNITY_TRANSFER_SHADOW( o , o.worldPos );
-
-
-                return o;
+                return SetUpOutputValues( id );
 
             }
 
-            sampler2D _FullColorMap;
-            #include "Assets/Resources/Shaders/Chunks/snoise.cginc"
-
-
-            sampler2D   _BackgroundTexture1;
-            samplerCUBE _Skybox;
+            float4 _HighlightColor;
+            float4 _LowlightColor;
 
 
             //Pixel function returns a solid color for each point.
@@ -303,9 +135,7 @@ Shader "Islands/Forest/Feathers"
                 shadowCol += .3;
                 shadowCol *= float3( .1 , .3 , .6 );
                 shadowCol /= clamp( ( .1 + .1 * length( v.eye ) ) , 1 , 3 );
-                col = shadowStep * col * float3( 1 , .8 , .6 ) * ( length( shadowCol ) + .4 ) * 1 + clamp(
-                    ( 1 - shadowStep ) * length( col ) * length( col ) * 10 , 0.05 ,
-                    1 ) * shadowCol; // float3(.1,.2,.5);
+                col = shadowStep * col * float3( 1 , .8 , .6 ) * ( length( shadowCol ) + .4 ) * 1 + clamp( ( 1 - shadowStep ) * length( col ) * length( col ) * 10 , 0.05 , 1 ) * shadowCol; // float3(.1,.2,.5);
 
 
                 float b = length( col );
@@ -352,22 +182,94 @@ Shader "Islands/Forest/Feathers"
 
                 float minBary = min( barys.x , min( barys.y , barys.z ) );
 
-                //col = lerp( 1 , 0 , saturate( minBary * 10 ) );
-                //  col *= hsv( v.collectionType / 7 , 1 , 1 );
-
-
+                col = lerp( 1 , 0 , saturate( minBary * 10 ) );
                 //col = bgCol.xyz + col*col *col*col * 10;
+
+
+
+                float3 ro = v.localPos;
+                float3 rd = v.localRD;
+
+                float3 fog = 0;
+
+
+
+                float id = v.id;
+                id       = v.randID;
+
+                float3 localNor = normalize( cross(
+                    ddy( v.localPos ) ,
+                    ddx( v.localPos )
+                ) );
+
+                rd = refract( rd , localNor , .8 );
+
+
+                for ( int i = 0; i < 30; i++ )
+                {
+
+
+                    float3 fPos = ro - rd * float( i ) * .01f;
+                    // fPos *= 10;
+
+                    // fPos += float3( 0 , 0.03 , .25 );
+                    //fPos += 1000; 
+
+                    // fPos %= .03;
+                    //fPos -= .015;
+                    /*fPos *= float3(1,1,1);
+                    fPos %= .1;*/
+
+                    float v = triNoise3D( fPos * 4 + id , 3 , _Time.x );
+
+                    //  v *= v * v * 10;
+
+                    if ( length( fPos ) < .04 + v * .08 )
+                    {
+                        //v += 1;
+                    }
+
+                    v /= 20;
+
+                    if ( v > .48 )
+                    {
+                        //  fog += hsv(0,0,1);
+                    }
+
+
+                    /*if( v > 0.3/40 ){
+                      fog = hsv(float(i)/10,1,1);
+                      break;
+                    }*/
+
+                    fog += v * v * v; // lerp( _LowlightColor , _HighlightColor , float( i ) / 30 ) * v * v;
+
+                }
+
+
+                col = 1 * lerp( _LowlightColor , _HighlightColor , shadow * 3 * saturate( dot( _WorldSpaceLightPos0 , v.nor ) ) );
+
+                col = col * 10000 * fog;
+
+                //col *= hsv( v.hue + sin(id) * .1,.4,1);
+
+                if ( minBary < .001 )
+                {
+                    // col = 1;// bgCol.xyz;
+                }
+
+                //  col = localNor * .5 +.5;
+                // col *= hsv(v.hue,.5,1);//fog;
+
+                //col += pow(1-m,10);
+
+                // col += normalize(v.localRD)* .5 + .5;
+
+                // col = fog / 30;
 
 
                 //col = bgCol;
 
-                col *= tex2D( _MainTex , v.uv );
-                col *= texCUBElod( _Skybox , float4( normalize( v.nor ) , 6 ) ).xyz;
-                col *= 3;
-
-                //col = shadow;
-                //col = dot( _WorldSpaceLightPos0 , v.nor );
-                // col += ( 1 - shadow ) * float3( 1 , 0 , 0 );
 
                 //col = v.nor * .5 +.5;
                 return float4( col , 1 );
@@ -447,19 +349,6 @@ Shader "Islands/Forest/Feathers"
             #include "Assets/Resources/Shaders/Chunks/ShadowCasterPos.cginc"
 
 
-            struct Vert
-            {
-                float3 pos;
-                float3 nor;
-                float2 uv;
-            };
-
-            #include "Assets/Resources/Shaders/Chunks/FeatherStruct.cginc"
-            int                       _TrisPerMesh;
-            StructuredBuffer<Vert>    _VertBuffer;
-            StructuredBuffer<Feather> _FeatherBuffer;
-            StructuredBuffer<int>     _TriBuffer;
-
             struct v2f
             {
                 V2F_SHADOW_CASTER;
@@ -468,11 +357,6 @@ Shader "Islands/Forest/Feathers"
                 float2 uv : TEXCOORD0;
                 float4 data1 : TEXCOORD2;
             };
-
-            float _TotalShardsInBody;
-            float _NumShards;
-            float _TmpNumShards;
-            float _ONumShards;
 
 
             v2f vert( appdata_base input , uint id : SV_VertexID )
@@ -490,12 +374,13 @@ Shader "Islands/Forest/Feathers"
                 Feather feather = _FeatherBuffer[ base ];
 
 
-                int whichMesh = int( feather.featherType );
-                //int(floor(hash(float(base)) * float(_NumberMeshes)));// %4;
+                int whichMesh = int( feather.featherType ); //int(floor(hash(float(base)) * float(_NumberMeshes)));// %4;
 
 
                 float4x4 baseMatrix = feather.ltw;
                 Vert     v          = _VertBuffer[ _TriBuffer[ alternate + whichMesh * _TrisPerMesh ] ];
+
+                float4x4 worldToLocal = transpose( baseMatrix );
 
                 o.worldPos = mul( baseMatrix , float4( v.pos , 1 ) ).xyz; //extra;
 

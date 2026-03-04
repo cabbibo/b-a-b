@@ -16,6 +16,7 @@ public class SunManager : MonoBehaviour
     public Light     sun;
     public Material  sky;
 
+    public Vector3 sunAxis;
 
     public float daySpeed = 30;
 
@@ -95,6 +96,7 @@ public class SunManager : MonoBehaviour
         nightNess = 1 - Mathf.Abs( timeInNight - 0.5f ) * 2;
 
 
+        transform.localRotation = Quaternion.Euler( sunAxis.x , sunAxis.y , sunAxis.z );
         sunRotator.localRotation = Quaternion.Euler( new Vector3( 200 * timeInDay + 170 , 0 , 0 ) );
         sun.transform.localPosition = new Vector3( 0 , 0 , sunRadius );
         //sun.transform.LookAt(new Vector3(-2048, 0, -2048));

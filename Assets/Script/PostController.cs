@@ -345,6 +345,7 @@ public class PostController : MonoBehaviour
         sunManager.nightSpeed = p.nightSpeed;
         sunManager.dayColor = p.sunGradient;
         sunManager.nightColor = p.moonGradient;
+        sunManager.sunAxis = p.sunAxis;
 
         // Set start position: convert normalized [0,1] to raw time in cycle
         float totalCycleLength = p.daySpeed + p.nightSpeed;

@@ -46,6 +46,7 @@
     #include "UnityCG.cginc"
     #include "UnityLightingCommon.cginc"
     #include "AutoLight.cginc"
+
     //uniform float4x4 worldMat;
 
     //A simple input struct for our pixel shader step containing a position.
@@ -62,6 +63,8 @@
         float  id : TEXCOORD5;
         float  life : TEXCOORD7;
         float  type : TEXCOORD8;
+        float3 localPos: TEXCOORD12;
+        float3 localEye: TEXCOORD11;
         UNITY_SHADOW_COORDS( 9 )
     };
 
@@ -70,7 +73,9 @@
     #include "Assets/Resources/Shaders/Chunks/translationMatrix.cginc"
     #include "Assets/Resources/Shaders/Chunks/scaleMatrix.cginc"
     #include "Assets/Resources/Shaders/Chunks/Matrix.cginc"
+    #include "Assets/Resources/Shaders/Chunks/InverseMatrix.cginc"
 
+    #include "Assets/Resources/Shaders/Chunks/triNoise3D.cginc"
 
     //Our vertex function simply fetches a point from the buffer corresponding to the vertex index
     //which we transform with the view-projection matrix before passing to the pixel program.
@@ -117,10 +122,18 @@
             float3 right = normalize( cross( up , fwd ) );
             // o.worldPos =   v.pos + vert.pos * _Size;//
 
+
+
+            float4x4 worldToLocal = InverseMatrix( rts );
+
+
+            float3 localPos = vert.pos.xzy * _Size * pow( life , .5 );
             //
-            o.worldPos = mul( rts , float4( vert.pos.xzy * _Size * pow( life , .5 ) , 1 ) ).xyz;
+            o.worldPos = mul( rts , float4( localPos , 1 ) ).xyz;
             o.nor      = normalize( mul( rts , float4( vert.nor.xzy , 0 ) ).xyz );
             o.eye      = _WorldSpaceCameraPos - o.worldPos;
+            o.localEye = mul( worldToLocal , o.eye );
+            o.localPos = localPos;
             //  o.nor =;
             o.uv   = vert.uv; //float2( v.life , v.type );
             o.uv2  = uv;
@@ -280,6 +293,63 @@
                 col += _Color2 * _LightColor0 * pow( ( saturate( dot( _WorldSpaceLightPos0 , reflect( -normalize( v.eye ) , v.nor ) ) ) ) , 100 ) * 2 * ( val + .5 );
 
                 col.xyz *= float3( 1 , 3 , 1 );
+
+
+                float id = v.id;
+
+                float3 localNor = normalize( cross(
+                    ddy( v.localPos ) ,
+                    ddx( v.localPos )
+                ) );
+                float3 rd = normalize( v.localEye );
+                rd        = refract( rd , localNor , .8 );
+
+                float3 ro = v.localPos;
+
+                float3 fog = 0;
+                for ( int i = 0; i < 30; i++ )
+                {
+
+
+                    float3 fPos = ro - rd * float( i ) * .01f;
+                    // fPos *= 10;
+
+                    // fPos += float3( 0 , 0.03 , .25 );
+                    //fPos += 1000; 
+
+                    // fPos %= .03;
+                    //fPos -= .015;
+                    /*fPos *= float3(1,1,1);
+                    fPos %= .1;*/
+
+                    float v = triNoise3D( fPos * 4 + id , 3 , _Time.x );
+
+                    //  v *= v * v * 10;
+
+                    if ( length( fPos ) < .003 + v * .08 )
+                    {
+                        v += .3;
+                    }
+
+                    v /= 20;
+
+                    if ( v > .48 )
+                    {
+                        //  fog += hsv(0,0,1);
+                    }
+
+
+                    /*if( v > 0.3/40 ){
+                      fog = hsv(float(i)/10,1,1);
+                      break;
+                    }*/
+
+                    fog += lerp( _Color , _Color2 , v * 40 * float( i ) / 30 ) * v * v * v;
+
+                }
+                col = fog * 6000;
+                //col += _LightColor0 * pow( ( saturate( dot( _WorldSpaceLightPos0 , -reflect( -normalize( v.eye ) , v.nor ) ) ) ) , 100 ) * 100; // * ( val + .5 );
+                col += _Color3 * 3 * _LightColor0 * pow( saturate( 1 - dot( v.nor , normalize( v.eye ) ) ) , 20 );
 
                 // col *= ( dot( _WorldSpaceLightPos0 , v.nor ) + 1 );
                 //  col *= col;

@@ -122,14 +122,14 @@ Shader "Islands/Forest/Terrain"
 
 
 
-                float3 traceCol = 0;
+                float3 traceCol = 1;
                 float3 eye      = v.eye;
                 for ( int i = 0; i < 3; i++ )
                 {
                     float  ni   = (float)i / 3;
-                    float3 fPos = v.worldPos - normalize( eye ) * float( i ) * 1.3;
-                    float  v    = snoise( fPos * ( ni * 10 + 2 ) );
-                    traceCol += v;
+                    float3 fPos = v.worldPos - normalize( eye ) * float( i + 1 ) * 2.3;
+                    float  v    = snoise( fPos * 2 + ( ni * 30 + 2 ) );
+                    traceCol *= v;
                 }
 
                 float3 shadowCol = pow( traceCol , 6 ) * .1; //* traceCol * traceCol * .1;
@@ -177,12 +177,27 @@ Shader "Islands/Forest/Terrain"
                 }
 
                 float lightMatch2 = saturate( dot( _WorldSpaceLightPos0 , floor( ( triplanarNor * .2 + v.nor ) * 3 ) / 3 ) );
+                lightMatch2 *= shadow * shadow * shadow;
 
-                col = lerp( _LowLightColor , _HighLightColor , lightMatch2 );
+                // lightMatch2 += tex2D( _PainterlyLightMap , v.uv * 100 ).x * .1;
+
+                //  lightMatch2 += tex2D( _PainterlyLightMap , float2( v.uv.y , -v.uv.x ) * 100 ).x * .2;
+
+                lightMatch2 += length( pow( traceCol , 4 ) * 100 ) * .01;
+
+
+                float3 colorValue = lerp( _LowLightColor , _HighLightColor , lightMatch2 );
+                col               = colorValue;
+
+                col += pow( traceCol , 4 ) * 100 * colorValue;
+
+                //col *= shadow * shadow * shadow;
+
+
 
                 //  col = generic_desaturate( texCUBElod( _Skybox , float4( fNor , 6 ) ) , .6 ) * 2;]
 
-                col *= tex2D( _MainTex , v.uv );
+                //col *= tex2D( _MainTex , v.uv );
 
 
                 DoWrenDiscard( v.worldPos );

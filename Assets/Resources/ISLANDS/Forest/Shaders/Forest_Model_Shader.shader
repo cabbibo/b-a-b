@@ -106,16 +106,15 @@ Shader "Islands/Forest/Model"
                 float3 triplanarNor = triplanarNormal( v.worldPos , fNor , v.tspace0 , v.tspace1 , v.tspace2 , v.offsetAmount * .1 );
 
 
-                float3 traceCol = 0;
+                float3 traceCol = 1;
                 float3 eye      = v.eye;
                 for ( int i = 0; i < 3; i++ )
                 {
                     float  ni   = (float)i / 3;
-                    float3 fPos = v.worldPos - normalize( eye ) * float( i ) * 1.3;
-                    float  v    = snoise( fPos * ( ni * 10 + 2 ) );
-                    traceCol += v;
+                    float3 fPos = v.worldPos - normalize( eye ) * float( i + 1 ) * 2.3;
+                    float  v    = snoise( fPos * 2 + ( ni * 30 + 2 ) );
+                    traceCol *= v;
                 }
-
                 float3 shadowCol = pow( traceCol , 6 ) * .1; //* traceCol * traceCol * .1;
                 shadowCol        = length( shadowCol ) * v.color;
 
@@ -165,8 +164,14 @@ Shader "Islands/Forest/Model"
                 //col *= lerp( _HighLightColor , _LowLightColor , 1 - shadow );
 
                 col *= lerp( _LowLightColor , _HighLightColor , floor( shadow * .5 + 2 * lightingData.lightMatch * 3 ) / 5 );
+                col = 2 * v.color * v.color * lerp( _LowLightColor , _HighLightColor , saturate( shadow * 3 ) ); //* lerp ( float3(0,1,0), float3(0,0,1), shadow);
 
-                col = 2 * v.color * v.color * ( ( shadow * 3 ) );//* lerp ( float3(0,1,0), float3(0,0,1), shadow);
+
+                float3 lightCol = lerp( _LowLightColor , _HighLightColor , saturate( shadow * 3 ) );
+                col             = 1 * v.color * lightCol + _HighLightColor * shadow * v.color; //* lerp ( float3(0,1,0), float3(0,0,1), shadow);
+
+                col += lightCol * saturate( pow( length( traceCol ) , 30 ) * 100000 ) * 3;
+
                 DoWrenDiscard( v.worldPos );
 
                 return float4( col , 1 );

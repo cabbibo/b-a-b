@@ -205,7 +205,7 @@
             float ni = float( i ) / float( _FogSamples );
             offsetN  = staticNoise( v.texcoord + ( ( floor( _Time.y * 20 ) / 20 ) * .01 % .1 ) + 100 + float( i ) * .1 ); // different noise each step?
 
-            currentStepSize = _FogStepSize * ( .2 + ni * 2 );
+            currentStepSize = _FogStepSize * ( .2 + ni * ni * 2 );
             currentDistance += currentStepSize - offsetN * currentStepSize; // alwa
 
             float dist = currentDistance;

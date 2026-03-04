@@ -110,8 +110,8 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
-    - _HighLightColor: {r: 0.75, g: 1, b: 0.77179486, a: 1}
-    - _LowLightColor: {r: 0, g: 0, b: 0, a: 1}
+    - _HighLightColor: {r: 1, g: 1, b: 1, a: 1}
+    - _LowLightColor: {r: 0.037877657, g: 0, b: 0.8666667, a: 1}
     - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _TextureShadingWeights: {r: 0, g: 1, b: 2, a: 3}
     - _TriplanarMultiplier: {r: 0.05, g: 0.03, b: 0.03, a: 1}

@@ -311,6 +311,13 @@ Shader "Islands/Forest/Ocean"
                 return fLCol;
             }
 
+            // Generic algorithm to desaturate images used in most game engines
+            float3 generic_desaturate( float3 color , float factor )
+            {
+                float3 lum  = float3( 0.299 , 0.587 , 0.114 );
+                float3 gray = dot( lum , color );
+                return lerp( color , gray , factor );
+            }
 
             half4 Frag( const Varyings input , const bool i_isFrontFace : SV_IsFrontFace ) : SV_Target
             {
@@ -482,9 +489,9 @@ Shader "Islands/Forest/Ocean"
                 if ( wt_smallerLod > 0.001 )
                 {
                     const float3 uv_slice_smallerLod = WorldToUV( positionXZWSUndisplaced , cascadeData0 ,
-                                           _LD_SliceIndex );
+                                          _LD_SliceIndex );
                     SampleDisplacementsNormals( _LD_TexArray_AnimatedWaves , uv_slice_smallerLod , wt_smallerLod ,
-                       cascadeData0._oneOverTextureRes , cascadeData0._texelWidth , dummy , n_pixel.xz , sss );
+                     cascadeData0._oneOverTextureRes , cascadeData0._texelWidth , dummy , n_pixel.xz , sss );
 
                     #if _FOAM_ON
                     SampleFoam(_LD_TexArray_Foam, uv_slice_smallerLod, wt_smallerLod, foam);
@@ -496,15 +503,15 @@ Shader "Islands/Forest/Ocean"
 
 
                     SampleDisplacements( _LD_TexArray_AnimatedWaves , uv_slice_smallerLod , wt_smallerLod ,
-                                                                                   displacement );
+                                                                                  displacement );
 
                 }
                 if ( wt_biggerLod > 0.001 )
                 {
                     const float3 uv_slice_biggerLod = WorldToUV( positionXZWSUndisplaced , cascadeData1 ,
-                                         _LD_SliceIndex + 1 );
+                                        _LD_SliceIndex + 1 );
                     SampleDisplacementsNormals( _LD_TexArray_AnimatedWaves , uv_slice_biggerLod , wt_biggerLod ,
-                         cascadeData1._oneOverTextureRes , cascadeData1._texelWidth , dummy , n_pixel.xz , sss );
+                       cascadeData1._oneOverTextureRes , cascadeData1._texelWidth , dummy , n_pixel.xz , sss );
 
                     #if _FOAM_ON
                     SampleFoam(_LD_TexArray_Foam, uv_slice_biggerLod, wt_biggerLod, foam);
@@ -516,7 +523,7 @@ Shader "Islands/Forest/Ocean"
 
 
                     SampleDisplacements( _LD_TexArray_AnimatedWaves , uv_slice_biggerLod , wt_biggerLod ,
-                                                                                 displacement );
+                                                                                displacement );
                 }
 
 
@@ -661,7 +668,7 @@ Shader "Islands/Forest/Ocean"
                 #endif
                 {
                     ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha ,
-                col );
+               col );
                 }
 
                 // Override final result with white foam - bubbles on surface
@@ -870,24 +877,32 @@ Shader "Islands/Forest/Ocean"
                 //  col *= shadow.y;
 
                 col = texCUBE( _Skybox , reflect( -normalize( eye ) , normal ) ).xyz;
-                col *= _ColorMultiplier;
-                col += float3( 0 , 1 , .5 ) * bubbleCol * 10;
-                col += float3( 1 , 0 , 0 ) * pow( whiteFoam.x , 10 ) * 100;
 
-                col *= _OverallMultiplier;
+                col = generic_desaturate( col , 1 ) * .8 + .2;
+
+                col += bubbleCol * 3;
+                col += 3 * saturate( floor( length( pow( bubbleCol , 1 ) * 10 ) ) / 3 );
+                // col += float3( 0 , .3 , 1 ) * pow( whiteFoam.x , 3 ) * 2;
+                col *= _ColorMultiplier;
+
+
+
+                //  col *= _OverallMultiplier;
                 //col *= length( _LightColor0.xyz );
                 col = saturate( col );
 
+                //  col = lerp( col , texCUBE( _Skybox , normalize( eye ) ) , saturate( ( length( eye ) - 12000 ) / 2000 ) );
 
-                col = floor( 100 * texCUBE( _Skybox , reflect( -normalize( eye ) , normal ) ).xyz ) / 100;
+
+                // col = floor( 100 * texCUBE( _Skybox , reflect( -normalize( eye ) , normal ) ).xyz ) / 100;
                 //col = PainterlyColor( float3( .1 , .1 , .1 ) , float3( .5 , .5 , .5 ) , lightMatch , uvPosition );
 
+                // col *= float3( -.3 , -.1 , 1 );
                 // col =
 
 
-
-             //   col = float3(0.0, .0,1.8) * 1 *pow(length(col),1);
-                col += saturate( floor( length( pow( bubbleCol , 2 ) * 10 ) ) );
+                //col = float3( 0 , 1 - 3 * length( col ) , length( col ) );
+                //   col = float3(0.0, .0,1.8) * 1 *pow(length(col),1);
 
 
                 //  ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha , col );
