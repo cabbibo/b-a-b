@@ -1,60 +1,81 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
-[CustomEditor(typeof(ClickPlacer))]
+[CustomEditor( typeof(ClickPlacer) )]
 public class ClickPlacerEditor : Editor
 {
-
     public GameObject prefab;
-    public int maxCount;
+    public int        maxCount;
 
     public int count;
+
+    private bool hasStartedDragging;
+
+    private RaycastHit originalHit;
+
     public void OnSceneGUI()
     {
 
-        /*Vector2 dpi = DPIHelper.GetSystemDPI();
-        Debug.Log($"System DPI: X = {dpi.x}, Y = {dpi.y}");
-
-        Debug.Log(dpi.x / 96.0f);*/
-
-
-        ClickPlacer placer = (ClickPlacer)target;
+        var placer = (ClickPlacer)target;
 
 
         // What is this?
-        HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
+        HandleUtility.AddDefaultControl( GUIUtility.GetControlID( FocusType.Passive ) );
+        var ray = HandleUtility.GUIPointToWorldRay( Event.current.mousePosition );
 
-        if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
-        {
-
-            Vector2 mousePos = Event.current.mousePosition * placer.displayScale;
-            mousePos.y = Camera.current.pixelHeight - mousePos.y;
-            Ray ray = Camera.current.ScreenPointToRay(mousePos);
-            placer.MouseDown(ray);
-
+        if ( Event.current.type == EventType.MouseDown && Event.current.button == 0 ) {
+            if ( placer.CastMouseRay( ray , out originalHit ) ) {
+                hasStartedDragging = true;
+                return;
+            }
         }
 
+        bool hasHit = placer.CastMouseRay( ray , out var newHit );
 
+        if ( Event.current.type == EventType.MouseUp && Event.current.button == 0 ) {
+            if ( hasStartedDragging ) {
+                var forward = newHit.point - originalHit.point;
+
+                if ( forward.magnitude < 0.1f ) {
+                    forward = Vector3.Cross( originalHit.normal , Vector3.up );
+                }
+
+                placer.PlaceObject( originalHit.point , originalHit.normal , forward );
+                hasStartedDragging = false;
+            }
+        }
+
+        if ( Event.current.type == EventType.Repaint && hasStartedDragging && hasHit ) {
+            Handles.color = Color.blue;
+            Handles.DrawLine( originalHit.point , newHit.point );
+            Handles.color = Color.green;
+            var offset = newHit.point - originalHit.point;
+            Handles.DrawLine( originalHit.point , originalHit.point + originalHit.normal * offset.magnitude );
+            Handles.color = Color.red;
+            Handles.DrawLine( originalHit.point , originalHit.point + Vector3.Cross( offset , originalHit.normal ) );
+
+
+            Handles.color = Color.yellow;
+            Handles.DrawWireDisc( originalHit.point , originalHit.normal , placer.scaleDragSizeRange.x );
+            Handles.DrawWireDisc( originalHit.point , originalHit.normal , placer.scaleDragSizeRange.y );
+
+
+            SceneView.RepaintAll();
+        }
     }
+
     public override void OnInspectorGUI()
     {
+        var placer = (ClickPlacer)target;
 
-        ClickPlacer placer = (ClickPlacer)target;
-
-
-
-        GUILayout.Label("DISPLAY SCALE : " + placer.displayScale);
-        placer.displayScale = GUILayout.HorizontalSlider(placer.displayScale, 1.0F, 2.0F);
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
-
-        if (GUILayout.Button("Reset"))
-        {
+        if ( GUILayout.Button( "Reset" ) ) {
             placer.Reset();
         }
-        DrawDefaultInspector();
 
+        if ( GUILayout.Button( "Replace Objects Down" ) ) {
+            placer.ReplaceObjectsDown();
+        }
+
+        DrawDefaultInspector();
     }
 }

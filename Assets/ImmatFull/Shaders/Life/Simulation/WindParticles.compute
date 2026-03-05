@@ -70,51 +70,72 @@ float3 getWindPower( float3 pos )
     return windVal.xyz;
 }
 
+float _Time;
 
 void DoInit( inout Vert vert , float pID )
 {
-    vert.life = hash( float( pID ) );
+    vert.life = ( hash( float( pID ) ) + hash( float( pID * 30 ) ) + hash( float( pID * 23 ) ) ) / 3;
     vert.axis = newAxis( float( pID ) );
 }
 
 float3 _WrenVel;
 
+float3 hash33( float p )
+{
+    float3 p3 = frac( p * float3( 0.1031 , 0.11369 , 0.13787 ) );
+    p3 += dot( p3 , p3.yzx + 19.19 );
+    return frac( ( p3.xxy + p3.yzz ) * p3.zyx );
+}
+
 float3 DoRemitPosition( int id )
 {
     float  v       = float( id );
     float3 emitPos = float3(
-        hash( v * 20 + hash( v * 212.44 ) * 10 ) ,
-        hash( v * 30 + hash( v * 313.55 ) * 20 ) ,
-        hash( v * 40 + hash( v * 414.66 ) * 30 )
+        hash( v * 20 + hash( v * 212.44 + _Time ) * 10 + _Time ) ,
+        hash( v * 30 + hash( v * 313.55 + _Time ) * 20 + _Time * 2 ) ,
+        hash( v * 40 + hash( v * 414.66 + _Time ) * 30 + _Time * 3 )
     );
+
+    emitPos = ( hash33( v * 3 + _Time * 2 ) + hash33( v + _Time ) ) / 2;
     emitPos -= 0.5;
 
 
-    emitPos *= 100;
+    emitPos *= 400;
 
     float3 p = mul( _Transform , float4( emitPos , 1 ) ).xyz;;
-    p += _WrenVel * 30;
+
+    p += _WrenVel * 100;
 
     float d = terrainHeight( p );
 
     if ( d < 0 )
     {
-        return terrainPos( p );
+        return terrainPos( p ) + float3( 0 , 4 , 0 );
     }
 
     return p;
 }
 
-float3 DoRemitVelocity( int p ) { return 0; }
+float3 DoRemitVelocity( int p )
+{
+    return 0;
+
+}
 
 
 float3 DoForce( inout Vert vert , int pID )
 {
+
+    if ( length( vert.vel ) == 0 )
+    {
+        vert.vel = getWindPower( vert.pos ) * .1;
+    }
+
+
     float3 force = 0;
     //  force += 1.4*curlNoise(vert.pos * .4);
     // force +=  mul( _Transform, float4( 0,1 ,0,0)).xyz;
-    force += getWindPower( vert.pos ) * 1;
-    force *= .001 * ( 1 + hash( pID * 1021. ) ) / 2;
+    force += getWindPower( vert.pos ) * 10;
 
     float d = terrainHeight( vert.pos );
     if ( d < .1 )
@@ -122,6 +143,7 @@ float3 DoForce( inout Vert vert , int pID )
         force += float3( 0 , 1 , 0 ) * ( .1 - d ) * .1;
     }
 
+    force *= .001 * ( 1 + hash( pID * 1021. ) + hash( pID * 133. ) ) / 3;
 
 
     vert.nor = mul( rotation( vert.axis , vert.life * 10 * ( hash( float( pID * 123 ) ) + 1 ) ) , float4( 0 , 0 , 1 , 0 ) ).xyz;
@@ -133,12 +155,12 @@ float3 DoForce( inout Vert vert , int pID )
 
 float DoLife( Vert v , int pID )
 {
-    return .0004 * ( 3 + sin( float( pID ) ) );
+    return .001 * ( 3 + sin( float( pID ) * 4441.4 + sin( float( pID ) * 11.3 ) * 103.14 ) * 3013.4 );
 }
 
 float DoDampening( Vert v , int pID )
 {
-    return .98;
+    return .8;
 }
 
 #define NR_THREADS 128

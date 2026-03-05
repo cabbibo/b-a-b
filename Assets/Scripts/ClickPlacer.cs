@@ -1,87 +1,129 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using EasyButtons;
+
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 public class ClickPlacer : MonoBehaviour
 {
-    public float      displayScale = 1.0f;
+#if UNITY_EDITOR
     public GameObject prefab;
-    public int        maxCount;
 
-    public int count;
+    public Vector2 scaleRange      = new(1f , 1f);
+    public Vector2 scaleRandomness = new(1f , 1f);
 
-    public Vector2 scaleRange;
-
-    public List<GameObject> placedGameObjects;
+    public Vector2 scaleDragSizeRange = new(0.1f , 10f);
 
     public string[] layers;
 
     public Vector3 offset;
+
     public Vector3 rotationalOffset;
 
     public Vector3 rotationRandomness;
+
     public Vector3 offsetRandomness;
 
-    public Vector2 normalMatchRange;
-    public float   upImportance;
 
+    public float upImportance;
 
-    public void MouseDown( Ray ray )
+    public bool CastMouseRay( Ray ray , out RaycastHit hit )
     {
-
-#if UNITY_EDITOR
-        int layer_mask = LayerMask.GetMask( layers );
-        RaycastHit hit;
-
-        if ( Physics.Raycast( ray , out hit , Mathf.Infinity , layer_mask ) ) {
-
-            var go = (GameObject)PrefabUtility.InstantiatePrefab( prefab ) as GameObject;
-
-            go.transform.parent = transform;
-            go.transform.position = hit.point;
+        return Physics.Raycast( ray , out hit , Mathf.Infinity , LayerMask.GetMask( layers ) );
+    }
 
 
-            // Randomly rotate around the up axis to give us some range
-            go.transform.Rotate( Vector3.up , Random.Range( 0 , 360 ) );
+    [Button( "ReplaceObjectsDown" )]
+    public void ReplaceObjectsDown()
+    {
+        Undo.RegisterChildrenOrderUndo( transform , "Replace Objects Down" );
+
+        for ( int i = 0; i < transform.childCount; i++ ) {
+            var child = transform.GetChild( i );
+
+            if ( child == null ) {
+                continue;
+            }
+
+            var p = child.position;
+            var n = child.up;
+            var f = child.forward;
+            child.position = p + n * 1110.01f; // Move up slightly to avoid z-fighting
+
+            var ray = new Ray( p , -n );
+
+            RaycastHit hit;
+
+            if ( Physics.Raycast( ray , out hit , Mathf.Infinity , LayerMask.GetMask( layers ) ) ) {
+                child.transform.position = hit.point;
+                child.transform.rotation = Quaternion.LookRotation( f , hit.normal );
 
 
-            var upVector = Vector3.Lerp( Vector3.up , hit.normal , Random.Range( normalMatchRange.x , normalMatchRange.y ) );
+                child.transform.position += child.transform.up * child.transform.localScale.y *
+                                            (offset.y + Random.Range( -offsetRandomness.y , offsetRandomness.y ));
+                child.transform.position += child.transform.right * child.transform.localScale.x *
+                                            (offset.x + Random.Range( -offsetRandomness.x , offsetRandomness.x ));
+                child.transform.position += child.transform.forward * child.transform.localScale.z *
+                                            (offset.z + Random.Range( -offsetRandomness.z , offsetRandomness.z ));
 
-            upVector = Vector3.Lerp( upVector , Vector3.up , upImportance );
-            var lookVector = Vector3.Scale( Random.onUnitSphere , new Vector3( 1 , 0 , 1 ) );
+            }
 
-            go.transform.rotation = Quaternion.LookRotation( lookVector , upVector );
-            // hit.normal
-
-            go.transform.Rotate( rotationalOffset + new Vector3(
-                Random.Range( -rotationRandomness.x , rotationRandomness.x ) ,
-                Random.Range( -rotationRandomness.y , rotationRandomness.y ) ,
-                Random.Range( -rotationRandomness.z , rotationRandomness.z ) )
-            );
-
-
-            go.transform.localScale = Vector3.one * Random.Range( scaleRange.x , scaleRange.y );
-            go.transform.position += go.transform.up * go.transform.localScale.y *
-                                     (offset.y + Random.Range( -offsetRandomness.y , offsetRandomness.y ));
-            go.transform.position += go.transform.right * go.transform.localScale.x *
-                                     (offset.x + Random.Range( -offsetRandomness.x , offsetRandomness.x ));
-            go.transform.position += go.transform.forward * go.transform.localScale.z *
-                                     (offset.z + Random.Range( -offsetRandomness.z , offsetRandomness.z ));
-
-            placedGameObjects.Add( go );
-            count++;
         }
 
-#endif
+
+    }
+
+
+    public void PlaceObject( Vector3 point , Vector3 normal , Vector3 forward )
+    {
+        Undo.RegisterChildrenOrderUndo( transform , "Placed Object" );
+
+        float forwardMagnitude = forward.magnitude;
+
+
+        var go = (GameObject)PrefabUtility.InstantiatePrefab( prefab );
+
+        go.transform.parent = transform;
+        go.transform.position = point;
+
+
+        var upVector = normal;
+        upVector = Vector3.Slerp( upVector , Vector3.up , upImportance );
+
+        forward = Vector3.ProjectOnPlane( forward , upVector );
+
+        go.transform.rotation = Quaternion.LookRotation( forward , upVector );
+
+        go.transform.Rotate(
+            rotationalOffset + new Vector3(
+                Random.Range( -rotationRandomness.x , rotationRandomness.x ) ,
+                Random.Range( -rotationRandomness.y , rotationRandomness.y ) ,
+                Random.Range( -rotationRandomness.z , rotationRandomness.z )
+            )
+        );
+
+
+        float normalizedSizeInRange = Mathf.InverseLerp( scaleDragSizeRange.x , scaleDragSizeRange.y , forwardMagnitude );
+        float finalScale = Mathf.Lerp( scaleRange.x , scaleRange.y , normalizedSizeInRange );
+        finalScale *= Random.Range( scaleRandomness.x , scaleRandomness.y );
+
+
+        go.transform.localScale = Vector3.one * finalScale;
+
+        go.transform.position += go.transform.up * go.transform.localScale.y *
+                                 (offset.y + Random.Range( -offsetRandomness.y , offsetRandomness.y ));
+        go.transform.position += go.transform.right * go.transform.localScale.x *
+                                 (offset.x + Random.Range( -offsetRandomness.x , offsetRandomness.x ));
+        go.transform.position += go.transform.forward * go.transform.localScale.z *
+                                 (offset.z + Random.Range( -offsetRandomness.z , offsetRandomness.z ));
+
     }
 
     public void Reset()
     {
 
         while (transform.childCount > 0) DestroyImmediate( transform.GetChild( 0 ).gameObject );
-
-        placedGameObjects.Clear();
-        count = 0;
     }
+#endif
 }

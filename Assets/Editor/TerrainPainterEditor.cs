@@ -96,7 +96,6 @@ public class TerrainPainterEditor : Editor
     {
 
 
-      Debug.Log("WHAT");
       painter.isPainting = 1;
 
       Vector2 mousePos = Event.current.mousePosition * painter.displayScale;

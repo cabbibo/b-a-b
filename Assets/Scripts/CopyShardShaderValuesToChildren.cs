@@ -6,18 +6,17 @@ using UnityEngine;
 [ExecuteAlways]
 public class CopyShardShaderValuesToChildren : MonoBehaviour
 {
-
-    public ClickPlacer clickPlacer;
+    public ClickPlacer       clickPlacer;
     public ShardShaderValues shardShaderValues;
+
     public void OnEnable()
     {
 
-        for (int i = 0; i < clickPlacer.placedGameObjects.Count; i++)
-        {
+        for ( int i = 0; i < clickPlacer.transform.childCount; i++ ) {
 //            print(clickPlacer.placedGameObjects.Count);
-            var shard = clickPlacer.placedGameObjects[i].GetComponent<ShardShaderValues>();
-            if (shard != null)
-            {
+            var shard = clickPlacer.transform.GetChild( i ).GetComponent<ShardShaderValues>();
+
+            if ( shard != null ) {
                 shard.hueStart = shardShaderValues.hueStart;
                 shard.hueSize = shardShaderValues.hueSize;
                 shard.noiseSpeed = shardShaderValues.noiseSpeed;
@@ -34,14 +33,15 @@ public class CopyShardShaderValuesToChildren : MonoBehaviour
         }
 
     }
+
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
 
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
 
     }

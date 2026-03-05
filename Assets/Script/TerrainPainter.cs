@@ -267,7 +267,6 @@ public class TerrainPainter : Simulation
     {
 
 
-        print( WrenUtils.God.terrainOffset );
 
         // paintPosition = data.land.Trace( ray.origin, ray.direction);
         paintTip.position = paintPosition;

@@ -269,7 +269,7 @@
 
 
             totalFog += fogAmountThisStep; //* fogDensity;
-            totalFogColor += lerp( _FogColorNear , _FogColorFar , ni ) * fogAmountThisStep;
+            totalFogColor += ( bgCol * .5 + .5 ) * lerp( _FogColorNear , _FogColorFar , ni ) * fogAmountThisStep;
 
 
 
