@@ -264,8 +264,9 @@ public class WrenCameraWork : MonoBehaviour
                 //        print(oLook);
 
                 float fBackAmount = backAmount + backAmountShardMultiplier * wren.shards.numExtraShards;
-                camTarget.position = transform.position + tmpUp * upAmount - tmpForward * wren._ScaleMultiplier * fBackAmount -
-                                     tmpRight * lookEulers * leftAmount * wren._ScaleMultiplier;
+                camTarget.position = transform.position + tmpUp * upAmount;
+                camTarget.position += -tmpForward * wren._ScaleMultiplier * fBackAmount;
+                camTarget.position += -tmpRight * lookEulers * leftAmount * wren._ScaleMultiplier;
                 //lookTarget =  camTarget.position + Vector3.Lerp( camTarget.forward, wrenHead.forward.normalized , lerpTowardHeadLook );
 
 

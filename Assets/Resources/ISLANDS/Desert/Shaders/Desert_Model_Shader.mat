@@ -88,7 +88,7 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
-    - _OutlineAmount: 0.08
+    - _OutlineAmount: 0.13
     - _OverallMultiplier: 2
     - _PainterlyLightImportance: 0.92
     - _Parallax: 0.02
@@ -101,7 +101,7 @@ Material:
     - _TriplanarNormalWeight: 0.4
     - _TriplanarSharpness: 4
     - _UVSec: 0
-    - _WindAmount: 1
+    - _WindAmount: 0
     - _WindChangeSize: 1
     - _WindChangeSpeed: 5
     - _ZWrite: 1
@@ -112,7 +112,7 @@ Material:
     - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
     - _HighLightColor: {r: 0.9811321, g: 0.8501703, b: 0.6247775, a: 1}
     - _LowLightColor: {r: 0, g: 0.12444244, b: 0.3962264, a: 1}
-    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _TextureShadingWeights: {r: 0, g: 1, b: 2, a: 3}
     - _TriplanarMultiplier: {r: 0.05, g: 0.03, b: 0.03, a: 1}
     - _WindDirection: {r: 11, g: 0, b: 0, a: 1}

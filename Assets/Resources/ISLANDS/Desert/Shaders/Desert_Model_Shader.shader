@@ -149,7 +149,7 @@ Shader "Islands/Desert/Model"
                 col *= v.color * 2.;
 
 
-                col *= lerp( float3( .1 , .1 , .2 ) , float3( 1 , .9 , .9 ) , shadow * ( .4 + floor( lightMatch * 5 ) / 5 ) );
+
 
                 // col *= _LightColor0;
                 col *= _OverallMultiplier;
@@ -157,9 +157,12 @@ Shader "Islands/Desert/Model"
 
                 if ( lightingData.eyeMatch - length( traceCol ) * .2 < .3 )
                 {
-                    discard;
+                    //discard;
                 }
 
+
+                col = v.color * v.color;
+                col *= lerp( float3( .1 , .1 , .2 ) , float3( 1 , .9 , .9 ) , shadow );
                 DoWrenDiscard( v.worldPos );
 
                 return float4( col , 1 );
@@ -168,61 +171,53 @@ Shader "Islands/Desert/Model"
         }
 
 
-
-        // shadow caster rendering pass, implemented manually
-        // using macros from UnityCG.cginc
-        Pass
-        {
-
-
-            Cull OFF
-            ZWrite ON
-            ZTest ON
-
-            // Here is where we set the values 
-            // so the outline will only show *outside* 
-            // the object
-            /* Stencil
-             {
-                 Ref [_StencilMask]
-                 Comp notequal
-                 Fail keep
-                 Pass replace
-             }*/
-
-            CGPROGRAM
-            #pragma vertex SetVaryingsOutline_UNITY
-            #pragma fragment frag2
-
-
-            float4 frag2( FullVaryingData v ) : SV_Target
-            {
-                LightingData lightingData;
-                GetLightingData( v.worldPos , v.eye , v.nor , _WorldSpaceLightPos0.xyz , lightingData );
-
-                float3 traceCol = 0;
-                float3 eye      = v.eye;
-                for ( int i = 0; i < 3; i++ )
+        /*
+                // shadow caster rendering pass, implemented manually
+                // using macros from UnityCG.cginc
+                Pass
                 {
-                    float  ni   = (float)i / 3;
-                    float3 fPos = v.worldPos - normalize( eye ) * float( i ) * 1.3;
-                    float  v    = snoise( fPos * ( ni * 10 + 2 ) );
-                    traceCol += v;
+        
+        
+                    Cull OFF
+                    ZWrite ON
+                    ZTest ON
+        
+        
+        
+                    CGPROGRAM
+                    #pragma vertex SetVaryingsOutline_UNITY
+                    #pragma fragment frag2
+        
+        
+                    float4 frag2( FullVaryingData v ) : SV_Target
+                    {
+                        LightingData lightingData;
+                        GetLightingData( v.worldPos , v.eye , v.nor , _WorldSpaceLightPos0.xyz , lightingData );
+        
+                        float3 traceCol = 0;
+                        float3 eye      = v.eye;
+                        for ( int i = 0; i < 3; i++ )
+                        {
+                            float  ni   = (float)i / 3;
+                            float3 fPos = v.worldPos - normalize( eye ) * float( i ) * 1.3;
+                            float  v    = snoise( fPos * ( ni * 10 + 2 ) );
+                            traceCol += v;
+                        }
+                        if ( lightingData.eyeMatch - length( traceCol ) * .2 < .3 )
+                        {
+                            discard;
+                        }
+        
+                        // float4 col = float4( _OutlineColor.xyz * v.color * 6 * ( 1 - lightingData.eyeMatch ) , 1 );
+                        float4 col = float4( _OutlineColor.xyz * v.color , 1 );
+                        col.xyz    = generic_desaturate( col , 2 );
+                        col        = v.color;
+                        return col;
+        
+                    }
+                    ENDCG
                 }
-                if ( lightingData.eyeMatch - length( traceCol ) * .2 < .3 )
-                {
-                    discard;
-                }
-
-                // float4 col = float4( _OutlineColor.xyz * v.color * 6 * ( 1 - lightingData.eyeMatch ) , 1 );
-                float4 col = float4( _OutlineColor.xyz * v.color , 1 );
-                col.xyz    = generic_desaturate( col , 2 );
-                return col;
-
-            }
-            ENDCG
-        }
-
+        */
 
 
 

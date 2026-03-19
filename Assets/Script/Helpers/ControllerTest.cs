@@ -197,18 +197,18 @@ public class ControllerTest : MonoBehaviour
 
     public void Remap()
     {
-        // left = Remap(left, leftXRemap, leftYRemap);
+        left = Remap( left , leftXRemap , leftYRemap );
 
-        var tmp = new Vector2( left.x , left.y );
-        left.x = tmp.x * (1 - tmp.y);
-        left.y = tmp.y * (1 - tmp.x);
+        /* var tmp = new Vector2( left.x , left.y );
+         left.x = tmp.x * (1 - tmp.y);
+         left.y = tmp.y * (1 - tmp.x);*/
 
 
-        //right = Remap(right, rightXRemap, rightYRemap);
+        right = Remap( right , rightXRemap , rightYRemap );
 
-        tmp.Set( right.x , right.y );
+        /*tmp.Set( right.x , right.y );
         right.x = tmp.x * (1 - tmp.y);
-        right.y = tmp.y * (1 - tmp.x);
+        right.y = tmp.y * (1 - tmp.x);*/
 
 
     }

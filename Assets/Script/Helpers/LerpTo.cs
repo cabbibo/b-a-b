@@ -17,6 +17,8 @@ public class LerpTo : BaseCameraManager
 
     public Transform resetTarget;
 
+    public float wrenVelocityOffseter = .02f;
+
     // Start is called before the first frame update
     private void OnEnable()
     {
@@ -72,6 +74,18 @@ public class LerpTo : BaseCameraManager
 
 
             transform.position = Vector3.Lerp( transform.position , target.position , lerpSpeed );
+
+            // do camera offset
+
+
+            if ( God.wren != null ) {
+                var localVelocity = transform.InverseTransformDirection( God.wren.physics.vel );
+                localVelocity = Vector3.Scale( localVelocity , new Vector3( 1 , 1 , 0 ) );
+                localVelocity = transform.TransformDirection( localVelocity );
+
+
+                transform.position += localVelocity * wrenVelocityOffseter;
+            }
 
             if ( lookTarget != null ) {
 

@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Valley_Skybox_Shader
-  m_Shader: {fileID: 4800000, guid: a2daaae402e2e6a4e8ecd42f0f12f0ac, type: 3}
+  m_Shader: {fileID: 4800000, guid: c38f2aec4e449c947b9f5405712b5690, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -77,6 +77,8 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _HueSize: 1
+    - _HueStart: 0
     - _MapScale: 1
     - _Metallic: 0
     - _Mode: 0
