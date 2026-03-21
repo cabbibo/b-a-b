@@ -2,7 +2,7 @@ Shader "Islands/Desert/Model"
 {
     Properties
     {
-
+        _MainModelColor("MainModelColor",Color)=(1,1,1,1)
         _HighLightColor("HighLightColor", Color) = (1,1,1,1)
         _LowLightColor("LowLightColor", Color) = (0,0,0,1)
         _Color ("Color", Color) = (1,1,1,1)
@@ -88,6 +88,10 @@ Shader "Islands/Desert/Model"
             #pragma vertex SetVaryings_UNITY
             #pragma fragment frag
             #include "Assets/Resources/Shaders/Chunks/SelfShadowingVertPragmas.cginc"
+            #include "Assets/Resources/Shaders/Chunks/Oversaturate.cginc"
+
+
+            float4 _MainModelColor;
 
             float4 frag( FullVaryingData v ) : COLOR
             {
@@ -161,8 +165,13 @@ Shader "Islands/Desert/Model"
                 }
 
 
-                col = v.color * v.color;
-                col *= lerp( float3( .1 , .1 , .2 ) , float3( 1 , .9 , .9 ) , shadow );
+                col = ( v.color * v.color * v.color );
+                // col = oversaturate( v.color - _MainModelColor.xyz * 1 , 10 );
+                col = v.color * v.color + .2 * oversaturate( v.color - _MainModelColor.xyz * .2 , 10 );
+                col *= shadow * 1;
+                //  col = oversaturate( v.color , 2.3 );
+                // col *= lerp( float3( .0 , .0 , .0 ) , float3( 1 , 0 , 0 ) , shadow );
+                //col = shadow;
                 DoWrenDiscard( v.worldPos );
 
                 return float4( col , 1 );

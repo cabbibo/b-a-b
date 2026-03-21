@@ -92,7 +92,7 @@ Material:
     - _OverallMultiplier: 2
     - _PainterlyLightImportance: 0.92
     - _Parallax: 0.02
-    - _ShadowStrength: 1
+    - _ShadowStrength: 1.2
     - _Size: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -112,6 +112,7 @@ Material:
     - _FadeLocation: {r: 0, g: 0, b: 0, a: 1}
     - _HighLightColor: {r: 0.9811321, g: 0.8501703, b: 0.6247775, a: 1}
     - _LowLightColor: {r: 0, g: 0.12444244, b: 0.3962264, a: 1}
+    - _MainModelColor: {r: 0.94117653, g: 0.9333334, b: 0.6509804, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _TextureShadingWeights: {r: 0, g: 1, b: 2, a: 3}
     - _TriplanarMultiplier: {r: 0.05, g: 0.03, b: 0.03, a: 1}
