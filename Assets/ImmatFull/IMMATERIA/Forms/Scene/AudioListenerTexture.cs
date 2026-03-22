@@ -96,12 +96,12 @@ public class AudioListenerTexture : MonoBehaviour
         sampleTex.filterMode = FilterMode.Bilinear;
         samplePixels = new Color[size];
 
-        audioRT = new RenderTexture( size , 1 , 0 , RenderTextureFormat.ARGBHalf , RenderTextureReadWrite.Linear );
+        /*audioRT = new RenderTexture( size , 1 , 0 , RenderTextureFormat.ARGBHalf , RenderTextureReadWrite.Linear );
         audioRT.wrapMode = TextureWrapMode.Clamp;
         audioRT.filterMode = FilterMode.Bilinear;
         audioRT.useMipMap = false;
         audioRT.autoGenerateMips = false;
-        audioRT.Create();
+        audioRT.Create();*/
 
         // init to 0
         var prev = RenderTexture.active;
@@ -112,11 +112,11 @@ public class AudioListenerTexture : MonoBehaviour
 
     private void Release()
     {
-        if ( audioRT ) {
-            audioRT.Release();
-            DestroyImmediate( audioRT );
-            audioRT = null;
-        }
+        /*   if ( audioRT ) {
+               audioRT.Release();
+               DestroyImmediate( audioRT );
+               audioRT = null;
+           }*/
 
         if ( sampleTex ) {
             DestroyImmediate( sampleTex );

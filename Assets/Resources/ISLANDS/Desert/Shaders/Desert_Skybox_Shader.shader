@@ -317,6 +317,7 @@ Shader "Islands/Desert/Skybox"
 
 
                 col = saturate( ( ( _LightColor0 * lightMatch ) ) );
+                col = generic_desaturate( col , 1 );
 
 
                 for ( int i = 0; i < 3; i++ )
@@ -340,7 +341,7 @@ Shader "Islands/Desert/Skybox"
 
                 // col = length( col );
 
-                col.xyz *= float3( 1.3 , 1.2 , .6 );
+                col.xyz *= float3( 1.3 , 1.2 , .6 ) * .1;
                 col = saturate( col ); // / .8;
 
                 //col = float3( v.ro.x , v.ro.y * 1 , .3 ); // normalize( rd ) * .5; // + .5;

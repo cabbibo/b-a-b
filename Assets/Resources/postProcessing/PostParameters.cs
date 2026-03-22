@@ -5,6 +5,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 using WrenUtils;
 using Crest;
+using FloatParameter = UnityEngine.Rendering.PostProcessing.FloatParameter;
 
 
 [CreateAssetMenu( fileName = "PostParameters" , menuName = "PostParameters" , order = 1 )]
@@ -26,6 +27,8 @@ public class PostParameters : ScriptableObject
     public bool sketchEffect        = false;
     public bool dithered            = false;
     public bool distanceFog         = false;
+    public bool heatWaveEffect      = false;
+    public bool lensFlareEffect     = false;
 
 
     [Header( "Main Post Settings" )]
@@ -207,6 +210,24 @@ public class PostParameters : ScriptableObject
     public Color DistanceFogEndColor         = Color.white;
     public float DistanceFogSkyboxImportance = 0;
 
+    [Header( "HeatWave Effect" )]
+    public float HeatWaveIntensity = 1;
+
+    public float HeatWaveSize  = 1;
+    public float HeatWaveSpeed = 1;
+
+    public float HeatWaveStart      = 0;
+    public float HeatWaveEnd        = 1000;
+    public float HeatWaveAberration = .2f;
+
+
+    [Header( "Lens Flare Effect" )]
+    public float LensFlareIntensity = 1f;
+
+    public float LensFlareSpacing = 100f;
+    public float SunDogIntensity  = 100f;
+    public float SunDogSpacing    = 100f;
+
 
     [Header( "Sun/Moon Settings" )]
     public bool sunAutoUpdate = true;
@@ -265,6 +286,8 @@ public class PostParameters : ScriptableObject
         SketchEffect sketchEffect_Reference ,
         QuickDither.Dithered dither_Reference ,
         DistanceFogEffect distanceFogEffect_Reference ,
+        HeatWaveEffect heatWaveEffect_Reference ,
+        LensFlareEffect lensFlareEffect_Reference ,
         PlaceParticlesOnDepthMap placeParticlesOnDepthMap
     )
     {
@@ -292,6 +315,8 @@ public class PostParameters : ScriptableObject
         sketchEffect_Reference.enabled.Override( sketchEffect );
         dither_Reference.enabled.Override( dithered );
         distanceFogEffect_Reference.enabled.Override( distanceFog );
+        heatWaveEffect_Reference.enabled.Override( heatWaveEffect );
+        lensFlareEffect_Reference.enabled.Override( lensFlareEffect );
 
 
         ambientOcclusion_Reference.intensity.value = ambientOcclusionIntensity;
@@ -427,6 +452,18 @@ public class PostParameters : ScriptableObject
         distanceFogEffect_Reference.FogStartColor.value = DistanceFogStartColor;
         distanceFogEffect_Reference.FogEndColor.value = DistanceFogEndColor;
         distanceFogEffect_Reference.SkyboxImportance.value = DistanceFogSkyboxImportance;
+
+        heatWaveEffect_Reference.HeatWaveStart.value = HeatWaveStart;
+        heatWaveEffect_Reference.HeatWaveEnd.value = HeatWaveEnd;
+        heatWaveEffect_Reference.WaveIntensity.value = HeatWaveIntensity;
+        heatWaveEffect_Reference.WaveSize.value = HeatWaveSize;
+        heatWaveEffect_Reference.WaveSpeed.value = HeatWaveSpeed;
+        heatWaveEffect_Reference.HeatWaveAberration.value = HeatWaveAberration;
+
+        lensFlareEffect_Reference.LensFlareIntensity.value = LensFlareIntensity;
+        lensFlareEffect_Reference.LensFlareSpacing.value = LensFlareSpacing;
+        lensFlareEffect_Reference.SunDogIntensity.value = SunDogIntensity;
+        lensFlareEffect_Reference.SunDogSpacing.value = SunDogSpacing;
 
 
         if ( splatAmount < 1 ) {
@@ -652,6 +689,18 @@ public class PostParameters : ScriptableObject
         p.DistanceFogEndColor = DistanceFogEndColor;
         p.DistanceFogAmount = DistanceFogAmount;
         p.DistanceFogSkyboxImportance = DistanceFogSkyboxImportance;
+
+        p.HeatWaveIntensity = HeatWaveIntensity;
+        p.HeatWaveStart = HeatWaveStart;
+        p.HeatWaveEnd = HeatWaveEnd;
+        p.HeatWaveSize = HeatWaveSize;
+        p.HeatWaveSpeed = HeatWaveSpeed;
+        p.HeatWaveAberration = HeatWaveAberration;
+
+        p.LensFlareSpacing = LensFlareSpacing;
+        p.LensFlareSpacing = LensFlareSpacing;
+        p.SunDogIntensity = SunDogIntensity;
+        p.SunDogSpacing = SunDogSpacing;
 
 
         // Sun/Moon settings

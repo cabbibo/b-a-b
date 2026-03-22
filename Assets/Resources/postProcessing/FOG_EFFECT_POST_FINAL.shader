@@ -201,7 +201,6 @@
 
         for ( int i = 0; i < _FogSamples; i++ )
         {
-
             float ni = float( i ) / float( _FogSamples );
             offsetN  = staticNoise( v.texcoord + ( ( floor( _Time.y * 20 ) / 20 ) * .01 % .1 ) + 100 + float( i ) * .1 ); // different noise each step?
 
@@ -245,6 +244,7 @@
 
 
             float deltaSVal = sVal - oSVal;
+            if ( i == 0 ) { deltaSVal = 0; }
 
             oSVal = sVal;
             // fogValue *= n * .5 + .5;

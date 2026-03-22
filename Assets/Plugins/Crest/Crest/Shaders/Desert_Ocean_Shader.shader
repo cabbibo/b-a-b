@@ -805,12 +805,13 @@ Shader "Islands/Desert/Ocean"
                 col = dot( normal , normalize( eye ) ) < 0;
 
                 col = normalize( -eye ) * .5 + .5;
-                /* if( !underwater && dot( normal, normalize(eye)) < 0){
-                    col = float3(1,0,0);
-                    col = noise( input.worldPos  * .1) + noise( input.worldPos  * .3) * .5 + noise( input.worldPos  * .7) * .25;
-                    col *= 1/1.75;
-                    col = pow( col,10) * 100;
-                }*/
+                if ( !underwater && dot( normal , normalize( eye ) ) < 0 )
+                {
+                    col = float3( 1 , 0 , 0 );
+                    col = noise( input.worldPos * .1 ) + noise( input.worldPos * .3 ) * .5 + noise( input.worldPos * .7 ) * .25;
+                    col *= 1 / 1.75;
+                    col = pow( col , 10 ) * 100;
+                }
 
                 //col = sin( displacement * .1);
 
@@ -871,18 +872,52 @@ Shader "Islands/Desert/Ocean"
 
                 col = texCUBE( _Skybox , reflect( -normalize( eye ) , normal ) ).xyz;
                 col *= _ColorMultiplier;
-                col += bubbleCol * 10;
+                col += bubbleCol * 1000;
                 col += pow( whiteFoam.x , 2 );
 
                 col *= _OverallMultiplier;
                 col *= length( _LightColor0.xyz );
                 col = saturate( col );
+
+                //col = saturate( -dot( _WorldSpaceLightPos0 , normal ) );
+
+                col *= float3( -.3 , .1 , .2 );
+
+                col = bubbleCol * 1000;
+                col = whiteFoam;
+
+                //col = shadow.y;
+
+
                 // col =
 
 
+                col    = bubbleCol;
+                col    = underwater ? 1 : 0;
+                col    = scatterCol; // how are we getting this? can we make more expensive but do got rays?
+                col    = cascadeData0._weight;
+                col    = 0;
+                col.xy = sin( 10 * uvDepth );
+                col    = input.grabPos;
+                col    = lightDir;
 
 
+                col = shadow.y;
+                col = whiteFoam;
                 //    ApplyReflectionSky( view , n_pixel , lightDir , shadow.y , screenPos.xyzz , pixelZ , reflAlpha , col );
+
+
+                // if it loops in on itself
+                /* if ( !underwater && dot( normal , normalize( eye ) ) < 0 )
+                 {
+                     col = float3( 1 , 0 , 0 );
+                     col = noise( input.worldPos * .1 ) + noise( input.worldPos * .3 ) * .5 + noise( input.worldPos * .7 ) * .25;
+                     col *= 1 / 1.75;
+                     col = pow( col , 10 ) * 100;
+                 }*/
+
+                col = shadow.y;
+                col = 0;
 
 
                 return half4( col , 1. );

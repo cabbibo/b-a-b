@@ -55,6 +55,25 @@ Shader "Islands/Desert/Model"
 
     CGINCLUDE
     #include "Assets/Resources/Shaders/Chunks/QuillShaderIncludes.cginc"
+    #include "Assets/Resources/Shaders/Chunks/zucconi.cginc"
+    #include "Assets/Resources/Shaders/Chunks/triNoise3D.cginc"
+
+    float3 TraceColor( float3 eye , float3 pos )
+    {
+        float3 traceCol = 0;
+        float  numSteps = 3;
+        for ( int i = 0; i < numSteps; i++ )
+        {
+            float  ni   = (float)i / numSteps;
+            float3 fPos = pos - normalize( eye ) * float( i ) * 5.3;
+            // float  v    = noise( .9 * fPos * ( ni * 1 + 2 ) + .3 * float3( _Time.y * sin( ni * 200 ) , _Time.y * sin( ni * 100 ) , _Time.y * sin( ni * 300 ) ) );
+            float v = triNoise3D( fPos * .1 + ni * 100 , .4 , _Time.y );
+            traceCol += zucconi( v * 1 + ni );
+        }
+
+        traceCol /= numSteps;
+        return traceCol;
+    }
     ENDCG
 
 
@@ -110,15 +129,7 @@ Shader "Islands/Desert/Model"
                 float3 triplanarNor = triplanarNormal( v.worldPos , fNor , v.tspace0 , v.tspace1 , v.tspace2 , v.offsetAmount * .1 );
 
 
-                float3 traceCol = 0;
-                float3 eye      = v.eye;
-                for ( int i = 0; i < 3; i++ )
-                {
-                    float  ni   = (float)i / 3;
-                    float3 fPos = v.worldPos - normalize( eye ) * float( i ) * 1.3;
-                    float  v    = snoise( fPos * ( ni * 10 + 2 ) );
-                    traceCol += v;
-                }
+                float3 traceCol = TraceColor( v.eye , v.worldPos );
 
                 float3 shadowCol = pow( traceCol , 6 ) * .1; //* traceCol * traceCol * .1;
                 shadowCol        = length( shadowCol ) * v.color;
@@ -159,20 +170,31 @@ Shader "Islands/Desert/Model"
                 col *= _OverallMultiplier;
                 //col = traceCol;
 
-                if ( lightingData.eyeMatch - length( traceCol ) * .2 < .3 )
-                {
-                    //discard;
-                }
+
 
 
                 col = ( v.color * v.color * v.color );
                 // col = oversaturate( v.color - _MainModelColor.xyz * 1 , 10 );
                 col = v.color * v.color + .2 * oversaturate( v.color - _MainModelColor.xyz * .2 , 10 );
-                col *= shadow * 1;
+                col = lerp( col , generic_desaturate( 1 - col , .3 ) * .04 , 1 - saturate( shadow ) );
+
+
+                col *= traceCol * traceCol * traceCol + .8;
                 //  col = oversaturate( v.color , 2.3 );
                 // col *= lerp( float3( .0 , .0 , .0 ) , float3( 1 , 0 , 0 ) , shadow );
                 //col = shadow;
                 DoWrenDiscard( v.worldPos );
+
+
+                if ( lightingData.eyeMatch - length( traceCol ) * 1 < 0 && shadow < .2 )
+                {
+
+                    float  lerpVal      = -( lightingData.eyeMatch - length( traceCol ) * 1 );
+                    float3 highlightCol = pow( traceCol , 6 ) * float3( .2 , .2 , 15 ) * 30;
+                    col                 = lerp( col , col * col * 1000 * highlightCol , lerpVal );
+                }
+
+
 
                 return float4( col , 1 );
             }
@@ -180,53 +202,51 @@ Shader "Islands/Desert/Model"
         }
 
 
-        /*
-                // shadow caster rendering pass, implemented manually
-                // using macros from UnityCG.cginc
-                Pass
-                {
-        
-        
-                    Cull OFF
-                    ZWrite ON
-                    ZTest ON
-        
-        
-        
-                    CGPROGRAM
-                    #pragma vertex SetVaryingsOutline_UNITY
-                    #pragma fragment frag2
-        
-        
-                    float4 frag2( FullVaryingData v ) : SV_Target
-                    {
-                        LightingData lightingData;
-                        GetLightingData( v.worldPos , v.eye , v.nor , _WorldSpaceLightPos0.xyz , lightingData );
-        
-                        float3 traceCol = 0;
-                        float3 eye      = v.eye;
-                        for ( int i = 0; i < 3; i++ )
-                        {
-                            float  ni   = (float)i / 3;
-                            float3 fPos = v.worldPos - normalize( eye ) * float( i ) * 1.3;
-                            float  v    = snoise( fPos * ( ni * 10 + 2 ) );
-                            traceCol += v;
-                        }
-                        if ( lightingData.eyeMatch - length( traceCol ) * .2 < .3 )
-                        {
-                            discard;
-                        }
-        
-                        // float4 col = float4( _OutlineColor.xyz * v.color * 6 * ( 1 - lightingData.eyeMatch ) , 1 );
-                        float4 col = float4( _OutlineColor.xyz * v.color , 1 );
-                        col.xyz    = generic_desaturate( col , 2 );
-                        col        = v.color;
-                        return col;
-        
-                    }
-                    ENDCG
-                }
-        */
+
+        // shadow caster rendering pass, implemented manually
+        // using macros from UnityCG.cginc
+        /* Pass
+         {
+ 
+ 
+             Cull OFF
+             ZWrite ON
+             ZTest ON
+ 
+ 
+ 
+             CGPROGRAM
+             #pragma vertex SetVaryingsOutline_UNITY
+             #pragma fragment frag2
+ 
+ 
+             float4 frag2( FullVaryingData v ) : SV_Target
+             {
+                 LightingData lightingData;
+                 GetLightingData( v.worldPos , v.eye , v.nor , _WorldSpaceLightPos0.xyz , lightingData );
+ 
+ 
+                 float3 traceCol = TraceColor( v.eye , v.worldPos );
+                 if ( lightingData.eyeMatch - length( traceCol ) * .01 < .2 )
+                 {
+                     // discard;
+                 }
+ 
+                 // float4 col = float4( _OutlineColor.xyz * v.color * 6 * ( 1 - lightingData.eyeMatch ) , 1 );
+                 float4 col = float4( _OutlineColor.xyz * v.color , 1 );
+                 //col.xyz    = generic_desaturate( col , 0 );
+ 
+                 // col = v.color;
+                 //col        = v.color;
+                 col.xyz *= traceCol;
+ 
+                 col.xyz = pow( traceCol , 10 ) * 10;
+                 return col;
+ 
+             }
+             ENDCG
+         }*/
+
 
 
 
@@ -252,6 +272,11 @@ Shader "Islands/Desert/Model"
             {
                 LightingData lightingData;
                 GetLightingData( i.worldPos , i.eye , i.nor , _WorldSpaceLightPos0.xyz , lightingData );
+                /*  float3 traceCol = TraceColor( i.eye , i.worldPos );
+                  if ( lightingData.eyeMatch - length( traceCol ) * .1 < .1 )
+                  {
+                      // discard;
+                  }*/
                 SHADOW_CASTER_FRAGMENT( i );
 
 

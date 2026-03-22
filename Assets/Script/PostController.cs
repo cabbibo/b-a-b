@@ -79,6 +79,8 @@ public class PostController : MonoBehaviour
     public SketchEffect         sketchEffect_Reference;
     public QuickDither.Dithered dithered_Reference;
     public DistanceFogEffect    distanceFogEffect_Reference;
+    public HeatWaveEffect       heatWaveEffect_Reference;
+    public LensFlareEffect      lensFlareEffect_Reference;
 
 
     // Other controllers
@@ -119,6 +121,8 @@ public class PostController : MonoBehaviour
         sketchEffect_Reference = null;
         dithered_Reference = null;
         distanceFogEffect_Reference = null;
+        heatWaveEffect_Reference = null;
+        lensFlareEffect_Reference = null;
 
         // Reset the working instance too (optional)
         DestroyWorkingInstance();
@@ -182,6 +186,8 @@ public class PostController : MonoBehaviour
         CachePersistentSetting( ref sketchEffect_Reference );
         CachePersistentSetting( ref dithered_Reference );
         CachePersistentSetting( ref distanceFogEffect_Reference );
+        CachePersistentSetting( ref heatWaveEffect_Reference );
+        CachePersistentSetting( ref lensFlareEffect_Reference );
 
         EnsureWorkingInstanceInitialized();
         SafeApplyToPipeline();
@@ -290,6 +296,8 @@ public class PostController : MonoBehaviour
             sketchEffect_Reference ,
             dithered_Reference ,
             distanceFogEffect_Reference ,
+            heatWaveEffect_Reference ,
+            lensFlareEffect_Reference ,
             placeParticlesOnDepthMap
         );
     }
