@@ -26,6 +26,9 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
     public string kernelName;
 
+    public Texture2D splatTexture;
+    public int       splatTextureSize;
+
     // Start is called before the first frame update
 
     private int  numGroups;
@@ -57,6 +60,9 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
     public Color backgroundColor = Color.black;
 
+
+    public Color splatDiscardColor  = Color.black;
+    public float splatDiscardCutoff = .1f;
 
     private void OnEnable()
     {
@@ -185,6 +191,10 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
             mpb.SetFloat( "_SaturationRandomness" , saturationRandomness );
             mpb.SetFloat( "_LightnessRandomness" , lightnessRandomness );
             mpb.SetFloat( "_ColorMultiplier" , colorMultiplier );
+            mpb.SetTexture( "_SplatTexture" , splatTexture );
+            mpb.SetInt( "_SplatTextureSize" , splatTextureSize );
+            mpb.SetColor( "_DiscardColor" , splatDiscardColor );
+            mpb.SetFloat( "_DiscardCutoff" , splatDiscardCutoff );
 
             Graphics.DrawProcedural( material , new Bounds( transform.position , Vector3.one * 500000 ) , MeshTopology.Triangles ,
                 splatAmount * 3 * 2 , 1 , null , mpb , ShadowCastingMode.Off , true , LayerMask.NameToLayer( "Splats" ) );

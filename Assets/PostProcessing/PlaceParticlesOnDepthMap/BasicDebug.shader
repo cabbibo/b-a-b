@@ -7,15 +7,21 @@ Shader "Unlit/BasicDebug"
         _ColorMultiplier("Color Multiplier", Range(0, 100)) = 1
         _NormalOffset("Normal Offset", Range(0, 10)) = 0
         _TileSize("Tile Size", Range(1, 100)) = 1
+
+        _SplatTexture("_SplatTexture", 2D)="white"{}
+        _SplatTextureSize("_SplatTextureSize",int) = 1
+        _DiscardColor("_DiscardColor",Color)=(1,1,1,1)
+        _DiscardCutoff("_DiscardCutoff",float)=.1
     }
+
     SubShader
     {
 
         Cull Off
-        Blend One One
-        //Blend SrcAlpha OneMinusSrcAlpha
-        //     ZWrite Off
-        //  ZTest Always
+        //Blend One One
+        Blend SrcAlpha OneMinusSrcAlpha
+        ZWrite Off
+        ZTest Always
         Tags
         {
             "Queue" = "Transparent"
@@ -41,13 +47,16 @@ Shader "Unlit/BasicDebug"
                 float  debug;
             };
 
-            int _TileSize;
-
             int   _Count;
             float _Size;
             float _ColorMultiplier;
             float _NormalOffset;
             float _NormalMatch;
+
+            sampler2D _SplatTexture;
+            int       _SplatTextureSize;
+            float     _DiscardCutoff;
+            float4    _DiscardColor;
 
             StructuredBuffer<Vert> _VertBuffer;
 
@@ -151,12 +160,12 @@ Shader "Unlit/BasicDebug"
                         uv    = float2( 0 , 1 );
                     }
 
-                    int randomX = base % _TileSize;
-                    int randomY = base * 1213 % _TileSize;
+                    int randomX = base % _SplatTextureSize;
+                    int randomY = base * 1213 % _SplatTextureSize;
 
-                    float x = randomX / (float)_TileSize;
-                    float y = randomY / (float)_TileSize;
-                    o.uv2   = uv / (float)_TileSize + float2( x , y );
+                    float x = randomX / (float)_SplatTextureSize;
+                    float y = randomY / (float)_SplatTextureSize;
+                    o.uv2   = uv / (float)_SplatTextureSize + float2( x , y );
 
                     float3 eye    = _WorldSpaceCameraPos - basePos;
                     float3 eyeDir = normalize( eye );
@@ -208,7 +217,7 @@ Shader "Unlit/BasicDebug"
             float3 hsv( float h , float s , float v )
             {
                 return lerp( float3( 1.0 , 1 , 1 ) , clamp( ( abs( frac(
-               h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ) , 0.0 , 1.0 ) , s ) * v;
+                                                        h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ) , 0.0 , 1.0 ) , s ) * v;
             }
 
             float3 rgb2hsv( float3 c )
@@ -256,12 +265,13 @@ Shader "Unlit/BasicDebug"
             //Pixel function returns a solid color for each point.
             float4 frag( varyings v ) : COLOR
             {
-                float4 col = tex2D( _MainTex , v.uv2 );
+                float4 col = tex2D( _SplatTexture , v.uv2 );
+
+                float dif = length( _DiscardColor.xyz - col.xyz );
 
 
-                float val = 1 - col.x;
 
-                if ( 1 - col.x < .5 )
+                if ( dif < _DiscardCutoff )
                 {
                     discard;
                 }
@@ -289,9 +299,10 @@ Shader "Unlit/BasicDebug"
                 // col = hsv.z;
                 col.xyz *= v.lifeSize;
                 col *= 2;
-                col.xyz = ApplyHue( col.xyz , val * .4 ); // hsv( val,1,1);
+                col.xyz = ApplyHue( col.xyz , dif * .4 ); // hsv( val,1,1);
 
-                col = 1;
+                //   col     = 1;
+                // col.xyz = v.color.xyz;
                 // col.xyz *= hsv( hue + .3*sin(v.id) ,.4,(sin(v.id * 10)+1) /4 + .5) ;
                 col *= _ColorMultiplier;
                 return float4( col.xyz , 1 );

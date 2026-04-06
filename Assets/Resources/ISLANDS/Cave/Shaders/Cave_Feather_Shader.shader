@@ -370,6 +370,7 @@ Shader "Islands/Cave/Feathers"
                 // col += ( 1 - shadow ) * float3( 1 , 0 , 0 );
 
                 //col = v.nor * .5 +.5;
+                col = .3;
                 return float4( col , 1 );
             }
             ENDCG

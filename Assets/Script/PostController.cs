@@ -358,7 +358,6 @@ public class PostController : MonoBehaviour
         // Set start position: convert normalized [0,1] to raw time in cycle
         float totalCycleLength = p.daySpeed + p.nightSpeed;
 
-        print( p.startNormalizedPosition );
         sunManager.rawTimeInCycle = p.startNormalizedPosition * totalCycleLength;
     }
 

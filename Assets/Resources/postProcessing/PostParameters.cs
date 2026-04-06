@@ -126,6 +126,11 @@ public class PostParameters : ScriptableObject
     public int   splatAmount = 1111;
     public float splatSize   = 1;
 
+    public Texture2D splatTexture     = null;
+    public int       splatTextureSize = 1;
+
+    public Color splatDiscardColor         = Color.black;
+    public float splatDiscardCutoff        = .1f;
     public float splatSpeed                = 1;
     public float splatMatchAmount          = 0;
     public float normalForce               = 0;
@@ -298,7 +303,6 @@ public class PostParameters : ScriptableObject
                 {
                     CartToPolar(God.wren.transform.position);
                 }*/
-
 
         mainPost_Reference.enabled.Override( mainPost );
         bloom_Reference.enabled.Override( bloom );
@@ -492,6 +496,12 @@ public class PostParameters : ScriptableObject
         placeParticlesOnDepthMap.lightnessRandomness = splatLightnessRandomness;
         placeParticlesOnDepthMap.colorMultiplier = splatColorMultiplier;
 
+        placeParticlesOnDepthMap.splatTexture = splatTexture;
+        placeParticlesOnDepthMap.splatTextureSize = splatTextureSize;
+
+        placeParticlesOnDepthMap.splatDiscardColor = splatDiscardColor;
+        placeParticlesOnDepthMap.splatDiscardCutoff = splatDiscardCutoff;
+
 
     }
 
@@ -553,6 +563,8 @@ public class PostParameters : ScriptableObject
         p.sketchEffect = sketchEffect;
         p.distanceFog = distanceFog;
         p.dithered = dithered;
+        p.heatWaveEffect = heatWaveEffect;
+        p.lensFlareEffect = lensFlareEffect;
 
         p.mainHue = mainHue;
         p.mainSaturation = mainSaturation;
@@ -630,6 +642,10 @@ public class PostParameters : ScriptableObject
         p.splatSaturationRandomness = splatSaturationRandomness;
         p.splatLightnessRandomness = splatLightnessRandomness;
         p.splatColorMultiplier = splatColorMultiplier;
+        p.splatTexture = splatTexture;
+        p.splatTextureSize = splatTextureSize;
+        p.splatDiscardColor = splatDiscardColor;
+        p.splatDiscardCutoff = splatDiscardCutoff;
 
 
         p.ambientOcclusionIntensity = ambientOcclusionIntensity;

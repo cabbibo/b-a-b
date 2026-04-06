@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Cave_Inside
-  m_Shader: {fileID: 4800000, guid: e662aaa36b1579f4e8e7c1b1f29c3609, type: 3}
+  m_Shader: {fileID: 4800000, guid: 32637bc476e22fc42b57ffcff525cc9c, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -55,16 +55,20 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _PaintTexture:
+        m_Texture: {fileID: 2800000, guid: fdcfac53f29f0b3448d104e84d565adc, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TriplanarMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: fdcfac53f29f0b3448d104e84d565adc, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TriplanarNormalMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 5d9534be66b4a2d4f9c4df626dede92f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
