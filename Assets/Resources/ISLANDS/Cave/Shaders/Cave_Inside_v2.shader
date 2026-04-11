@@ -173,6 +173,15 @@ Shader "Islands/Cave/CaveInside2"
 
             #include "Assets/Resources/Shaders/Chunks/triplanar.cginc"
 
+            float distanceToLine( float3 p , float3 a , float3 b )
+            {
+                float3 pa      = p - a;
+                float3 ba      = b - a;
+                float  h       = dot( pa , ba ) / dot( ba , ba );
+                float3 closest = a + ba * h;
+                return length( p - closest );
+            }
+
 
             float sdCapsule( float3 p , float3 a , float3 b , float r )
             {
@@ -182,6 +191,9 @@ Shader "Islands/Cave/CaveInside2"
             }
 
             float3 _WrenPos;
+
+            float3 _WrenForward;
+            float3 _WrenHeadForward;
             //Pixel function returns a solid color for each point.
             float4 frag( varyings v ) : COLOR
             {
@@ -360,10 +372,10 @@ Shader "Islands/Cave/CaveInside2"
                 float lerpVal = 10 * ( sinVal2 * paintCol.r ) * .8 + pow( ( 1 - m ) , 10 );
 
 
-                float3 colorRemap = tex2D( _ColorMap , v.color.r * 20 ) * .3;
-                colorRemap += tex2D( _ColorMap , v.color.g * 40 ) * .2;
+                float3 colorRemap = tex2D( _ColorMap , length( v.color ) * 20 ) * 1;
+                // colorRemap += tex2D( _ColorMap , v.color.g * 40 ) * .2;
 
-                colorRemap += tex2D( _ColorMap , v.color.b * 60 ) * .1;
+                //colorRemap += tex2D( _ColorMap , v.color.b * 60 ) * .1;
                 //colorRemap =tex2D( _ColorMap , sinVal2 * .1 + m + length( v.color ) * 30 );
 
 
@@ -372,7 +384,31 @@ Shader "Islands/Cave/CaveInside2"
                 // col = v.color;
 
 
+
+                float3 dirToWren  = ( v.worldPos - _WrenPos );
+                float  lightMatch = dot( _WrenForward , normalize( dirToWren ) );
+
+                float3 flashlightDir = lerp( _WrenForward , _WrenHeadForward , 0 );
+
+                float flashlight = distanceToLine( v.worldPos , _WrenPos , _WrenPos - flashlightDir );
+
+                float dToWren = length( v.worldPos - _WrenPos );
                 //col *= col * 2 + .2;
+
+                //flashlight = length( v.worldPos - _WrenPos );
+
+                //  col *= 2 * saturate( ( 1 / ( flashlight * flashlight * .00001 ) ) * dToWren * dToWren * .0000001 );
+
+                float val = pow( lightMatch , 20 );
+                col *= val;
+                //col =
+                //*.01;
+                col += ( 1 - val ) * v.color * .1;
+
+                float v2 = saturate( ( val - .2 ) * 10 );
+                col += tex2D( _ColorMap , v2 ).xyz * ( ( .5 - abs( v2 - .5 ) ) );
+                col *= 1 + v2 * 2;
+                col /= .01 * dToWren;
 
 
                 //if( fwd > length(v.eye) * 1  ){ discard; }
