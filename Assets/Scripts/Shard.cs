@@ -6,6 +6,11 @@ using WrenUtils;
 using UnityEngine.Events;
 using Vector3 = UnityEngine.Vector3;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+
 [System.Serializable]
 public class ShardEvent : UnityEvent<Shard>
 {
@@ -19,12 +24,16 @@ public class Shard : MonoBehaviour
     public bool collected    = false;
     public bool firstCollect = false;
 
+    [Header( "Persistence" )]
+    public bool saveCollectionStatus = false;
+
+    [SerializeField]
+    private string uniqueShardID;
 
     public GameObject Uncollected;
     public GameObject Collected;
 
     public Transform collectionPosition;
-
 
     public float type;
 
@@ -38,9 +47,7 @@ public class Shard : MonoBehaviour
     public Helpers.GameObjectEvent onFirstCollectEvent;
     public Helpers.GameObjectEvent respawnEvent;
 
-
     // SUCKABLE
-
     public bool         magnetizable = false;
     public Transform    centerTransform;
     public Transform    magnetizableTransform;
@@ -58,32 +65,36 @@ public class Shard : MonoBehaviour
     public LineRenderer isMagnetizedLine;
     public float        magnetizableCollectionDistance = 1f;
 
-    // Start is called before the first frame update
-    private void Start()
+    private string SaveKeyCollected => $"shard_collected_{uniqueShardID}";
+    private string SaveKeyFirstCollect => $"shard_firstCollect_{uniqueShardID}";
+
+
+    private void Awake()
     {
 
 
+        LoadState();
+        ApplyStateVisuals();
     }
 
-    // Update is called once per frame
+    private void Start()
+    {
+    }
+
     private void Update()
     {
-
         float timeSinceHit = God.state.totalTimeInGame - timeHit;
 
         if ( timeSinceHit > respawnTime && collected && respawnAfterTime ) {
             Respawn();
         }
 
-
         if ( magnetizable && !collected ) {
 
             oDistanceToWren = distanceToWren;
             distanceToWren = (God.wren.transform.position - centerTransform.position).magnitude;
 
-            // we only want to turn off and on magnetize if we are not being magnetized so the bird cant fly away too fast!
             if ( beingMangetized == false ) {
-
                 if ( distanceToWren < magnetizableDistance && oDistanceToWren > magnetizableDistance ) {
                     canMagnetize = true;
                     canMagnetizeIdicator.enabled = true;
@@ -91,21 +102,12 @@ public class Shard : MonoBehaviour
                     canMagnetize = false;
                     canMagnetizeIdicator.enabled = false;
                 }
-
-
             }
 
             if ( canMagnetize && !beingMangetized ) {
                 if ( God.wren.magnetize.isMagnetized == true ) {
                     StartMagnetizing();
                 }
-
-            }
-
-            if ( beingMangetized ) {
-                /*if ( God.wren.input.square < .5f ) {
-                    StopMangetizing();
-                }*/
             }
 
             if ( beingMangetized ) {
@@ -114,7 +116,6 @@ public class Shard : MonoBehaviour
                 DoNotBeingMangetized();
             }
         }
-
     }
 
     public void StartMagnetizing()
@@ -129,21 +130,29 @@ public class Shard : MonoBehaviour
 
     public void OnMagnetizableCollect()
     {
+        if ( magnetizableTransform != null && centerTransform != null ) {
+            magnetizableTransform.position = centerTransform.position;
+        }
 
-        magnetizableTransform.position = centerTransform.position;
         beingMangetized = false;
         canMagnetize = false;
-        canMagnetizeIdicator.enabled = false;
+
+        if ( canMagnetizeIdicator != null ) {
+            canMagnetizeIdicator.enabled = false;
+        }
+
         velocity = Vector3.zero;
         DoNotBeingMangetized();
-
     }
 
     public void StopMangetizing()
     {
         beingMangetized = false;
         canMagnetize = false;
-        canMagnetizeIdicator.enabled = false;
+
+        if ( canMagnetizeIdicator != null ) {
+            canMagnetizeIdicator.enabled = false;
+        }
     }
 
     public void DoBeingMangetized()
@@ -166,82 +175,61 @@ public class Shard : MonoBehaviour
         if ( (magnetizableTransform.position - magnetizer.position).magnitude < magnetizableCollectionDistance ) {
             DoCollect();
         }
-
     }
 
     public void DoNotBeingMangetized()
     {
+        if ( magnetizableTransform == null || centerTransform == null ) {
+            return;
+        }
+
         var dir = (magnetizableTransform.position - centerTransform.position).normalized;
         velocity += dir * returnForce * Time.deltaTime;
         magnetizableTransform.position += velocity * Time.deltaTime;
         velocity *= 1 - dampening * Time.deltaTime;
-        isMagnetizedLine.positionCount = 0;
-    }
 
+        if ( isMagnetizedLine != null ) {
+            isMagnetizedLine.positionCount = 0;
+        }
+    }
 
     public void Respawn()
     {
-
-        collected = false;
-
-        if ( Collected != null ) {
-            Collected.SetActive( false );
-        }
-
-        if ( Uncollected != null ) {
-            Uncollected.SetActive( true );
-        }
+        SetCollectedState( false , false );
 
         if ( respawnEvent != null ) {
             respawnEvent.Invoke( gameObject );
         }
-
-
     }
 
     private void OnEnable()
     {
+        LoadState();
 
         if ( respawnAfterTime ) {
             timeHit = God.state.totalTimeInGame;
             Respawn();
         } else {
-
-            if ( collected ) {
-                if ( Collected != null ) {
-                    Collected.SetActive( true );
-                }
-
-                if ( Uncollected != null ) {
-                    Uncollected.SetActive( false );
-                }
-            } else {
-                if ( Collected != null ) {
-                    Collected.SetActive( false );
-                }
-
-                if ( Uncollected != null ) {
-                    Uncollected.SetActive( true );
-                }
-            }
+            ApplyStateVisuals();
         }
     }
 
     public void OnTriggerEnter( Collider c )
     {
-
         if ( God.IsOurWren( c ) ) {
-
             DoCollect();
-
         }
-
     }
-
 
     public void DoCollect()
     {
+        if ( collected ) {
+            return;
+        }
+
         print( "LFG" );
+
+        SetCollectedState( true , true );
 
         var collectPosition = God.wren.transform.position;
 
@@ -251,6 +239,7 @@ public class Shard : MonoBehaviour
 
         God.wren.shards.CollectShards( ShardsToAdd , type , collectPosition );
         God.particleSystems.Emit( God.particleSystems.shardCollect , collectPosition , ShardsToAdd );
+
 
         if ( firstCollect == false ) {
             firstCollect = true;
@@ -264,24 +253,171 @@ public class Shard : MonoBehaviour
             onCollectEvent.Invoke( gameObject );
         }
 
-        collected = true;
-
-        if ( Collected != null ) {
-            Collected.SetActive( true );
-        }
-
-        if ( Uncollected != null ) {
-            Uncollected.SetActive( false );
-        }
 
         timeHit = God.state.totalTimeInGame;
-
-        if ( destroyOnCollect ) {
-            Destroy( gameObject );
-        }
 
         if ( magnetizable ) {
             OnMagnetizableCollect();
         }
+
+        if ( destroyOnCollect ) {
+            if ( saveCollectionStatus ) {
+                gameObject.SetActive( false );
+            } else {
+                Destroy( gameObject );
+            }
+        }
+    }
+
+    private void SetCollectedState( bool newCollectedState , bool saveState )
+    {
+        collected = newCollectedState;
+        ApplyStateVisuals();
+
+        if ( saveState ) {
+            SaveState();
+        }
+    }
+
+    private void ApplyStateVisuals()
+    {
+        if ( Collected != null ) {
+            Collected.SetActive( collected );
+        }
+
+        if ( Uncollected != null ) {
+            Uncollected.SetActive( !collected );
+        }
+
+        if ( magnetizable ) {
+            beingMangetized = false;
+            canMagnetize = false;
+            velocity = Vector3.zero;
+
+            if ( canMagnetizeIdicator != null ) {
+                canMagnetizeIdicator.enabled = false;
+            }
+
+            if ( isMagnetizedLine != null ) {
+                isMagnetizedLine.positionCount = 0;
+            }
+
+            if ( collected && magnetizableTransform != null && centerTransform != null ) {
+                magnetizableTransform.position = centerTransform.position;
+            }
+        }
+
+        if ( saveCollectionStatus && destroyOnCollect ) {
+            gameObject.SetActive( !collected );
+        }
+    }
+
+    private void SaveState()
+    {
+        if ( !saveCollectionStatus ) {
+            return;
+        }
+
+        if ( string.IsNullOrEmpty( uniqueShardID ) ) {
+            return;
+        }
+
+        PlayerPrefs.SetInt( SaveKeyCollected , collected ? 1 : 0 );
+        PlayerPrefs.SetInt( SaveKeyFirstCollect , firstCollect ? 1 : 0 );
+        PlayerPrefs.Save();
+    }
+
+    private void LoadState()
+    {
+        if ( !saveCollectionStatus ) {
+            return;
+        }
+
+        if ( string.IsNullOrEmpty( uniqueShardID ) ) {
+            return;
+        }
+
+        if ( PlayerPrefs.HasKey( SaveKeyCollected ) ) {
+            collected = PlayerPrefs.GetInt( SaveKeyCollected , 0 ) == 1;
+        }
+
+        if ( PlayerPrefs.HasKey( SaveKeyFirstCollect ) ) {
+            firstCollect = PlayerPrefs.GetInt( SaveKeyFirstCollect , 0 ) == 1;
+        }
+
+        print( "shard correct " + collected );
+    }
+
+
+    private string GetHierarchyPath( Transform current )
+    {
+        string path = current.name;
+
+        while (current.parent != null) {
+            current = current.parent;
+            path = current.name + "/" + path;
+        }
+
+        return path;
+    }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        EnsureUniqueID();
+
+        EditorUtility.SetDirty( this );
+    }
+
+    private void EnsureUniqueID()
+    {
+        if ( Application.isPlaying ) {
+            return;
+        }
+
+        bool needsNewId = string.IsNullOrEmpty( uniqueShardID ) || HasDuplicateID( uniqueShardID );
+
+        if ( needsNewId ) {
+            uniqueShardID = System.Guid.NewGuid().ToString();
+            EditorUtility.SetDirty( this );
+        }
+    }
+
+    private bool HasDuplicateID( string id )
+    {
+        if ( string.IsNullOrEmpty( id ) ) {
+            return false;
+        }
+
+        var allShards = Resources.FindObjectsOfTypeAll<Shard>();
+        int count = 0;
+
+        foreach (var shard in allShards) {
+            if ( EditorUtility.IsPersistent( shard ) ) {
+                continue;
+            } // skip prefab assets
+
+            if ( shard.uniqueShardID == id ) {
+                count++;
+
+                if ( count > 1 ) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+#endif
+
+    public void ClearSavedState()
+    {
+        if ( string.IsNullOrEmpty( uniqueShardID ) ) {
+            return;
+        }
+
+        PlayerPrefs.DeleteKey( SaveKeyCollected );
+        PlayerPrefs.DeleteKey( SaveKeyFirstCollect );
+        PlayerPrefs.Save();
     }
 }

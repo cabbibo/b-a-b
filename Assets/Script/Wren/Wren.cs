@@ -87,6 +87,10 @@ public class Wren : MonoBehaviour
     public bool doInterface;
 
 
+    public Vector3 lerpedForward;
+    public Vector3 lerpedVelocity;
+
+
     private void OnEnable()
     {
 
@@ -475,6 +479,15 @@ public class Wren : MonoBehaviour
             }
 
 
+            Shader.SetGlobalVector( "_WrenPos" , transform.position );
+            Shader.SetGlobalVector( "_WrenForward" , transform.forward );
+            Shader.SetGlobalVector( "_WrenUp" , transform.up );
+            Shader.SetGlobalVector( "_WrenHeadForward" , cameraWork.wrenHead.forward );
+            Shader.SetGlobalVector( "_WrenLerpedForward" , lerpedForward );
+
+            Shader.SetGlobalVector( "_WrenVel" , physics.vel );
+            Shader.SetGlobalVector( "_WrenLerpedVel" , lerpedVelocity );
+
             carrying.UpdateCarriedItems();
             sounds.UpdateSound();
 
@@ -520,6 +533,10 @@ public class Wren : MonoBehaviour
         if ( !inEther ) {
             growth.updateGrowth();
         }
+
+
+        lerpedForward = Vector3.Lerp( lerpedForward , transform.forward , .1f ).normalized;
+        lerpedVelocity = Vector3.Lerp( lerpedVelocity , physics.vel , .1f );
 
     }
 

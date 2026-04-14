@@ -499,14 +499,6 @@ namespace WrenUtils
                 Shader.SetGlobalTexture( "_FullColorMap" , fullColorMap );
             }
 
-            if ( wren ) {
-                Shader.SetGlobalVector( "_WrenPos" , wren.transform.position );
-                Shader.SetGlobalVector( "_WrenForward" , wren.transform.forward );
-                Shader.SetGlobalVector( "_WrenUp" , wren.transform.up );
-                Shader.SetGlobalVector( "_WrenHeadForward" , wren.cameraWork.wrenHead.forward );
-
-            }
-
             Shader.SetGlobalFloat( "_UnscaledTime" , Time.unscaledTime );
 
             if ( Input.GetKey( "escape" ) ) {

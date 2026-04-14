@@ -190,10 +190,10 @@ Shader "Islands/Cave/CaveInside2"
                 return length( pa - ba * h ) - r;
             }
 
-            float3 _WrenPos;
 
-            float3 _WrenForward;
-            float3 _WrenHeadForward;
+            #include "Assets/Resources/Shaders/Chunks/flashlight.cginc"
+            #include  "Assets/Resources/Shaders/Chunks/ShardToggleGroup.cginc"
+
             //Pixel function returns a solid color for each point.
             float4 frag( varyings v ) : COLOR
             {
@@ -288,27 +288,27 @@ Shader "Islands/Cave/CaveInside2"
                 float fadeDist = length( v.worldPos - _FadeLocation );
                 fadeDist += noise( v.worldPos * .1 ) * 60;
 
-                float fadeDif = _Fade - fadeDist;
-                if ( fadeDif < 0 )
-                {
-                    discard;
-                }
-                else
-                {
-
-                    if ( fadeDif < 30 )
-                    {
-
-                        float fVal = ( ( 30 - fadeDif ) / 30 );
-                        fVal       = min( fVal * 1 , ( 1 - fVal ) * 100 );
-                        col *= ( fVal * 4 + 1 );
-                    }
-                    else
-                    {
-
-                        // col *= saturate((fadeDif-30) * .1);
-                    }
-                }
+                /* float fadeDif = _Fade - fadeDist;
+                 if ( fadeDif < 0 )
+                 {
+                     discard;
+                 }
+                 else
+                 {
+ 
+                     if ( fadeDif < 30 )
+                     {
+ 
+                         float fVal = ( ( 30 - fadeDif ) / 30 );
+                         fVal       = min( fVal * 1 , ( 1 - fVal ) * 100 );
+                         col *= ( fVal * 4 + 1 );
+                     }
+                     else
+                     {
+ 
+                         // col *= saturate((fadeDif-30) * .1);
+                     }
+                 }*/
 
 
 
@@ -381,40 +381,75 @@ Shader "Islands/Cave/CaveInside2"
 
                 col = lerp( v.color * .3 * colorRemap , colorRemap , saturate( lerpVal ) );
 
+
+                float3 rainbowEtchCol = col;
+
                 // col = v.color;
 
 
 
-                float3 dirToWren  = ( v.worldPos - _WrenPos );
-                float  lightMatch = dot( _WrenForward , normalize( dirToWren ) );
 
-                float3 flashlightDir = lerp( _WrenForward , _WrenHeadForward , 0 );
-
-                float flashlight = distanceToLine( v.worldPos , _WrenPos , _WrenPos - flashlightDir );
 
                 float dToWren = length( v.worldPos - _WrenPos );
-                //col *= col * 2 + .2;
 
-                //flashlight = length( v.worldPos - _WrenPos );
+                float val = flashlight( v.worldPos ); //pow( lightMatch - flashlightSpread , 1 );
 
-                //  col *= 2 * saturate( ( 1 / ( flashlight * flashlight * .00001 ) ) * dToWren * dToWren * .0000001 );
+                val = -val;
 
-                float val = pow( lightMatch , 20 );
-                col *= val;
-                //col =
-                //*.01;
-                col += ( 1 - val ) * v.color * .1;
 
-                float v2 = saturate( ( val - .2 ) * 10 );
-                col += tex2D( _ColorMap , v2 ).xyz * ( ( .5 - abs( v2 - .5 ) ) );
-                col *= 1 + v2 * 2;
+                val += lerpVal * .02;
+
+
+                col = val > 0.0 ? rainbowEtchCol : v.color;
+
+
+                // val = 1-val
+
+                // col *= val;
+                //  col += ( 1 - val ) * v.color * .1;
+
+                float v2 = saturate( ( val * 100 ) );
+                float v3 = saturate( ( val * 100 ) );
+
+                uint ids[ 16 ];
+                GetClosestShardIDs16( v.worldPos , ids );
+
+                col = 0;
+
+                float totalLit = 0;
+
+                for ( int i = 0; i < 16; i++ )
+                {
+
+                    int    id   = ids[ i ];
+                    float4 data = _ShardBuffer[ id ];
+
+                    totalLit += 1000 * data.w / ( 1 + ( 1 * pow( length( data.xyz - v.worldPos ) , 2 ) ) );
+
+                }
+
+                float3 baseColor  = lerp( v.color * 0 , v.color * 5 * totalLit * float3( .3 , 0 , 1 ) , saturate( totalLit ) );
+                float3 pyschColor = lerp( rainbowEtchCol * flashlightSpread() * 3 , v.color * totalLit , saturate( totalLit ) );
+                //   v2                = 0;
+                col = lerp( baseColor , pyschColor , v2 );
+                // col += tex2D( _ColorMap , v3 ).xyz * ( ( .5 - abs( v3 - .5 ) ) );
+                //  col *= 1 + v2 * 2;
                 col /= .01 * dToWren;
 
+
+                // col += tex2D( _ColorMap , v2 ).xyz * ( .5 - abs( v2 - .5 ) );
+                // col = _WrenVel;
 
                 //if( fwd > length(v.eye) * 1  ){ discard; }
                 // if( sin(v.worldPos.x * .1 ) > -.9 && sin(v.worldPos.z * .1 ) > -.9 ){ col = 0;}
 
                 // UNITY_APPLY_FOG(v.fogCoord, col);
+
+
+
+                //   col = v.nor;
+
+
                 return float4( col , 1 );
             }
             ENDCG

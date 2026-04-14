@@ -1,0 +1,103 @@
+#pragma kernel BakeGrid
+
+struct GridCell16
+{
+    uint id0;
+    uint id1;
+    uint id2;
+    uint id3;
+    uint id4;
+    uint id5;
+    uint id6;
+    uint id7;
+    uint id8;
+    uint id9;
+    uint id10;
+    uint id11;
+    uint id12;
+    uint id13;
+    uint id14;
+    uint id15;
+};
+
+
+StructuredBuffer<float4>       _ShardBuffer; // xyz = pos, w = on/off
+RWStructuredBuffer<GridCell16> _ShardGridBuffer;
+
+int    _ShardBuffer_COUNT;
+int3   _GridResolution;
+float3 _GridMin;
+float3 _GridCellSize;
+
+int FlattenCell( int3 c , int3 res )
+{
+    return c.x + res.x * ( c.y + res.y * c.z );
+}
+
+[numthreads(4,4,4)]
+void BakeGrid( uint3 id : SV_DispatchThreadID )
+{
+    if ( id.x >= _GridResolution.x || id.y >= _GridResolution.y || id.z >= _GridResolution.z )
+        return;
+
+    int3 cell = int3( id.xyz );
+    int  flat = cell.x + _GridResolution.x * ( cell.y + _GridResolution.y * cell.z );
+
+    float3 cellCenter = _GridMin + ( float3( cell ) + 0.5 ) * _GridCellSize;
+
+    float best[ 16 ];
+    uint  ids[ 16 ];
+
+    [unroll]
+    for ( int k = 0; k < 16; k++ )
+    {
+        best[ k ] = 1e30;
+        ids[ k ]  = 0xFFFFFFFFu;
+    }
+
+    for ( uint i = 0; i < (uint)_ShardBuffer_COUNT; i++ )
+    {
+        float3 p = _ShardBuffer[ i ].xyz;
+        float  d = dot( p - cellCenter , p - cellCenter );
+
+        // insert into sorted list
+        [unroll]
+        for ( int k = 0; k < 16; k++ )
+        {
+            if ( d < best[ k ] )
+            {
+                // shift down
+                for ( int s = 15; s > k; s-- )
+                {
+                    best[ s ] = best[ s - 1 ];
+                    ids[ s ]  = ids[ s - 1 ];
+                }
+
+                best[ k ] = d;
+                ids[ k ]  = i;
+                break;
+            }
+        }
+    }
+
+    GridCell16 outCell;
+
+    outCell.id0  = ids[ 0 ];
+    outCell.id1  = ids[ 1 ];
+    outCell.id2  = ids[ 2 ];
+    outCell.id3  = ids[ 3 ];
+    outCell.id4  = ids[ 4 ];
+    outCell.id5  = ids[ 5 ];
+    outCell.id6  = ids[ 6 ];
+    outCell.id7  = ids[ 7 ];
+    outCell.id8  = ids[ 8 ];
+    outCell.id9  = ids[ 9 ];
+    outCell.id10 = ids[ 10 ];
+    outCell.id11 = ids[ 11 ];
+    outCell.id12 = ids[ 12 ];
+    outCell.id13 = ids[ 13 ];
+    outCell.id14 = ids[ 14 ];
+    outCell.id15 = ids[ 15 ];
+
+    _ShardGridBuffer[ flat ] = outCell;
+}

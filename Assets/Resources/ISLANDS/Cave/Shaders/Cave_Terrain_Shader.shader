@@ -122,14 +122,14 @@ Shader "Islands/Cave/Terrain"
 
 
 
-                float3 traceCol = 0;
+                float3 traceCol = float3( 0 , 0 , 0 );
                 float3 eye      = v.eye;
-                for ( int i = 0; i < 3; i++ )
+                for ( int i = 0; i < 5; i++ )
                 {
-                    float  ni   = (float)i / 3;
-                    float3 fPos = v.worldPos - normalize( eye ) * float( i ) * 1.3;
-                    float  v    = snoise( fPos * ( ni * 10 + 2 ) );
-                    traceCol += v;
+                    float  ni   = (float)i / 5;
+                    float3 fPos = v.worldPos + normalize( eye ) * float( i ) * 4.3;
+                    float  v    = clamp( floor( snoise( fPos * .1 ) * 2 ) , 0 , 1 );
+                    traceCol += v * ni * .1;
                 }
 
                 float3 shadowCol = pow( traceCol , 6 ) * .1; //* traceCol * traceCol * .1;
@@ -176,6 +176,9 @@ Shader "Islands/Cave/Terrain"
 
 
                 col *= generic_desaturate( texCUBElod( _Skybox , float4( fNor , 6 ) ) , .6 ) * 2;
+
+                col = pow( ( 1 - lightingData.eyeMatch ) , 10 ) * 1.2;
+                // col += traceCol;
 
 
                 DoWrenDiscard( v.worldPos );
