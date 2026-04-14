@@ -1,5 +1,15 @@
-StructuredBuffer<float4> _ShardBuffer;
-int                      _ShardBuffer_COUNT;
+struct ShardLightData
+{
+    float3 position;
+    float  isCollected;
+    float3 up;
+    float  timeCollected;
+    float3 forward;
+    float  debug;
+};
+
+StructuredBuffer<ShardLightData> _ShardBuffer;
+int                              _ShardBuffer_COUNT;
 
 struct GridCell16
 {
@@ -26,74 +36,6 @@ float3                       _ShardGridMin;
 float3                       _ShardGridMax;
 float3                       _ShardGridCellSize;
 float4                       _ShardGridResolution; // xyz used as ints
-
-float getVertexLightWeight( float3 pos , float4 ids , float falloffMult , float falloffPow )
-{
-
-    float weight = 0;
-
-    float4 data;
-
-    data = _ShardBuffer[ int( ids.x ) ];
-    weight += data.w / ( falloffMult * pow( length( pos - data.xyz ) , falloffPow ) );
-
-    data = _ShardBuffer[ int( ids.y ) ];
-    weight += data.w / ( falloffMult * pow( length( pos - data.xyz ) , falloffPow ) );
-
-    data = _ShardBuffer[ int( ids.z ) ];
-    weight += data.w / ( falloffMult * pow( length( pos - data.xyz ) , falloffPow ) );
-
-    data = _ShardBuffer[ int( ids.w ) ];
-    weight += data.w / ( falloffMult * pow( length( pos - data.xyz ) , falloffPow ) );
-
-
-}
-
-
-float getVertexLightWeight( float3 pos , float falloffMult , float falloffPow )
-{
-
-    float weight = 0;
-
-    float4 data;
-
-    for ( int i = 0; i < _ShardBuffer_COUNT; i++ )
-    {
-        data = _ShardBuffer[ i ];
-        weight += data.w / ( falloffMult * pow( length( pos - data.xyz ) , falloffPow ) );
-    }
-
-    return weight;
-
-
-}
-
-
-float3 getClosestOnLight( float3 pos )
-{
-
-    float maxDist = 1000000;
-
-    int maxDistID = 0;
-
-    float4 data;
-
-    for ( int i = 0; i < _ShardBuffer_COUNT; i++ )
-    {
-        data = _ShardBuffer[ i ];
-
-        if ( length( pos - data.xyz ) < maxDist && data.w > 0 )
-        {
-            maxDistID = i;
-            maxDist   = length( pos - data.xyz );
-        }
-
-    }
-
-    return _ShardBuffer[ maxDistID ].xyz;
-
-
-}
 
 
 int3 GetShardGridCoord( float3 worldPos )

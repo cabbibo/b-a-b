@@ -1,5 +1,16 @@
 #pragma kernel BakeGrid
 
+struct ShardLightData
+{
+    float3 position;
+    float  isCollected;
+    float3 up;
+    float  timeCollected;
+    float3 forward;
+    float  debug;
+};
+
+
 struct GridCell16
 {
     uint id0;
@@ -21,8 +32,9 @@ struct GridCell16
 };
 
 
-StructuredBuffer<float4>       _ShardBuffer; // xyz = pos, w = on/off
-RWStructuredBuffer<GridCell16> _ShardGridBuffer;
+StructuredBuffer<ShardLightData> _ShardBuffer; // xyz = pos, w = on/off
+RWStructuredBuffer<GridCell16>   _ShardGridBuffer;
+
 
 int    _ShardBuffer_COUNT;
 int3   _GridResolution;
@@ -57,7 +69,7 @@ void BakeGrid( uint3 id : SV_DispatchThreadID )
 
     for ( uint i = 0; i < (uint)_ShardBuffer_COUNT; i++ )
     {
-        float3 p = _ShardBuffer[ i ].xyz;
+        float3 p = _ShardBuffer[ i ].position.xyz;
         float  d = dot( p - cellCenter , p - cellCenter );
 
         // insert into sorted list

@@ -194,6 +194,35 @@ Shader "Islands/Cave/CaveInside2"
             #include "Assets/Resources/Shaders/Chunks/flashlight.cginc"
             #include  "Assets/Resources/Shaders/Chunks/ShardToggleGroup.cginc"
 
+            float3 ShadeLineLight(
+                float3 p , // shading position
+                float3 n , // surface normal
+                float3 a , // line start
+                float3 b , // line end
+                float3 lightCol , // color
+                float  intensity // strength
+            )
+            {
+                float3 ab = b - a;
+                float3 ap = p - a;
+
+                float t = dot( ap , ab ) / dot( ab , ab );
+                t       = saturate( t );
+
+                float3 closest = a + t * ab;
+
+                float3 toLight = closest - p;
+                float  dist    = length( toLight );
+                float3 L       = toLight / max( dist , 1e-5 );
+
+                float ndl = saturate( dot( n , L ) );
+
+                // simple attenuation (you can tweak this)
+                float atten = 1.0 / ( 1 + .1 * dist * dist );
+
+                return lightCol * intensity * ndl * pow( atten , 1.3 );
+            }
+
             //Pixel function returns a solid color for each point.
             float4 frag( varyings v ) : COLOR
             {
@@ -366,7 +395,8 @@ Shader "Islands/Cave/CaveInside2"
                 //col = triplanar * .1;
                 float noiseVal3 = snoise( v.worldPos * 0.003 );
 
-                float sinVal2 = clamp( ( sin( v.worldPos.y * .2 + _Time.y * 1 + 100 * noiseVal3 ) - .8 ) * 4 , 0 , 1 );
+                float bandNoise = ( sin( v.worldPos.y * .2 + _Time.y * 1 + 100 * noiseVal3 ) );
+                float sinVal2   = clamp( ( bandNoise - .8 ) * 4 , 0 , 1 );
 
 
                 float lerpVal = 10 * ( sinVal2 * paintCol.r ) * .8 + pow( ( 1 - m ) , 10 );
@@ -394,7 +424,6 @@ Shader "Islands/Cave/CaveInside2"
 
                 float val = flashlight( v.worldPos ); //pow( lightMatch - flashlightSpread , 1 );
 
-                val = -val;
 
 
                 val += lerpVal * .02;
@@ -409,7 +438,7 @@ Shader "Islands/Cave/CaveInside2"
                 //  col += ( 1 - val ) * v.color * .1;
 
                 float v2 = saturate( ( val * 100 ) );
-                float v3 = saturate( ( val * 100 ) );
+                float v3 = saturate( ( val * 30 ) - bandNoise * .15 );
 
                 uint ids[ 16 ];
                 GetClosestShardIDs16( v.worldPos , ids );
@@ -421,20 +450,32 @@ Shader "Islands/Cave/CaveInside2"
                 for ( int i = 0; i < 16; i++ )
                 {
 
-                    int    id   = ids[ i ];
-                    float4 data = _ShardBuffer[ id ];
+                    int            id   = ids[ i ];
+                    ShardLightData data = _ShardBuffer[ id ];
 
-                    totalLit += 1000 * data.w / ( 1 + ( 1 * pow( length( data.xyz - v.worldPos ) , 2 ) ) );
+                    float3 lightDir = length( data.position.xyz - v.worldPos );
+
+                    float3 lightInfo = ShadeLineLight( v.worldPos , v.nor , data.position - data.up , data.position + data.up , 1 , 1000 );
+
+                    totalLit += lightInfo.x * data.isCollected * saturate( ( _Time.y - data.timeCollected ) * .1 ); //1000 * data.isCollected / ( 1 + ( 1 * pow( length( data.position.xyz - v.worldPos ) , 2 ) ) );
 
                 }
 
-                float3 baseColor  = lerp( v.color * 0 , v.color * 5 * totalLit * float3( .3 , 0 , 1 ) , saturate( totalLit ) );
-                float3 pyschColor = lerp( rainbowEtchCol * flashlightSpread() * 3 , v.color * totalLit , saturate( totalLit ) );
+                totalLit               = saturate( totalLit / 2 ) * 2;
+                float3 crystalLitColor = saturate( rainbowEtchCol * totalLit * 5 ) * 2;
+
+
+                float3 baseColor = lerp( v.color * 1 , crystalLitColor , saturate( totalLit ) );
+                //   float3 pyschColor = lerp( rainbowEtchCol * flashlightSpread() * 3 , rainbowEtchCol * flashlightSpread() * 3 + crystalLitColor , saturate( totalLit ) );
+                float3 pyschColor = lerp( rainbowEtchCol * flashlightSpread() * 3 + crystalLitColor , v.color , saturate( totalLit ) );
                 //   v2                = 0;
-                col = lerp( baseColor , pyschColor , v2 );
-                // col += tex2D( _ColorMap , v3 ).xyz * ( ( .5 - abs( v3 - .5 ) ) );
+                col = lerp( baseColor , pyschColor , 1 - v2 );
+
+                col += tex2D( _ColorMap , v3 ).xyz * ( ( .5 - abs( v3 - .5 ) ) );
                 //  col *= 1 + v2 * 2;
-                col /= .01 * dToWren;
+                col /= .0001 * pow( dToWren , 2 );
+                col /= val + 1;
+
 
 
                 // col += tex2D( _ColorMap , v2 ).xyz * ( .5 - abs( v2 - .5 ) );

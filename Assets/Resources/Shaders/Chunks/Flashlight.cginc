@@ -8,7 +8,7 @@ float3 _WrenLerpedVel;
 
 float flashlightSpread()
 {
-    return .9; //clamp( pow( length( _WrenLerpedVel ) , .5 ) * .13 , 0 , .98 );
+    return clamp( pow( length( _WrenLerpedVel ) , .5 ) * .13 , 0 , .98 );
 }
 
 float flashlight( float3 worldPos )
@@ -29,7 +29,6 @@ float flashlight( float3 worldPos )
 
 
 
-    val = -val;
 
 
     return val;

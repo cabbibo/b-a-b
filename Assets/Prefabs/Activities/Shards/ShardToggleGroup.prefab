@@ -129,7 +129,6 @@ MonoBehaviour:
   - {fileID: 7076057613939962196}
   - {fileID: 3513687735934633789}
   - {fileID: 7564924490440665646}
-  data: []
   allOn: 0
   renderers:
   - {fileID: 0}

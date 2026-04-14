@@ -9,9 +9,9 @@ using System.Runtime.InteropServices;
 
 public class ShardToggleGroup : MonoBehaviour
 {
-    public Shard[]   shards;
-    public Vector4[] data;
-    public bool      allOn;
+    public Shard[]     shards;
+    public LightData[] data;
+    public bool        allOn;
 
     public ComputeBuffer shardsBuffer;
 
@@ -35,15 +35,51 @@ public class ShardToggleGroup : MonoBehaviour
 
     // shard buffer 
 
-    private Vector4 tmp;
+    private LightData tmp;
 
+    public struct LightData
+    {
+        public Vector4 position;
+        public Vector4 up;
+        public Vector4 forward;
+
+        public LightData( Shard shard )
+        {
+            var t = shard.transform;
+
+            position = new Vector4(
+                t.position.x ,
+                t.position.y ,
+                t.position.z ,
+                shard.collected ? 1 : 0
+            );
+
+            up = new Vector4(
+                t.up.x ,
+                t.up.y ,
+                t.up.z ,
+                shard.timeCollected
+            );
+
+            forward = new Vector4(
+                t.forward.x ,
+                t.forward.y ,
+                t.forward.z ,
+                0
+            );
+
+        }
+    }
+
+
+    [Button( "Make Shard Buffer" )]
     public void MakeShardBuffer()
     {
 
         int count = shards.Length;
-        shardsBuffer = new ComputeBuffer( count , 4 * sizeof(float) );
+        shardsBuffer = new ComputeBuffer( count , 12 * sizeof(float) );
 
-        data = new Vector4[count];
+        data = new LightData[count];
 
 
         // fake it
@@ -51,12 +87,7 @@ public class ShardToggleGroup : MonoBehaviour
 
             print( "shard collected " + i + " " + (shards[i].collected ? 1 : 0) );
 
-            tmp = new Vector4(
-                shards[i].transform.position.x ,
-                shards[i].transform.position.y ,
-                shards[i].transform.position.z ,
-                shards[i].collected ? 1 : 0
-            );
+            tmp = new LightData( shards[i] );
             data[i] = tmp;
 
         }
@@ -102,16 +133,7 @@ public class ShardToggleGroup : MonoBehaviour
     public void UpdateShardData( int i )
     {
 
-        tmp = new Vector4(
-            shards[i].transform.position.x ,
-            shards[i].transform.position.y ,
-            shards[i].transform.position.z ,
-            shards[i].collected ? 1 : 0
-        );
-
-        print( shards[i].name );
-        print( shards[i].collected );
-        print( tmp.w );
+        tmp = new LightData( shards[i] );
         data[i] = tmp;
 
         shardsBuffer.SetData( data , i , i , 1 );

@@ -49,11 +49,11 @@ Shader "Debug/ShardToggleGroupDebug"
             {
 
                 v2f o;
-                o.vertex       = UnityObjectToClipPos( v.vertex );
-                o.world        = mul( unity_ObjectToWorld , float4( v.vertex.xyz , 1 ) ).xyz;
-                o.lightWeight  = getVertexLightWeight( o.world , 10 , 2 );
-                o.closestLight = getClosestOnLight( o.world );
-                o.uv           = v.uv;
+                o.vertex = UnityObjectToClipPos( v.vertex );
+                o.world  = mul( unity_ObjectToWorld , float4( v.vertex.xyz , 1 ) ).xyz;
+                //                o.lightWeight  = getVertexLightWeight( o.world , 10 , 2 );
+                //              o.closestLight = getClosestOnLight( o.world );
+                o.uv = v.uv;
                 return o;
             }
 
@@ -70,10 +70,10 @@ Shader "Debug/ShardToggleGroupDebug"
                 for ( int i = 0; i < 16; i++ )
                 {
 
-                    int    id   = ids[ i ];
-                    float4 data = _ShardBuffer[ id ];
+                    int            id   = ids[ i ];
+                    ShardLightData data = _ShardBuffer[ id ];
 
-                    col += hsv( float( id ) / float( _ShardBuffer_COUNT ) , 1 , 1 ) / ( 10 * pow( length( data.xyz - v.world ) , 2 ) );
+                    col += hsv( float( id ) / float( _ShardBuffer_COUNT ) , 1 , 1 ) / ( 10 * pow( length( data.position.xyz - v.world ) , 2 ) );
 
                 }
 
