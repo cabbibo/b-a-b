@@ -40,6 +40,45 @@ float4x4 _TruthAdder;
 int _ToAdd;
 int _ToAddID;
 
+
+float _Time;
+
+
+float3 VecToRay( float3 ro , float3 rd , float3 pos )
+{
+
+    float3 p2      = ro - rd * 200;
+    float3 pa      = pos - ro;
+    float3 ba      = ro - p2;
+    float  h       = dot( pa , ba ) / dot( ba , ba );
+    float3 pOnLine = h * rd * 200 + ro;
+
+    float3 inLine = pos - pOnLine;
+
+    return inLine; //normalize(inLine) * force *  (1 - clamp( length(inLine) / radius , 0 , 1));
+}
+
+
+float3 CurlAroundBirdForce( float3 pos , float3 wpos , float3 wvel )
+{
+
+    float3 outVec = VecToRay( wpos , normalize( wvel ) , pos );
+
+    float3 f = -normalize( outVec ) * 30.3;
+    f += 1.05 * length( wvel ) * normalize( cross( wvel , outVec ) ) / length( outVec ); //saturate((1-vert.debug)* 10) *1000 * normalize(delta) / length(delta);
+
+    return ( wvel * 10 / pow( length( wpos - pos ) , 2 ) ) + f * pow( length( wvel ) * .05 , 2 ) / ( .4 + length( wpos - pos ) );
+
+
+}
+
+
+float3 _WrenPos;
+float3 _WrenVel;
+
+int _Total;
+
+
 [numthreads(NR_THREADS,1,1)]
 void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , uint3 id : SV_DispatchThreadID )
 {
@@ -103,6 +142,8 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
 
     float3 rand = float3( hash( float2( pID , 0 ) ) , hash( float2( pID * 10 , 1 ) ) , hash( float2( pID * 20 , 2 ) ) );
     rand -= .5;
+
+
     // rand *= 100;
     // pull towards the being added target
     if ( isBeingAdded )
@@ -115,16 +156,27 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
         targetPos = mul( _Transform , float4( rand , 1 ) ).xyz;
     }
 
+    rand += normalize( ( float3( hash( float2( vert.type , 0 ) ) , hash( float2( vert.type * 10 , 1 ) ) , hash( float2( vert.type * 20 , 2 ) ) ) - .5 ) ) * 3;
+
+    float3 trueCenter = mul( _Transform , float4( 0 , 0 , 0 , 1 ) ).xyz;
+
+    float3 outVec = vert.pos - trueCenter;
+    outVec.y      = 0;
+
+    float3 curlVec = cross( outVec , float3( 0 , 1 , 0 ) );
 
 
     if ( vert.pos.x == 0 || vert.pos.y == 0 || vert.pos.z == 0 )
     {
         vert.pos = targetPos;
-        vert.vel = rand * 100;;
+        vert.vel = rand * 400;;
     }
 
     float3 force    = 0;
     float3 toTarget = targetPos - vert.pos;
+
+
+    float totalNormalized = float( _Total ) / 10000;
 
     if ( length( toTarget ) < 0.00001 )
     {
@@ -133,84 +185,59 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
     }
     else
     {
-        force += toTarget * 100;
 
+
+        force += toTarget * 5;
+
+        force += ( length( toTarget ), 4 ) * toTarget * 10 / ( 1 + 10 * totalNormalized );
         if ( isBeingAdded )
         {
             force += toTarget * 3000;
         }
+        else
+        {
+            force += curlVec * 100;
+            force -= outVec * 10;
+        }
 
-        force -= normalize( toTarget ) * 30;
+        force -= normalize( toTarget ) * 100 * ( 3 + 3 * sin( _Time ) ) * ( 2 * totalNormalized );
+
     }
 
-
-
-
-    force += curlNoise( vert.pos ) * 100;
-
-    float3 centerSimForce = 0;
-
-    int tmpCurrCrystals = 0;
-    int otherID         = 0;
-
-    float3 center       = 0;
-    int    totalCounted = 0;
-    /* for ( int i = 0; i < 7; i++ )
-     {
- 
-         for ( int j = 0; j < _NumCrystalsBuffer[ i ]; j++ )
-         {
- 
-             otherID = tmpCurrCrystals + j;
- 
-             if ( otherID != pID && !isBeingAdded && _VertBuffer[ otherID ].isBeingAdded < 0.5 )
-             {
-                 float3 otherPos = _VertBuffer[ tmpCurrCrystals + j ].pos;
-                 float3 diff     = vert.pos - otherPos;
-                 float  distSqr  = dot( diff , diff ) + 0.1;
- 
-                 center += otherPos;
-                 totalCounted += 1;
- 
-                 if ( length( diff ) < .00001 )
-                 {
-                     diff = float3( 0 , 1 , 0 );
-                 }
- 
-                 if ( i == int( vert.type ) )
-                 {
- 
-                     centerSimForce += 10 * normalize( diff ) * 0.1 / distSqr;
- 
-                 }
-                 else
-                 {
-                     centerSimForce -= 1 * normalize( diff );
-                 }
-             }
-         }
- 
-         tmpCurrCrystals += _NumCrystalsBuffer[ i ];
- 
-     }*/
-
-    center /= float( totalCounted );
-
-    center = mul( _Transform , float4( center , 1 ) ).xyz;
-
-    float3 centerDif = vert.pos - center;
-
-    if ( length( centerDif ) < .00001 )
+    if ( isBeingAdded )
     {
-        centerDif = float3( 0 , .0001 , 0 );
+        force += curlNoise( vert.pos + float3( 0 , _Time * .1 , 0 ) ) * 1000;
     }
-
-    if ( length( centerDif ) < 1 )
+    else
     {
 
-        centerSimForce -= 100 * normalize( center - vert.pos ) / ( .01 + length( centerDif ) ); //* 100;
+        force += curlNoise( vert.pos * ( .1 + pow( ( sin( _Time * .5 ) + 1 ) / 2 , 3 ) * .4 ) + float3( vert.type , _Time * .1 , 0 )
+            )
+            * 500;
     }
 
+    if ( isBeingAdded )
+    {
+        if ( length( toTarget ) > 100 )
+        {
+
+            vert.pos = targetPos;
+            vert.vel = rand * 40;
+            force    = 0;
+
+        }
+    }
+
+
+
+
+    float3 wv = _WrenVel;
+    if ( length( wv ) < .01 )
+    {
+        wv = float3( 0 , 0 , .001 );
+    }
+
+    force += CurlAroundBirdForce( vert.pos , _WrenPos , wv ) * 100 * ( rand * .2 + 1 );
 
 
     float dt = .002;
@@ -218,8 +245,12 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
 
     if ( !isBeingAdded )
     {
-        force += centerSimForce;
+        // force += centerSimForce * 100;
+        // force += vortex * 10000.1;
     }
+
+
+    // force = 0;
 
     if ( length( force ) > 100000 )
     {
@@ -230,6 +261,8 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
     {
         vert.vel = normalize( vert.vel ) * 100000;
     }
+
+    force *= 1;
 
     vert.vel += force * dt;
     vert.pos += vert.vel * dt;

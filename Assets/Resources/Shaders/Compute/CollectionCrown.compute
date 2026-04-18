@@ -1,0 +1,154 @@
+#pragma kernel NewTruth
+
+#include "../Chunks/safeID.cginc"
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
+#include "../Chunks/hash.cginc"
+
+
+struct Vert
+{
+    float3 pos;
+    float3 vel;
+    float3 nor;
+    float3 tan;
+    float2 uv;
+    float  isBeingAdded;
+    float  type;
+};
+
+
+RWStructuredBuffer<Vert> _VertBuffer;
+int                      _VertBuffer_COUNT;
+
+
+StructuredBuffer<int> _NumCrystalsBuffer;
+
+
+int   _Count;
+float _DT;
+
+float _StreamWidth;
+float _StreamHeight;
+
+//#include "../Chunks/nanCheckFeather.cginc"
+
+#define NR_THREADS 128
+
+float4x4 _Transform;
+float4x4 _TruthAdder;
+
+int _ToAdd;
+int _ToAddID;
+
+
+float _Time;
+
+
+float3 VecToRay( float3 ro , float3 rd , float3 pos )
+{
+
+    float3 p2      = ro - rd * 200;
+    float3 pa      = pos - ro;
+    float3 ba      = ro - p2;
+    float  h       = dot( pa , ba ) / dot( ba , ba );
+    float3 pOnLine = h * rd * 200 + ro;
+
+    float3 inLine = pos - pOnLine;
+
+    return inLine; //normalize(inLine) * force *  (1 - clamp( length(inLine) / radius , 0 , 1));
+}
+
+
+float3 CurlAroundBirdForce( float3 pos , float3 wpos , float3 wvel )
+{
+
+    float3 outVec = VecToRay( wpos , normalize( wvel ) , pos );
+
+    float3 f = -normalize( outVec ) * 30.3;
+    f += 1.05 * length( wvel ) * normalize( cross( wvel , outVec ) ) / length( outVec ); //saturate((1-vert.debug)* 10) *1000 * normalize(delta) / length(delta);
+
+    return ( wvel * 10 / pow( length( wpos - pos ) , 2 ) ) + f * pow( length( wvel ) * .05 , 2 ) / ( .4 + length( wpos - pos ) );
+
+
+}
+
+
+float3 _WrenPos;
+float3 _WrenVel;
+
+int _MaxCrystals;
+
+float smoothAbs( float x , float k )
+{
+    return sqrt( x * x + k );
+}
+
+[numthreads(NR_THREADS,1,1)]
+void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , uint3 id : SV_DispatchThreadID )
+{
+
+
+    uint pID = threadID + u3GroupID.x * NR_THREADS;
+
+    pID = safeID( pID , _VertBuffer_COUNT );
+
+    Vert vert = _VertBuffer[ pID ];
+
+
+    int row = pID / _MaxCrystals;
+    int col = pID % _MaxCrystals;
+
+    float nCol = float( col ) / float( _MaxCrystals );
+    // float nRow   = float( row ) / float( _MaxCrystals );
+    float p     = 3.14159;
+    float angle = nCol * p + p / 2;
+
+
+    float c = ( .5 - abs( nCol - .5 ) ) * 2;
+
+    c = ( smoothstep( 0 , 1 , c ) );
+
+    float radiusMultiplier = .5 + c * .4;
+
+    float radius = ( .8 + float( row ) * .1 ) * radiusMultiplier;
+
+    float3 localPos = float3( sin( angle ) , -cos( angle ) , 0 ) * radius * 1;
+
+
+    localPos += curlNoise( localPos * 100 ) * .04;
+
+    float3 center = mul( _Transform , float4( 0 , 0 , 0 , 1 ) ).xyz;
+    float3 pos    = mul( _Transform , float4( localPos , 1 ) ).xyz;
+
+    // choose a primary axis
+    float3 y = normalize( pos - center ); // outward
+    float3 z = normalize( mul( _Transform , float4( 0 , 0 , 1 , 0 ) ).xyz ); // transformed forward reference
+
+    // make z orthogonal to y
+    z = normalize( z - y * dot( z , y ) );
+
+    // build the third axis
+    float3 x = normalize( cross( y , z ) );
+
+    // rebuild z to guarantee orthogonality / handedness
+    z = normalize( cross( x , y ) );
+
+    vert.pos = pos;
+    vert.vel = y; // if you want this to be local Y
+    vert.nor = x; // local X
+    vert.tan = z; // local Z
+    //float3 pos = mul( _Transform , float4( sin( float( pID ) * 1001 ) , 0 , 0 , 1 ) ).xyz;
+
+
+
+
+    vert.uv.x         = snoise( vert.pos ) + 1;
+    vert.isBeingAdded = row;
+    vert.type         = saturate( nCol );
+    //vert.uv = 
+
+
+    _VertBuffer[ pID ] = vert;
+
+}

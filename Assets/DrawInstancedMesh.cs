@@ -51,8 +51,9 @@ public class DrawInstancedMesh : MonoBehaviour
 
         if ( form._buffer != null ) {
 
+
             if ( argsBuffer == null ) {
-                material.SetBuffer( "_FormBuffer" , form._buffer );
+
 
                 argsBuffer = new ComputeBuffer( 1 , args.Length * sizeof(uint) , ComputeBufferType.IndirectArguments );
                 uint numIndices = mesh != null ? (uint)mesh.GetIndexCount( 0 ) : 0;
@@ -64,11 +65,15 @@ public class DrawInstancedMesh : MonoBehaviour
                 argsBuffer.SetData( args );
             }
 
+            args[1] = (uint)form.count;
+            argsBuffer.SetData( args );
+
+            material.SetBuffer( "_FormBuffer" , form._buffer );
             material.SetFloat( "_Size" , _Size );
 
 
             // Bounding volume for frustum culling (must encompass all instances)
-            var bounds = new Bounds( Vector3.zero , Vector3.one * 1000f );
+            var bounds = new Bounds( Vector3.zero , Vector3.one * 100000f );
             Graphics.DrawMeshInstancedIndirect(
                 mesh ,
                 0 ,
@@ -82,6 +87,8 @@ public class DrawInstancedMesh : MonoBehaviour
                 gameObject.layer
             );
 
+        } else {
+            print( "No form buffer" );
         }
     }
 }

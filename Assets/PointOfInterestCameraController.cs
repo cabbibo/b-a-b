@@ -6,6 +6,7 @@ using WrenUtils;
 public class PointOfInterestCameraController : BaseCameraManager
 {
     public Transform pointOfInterest;
+    public Transform cameraController;
 
     public float distanceFromBird = 10;
     public float requestSpeed;
@@ -51,8 +52,14 @@ public class PointOfInterestCameraController : BaseCameraManager
                 transform.position = birdPos - direction.normalized * distanceFromBird;
                 transform.LookAt( birdPos );
             } else {
-                transform.position = targetPos - direction.normalized * distanceFromBird;
-                transform.LookAt( targetPos );
+
+                if ( cameraController == null ) {
+                    transform.position = targetPos - direction.normalized * distanceFromBird;
+                    transform.LookAt( targetPos );
+                } else {
+                    transform.position = cameraController.position;
+                    transform.LookAt( targetPos );
+                }
 
             }
 
@@ -67,10 +74,20 @@ public class PointOfInterestCameraController : BaseCameraManager
         lockToBird = ltb;
     }
 
+    public void SetPointOfInterest( Transform newPointOfInterest , Transform cam , float rs = .1f )
+    {
+        lockToBird = false;
+        pointOfInterest = newPointOfInterest;
+        requestSpeed = rs;
+        cameraController = cam;
+    }
+
     public void ClearPointOfInterest()
     {
         print( "clearing point of interest" );
         pointOfInterest = null;
+        cameraController = null;
+
     }
 
     public void SetPointOfInterestForTime( Transform newPointOfInterest , float time , float dfb , float fov , float rs ,

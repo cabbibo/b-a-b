@@ -27,7 +27,7 @@ public class BindNewTruthData : Binder
     {
 
         total = WrenUtils.God.state.TotalCrystals;
-//        print( "totalCrystals + " + total );
+
         numCrystalsBuffer = new ComputeBuffer( 7 , sizeof(int) );
         numCrystalsBuffer.SetData( WrenUtils.God.state.crystalsCollectedPerIsland );
 

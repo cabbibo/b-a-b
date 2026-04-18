@@ -1,18 +1,18 @@
 ﻿#pragma kernel Flow
 
-struct Vert{
+struct Vert
+{
     float3 pos;
     float3 vel;
     float3 nor;
     float3 ogPos;
-    float life;
-    float type;
+    float  life;
+    float  type;
     float2 debug;
 };
 
 
-
-RWStructuredBuffer<Vert> _VertBuffer;
+RWStructuredBuffer<Vert>   _VertBuffer;
 RWStructuredBuffer<float3> _TrailBuffer;
 
 int _VertBuffer_COUNT;
@@ -25,21 +25,22 @@ int _TrailBuffer_COUNT;
 #include "../../Chunks/ParticleAxisHelpers.cginc"
 
 
-
-
 float3 _Chest;
 
 float4x4 _WorldToLocal;
 
-float3 getTrailPos(int id){
+float3 getTrailPos( int id )
+{
     // return mul( _WorldToLocal , float4(_TrailBuffer[ safeID( id , _TrailBuffer_COUNT) ],1) );
-    return  _TrailBuffer[ safeID( id , _TrailBuffer_COUNT) ];
+    return _TrailBuffer[ safeID( id , _TrailBuffer_COUNT ) ];
 
 }
 
 
 #include "../../Chunks/cubicCurve.cginc"
-float3 cubicFromValue( in float val , out float3 upPos , out float3 doPos ){
+
+float3 cubicFromValue( in float val , out float3 upPos , out float3 doPos )
+{
 
     float3 p0 = float3( 0. , 0. , 0. );
     float3 v0 = float3( 0. , 0. , 0. );
@@ -48,20 +49,21 @@ float3 cubicFromValue( in float val , out float3 upPos , out float3 doPos ){
 
     float3 p2 = float3( 0. , 0. , 0. );
 
-    float vPP = float(_TrailBuffer_COUNT);
+    float vPP = float( _TrailBuffer_COUNT );
 
-    float base = val * (vPP-1);
+    float base = val * ( vPP - 1 );
 
-    int baseUp   = floor( base );
-    int baseDown = ceil( base );
-    float amount = base - float(baseUp);
+    int   baseUp   = floor( base );
+    int   baseDown = ceil( base );
+    float amount   = base - float( baseUp );
 
 
 
-    if( baseUp == 0 ){
+    if ( baseUp == 0 )
+    {
 
         p0 = getTrailPos( baseUp );
-        p1 = getTrailPos( baseDown     );
+        p1 = getTrailPos( baseDown );
         p2 = getTrailPos( baseDown + 1 );
 
 
@@ -69,24 +71,28 @@ float3 cubicFromValue( in float val , out float3 upPos , out float3 doPos ){
 
         v1 = .5 * ( p2 - p0 );
 
-        }else if( baseDown == vPP-1 ){
+    }
+    else if ( baseDown == vPP - 1 )
+    {
 
-        p0 = getTrailPos( baseUp     );
-        p1 = getTrailPos( baseDown   );
+        p0 = getTrailPos( baseUp );
+        p1 = getTrailPos( baseDown );
         p2 = getTrailPos( baseUp - 1 );
 
         v0 = .5 * ( p1 - p2 );
 
-        }else{
+    }
+    else
+    {
 
-        p0 = getTrailPos( baseUp   );
+        p0 = getTrailPos( baseUp );
         p1 = getTrailPos( baseDown );
 
 
-        float3 pMinus = float3(0,0,0);
+        float3 pMinus = float3( 0 , 0 , 0 );
 
-        pMinus = getTrailPos( baseUp   - 1 );
-        p2 =     getTrailPos( baseDown + 1 );
+        pMinus = getTrailPos( baseUp - 1 );
+        p2     = getTrailPos( baseDown + 1 );
 
         v1 = .5 * ( p2 - p0 );
         v0 = .5 * ( p1 - pMinus );
@@ -94,14 +100,14 @@ float3 cubicFromValue( in float val , out float3 upPos , out float3 doPos ){
     }
 
     float3 c0 = p0;
-    float3 c1 = p0 + v0/3.;
-    float3 c2 = p1 - v1/3.;
+    float3 c1 = p0 + v0 / 3.;
+    float3 c2 = p1 - v1 / 3.;
     float3 c3 = p1;
 
     float3 pos = cubicCurve( amount , c0 , c1 , c2 , c3 );
 
-    upPos = cubicCurve( amount  + .01 , c0 , c1 , c2 , c3 );
-    doPos = cubicCurve( amount  - .01 , c0 , c1 , c2 , c3 );
+    upPos = cubicCurve( amount + .01 , c0 , c1 , c2 , c3 );
+    doPos = cubicCurve( amount - .01 , c0 , c1 , c2 , c3 );
 
     return pos;
 
@@ -115,99 +121,106 @@ int _TmpNumShards;
 float _Reset;
 
 float3 _CollectionPosition;
-float _CollectionType;
+float  _CollectionType;
 
 float3 _WrenVel;
 float3 _WrenPos;
-    
 
-float3 VecToRay( float3 ro , float3 rd, float3 pos ){
-  
-  float3 p2 = ro - rd * 200;
-  float3 pa = pos - ro;
-  float3 ba = ro - p2;
-  float h =  dot(pa,ba)/dot(ba,ba);
-  float3 pOnLine = h * rd* 200 +ro;
 
-  float3 inLine = pos - pOnLine;
+float3 VecToRay( float3 ro , float3 rd , float3 pos )
+{
 
-  return  inLine;//normalize(inLine) * force *  (1 - clamp( length(inLine) / radius , 0 , 1));
+    float3 p2      = ro - rd * 200;
+    float3 pa      = pos - ro;
+    float3 ba      = ro - p2;
+    float  h       = dot( pa , ba ) / dot( ba , ba );
+    float3 pOnLine = h * rd * 200 + ro;
+
+    float3 inLine = pos - pOnLine;
+
+    return inLine; //normalize(inLine) * force *  (1 - clamp( length(inLine) / radius , 0 , 1));
 }
 
 
-float3 CurlAroundBirdForce( float3 pos , float3 wpos , float3 wvel){
+float3 CurlAroundBirdForce( float3 pos , float3 wpos , float3 wvel )
+{
 
-      float3 outVec = VecToRay( wpos , normalize(wvel) , pos);
+    float3 outVec = VecToRay( wpos , normalize( wvel ) , pos );
 
-      float3 f = -normalize(outVec) * 30.3;
-      f += 1.05* length(wvel)* normalize(cross(wvel , outVec))  / length(outVec);//saturate((1-vert.debug)* 10) *1000 * normalize(delta) / length(delta);
+    float3 f = -normalize( outVec ) * 30.3;
+    f += 1.05 * length( wvel ) * normalize( cross( wvel , outVec ) ) / length( outVec ); //saturate((1-vert.debug)* 10) *1000 * normalize(delta) / length(delta);
 
-      return f * pow(length( wvel)  * .05,2) / (.4 + length(wpos - pos));
-    
+    return f * pow( length( wvel ) * .05 , 2 ) / ( .4 + length( wpos - pos ) );
 
 
-    
 }
 
-float _Time;
+float  _Time;
 float3 _PhaseShiftDelta;
 
 #define NR_THREADS 128
+
 [numthreads(NR_THREADS,1,1)]
-void Flow(uint3 id : SV_DispatchThreadID) {
-    int pID = id.x;
-    pID = safeID(pID,_VertBuffer_COUNT);
-    Vert vert = _VertBuffer[pID];
+void Flow( uint3 id : SV_DispatchThreadID )
+{
+    int pID   = id.x;
+    pID       = safeID( pID , _VertBuffer_COUNT );
+    Vert vert = _VertBuffer[ pID ];
 
 
-    int trailShardID = _NumShards - _TotalShardsInBody;
+    int trailShardID  = _NumShards - _TotalShardsInBody;
     int tTrailShardID = _TmpNumShards - _TotalShardsInBody;
 
-            float3 offset = (hash(float(pID) * 0.1)-.5)* float3(1,0,0) *2
-            + (hash(float(pID) * 11)-.5) * float3(0,1,0) *2
-            + (hash(float(pID) * 3)-.5) * float3(0,0,1) *2;
-                    offset = (normalize(offset)) * 1;
+    float3 offset = ( hash( float( pID ) * 0.1 ) - .5 ) * float3( 1 , 0 , 0 ) * 2
+        + ( hash( float( pID ) * 11 ) - .5 ) * float3( 0 , 1 , 0 ) * 2
+        + ( hash( float( pID ) * 3 ) - .5 ) * float3( 0 , 0 , 1 ) * 2;
+    offset = ( normalize( offset ) ) * 1;
 
-                    
-        float3 pos = vert.pos;
 
-        float3 force = 0;
-        
-        if( pID > trailShardID){
-    // this means we lost shards
-    if( tTrailShardID > trailShardID){
+    float3 pos = vert.pos;
+
+    float3 force = 0;
+
+    if ( pID > trailShardID )
+    {
+        // this means we lost shards
+        if ( tTrailShardID > trailShardID )
+        {
 
 
 
             float3 upPos;
             float3 doPos;
 
-            float3 cubicPos = cubicFromValue( float(pID)/float(_VertBuffer_COUNT), upPos , doPos );
+            float3 cubicPos = cubicFromValue( float( pID ) / float( _VertBuffer_COUNT ) , upPos , doPos );
 
-            vert.pos = _WrenPos+ _WrenVel*0 + offset * length( _WrenVel ) * .01;
+            vert.pos = _WrenPos + _WrenVel * 0 + offset * length( _WrenVel ) * .01;
             vert.vel = _WrenVel * .05 + offset * length( _WrenVel ) * .005;
 
-            vert.vel += curlNoise( vert.pos * .1 + float(pID) * .001 )* .1;
+            vert.vel += curlNoise( vert.pos * .1 + float( pID ) * .001 ) * .1;
 
 
-            
 
-          //  vert.vel = -_WrenVel * 10.3;
+
+            //  vert.vel = -_WrenVel * 10.3;
 
             //force += CurlAroundBirdForce( vert.pos , _WrenPos , _WrenVel );
 
-    // just a normal floating shard 
-    }else{
+            // just a normal floating shard 
+        }
+        else
+        {
 
-        vert.life -= .0003 * ( hash(2*float(pID)) * 2 + 2);
-        vert.life = max( vert.life , 0 );// slowly fade out!
+            vert.life -= .0003 * ( hash( 2 * float( pID ) ) * 2 + 2 );
+            vert.life = max( vert.life , 0 ); // slowly fade out!
 
-        force += CurlAroundBirdForce( vert.pos , _WrenPos , _WrenVel );
+            force += CurlAroundBirdForce( vert.pos , _WrenPos , _WrenVel );
+        }
+
     }
 
-}
-
-    if( pID < trailShardID ){
+    if ( pID < trailShardID )
+    {
 
 
 
@@ -216,91 +229,97 @@ void Flow(uint3 id : SV_DispatchThreadID) {
 
 
 
-        float3 cubicPos = cubicFromValue( float(pID)/float(_VertBuffer_COUNT), upPos , doPos );
+        float3 cubicPos = cubicFromValue( float( pID ) / float( _VertBuffer_COUNT ) , upPos , doPos );
 
-        if( pID >= tTrailShardID){
+        if ( pID >= tTrailShardID )
+        {
 
 
-            
 
-    
-           // offset = 0;
+
+
+            // offset = 0;
             vert.pos = _CollectionPosition + offset;
 
-            vert.vel  = offset * 4 * .01 + _WrenVel * .03;
-            
+            vert.vel = offset * 4 * .01 + _WrenVel * .03;
+
             vert.type = _CollectionType;
-            
+
         }
 
-        if( _Reset > .5 && _Reset < 1.5 ){
+        if ( _Reset > .5 && _Reset < 1.5 )
+        {
 
             vert.pos = _WrenPos;
         }
 
-        if( _Reset > 1.5 && _Reset < 2.5 ){
+        if ( _Reset > 1.5 && _Reset < 2.5 )
+        {
 
             vert.pos -= _PhaseShiftDelta;
-        
+
         }
 
-vert.life = 1;
+        vert.life = 1;
 
         float3 diff = cubicPos - pos;
 
         force += _WrenVel * .8;
-        
 
-        if( length(diff) > 1 ){
 
-            force += normalize(diff) * 40;
-            
+        if ( length( diff ) > 1 )
+        {
+
+            force += normalize( diff ) * 40;
+
         }
 
         //force += hash(float(pID) * 0.1) * float3(0,1,0);
         //force += hash(float(pID) * 0.3) * float3(1,0,0);
         //force += hash(float(pID) * 1) * float3(0,0,1);
 
-        
+
 
         //force += curlNoise(pos * .1 + float(pID) * .001 )* 1;
 
-        if( length( vert.pos - _Chest ) > 3){
+        if ( length( vert.pos - _Chest ) > 3 )
+        {
             //vert.pos = _Chest + hash(float(pID) * 0.1) * float3(0,1,0);
-            
+
         }
 
     }
 
-    
-        force += curlNoise(pos * .1 + float3(0,_Time * .3,0)  )* 1;
+
+    force += curlNoise( pos * .1 + float3( 0 , _Time * .3 , 0 ) ) * 1;
 
 
-        if( isnan(force.x) || isnan(force.y) || isnan(force.z) ){
-            force = float3(0,0,0);
-        }
-
-        
-        vert.vel += force * .001;
-        vert.pos += vert.vel;
-        vert.vel *= .95;
+    if ( isnan( force.x ) || isnan( force.y ) || isnan( force.z ) )
+    {
+        force = float3( 0 , 0 , 0 );
+    }
 
 
-       // vert.pos = _WrenPos + offset * .1;
-      //  vert.vel = float3(0,1,0);
+    vert.vel += force * .001;
+    vert.pos += vert.vel;
+    vert.vel *= .95;
+
+
+    // vert.pos = _WrenPos + offset * .1;
+    //  vert.vel = float3(0,1,0);
 
 
 
-        //        vert.pos = getTrailPos( pID % _TrailBuffer_COUNT );
+    //        vert.pos = getTrailPos( pID % _TrailBuffer_COUNT );
 
-        //      vert.pos = cubicPos;
-
-    
-
-    
-    
+    //      vert.pos = cubicPos;
 
 
-    
-    _VertBuffer[pID] = vert;
+
+
+
+
+
+
+    _VertBuffer[ pID ] = vert;
 }

@@ -17,10 +17,11 @@ public class FullState : MonoBehaviour
     public int currentBiomeID;
     public int currentQuestID;
 
-    public int   numIslands = 7;
-    public int[] crystalsNeededForIslandCompletion;
-    public int[] crystalsCollectedPerIsland;
-    public int[] tmpCrystalsCollectedPerIsland;
+    public int      numIslands = 7;
+    public string[] islandNames;
+    public int[]    crystalsNeededForIslandCompletion;
+    public int[]    crystalsCollectedPerIsland;
+    public int[]    tmpCrystalsCollectedPerIsland;
 
     public int TotalCrystals
     {

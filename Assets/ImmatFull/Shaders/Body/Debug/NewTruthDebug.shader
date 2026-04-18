@@ -34,6 +34,8 @@
 
                 float3 color = hsv( v.debug.y / 7 , 1 - v.debug.x , 1 ); // v.debug.x * 10;
 
+                color = v.debug.y;
+
                 return float4( color.xyz , 1 );
             }
             ENDCG
