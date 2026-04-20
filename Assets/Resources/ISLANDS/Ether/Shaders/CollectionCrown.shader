@@ -1,4 +1,4 @@
-﻿Shader "Islands/Ether/NewTruth1"
+﻿Shader "Islands/Ether/CollectionCrown"
 {
     Properties
     {
@@ -139,16 +139,20 @@
                 bool isCollected = floor( _CrystalPercentage * float( _CrystalsForComplete ) ) > instanceID;
                 o.isComplete     = isCollected ? 1 : 0;
 
+                int closenssToCollected = clamp( abs( floor( _CrystalPercentage * float( _CrystalsForComplete ) ) - instanceID ) , 0 , 100 );
+
                 float3 up      = float3( 0 , 0 , 1 );
                 float3 forward = normalize( cross( p.vel , float3( 0 , 1 , 0 ) ) );
 
 
-                float4x4 m = WorldMatrix(
+
+                float    finalSize = lerp( ( 1 / ( 1 + float( closenssToCollected ) * .02 ) ) , 1 , isCollected ? 0 : 0 ) * _Size * p.uv.x * p.uv.y * .03 * ( o.rowIsComplete * -.2 + o.inActiveRow + o.isComplete - .5 ) / ( 1 + p.debug.x );
+                float4x4 m         = WorldMatrix(
                     p.pos ,
                     p.nor ,
-                    p.vel ,
                     p.tan ,
-                    _Size * p.uv.x
+                    normalize( cross( p.nor , p.tan ) ) ,
+                    finalSize
                 );
 
                 float3 localPos = v.vertex.xyz - float3( 0 , .3 , 0 );
@@ -253,7 +257,8 @@
                 col = generic_desaturate( col , 1 - v.inActiveRow );
 
                 col *= normalize( tex2D( _ColorMap , float2( v.debug.y / 8 , 0 ) ) ) * 1.3 + .6;
-                col *= v.isComplete + .1;
+                //  col *= v.isComplete + .3;
+                col = lerp( col * col * .5 , col , v.isComplete );
 
                 if ( v.isComplete < 0.5 && v.inActiveRow < .5 )
                 {

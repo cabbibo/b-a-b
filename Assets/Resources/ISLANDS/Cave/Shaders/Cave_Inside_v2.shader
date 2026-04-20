@@ -409,7 +409,10 @@ Shader "Islands/Cave/CaveInside2"
                 //colorRemap =tex2D( _ColorMap , sinVal2 * .1 + m + length( v.color ) * 30 );
 
 
-                col = lerp( v.color * .3 * colorRemap , colorRemap , saturate( lerpVal ) );
+
+                float3 stripeColor = colorRemap * lerpVal;
+                float3 plainColor  = colorRemap;
+                col                = lerp( v.color * .01 * colorRemap , colorRemap , saturate( lerpVal ) );
 
 
                 float3 rainbowEtchCol = col;
@@ -462,18 +465,18 @@ Shader "Islands/Cave/CaveInside2"
                 }
 
                 totalLit               = saturate( totalLit / 2 ) * 2;
-                float3 crystalLitColor = saturate( rainbowEtchCol * totalLit * 5 ) * 2;
+                float3 crystalLitColor = ( stripeColor * 5 + plainColor * 1 ) * totalLit * 1;
 
 
                 float3 baseColor = lerp( v.color * 1 , crystalLitColor , saturate( totalLit ) );
                 //   float3 pyschColor = lerp( rainbowEtchCol * flashlightSpread() * 3 , rainbowEtchCol * flashlightSpread() * 3 + crystalLitColor , saturate( totalLit ) );
-                float3 pyschColor = lerp( rainbowEtchCol * flashlightSpread() * 3 + crystalLitColor , v.color , saturate( totalLit ) );
+                float3 pyschColor = lerp( stripeColor * flashlightSpread() * 3 , stripeColor * flashlightSpread() * 3 + crystalLitColor , saturate( totalLit ) );
                 //   v2                = 0;
                 col = lerp( baseColor , pyschColor , 1 - v2 );
 
                 col += tex2D( _ColorMap , v3 ).xyz * ( ( .5 - abs( v3 - .5 ) ) );
                 //  col *= 1 + v2 * 2;
-                col /= .0001 * pow( dToWren , 2 );
+                col /= ( .3 + .0001 * pow( dToWren , 2 ) );
                 col /= val + 1;
 
 

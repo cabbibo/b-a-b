@@ -19,6 +19,7 @@ public class WrenPhysics : MonoBehaviour
 
     */
 
+
     public WrenInput     input;
     public Wren          wren;
     public PhysicsParams currentParams;
@@ -450,6 +451,7 @@ public class WrenPhysics : MonoBehaviour
     {
 
 
+        velocityLimiter = maxSpeed * 10;
         rb.velocity = Vector3.zero;
         /* if (wren.beacon)
          {
@@ -1937,6 +1939,10 @@ public class WrenPhysics : MonoBehaviour
     private MaterialPropertyBlock mpb;
 
 
+    public float   velocityLimiter = 1;
+    public Vector3 tmpVel;
+    public Vector3 tmpRot;
+
     public void ResolveForces()
     {
 
@@ -2029,6 +2035,10 @@ public class WrenPhysics : MonoBehaviour
         }
 
 
+        rb.velocity = Vector3.ClampMagnitude( rb.velocity , velocityLimiter );
+        rb.angularVelocity = Vector3.ClampMagnitude( rb.angularVelocity , velocityLimiter );
+
+//        print( "test" );
     }
 
 

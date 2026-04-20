@@ -126,12 +126,13 @@
 
                 Particle p = _FormBuffer[ instanceID ];
 
+
+                float3   z = normalize( p.vel );
+                float3   x = normalize( cross( p.vel , float3( 0 , 1 , 0 ) ) );
+                float3   y = normalize( cross( z , x ) );
                 float4x4 m = WorldMatrix(
                     p.pos ,
-
-
-                    normalize( cross( p.vel , float3( 0 , 1 , 0 ) ) ) ,
-                    float3( 0 , 1 , 0 ) , normalize( p.vel ) ,
+                    x , y , z ,
                     _Size * ( snoise( float2( float( instanceID ) , _Time.x ) + 2 ) )
                 );
 
@@ -210,6 +211,41 @@
 
                 float3 fog = 0;
 
+
+                float offset = 0;
+                if ( abs( v.debug.y - 1 ) < .1 )
+                {
+                    offset = .05;
+                }
+
+                if ( abs( v.debug.y - 2 ) < .1 )
+                {
+                    offset = .2;
+                }
+
+                if ( abs( v.debug.y - 3 ) < .1 )
+                {
+                    offset = 0.45;
+                }
+
+                if ( abs( v.debug.y - 4 ) < .1 )
+                {
+                    offset = .7;
+                }
+
+
+                if ( abs( v.debug.y - 5 ) < .1 )
+                {
+                    offset = .8;
+                }
+
+                if ( abs( v.debug.y - 6 ) < .1 )
+                {
+                    offset = .9;
+                }
+
+
+
                 for ( int i = 0; i < 30; i++ )
                 {
                     float3 fPos = ro - rd * float( i ) * .01;
@@ -224,21 +260,24 @@
                     //  fog += hsv( float( i ) / 50 - .2 + v.debug.y / 8 , .6 , nv * nv );
 
 
-                    fog += normalize( tex2D( _ColorMap , float2( float( i ) / 50 - .2 + v.debug.y / 8 + nv , 0 ) ) ) * nv * nv; // , .6 , nv * nv );
+                    fog += normalize( tex2D( _ColorMap , float2( -( float( i ) / 100 ) + .05 - offset - nv , 0 ) ) ) * nv * nv; // , .6 , nv * nv );
 
                 }
 
-                col = 200 * fog; ///generic_desaturate( 100 * fog , 1 );
+                col = 100 * fog; ///generic_desaturate( 100 * fog , 1 );
 
-                col = generic_desaturate( col , v.debug.x + ( sin( v.id ) * .5 ) );
+
+                col = generic_desaturate( col , v.debug.x + ( sin( v.id ) * .1 ) );
                 col *= sin( v.id * 10 ) * .5 + .6;
 
-                col *= normalize( tex2D( _ColorMap , float2( v.debug.y / 8 + length( fog ) * 100 + v.id * .01 , 0 ) )
+                col *= normalize( tex2D( _ColorMap , float2( -offset + length( fog ) * 100 + v.id * .01 , 0 ) )
                     )
                     * 1.3 + .6;
 
                 col *= float3( 1 , .7 , 1 );
-                col *= 2;
+                col *= 4;
+
+
 
                 //col *= generic_desaturate( tex2D( _ColorMap , float2( v.debug.y / 8 , 0 ) ).xyz , .5 ); //.// )hsv( v.debug.y / 8 , v.debug.x , 1 );
 

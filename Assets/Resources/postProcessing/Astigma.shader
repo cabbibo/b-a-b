@@ -112,6 +112,7 @@ Shader "VertexFragment/Astigma"
                     uvOffset = uv - offset * (float)i * texelSize;
                     col      = tex2D( tex , uvOffset ).rgb;
 
+
                     if ( length( col ) > _Cutoff )
                     {
                         totalCol += col * col * multiplier * multiplier;
@@ -275,6 +276,8 @@ Shader "VertexFragment/Astigma"
 
 
                 color = saturate( color );
+
+
 
 
                 // color = tex2D(_AudioMap, input.texcoord.xy);

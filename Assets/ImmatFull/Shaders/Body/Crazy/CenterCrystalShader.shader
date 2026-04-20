@@ -7,6 +7,7 @@ Shader "IMMAT/Crazy/CenterCrystalFlowShader"
         _Color ("Color", Color) = (1,1,1,1)
         _SkyMap("SkyMap",CUBE) = "white" {}
         _SkyMap("SkyMap",CUBE) = "white" {}
+        _Multiplier("Multiplier",float)= 1
     }
     SubShader
     {
@@ -44,6 +45,8 @@ Shader "IMMAT/Crazy/CenterCrystalFlowShader"
             sampler2D   _ColorMap;
             sampler2D   _AudioMap;
             samplerCUBE _SkyMap;
+
+            float _Multiplier;
 
             struct v2f
             {
@@ -93,14 +96,14 @@ Shader "IMMAT/Crazy/CenterCrystalFlowShader"
                 //fixed shadow = LIGHT_ATTENUATION(v) ;
 
                 // float colVal = floor((v.debug.x*13.1314)) % 7;
-                float4 c = tex2D( _ColorMap , float2( v.colVal + ( .5 - abs( v.uv.y - .5 ) ) * .2 + v.uv.x * .2 , 1 ) );
-                float4 aC = tex2D( _AudioMap , float2( v.uv.x * .1 + sin( v.debug.x ) * .2 + .2 , 1 ) );
-                float3 col = c.xyz * 1 + 0; // + 1-v.uv.x;//hsv( v.uv.x * .1 + v.debug.x*13.1314 ,1,1);//_Color.xyz;
-                float3 worldNormal = -normalize( cross( ddx( v.worldPos ) , ddy( v.worldPos ) ) ); // v.nor;
+                float4 c            = tex2D( _ColorMap , float2( v.colVal + ( .5 - abs( v.uv.y - .5 ) ) * .2 + v.uv.x * .2 , 1 ) );
+                float4 aC           = tex2D( _AudioMap , float2( v.uv.x * .1 + sin( v.debug.x ) * .2 + .2 , 1 ) );
+                float3 col          = c.xyz * 1 + 0; // + 1-v.uv.x;//hsv( v.uv.x * .1 + v.debug.x*13.1314 ,1,1);//_Color.xyz;
+                float3 worldNormal  = -normalize( cross( ddx( v.worldPos ) , ddy( v.worldPos ) ) ); // v.nor;
                 half3  worldViewDir = normalize( UnityWorldSpaceViewDir( v.worldPos ) );
-                half3  worldRefl = reflect( -worldViewDir , worldNormal );
-                half4  skyData = texCUBE( _SkyMap , worldRefl );
-                half3  skyColor = DecodeHDR( skyData , unity_SpecCube0_HDR );
+                half3  worldRefl    = reflect( -worldViewDir , worldNormal );
+                half4  skyData      = texCUBE( _SkyMap , worldRefl );
+                half3  skyColor     = DecodeHDR( skyData , unity_SpecCube0_HDR );
 
                 if ( abs( v.uv.y - .5 ) - length( aC ) * .1 > .2 )
                 {
@@ -109,8 +112,9 @@ Shader "IMMAT/Crazy/CenterCrystalFlowShader"
 
                 //col = col * skyColor * ( aC * aC * .8 + .2 ) * 5;
 
-                col = tex2D( _AudioMap , float2( v.uv.x * .3 , 0 ) );
-                col = skyColor * col; //
+                col = tex2D( _AudioMap , float2( v.uv.x * .3 , 0 ) ) * 3 + .1;
+                col *= skyColor * col * _Multiplier; //
+
                 //col = saturate(col);
                 //col *= shadow;
                 return float4( col , 1 );

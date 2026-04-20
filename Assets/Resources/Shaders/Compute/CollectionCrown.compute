@@ -60,15 +60,20 @@ float3 VecToRay( float3 ro , float3 rd , float3 pos )
 }
 
 
-float3 CurlAroundBirdForce( float3 pos , float3 wpos , float3 wvel )
+float3 CurlAroundBirdForce( float3 pos , float3 wrenPos , float3 wrenVel )
 {
+    float3 wvel = wrenVel;
+    if ( length( wvel ) < .01 )
+    {
+        wvel = float3( 0 , 0 , .001 );
+    }
 
-    float3 outVec = VecToRay( wpos , normalize( wvel ) , pos );
+    float3 outVec = VecToRay( wrenPos , normalize( wvel ) , pos );
 
     float3 f = -normalize( outVec ) * 30.3;
-    f += 1.05 * length( wvel ) * normalize( cross( wvel , outVec ) ) / length( outVec ); //saturate((1-vert.debug)* 10) *1000 * normalize(delta) / length(delta);
+    f += 10.05 * length( wvel ) * normalize( cross( wvel , outVec ) ) / length( outVec ); //saturate((1-vert.debug)* 10) *1000 * normalize(delta) / length(delta);
 
-    return ( wvel * 10 / pow( length( wpos - pos ) , 2 ) ) + f * pow( length( wvel ) * .05 , 2 ) / ( .4 + length( wpos - pos ) );
+    return f * pow( length( wvel ) * .05 , 2 ) / ( .4 + length( wrenPos - pos ) );
 
 
 }
@@ -121,8 +126,38 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
     float3 center = mul( _Transform , float4( 0 , 0 , 0 , 1 ) ).xyz;
     float3 pos    = mul( _Transform , float4( localPos , 1 ) ).xyz;
 
+    float scale = length( mul( _Transform , float4( 0 , 0 , 1 , 0 ) ).xyz );
+
+
+    ///  vert.vel = y; // if you want this to be local Y
+
+    //float3 pos = mul( _Transform , float4( sin( float( pID ) * 1001 ) , 0 , 0 , 1 ) ).xyz;
+
+
+    float3 force = 0;
+
+    force += -( vert.pos - pos ) * 1;
+
+    force += curlNoise( vert.pos );
+    force += CurlAroundBirdForce( vert.pos , _WrenPos , _WrenVel ) * 1;
+
+    //force += _WrenVel * 100000000;
+
+    if ( length( vert.pos - pos ) > 1000 )
+    {
+        force    = 0;
+        vert.vel = 0;
+        vert.pos = pos;
+    }
+
+    vert.vel += force * _DT;
+    vert.pos += vert.vel * _DT;
+
+    vert.vel *= .9;
+
+
     // choose a primary axis
-    float3 y = normalize( pos - center ); // outward
+    float3 y = normalize( vert.pos - center ); // outward
     float3 z = normalize( mul( _Transform , float4( 0 , 0 , 1 , 0 ) ).xyz ); // transformed forward reference
 
     // make z orthogonal to y
@@ -132,18 +167,14 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
     float3 x = normalize( cross( y , z ) );
 
     // rebuild z to guarantee orthogonality / handedness
-    z = normalize( cross( x , y ) );
-
-    vert.pos = pos;
-    vert.vel = y; // if you want this to be local Y
+    z        = normalize( cross( x , y ) );
     vert.nor = x; // local X
-    vert.tan = z; // local Z
-    //float3 pos = mul( _Transform , float4( sin( float( pID ) * 1001 ) , 0 , 0 , 1 ) ).xyz;
-
+    vert.tan = y; // local Z
 
 
 
     vert.uv.x         = snoise( vert.pos ) + 1;
+    vert.uv.y         = scale;
     vert.isBeingAdded = row;
     vert.type         = saturate( nCol );
     //vert.uv = 

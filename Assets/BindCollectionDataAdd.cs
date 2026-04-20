@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using IMMATERIA;
+using God = WrenUtils.God;
 
 public class BindCollectionDataAdd : Binder
 {
@@ -20,6 +21,9 @@ public class BindCollectionDataAdd : Binder
     public override void Bind()
     {
         toBind.BindInt( "_MaxCrystals" , () => crystalCollection.crystalsNeededForCompletion );
+
+        toBind.BindVector3( "_WrenPos" , () => God.wren != null ? God.wren.transform.position : Vector3.zero );
+        toBind.BindVector3( "_WrenVel" , () => God.wren != null ? God.wren.physics.rb.velocity : Vector3.one * .001f );
 
     }
 

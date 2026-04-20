@@ -88,6 +88,8 @@ namespace WrenUtils
 
         public IMMATERIA.God _ImmateriaGod;
 
+        public TimeScaler _timeScaler;
+
         public static IMMATERIA.God ImmateriaGod => instance._ImmateriaGod;
         private static God _instance;
 
@@ -306,6 +308,8 @@ namespace WrenUtils
         public static WrenCanDo wrenCanDo => instance._wrenCanDo;
 
         public static InterfaceTutorial interfaceTutorial => instance._interfaceTutorial;
+
+        public static TimeScaler timeScaler => instance._timeScaler;
 
 
         public void SetTerrainCompute( int kernel , ComputeShader shader )

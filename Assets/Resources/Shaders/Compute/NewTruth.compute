@@ -59,15 +59,20 @@ float3 VecToRay( float3 ro , float3 rd , float3 pos )
 }
 
 
-float3 CurlAroundBirdForce( float3 pos , float3 wpos , float3 wvel )
+float3 CurlAroundBirdForce( float3 pos , float3 wrenPos , float3 wrenVel )
 {
+    float3 wvel = wrenVel;
+    if ( length( wvel ) < .01 )
+    {
+        wvel = float3( 0 , 0 , .001 );
+    }
 
-    float3 outVec = VecToRay( wpos , normalize( wvel ) , pos );
+    float3 outVec = VecToRay( wrenPos , normalize( wvel ) , pos );
 
     float3 f = -normalize( outVec ) * 30.3;
     f += 1.05 * length( wvel ) * normalize( cross( wvel , outVec ) ) / length( outVec ); //saturate((1-vert.debug)* 10) *1000 * normalize(delta) / length(delta);
 
-    return ( wvel * 10 / pow( length( wpos - pos ) , 2 ) ) + f * pow( length( wvel ) * .05 , 2 ) / ( .4 + length( wpos - pos ) );
+    return ( wvel * 10 / pow( length( wrenPos - pos ) , 2 ) ) + f * pow( length( wvel ) * .05 , 2 ) / ( .4 + length( wrenPos - pos ) );
 
 
 }
@@ -176,7 +181,7 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
     float3 toTarget = targetPos - vert.pos;
 
 
-    float totalNormalized = float( _Total ) / 10000;
+    float totalNormalized = float( _Total ) / 100000;
 
     if ( length( toTarget ) < 0.00001 )
     {
@@ -237,7 +242,7 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
         wv = float3( 0 , 0 , .001 );
     }
 
-    force += CurlAroundBirdForce( vert.pos , _WrenPos , wv ) * 100 * ( rand * .2 + 1 );
+    force += CurlAroundBirdForce( vert.pos , _WrenPos , wv ) * 100 * ( rand * .2 + 1 ) * 1;
 
 
     float dt = .002;

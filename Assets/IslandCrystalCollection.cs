@@ -9,17 +9,22 @@ public class IslandCrystalCollection : MonoBehaviour
     public Portal       portal;
     public LineRenderer lineRenderer;
 
+    public bool isEther = false;
+
     public float     radiusForLineRenderer = 1.0f;
     public float     lineWidth             = 0.1f;
     public int       segmentCount          = 50;
     public Transform lookAtPoint;
+    public Transform cameraLookFromPoint;
+
+    public int islandID => isEther ? portal.sceneID : portal.biome;
 
     public int crystalCount =>
-        God.state.crystalsCollectedPerIsland[portal.biome] + God.state.tmpCrystalsCollectedPerIsland[portal.biome];
+        God.state.crystalsCollectedPerIsland[islandID] + God.state.tmpCrystalsCollectedPerIsland[islandID];
 
 
-    public int crystalsNeededForCompletion => God.state.crystalsNeededForIslandCompletion[portal.biome];
-    public float crystalPercent => (float)crystalCount / (float)God.state.crystalsNeededForIslandCompletion[portal.biome];
+    public int crystalsNeededForCompletion => God.state.crystalsNeededForIslandCompletion[islandID];
+    public float crystalPercent => (float)crystalCount / (float)God.state.crystalsNeededForIslandCompletion[islandID];
 
     public void OnEnable()
     {
@@ -35,7 +40,7 @@ public class IslandCrystalCollection : MonoBehaviour
 
         lineRenderer.SetWidth( lineWidth , lineWidth );
 
-//        print( portal.biome );
+//        print( islandID );
         //      print( God.state.crystalsCollectedPerIsland.Length );
         UpdateRepresentation();
     }
@@ -56,11 +61,14 @@ public class IslandCrystalCollection : MonoBehaviour
 
         if ( currentExtraShards > 0 ) {
 
-            God.state.AddToTMPCrystalCount( portal.biome , currentExtraShards );
+            God.state.AddToTMPCrystalCount( islandID , currentExtraShards );
 
 
             God.wren.shards.SpendExtraShards();
-            God.cameraManager.pointOfInterestManager.SetPointOfInterestForTime( lookAtPoint , 5 , 100 , 60 , .1f , false );
+            God.cameraManager.pointOfInterestManager.SetPointOfInterestForTime( lookAtPoint , cameraLookFromPoint , 5 , 100 , 60 , .01f ,
+                false , .1f );
+
+
             UpdateRepresentation();
 
         }

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: NewTruth 1
+  m_Name: CollectionCrown
   m_Shader: {fileID: 4800000, guid: 49def2feb2ebd0c4b8e1413305a013c6, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -78,7 +78,7 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Saturation: 0.01
-    - _Size: 11
+    - _Size: 6
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1

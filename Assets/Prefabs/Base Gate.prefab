@@ -24,8 +24,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 116969794559506774}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.037, y: 0.657, z: 0.007}
+  m_LocalRotation: {x: 0.0017983261, y: 0.6571191, z: 0.0073413625, w: 0.7537489}
+  m_LocalPosition: {x: -0.0024692414, y: 0.5219412, z: 0.049780976}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -331,10 +331,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   portal: {fileID: 8527682833849906293}
   lineRenderer: {fileID: 7920142280263556926}
+  isEther: 0
   radiusForLineRenderer: 1
   lineWidth: 3
   segmentCount: 50
   lookAtPoint: {fileID: 5283414436318530579}
+  cameraLookFromPoint: {fileID: 2861915885224902269}
 --- !u!120 &7920142280263556926
 LineRenderer:
   serializedVersion: 2
@@ -587,10 +589,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b86e07da0b9cb5346b69e4501ff9928f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Size: 11
+  _Size: 6
   mesh: {fileID: 4300000, guid: e18f2461cbb71904abe770a504646de6, type: 2}
   material: {fileID: 2100000, guid: d90e9ed92adfb7e4a8b0470a9e69d495, type: 2}
   form: {fileID: 1220924889497261190}
+--- !u!1 &4720843207782378542
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2861915885224902269}
+  m_Layer: 0
+  m_Name: CameraLocation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2861915885224902269
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720843207782378542}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.0068312315, y: 0.63076216, z: 0.0036571124, w: 0.77593756}
+  m_LocalPosition: {x: -0.9513221, y: 0.31397077, z: -0.104365274}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2880782849025872644}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4735321406873715928
 GameObject:
   m_ObjectHideFlags: 0
@@ -623,6 +656,7 @@ Transform:
   m_Children:
   - {fileID: 1528150200466617013}
   - {fileID: 5283414436318530579}
+  - {fileID: 2861915885224902269}
   m_Father: {fileID: 1628588118898612918}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1088519524606215042
@@ -687,7 +721,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.014034272, y: -0.18602063, z: -0.072375454, w: -0.97977614}
   m_LocalPosition: {x: 3166.4, y: 770.4, z: 3559.75}
-  m_LocalScale: {x: 1.4855338, y: 1.1777699, z: 1.1777709}
+  m_LocalScale: {x: 0.4333316, y: 0.3435566, z: 0.34355688}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6108622645386422424}
@@ -715,8 +749,8 @@ MonoBehaviour:
   sceneID: 0
   demo: 0
   isOn: 1
-  biome: 4
-  questID: 4
+  biome: 5
+  questID: 5
   startPoint: {fileID: 3439172244030607454}
   portalBase: {fileID: 2346385015990484433}
   portalCollision: {fileID: 1757149231619950988}
@@ -781,7 +815,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fade: 111
   multiplier: 11
-  color: {r: 0, g: 0.75172853, b: 1, a: 0}
+  color: {r: 0.22655392, g: 0, b: 1, a: 0}
   fadeLocation: {fileID: 3418842874189331340}
   renderers:
   - {fileID: 3766212073540207893}

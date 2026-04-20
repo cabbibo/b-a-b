@@ -67,14 +67,14 @@ public class PointOfInterestCameraController : BaseCameraManager
         }
     }
 
-    public void SetPointOfInterest( Transform newPointOfInterest , float rs = .1f , bool ltb = true )
+    public void SetPointOfInterest( Transform newPointOfInterest , float rs = .1f , bool ltb = true , float timeScale = 1f )
     {
         pointOfInterest = newPointOfInterest;
         requestSpeed = rs;
         lockToBird = ltb;
     }
 
-    public void SetPointOfInterest( Transform newPointOfInterest , Transform cam , float rs = .1f )
+    public void SetPointOfInterest( Transform newPointOfInterest , Transform cam , float rs = .1f , float timeScale = 1f )
     {
         lockToBird = false;
         pointOfInterest = newPointOfInterest;
@@ -88,10 +88,12 @@ public class PointOfInterestCameraController : BaseCameraManager
         pointOfInterest = null;
         cameraController = null;
 
+        God.wren.physics.velocityLimiter = God.wren.physics.maxSpeed * 10;
+
     }
 
     public void SetPointOfInterestForTime( Transform newPointOfInterest , float time , float dfb , float fov , float rs ,
-        bool ltb = true )
+        bool ltb = true , float timeScale = 1f )
     {
 
         print( "SETTTING it all!" );
@@ -107,11 +109,32 @@ public class PointOfInterestCameraController : BaseCameraManager
         StartCoroutine( SetForTimePeriodCoroutine( time ) );
     }
 
+    public void SetPointOfInterestForTime( Transform newPointOfInterest , Transform cam , float time , float dfb , float fov , float rs ,
+        bool ltb = true , float timeScale = 1f )
+    {
+
+        print( "SETTTING it all!" );
+        print( newPointOfInterest );
+        pointOfInterest = newPointOfInterest;
+        FOV = fov;
+        distanceFromBird = dfb;
+        requestSpeed = rs;
+        cameraController = cam;
+
+        lockToBird = ltb;
+
+        // God.timeScaler.SetTargetTimeScale( timeScale );
+        God.wren.physics.velocityLimiter = timeScale;
+
+
+        StartCoroutine( SetForTimePeriodCoroutine( time ) );
+    }
+
 
     private IEnumerator SetForTimePeriodCoroutine( float time )
     {
 
-        yield return new WaitForSeconds( time );
+        yield return new WaitForSecondsRealtime( time );
         ClearPointOfInterest();
     }
 }
