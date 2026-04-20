@@ -136,14 +136,14 @@ void NewTruth( uint threadID : SV_GroupIndex , uint3 u3GroupID : SV_GroupID , ui
 
     float3 force = 0;
 
-    force += -( vert.pos - pos ) * 1;
+    force += -( vert.pos - pos ) * 10;
 
     force += curlNoise( vert.pos );
     force += CurlAroundBirdForce( vert.pos , _WrenPos , _WrenVel ) * 1;
 
     //force += _WrenVel * 100000000;
 
-    if ( length( vert.pos - pos ) > 1000 )
+    if ( length( vert.pos - pos ) > 1000 || length( vert.pos ) < .1 )
     {
         force    = 0;
         vert.vel = 0;

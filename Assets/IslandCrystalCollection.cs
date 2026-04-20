@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using WrenUtils;
 
+
+[ExecuteAlways]
 public class IslandCrystalCollection : MonoBehaviour
 {
     public Portal       portal;
@@ -17,7 +19,7 @@ public class IslandCrystalCollection : MonoBehaviour
     public Transform lookAtPoint;
     public Transform cameraLookFromPoint;
 
-    public int islandID => isEther ? portal.sceneID : portal.biome;
+    public int islandID => isEther ? portal.sceneID - 2 : portal.biome;
 
     public int crystalCount =>
         God.state.crystalsCollectedPerIsland[islandID] + God.state.tmpCrystalsCollectedPerIsland[islandID];
@@ -65,7 +67,7 @@ public class IslandCrystalCollection : MonoBehaviour
 
 
             God.wren.shards.SpendExtraShards();
-            God.cameraManager.pointOfInterestManager.SetPointOfInterestForTime( lookAtPoint , cameraLookFromPoint , 5 , 100 , 60 , .01f ,
+            God.cameraManager.pointOfInterestManager.SetPointOfInterestForTime( lookAtPoint , cameraLookFromPoint , 3f , 100 , 60 , 1f ,
                 false , .1f );
 
 
@@ -76,12 +78,22 @@ public class IslandCrystalCollection : MonoBehaviour
 
     }
 
+    private MaterialPropertyBlock mpb;
+
     public void UpdateRepresentation()
     {
 
 //        print( crystalPercent );
 
-        lineRenderer.material.SetFloat( "_FillAmount" , crystalPercent );
+
+        if ( mpb == null ) {
+            mpb = new MaterialPropertyBlock();
+        }
+
+        mpb.SetFloat( "_FillAmount" , crystalPercent );
+
+
+        lineRenderer.SetPropertyBlock( mpb );
     }
 
     public void Update()
