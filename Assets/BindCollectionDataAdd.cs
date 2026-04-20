@@ -33,9 +33,13 @@ public class BindCollectionDataAdd : Binder
     {
 
         lerpedPercentage = Mathf.Lerp( lerpedPercentage , (float)crystalCollection.crystalPercent , .03f );
-        instanceRenderer.material.SetFloat( "_CrystalPercentage" , lerpedPercentage );
-        instanceRenderer.material.SetInt( "_CrystalsForComplete" , crystalCollection.crystalsNeededForCompletion );
-        instanceRenderer.material.SetInt( "_MaxRows" , maxRows );
+
+        if ( instanceRenderer.runtimeMaterial != null ) {
+            instanceRenderer.runtimeMaterial.SetFloat( "_CrystalPercentage" , lerpedPercentage );
+            instanceRenderer.runtimeMaterial.SetInt( "_CrystalsForComplete" , crystalCollection.crystalsNeededForCompletion );
+            instanceRenderer.runtimeMaterial.SetInt( "_MaxRows" , maxRows );
+            instanceRenderer.runtimeMaterial.SetInt( "_IslandID" , crystalCollection.islandID );
+        }
 
     }
 }

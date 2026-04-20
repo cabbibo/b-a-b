@@ -64,6 +64,9 @@
             float _Size;
             float _Saturation;
 
+            int _IslandID;
+
+
             sampler2D _ColorMap;
 
             struct varyings
@@ -183,6 +186,45 @@
 
             sampler2D _BackgroundTexture1;
 
+
+            float rainbowOffset( float nID )
+            {
+
+                float offset = 0;
+                if ( abs( nID - 1 ) < .1 )
+                {
+                    offset = .05;
+                }
+
+                if ( abs( nID - 2 ) < .1 )
+                {
+                    offset = .2;
+                }
+
+                if ( abs( nID - 3 ) < .1 )
+                {
+                    offset = 0.45;
+                }
+
+                if ( abs( nID - 4 ) < .1 )
+                {
+                    offset = .7;
+                }
+
+
+                if ( abs( nID - 5 ) < .1 )
+                {
+                    offset = .8;
+                }
+
+                if ( abs( nID - 6 ) < .1 )
+                {
+                    offset = .9;
+                }
+                return offset;
+            }
+
+
             float4 frag( varyings v ) : SV_Target
             {
                 float shadow = 1;
@@ -248,7 +290,7 @@
                     //  fog += hsv( float( i ) / 50 - .2 + v.debug.y / 8 , .6 , nv * nv );
 
 
-                    fog += normalize( tex2D( _ColorMap , float2( float( i ) / 50 - .2 + v.debug.y / 8 , 0 ) ) ) * nv * nv; // , .6 , nv * nv );
+                    fog += normalize( tex2D( _ColorMap , float2( float( i ) / 100 + .76 - rainbowOffset( float( _IslandID ) ) , 0 ) ) ) * nv * nv; // , .6 , nv * nv );
 
                 }
 
@@ -256,15 +298,16 @@
 
                 col = generic_desaturate( col , 1 - v.inActiveRow );
 
-                col *= normalize( tex2D( _ColorMap , float2( v.debug.y / 8 , 0 ) ) ) * 1.3 + .6;
+                // col *= normalize( tex2D( _ColorMap , float2( .9 - rainbowOffset( float( _IslandID ) ) , 0 ) ) ) * 1.3 + .6;
                 //  col *= v.isComplete + .3;
-                col = lerp( col * col * .5 , col , v.isComplete );
+                col = lerp( -( col * col ) * 2 , col * 5 , v.isComplete * v.inActiveRow );
 
                 if ( v.isComplete < 0.5 && v.inActiveRow < .5 )
                 {
                     discard;
                 }
 
+                //                col = normalize( tex2D( _ColorMap , float2( .88 - rainbowOffset( float( _IslandID ) ) , 0 ) ) ) * 1.3;
 
 
                 // col *= v.isComplete;

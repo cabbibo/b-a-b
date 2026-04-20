@@ -120,6 +120,43 @@
                 );
             }
 
+            float rainbowOffset( float nID )
+            {
+
+                float offset = 0;
+                if ( abs( nID - 1 ) < .1 )
+                {
+                    offset = .05;
+                }
+
+                if ( abs( nID - 2 ) < .1 )
+                {
+                    offset = .2;
+                }
+
+                if ( abs( nID - 3 ) < .1 )
+                {
+                    offset = 0.45;
+                }
+
+                if ( abs( nID - 4 ) < .1 )
+                {
+                    offset = .7;
+                }
+
+
+                if ( abs( nID - 5 ) < .1 )
+                {
+                    offset = .8;
+                }
+
+                if ( abs( nID - 6 ) < .1 )
+                {
+                    offset = .9;
+                }
+                return offset;
+            }
+
             varyings vert( appdata_full v , uint instanceID : SV_InstanceID )
             {
                 varyings o;

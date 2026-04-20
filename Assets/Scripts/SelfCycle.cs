@@ -27,6 +27,9 @@ public class SelfCycle : Cycle
 
     public void LateUpdate()
     {
+
+        // print( gameObject.transform.parent.parent.name );
+
         if ( gestating ) {
             _WhileGestating( 1 );
         }

@@ -1,94 +1,117 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using IMMATERIA;
 
-
-[ExecuteAlways]
 public class DrawInstancedMesh : MonoBehaviour
 {
-    public float _Size;
-    public Mesh  mesh;
-
+    public float    _Size;
+    public Mesh     mesh;
     public Material material;
+    public Form     form;
 
-    public Form form;
+    public Material runtimeMaterial;
 
-    private ComputeBuffer argsBuffer;
-    private uint[]        args = new uint[5] { 0 , 0 , 0 , 0 , 0 };
+    private          ComputeBuffer argsBuffer;
+    private readonly uint[]        args = new uint[5] { 0 , 0 , 0 , 0 , 0 };
 
-    // Start is called before the first frame update
     private void OnEnable()
     {
-        // Ensure the material has instancing enabled
-        if ( !material.enableInstancing ) {
-            Debug.LogError( "Material does not have GPU instancing enabled!" );
+        if ( material == null || mesh == null || form == null ) {
             return;
         }
 
+        runtimeMaterial = new Material( material );
+
+        if ( !runtimeMaterial.enableInstancing ) {
+            Debug.LogError( "Material does not have GPU instancing enabled!" , this );
+            return;
+        }
+
+        CreateArgsBuffer();
     }
 
     private void OnDisable()
     {
-        if ( argsBuffer != null ) {
-            argsBuffer.Release();
-            argsBuffer = null;
+        ReleaseArgsBuffer();
+
+        if ( runtimeMaterial != null ) {
+            if ( Application.isPlaying ) {
+                Destroy( runtimeMaterial );
+            } else {
+                DestroyImmediate( runtimeMaterial );
+            }
+
+            runtimeMaterial = null;
         }
     }
 
     private void OnDestroy()
     {
+        ReleaseArgsBuffer();
+
+        if ( runtimeMaterial != null ) {
+            if ( Application.isPlaying ) {
+                Destroy( runtimeMaterial );
+            } else {
+                DestroyImmediate( runtimeMaterial );
+            }
+
+            runtimeMaterial = null;
+        }
+    }
+
+    private void CreateArgsBuffer()
+    {
+        ReleaseArgsBuffer();
+
+        if ( mesh == null ) {
+            return;
+        }
+
+        argsBuffer = new ComputeBuffer( 1 , args.Length * sizeof(uint) , ComputeBufferType.IndirectArguments );
+
+        args[0] = (uint)mesh.GetIndexCount( 0 );
+        args[1] = 0;
+        args[2] = (uint)mesh.GetIndexStart( 0 );
+        args[3] = (uint)mesh.GetBaseVertex( 0 );
+        args[4] = 0;
+
+        argsBuffer.SetData( args );
+    }
+
+    private void ReleaseArgsBuffer()
+    {
         if ( argsBuffer != null ) {
             argsBuffer.Release();
             argsBuffer = null;
         }
     }
 
-    // Update is called once per frame
     private void Update()
     {
-
-        if ( form._buffer != null ) {
-
-
-            if ( argsBuffer == null ) {
-
-
-                argsBuffer = new ComputeBuffer( 1 , args.Length * sizeof(uint) , ComputeBufferType.IndirectArguments );
-                uint numIndices = mesh != null ? (uint)mesh.GetIndexCount( 0 ) : 0;
-                args[0] = numIndices; // Index count per instance
-                args[1] = (uint)form.count; // Instance count
-                args[2] = (uint)mesh.GetIndexStart( 0 ); // Start index location
-                args[3] = (uint)mesh.GetBaseVertex( 0 ); // Base vertex location
-                args[4] = 0; // Start instance location
-                argsBuffer.SetData( args );
-            }
-
-            args[1] = (uint)form.count;
-            argsBuffer.SetData( args );
-
-            material.SetBuffer( "_FormBuffer" , form._buffer );
-            material.SetFloat( "_Size" , _Size );
-
-
-            // Bounding volume for frustum culling (must encompass all instances)
-            var bounds = new Bounds( Vector3.zero , Vector3.one * 100000f );
-            Graphics.DrawMeshInstancedIndirect(
-                mesh ,
-                0 ,
-                material ,
-                bounds ,
-                argsBuffer ,
-                0 ,
-                null ,
-                UnityEngine.Rendering.ShadowCastingMode.On ,
-                true ,
-                gameObject.layer
-            );
-
-        } else {
-            print( "No form buffer" );
+        if ( runtimeMaterial == null || mesh == null || form == null || form._buffer == null || argsBuffer == null ) {
+            return;
         }
+
+        args[1] = (uint)form.count;
+        argsBuffer.SetData( args );
+
+        runtimeMaterial.SetBuffer( "_FormBuffer" , form._buffer );
+        runtimeMaterial.SetFloat( "_Size" , _Size );
+
+        var bounds = new Bounds( transform.position , Vector3.one * 100000f );
+
+        Graphics.DrawMeshInstancedIndirect(
+            mesh ,
+            0 ,
+            runtimeMaterial ,
+            bounds ,
+            argsBuffer ,
+            0 ,
+            null ,
+            UnityEngine.Rendering.ShadowCastingMode.On ,
+            true ,
+            gameObject.layer
+        );
     }
 }
