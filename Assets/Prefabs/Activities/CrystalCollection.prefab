@@ -9811,6 +9811,7 @@ MonoBehaviour:
   _CenterOrbFalloff: 2.53
   _CenterOrbFalloffSharpness: 0.3
   _CenterOrbImportance: 0.4
+  _DeltaStepSize: 0.1
 --- !u!1 &2104530160832825300
 GameObject:
   m_ObjectHideFlags: 0
@@ -9918,6 +9919,7 @@ MonoBehaviour:
   _CenterOrbFalloff: 2.53
   _CenterOrbFalloffSharpness: 0.3
   _CenterOrbImportance: 0.4
+  _DeltaStepSize: 0.1
 --- !u!1 &2664079377202115267
 GameObject:
   m_ObjectHideFlags: 0
@@ -14812,8 +14814,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4625641154949229998}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.015600831, y: -0.12723374, z: 0.018090509, w: -0.9915851}
-  m_LocalPosition: {x: -40.500046, y: -8.259998, z: -49.860023}
+  m_LocalRotation: {x: -0.024733413, y: -0.18715696, z: -0.0069840625, w: 0.9819938}
+  m_LocalPosition: {x: -17.11447, y: -0.62177485, z: 8.829267}
   m_LocalScale: {x: 1.8686249, y: 1.8686258, z: 1.8686249}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -14956,14 +14958,14 @@ MonoBehaviour:
   _sceneViewUUID: 
   _viewUUID: 
   _sceneViewPreventOwnershipTakeover: 0
-  _sceneViewDestroyWhenOwnerOrLastClientLeaves: 1
-  _sceneViewDestroyWhenOwnerOrLastClientLeavesMigrated: 1
   _sceneViewDestroyWhenLastClientLeaves: 1
   _components:
   - componentID: 1
     component: {fileID: 7967237042578593448}
+    isDeprecated: 0
   - componentID: 2
     component: {fileID: 431576742161963777}
+    isDeprecated: 0
   _childViews: []
 --- !u!114 &7967237042578593448
 MonoBehaviour:
@@ -14983,6 +14985,7 @@ MonoBehaviour:
   _syncScale: 1
   _syncVelocity: 1
   _maintainOwnershipWhileSleeping: 0
+  _autoRequestOwnership: 0
 --- !u!114 &431576742161963777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15001,6 +15004,18 @@ MonoBehaviour:
   OnDrop:
     m_PersistentCalls:
       m_Calls: []
+  OnCantPickup:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCanPickup:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSetCarryable:
+    m_PersistentCalls:
+      m_Calls: []
+  footID: 0
+  carryTransform: {fileID: 0}
+  isCarryable: 1
   carryForce: 10
   carryBackDistance: 0.4
   carryUpDistance: 0
@@ -15010,6 +15025,7 @@ MonoBehaviour:
   releasedDrag: 0.2
   gravityOnDrop: 0
   whileCarryingScaleMultiplier: 0.3
+  canCarrier: {fileID: 0}
 --- !u!114 &5614000347228552913
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15160,6 +15176,7 @@ Transform:
   m_LocalScale: {x: 1.4184, y: 1.4184, z: 1.4184}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 8164461065652739427}
   - {fileID: 1554620555410209591}
   - {fileID: 5088771622989196535}
   - {fileID: 2305402741704736609}
@@ -20106,8 +20123,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7917316593115916176}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.015600831, y: -0.12723374, z: 0.018090509, w: -0.9915851}
-  m_LocalPosition: {x: -23.320047, y: -8.65, z: -46.990044}
+  m_LocalRotation: {x: -0.004677398, y: -0.20490894, z: -0.0034660213, w: 0.97876376}
+  m_LocalPosition: {x: 14.595096, y: -0.73367953, z: 4.1953077}
   m_LocalScale: {x: 1.8686249, y: 1.8686258, z: 1.8686249}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -20250,14 +20267,14 @@ MonoBehaviour:
   _sceneViewUUID: 
   _viewUUID: 
   _sceneViewPreventOwnershipTakeover: 0
-  _sceneViewDestroyWhenOwnerOrLastClientLeaves: 1
-  _sceneViewDestroyWhenOwnerOrLastClientLeavesMigrated: 1
   _sceneViewDestroyWhenLastClientLeaves: 1
   _components:
   - componentID: 1
     component: {fileID: 2824863560951774785}
+    isDeprecated: 0
   - componentID: 2
     component: {fileID: 6476329420870787198}
+    isDeprecated: 0
   _childViews: []
 --- !u!114 &2824863560951774785
 MonoBehaviour:
@@ -20277,6 +20294,7 @@ MonoBehaviour:
   _syncScale: 1
   _syncVelocity: 1
   _maintainOwnershipWhileSleeping: 0
+  _autoRequestOwnership: 0
 --- !u!114 &6476329420870787198
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20295,6 +20313,18 @@ MonoBehaviour:
   OnDrop:
     m_PersistentCalls:
       m_Calls: []
+  OnCantPickup:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCanPickup:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSetCarryable:
+    m_PersistentCalls:
+      m_Calls: []
+  footID: 0
+  carryTransform: {fileID: 0}
+  isCarryable: 1
   carryForce: 10
   carryBackDistance: 0.4
   carryUpDistance: 0
@@ -20304,6 +20334,7 @@ MonoBehaviour:
   releasedDrag: 0.2
   gravityOnDrop: 0
   whileCarryingScaleMultiplier: 0.3
+  canCarrier: {fileID: 0}
 --- !u!114 &3139593900997815425
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20457,8 +20488,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8264885260545641019}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.015600831, y: -0.12723374, z: 0.018090509, w: -0.9915851}
-  m_LocalPosition: {x: -52.260044, y: -7.99, z: -51.820045}
+  m_LocalRotation: {x: -0.023326885, y: -0.3743726, z: -0.013949103, w: 0.92688}
+  m_LocalPosition: {x: 14.7540455, y: -1.9849838, z: -14.47481}
   m_LocalScale: {x: 1.8686249, y: 1.8686258, z: 1.8686249}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -20601,14 +20632,14 @@ MonoBehaviour:
   _sceneViewUUID: 
   _viewUUID: 
   _sceneViewPreventOwnershipTakeover: 0
-  _sceneViewDestroyWhenOwnerOrLastClientLeaves: 1
-  _sceneViewDestroyWhenOwnerOrLastClientLeavesMigrated: 1
   _sceneViewDestroyWhenLastClientLeaves: 1
   _components:
   - componentID: 1
     component: {fileID: 6987552325486571646}
+    isDeprecated: 0
   - componentID: 2
     component: {fileID: 3298553273284482134}
+    isDeprecated: 0
   _childViews: []
 --- !u!114 &6987552325486571646
 MonoBehaviour:
@@ -20628,6 +20659,7 @@ MonoBehaviour:
   _syncScale: 1
   _syncVelocity: 1
   _maintainOwnershipWhileSleeping: 0
+  _autoRequestOwnership: 0
 --- !u!114 &3298553273284482134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20646,6 +20678,18 @@ MonoBehaviour:
   OnDrop:
     m_PersistentCalls:
       m_Calls: []
+  OnCantPickup:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCanPickup:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSetCarryable:
+    m_PersistentCalls:
+      m_Calls: []
+  footID: 0
+  carryTransform: {fileID: 0}
+  isCarryable: 1
   carryForce: 10
   carryBackDistance: 0.4
   carryUpDistance: 0
@@ -20655,6 +20699,7 @@ MonoBehaviour:
   releasedDrag: 0.2
   gravityOnDrop: 0
   whileCarryingScaleMultiplier: 0.3
+  canCarrier: {fileID: 0}
 --- !u!114 &1775078029904628858
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20881,3 +20926,94 @@ MonoBehaviour:
   _CenterOrbFalloff: 2.53
   _CenterOrbFalloffSharpness: 0.3
   _CenterOrbImportance: 0.4
+  _DeltaStepSize: 0.1
+--- !u!1001 &4067901566400367261
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 3552085936953738700}
+    m_Modifications:
+    - target: {fileID: 926565180426037347, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_Name
+      value: Torch
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.44356188
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.4435619
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.44356188
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.2197074
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -2.2446833
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.55371284
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.94832766
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.0057024388
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.317236
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.0018666747
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects:
+    - {fileID: 2605556206946591278, guid: f188f3aae7189e64f9ad6865fdf37307, type: 3}
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f188f3aae7189e64f9ad6865fdf37307, type: 3}
+--- !u!4 &8164461065652739427 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5276504594689660926, guid: f188f3aae7189e64f9ad6865fdf37307,
+    type: 3}
+  m_PrefabInstance: {fileID: 4067901566400367261}
+  m_PrefabAsset: {fileID: 0}

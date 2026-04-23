@@ -6,6 +6,7 @@ using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 using EasyButtons;
 using System.Runtime.InteropServices;
+using UnityEngine.Events;
 
 public class ShardToggleGroup : MonoBehaviour
 {
@@ -16,6 +17,8 @@ public class ShardToggleGroup : MonoBehaviour
     public ComputeBuffer shardsBuffer;
 
     public Renderer[] renderers;
+
+    public UnityEvent OnAllCollected;
 
 
     public void Start()
@@ -112,15 +115,23 @@ public class ShardToggleGroup : MonoBehaviour
     public void OnShardHit( GameObject shardGO )
     {
 
-        print( shardGO.name );
+
+        bool allOnTmp = true;
 
         // Get index of shard
         for ( int i = 0; i < shards.Length; i++ ) {
+            if ( shards[i].collected == false ) {
+                allOnTmp = false;
+            }
+
             if ( shards[i].gameObject == shardGO ) {
-                print( shardGO.name );
-                print( "HIT" );
                 OnToggle( i );
             }
+        }
+
+        if ( allOnTmp == true && allOn == false ) {
+            allOn = true;
+            OnAllCollected.Invoke();
         }
 
     }

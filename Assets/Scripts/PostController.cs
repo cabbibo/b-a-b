@@ -473,8 +473,12 @@ public class PostController : MonoBehaviour
         SafeApplyToPipeline();
     }
 
+    public Vector2 defaultWormholeSpeed = new(.03f , .1f);
+
     public void WormHole()
     {
+
+        wormHoleSpeed = defaultWormholeSpeed;
         emptyDelegate = null;
         emptyDelegate2 = null;
         StartCoroutine( DoWormHole() );
@@ -482,6 +486,7 @@ public class PostController : MonoBehaviour
 
     public void WormHole( EmptyDelegate ed )
     {
+        wormHoleSpeed = defaultWormholeSpeed;
         emptyDelegate = ed;
         emptyDelegate2 = null;
         StartCoroutine( DoWormHole() );
@@ -489,8 +494,17 @@ public class PostController : MonoBehaviour
 
     public void WormHole( EmptyDelegate ed , EmptyDelegate ed2 )
     {
+        wormHoleSpeed = defaultWormholeSpeed;
         emptyDelegate = ed;
         emptyDelegate2 = ed2;
+        StartCoroutine( DoWormHole() );
+    }
+
+    public void WormHole( EmptyDelegate ed , Vector2 speed )
+    {
+        wormHoleSpeed = speed;
+        emptyDelegate = ed;
+        emptyDelegate2 = null;
         StartCoroutine( DoWormHole() );
     }
 

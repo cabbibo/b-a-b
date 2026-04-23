@@ -95,6 +95,8 @@ MonoBehaviour:
   filled: 0
   drainSpeed: 0
   drainedAmount: 0
+  persistent: 0
+  uniqueFillerID: 3e2ace3e-5b79-424a-89d4-352b5896ef63
 --- !u!135 &581584810036786498
 SphereCollider:
   m_ObjectHideFlags: 0

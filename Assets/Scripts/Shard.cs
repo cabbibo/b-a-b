@@ -24,6 +24,9 @@ public class Shard : MonoBehaviour
     public bool collected    = false;
     public bool firstCollect = false;
 
+
+    public bool canUncollect = false;
+
     [Header( "Persistence" )]
     public bool saveCollectionStatus = false;
 
@@ -223,13 +226,15 @@ public class Shard : MonoBehaviour
 
     public void DoCollect()
     {
-        if ( collected ) {
+        if ( collected && !canUncollect ) {
             return;
         }
 
         print( "LFG" );
+        
+        
 
-        SetCollectedState( true , true );
+        SetCollectedState( !collected , saveCollectionStatus );
 
         var collectPosition = God.wren.transform.position;
 

@@ -73,7 +73,7 @@ Shader "Debug/ShardToggleGroupDebug"
                     int            id   = ids[ i ];
                     ShardLightData data = _ShardBuffer[ id ];
 
-                    col += hsv( float( id ) / float( _ShardBuffer_COUNT ) , 1 , 1 ) / ( 10 * pow( length( data.position.xyz - v.world ) , 2 ) );
+                    col += hsv( float( id ) / float( _ShardBuffer_COUNT ) , 1 , 1 ) / ( 10 * pow( length( data.position.xyz - v.world ) , 2 ) ) * data.isCollected;
 
                 }
 

@@ -50,6 +50,7 @@ MonoBehaviour:
   destroyOnCollect: 0
   collected: 0
   firstCollect: 0
+  canUncollect: 0
   saveCollectionStatus: 1
   uniqueShardID: f6b2a660-851f-466c-aa5d-258f51159433
   Uncollected: {fileID: 0}
