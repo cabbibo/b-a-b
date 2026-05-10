@@ -51,6 +51,9 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
     public float curlSize;
 
     public float normalOffset;
+    public float centerBias   = 2f;
+    public float borderMargin = 0.02f;
+    public float fadeMargin   = 0.08f;
     public bool  renderBackground;
 
     public float hueRandomness;
@@ -88,6 +91,7 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
 
 
         _VertBuffer = new ComputeBuffer( splatAmount , sizeof(float) * structSize );
+        StaggerInitialLife( _VertBuffer );
         kernel = shader.FindKernel( kernelName );
         GetNumThreads();
         GetNumGroups();
@@ -176,6 +180,9 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
             shader.SetFloat( "_CurlForce" , curlForce );
             shader.SetFloat( "_CurlSize" , curlSize );
             shader.SetFloat( "_NormalOffset" , normalOffset );
+            shader.SetFloat( "_CenterBias" , centerBias );
+            shader.SetFloat( "_BorderMargin" , borderMargin );
+            shader.SetFloat( "_FadeMargin" , fadeMargin );
 
             shader.Dispatch( kernel , numGroups , 1 , 1 );
 
@@ -235,5 +242,19 @@ public class PlaceParticlesOnDepthMap : MonoBehaviour
         }
 
         _VertBuffer = new ComputeBuffer( splatAmount , sizeof(float) * structSize );
+        StaggerInitialLife( _VertBuffer );
+    }
+
+    // Spread initial life values across [0,1] so particles die and respawn at different
+    // times from the start instead of all decaying together in the first frame.
+    // Pos.x is parked off-screen (100000) so un-spawned particles don't render.
+    private void StaggerInitialLife( ComputeBuffer buf )
+    {
+        var data = new float[splatAmount * structSize];
+        for ( int i = 0; i < splatAmount; i++ ) {
+            data[i * structSize + 0]  = 100000f;                        // pos.x — off screen
+            data[i * structSize + 14] = (float)i / (float)splatAmount;  // life — evenly staggered
+        }
+        buf.SetData( data );
     }
 }

@@ -21,7 +21,7 @@ Shader "Unlit/BasicDebug"
         //Blend One One
         Blend SrcAlpha OneMinusSrcAlpha
         ZWrite Off
-        ZTest Always
+        //ZTest Always
         Tags
         {
             "Queue" = "Transparent"
@@ -186,6 +186,8 @@ Shader "Unlit/BasicDebug"
 
                     float scale = length( eye ) * .003; // 1.0 + (1.0 / length(eye));
 
+                    scale *= 1 - vert.debug;
+                    scale *= 1 + sin( float( base ) ) * 1;
                     //float scale = 1;
                     float3 fPos = basePos + extra * _Size * scale * dT + vert.nor * _NormalOffset; //*  _VertBuffer[base].debug.y;//saturate(dT * .1);
 
@@ -217,7 +219,7 @@ Shader "Unlit/BasicDebug"
             float3 hsv( float h , float s , float v )
             {
                 return lerp( float3( 1.0 , 1 , 1 ) , clamp( ( abs( frac(
-                                                        h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ) , 0.0 , 1.0 ) , s ) * v;
+     h + float3( 3.0 , 2.0 , 1.0 ) / 3.0 ) * 6.0 - 3.0 ) - 1.0 ) , 0.0 , 1.0 ) , s ) * v;
             }
 
             float3 rgb2hsv( float3 c )
@@ -255,7 +257,7 @@ Shader "Unlit/BasicDebug"
 
             float3 ApplyLightness( float3 col , float lightnessAdjust )
             {
-                return col * lightnessAdjust; // - dot(col, float3(0.299, 0.587, 0.114)) * lightnessAdjust;
+                return col * ( 1 + lightnessAdjust ); // - dot(col, float3(0.299, 0.587, 0.114)) * lightnessAdjust;
             }
 
             float _SaturationRandomness;
@@ -266,6 +268,8 @@ Shader "Unlit/BasicDebug"
             float4 frag( varyings v ) : COLOR
             {
                 float4 col = tex2D( _SplatTexture , v.uv2 );
+
+                float4 splatCol = col;
 
                 float dif = length( _DiscardColor.xyz - col.xyz );
 
@@ -292,19 +296,26 @@ Shader "Unlit/BasicDebug"
                 //col.xyz *= v.color;
                 float3 hsv = rgb2hsv( v.color );
                 float  hue = rgb2hsv( v.color ).x;
-                col.xyz    = v.color.xyz;
-                col.xyz    = ApplyHue( col.xyz , sin( v.id ) * _HueRandomness ); //hsv(hue,.5,1);
-                col.xyz    = ApplySaturation( col.xyz , ( ( sin( v.id * 10 ) ) * _SaturationRandomness ) + hsv.y );
-                col.xyz    = ApplyLightness( col.xyz , ( ( sin( v.id * 10 ) ) * _LightnessRandomness ) + hsv.z );
+
+                col.xyz = v.color.xyz;
+                col.xyz = ApplyHue( col.xyz , sin( v.id ) * _HueRandomness ); //hsv(hue,.5,1);
+                col.xyz = ApplySaturation( col.xyz , ( sin( v.id * 10 ) ) * _SaturationRandomness + hsv.y ); // hsv(hue,.5,1);
+                col.xyz = ApplyLightness( col.xyz , ( ( sin( v.id * 10 ) ) * _LightnessRandomness ) );
+
                 // col = hsv.z;
-                col.xyz *= v.lifeSize;
-                col *= 2;
-                col.xyz = ApplyHue( col.xyz , dif * .4 ); // hsv( val,1,1);
+                // col.xyz *= v.lifeSize;
+                //   col *= 2;
+                // col.xyz = ApplyHue( col.xyz , dif * .4 ); // hsv( val,1,1);
 
                 //   col     = 1;
                 // col.xyz = v.color.xyz;
                 // col.xyz *= hsv( hue + .3*sin(v.id) ,.4,(sin(v.id * 10)+1) /4 + .5) ;
                 col *= _ColorMultiplier;
+
+                // col.xyz = hsv2rgb( float3( hue , 1 , .5 ) );
+
+                //col = lerp( col , 1 , v.debug );
+
                 return float4( col.xyz , 1 );
             }
             ENDCG

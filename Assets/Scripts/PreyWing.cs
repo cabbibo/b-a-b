@@ -29,7 +29,9 @@ public class PreyWing : MonoBehaviour
     void Update()
     {
 
-        targetPosition = controller.transform.position + controller.transform.right * wingSpan * (leftRight ? 1 : -1) + controller.transform.up * wingSpan * 0.5f * Mathf.Sin(controller.positionInFlapCycle + Mathf.PI);
+        targetPosition = controller.transform.position
+            + controller.transform.TransformVector( Vector3.right * wingSpan * (leftRight ? 1 : -1) )
+            + controller.transform.TransformVector( Vector3.up * wingSpan * 0.5f * Mathf.Sin( controller.positionInFlapCycle + Mathf.PI ) );
 
         velocity += (targetPosition - transform.position) * speed;
 

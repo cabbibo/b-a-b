@@ -137,6 +137,9 @@ public class PostParameters : ScriptableObject
     public float curlForce                 = 0;
     public float curlSize                  = 0;
     public float normalOffset              = 0;
+    public float splatCenterBias           = 2f;
+    public float splatBorderMargin         = 0.02f;
+    public float splatFadeMargin           = 0.08f;
     public float splatHueRandomness        = 0;
     public float splatSaturationRandomness = 0;
     public float splatLightnessRandomness  = 0;
@@ -491,6 +494,9 @@ public class PostParameters : ScriptableObject
         placeParticlesOnDepthMap.curlForce = curlForce;
         placeParticlesOnDepthMap.curlSize = curlSize;
         placeParticlesOnDepthMap.normalOffset = normalOffset;
+        placeParticlesOnDepthMap.centerBias = splatCenterBias;
+        placeParticlesOnDepthMap.borderMargin = splatBorderMargin;
+        placeParticlesOnDepthMap.fadeMargin = splatFadeMargin;
         placeParticlesOnDepthMap.hueRandomness = splatHueRandomness;
         placeParticlesOnDepthMap.saturationRandomness = splatSaturationRandomness;
         placeParticlesOnDepthMap.lightnessRandomness = splatLightnessRandomness;
@@ -638,6 +644,9 @@ public class PostParameters : ScriptableObject
         p.curlSize = curlSize;
         p.splatMatchAmount = splatMatchAmount;
         p.normalOffset = normalOffset;
+        p.splatCenterBias = splatCenterBias;
+        p.splatBorderMargin = splatBorderMargin;
+        p.splatFadeMargin = splatFadeMargin;
         p.splatHueRandomness = splatHueRandomness;
         p.splatSaturationRandomness = splatSaturationRandomness;
         p.splatLightnessRandomness = splatLightnessRandomness;

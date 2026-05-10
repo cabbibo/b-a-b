@@ -196,6 +196,7 @@ public class InterfacePointer : MonoBehaviour
         if ( pointerList.Count != pointerTypes.Count ) {
             ClearPointers();
             UpdateAllPointers();
+            RemakeBuffer();
         }
 
 
@@ -222,9 +223,11 @@ public class InterfacePointer : MonoBehaviour
             for ( int i = 0; i < pointerList.Count; i++ ) {
 
                 if ( pointerList[i] == null ) {
-                    // Debug.LogError( "Pointer is null" );
-                    //Debug.LogError( pointerList[i].gameObject.name );
                     pointerList.RemoveAt( i );
+                    pointerTypes.RemoveAt( i );
+                    fades.RemoveAt( i );
+                    targetFades.RemoveAt( i );
+                    extraData.RemoveAt( i );
                     i--;
                     mustRemake = true;
                     continue;

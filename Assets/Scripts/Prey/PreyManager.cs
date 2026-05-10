@@ -12,6 +12,11 @@ public class PreyManager : MonoBehaviour
 
     public Transform debugWren;
 
+    [Header( "Scene References" )]
+    public Transform   thermalCenter; // orbit point for thermal module
+    public Transform   anchorPoint;   // wander center for anchor/butterfly module
+    public Transform[] perchPoints;   // explicit perch targets for this manager's birds
+
     public bool spawnMaxOnWrenEnter;
 
 
@@ -130,14 +135,11 @@ public class PreyManager : MonoBehaviour
     public void OnWrenExit()
     {
         wrenInside = false;
-        /*
-                while (preyHolder.childCount > 0)
-                {
-                    DestroyImmediate(preyHolder.GetChild(0).gameObject);
-                }
-          */
 
-
+        for ( int i = 0; i < preyHolder.childCount; i++ ) {
+            var prey = preyHolder.GetChild( i ).GetComponent<PreyController>();
+            if ( prey != null ) prey.ForceDespawn();
+        }
     }
 
 
@@ -192,9 +194,9 @@ public class PreyManager : MonoBehaviour
         }
 
         if ( altitudeType == AltitudeType.RandomRange ) {
-            spawnPos.y = groundPos.y + preyConfig.minAltitude + Random.Range( 0 , preyConfig.maxAltitude - preyConfig.minAltitude );
+            spawnPos.y = groundPos.y + preyConfig.altitude.minAltitude + Random.Range( 0 , preyConfig.altitude.maxAltitude - preyConfig.altitude.minAltitude );
         } else if ( altitudeType == AltitudeType.DesiredAltitude ) {
-            spawnPos.y = groundPos.y + preyConfig.desiredAltitude;
+            spawnPos.y = groundPos.y + preyConfig.altitude.desiredAltitude;
         } else if ( altitudeType == AltitudeType.OnGround ) {
             spawnPos.y = groundPos.y;
         }
@@ -267,6 +269,17 @@ public class PreyManager : MonoBehaviour
     }
 
 
+    public void GetNearbyBirds( Vector3 pos , float radius , PreyController exclude , List<PreyController> results )
+    {
+        float sqrRadius = radius * radius;
+        for ( int i = 0; i < preyHolder.childCount; i++ ) {
+            var bird = preyHolder.GetChild( i ).GetComponent<PreyController>();
+            if ( bird == null || bird == exclude ) continue;
+            if ( (bird.position - pos).sqrMagnitude < sqrRadius )
+                results.Add( bird );
+        }
+    }
+
     public virtual void PreyGotAte( PreyController b )
     {
 
@@ -276,7 +289,7 @@ public class PreyManager : MonoBehaviour
         God.audio.Play( God.sounds.eatClip );
         God.wren.stats.FullnessAdd( preyFullnessIncrease );
 
-        God.wren.shards.CollectShards( b.parameters.numCrystals , b.parameters.crystalType , b.transform.position );
+        God.wren.shards.CollectShards( b.parameters.crystals.crystalsOnCollect , b.parameters.crystals.crystalType , b.transform.position );
 
 
     }
