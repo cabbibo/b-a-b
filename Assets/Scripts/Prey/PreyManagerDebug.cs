@@ -85,16 +85,22 @@ public class PreyManagerDebug : MonoBehaviour
             }
         }
 
-        if ( manager.thermalCenter != null ) {
+        if ( manager.thermalCenters != null ) {
             Handles.color = new Color( 0.2f , 0.8f , 1f );
-            Handles.DrawWireDisc( manager.thermalCenter.position , Vector3.up , 2f );
-            Handles.Label( manager.thermalCenter.position + Vector3.up , "thermal" );
+            foreach ( var tc in manager.thermalCenters ) {
+                if ( tc == null ) continue;
+                Handles.DrawWireDisc( tc.position , Vector3.up , 2f );
+                Handles.Label( tc.position + Vector3.up , "thermal" );
+            }
         }
 
-        if ( manager.anchorPoint != null ) {
+        if ( manager.anchorPoints != null ) {
             Handles.color = Color.magenta;
-            Handles.DrawWireDisc( manager.anchorPoint.position , Vector3.up , 1f );
-            Handles.Label( manager.anchorPoint.position + Vector3.up , "anchor" );
+            foreach ( var ap in manager.anchorPoints ) {
+                if ( ap == null ) continue;
+                Handles.DrawWireDisc( ap.position , Vector3.up , 1f );
+                Handles.Label( ap.position + Vector3.up , "anchor" );
+            }
         }
 #endif
     }

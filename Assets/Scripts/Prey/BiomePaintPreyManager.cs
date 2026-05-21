@@ -22,7 +22,7 @@ public class BiomePaintPreyManager : PreyManager
 //        print( value );
 
         if ( value >= 0 && currentBiomeValue >= 0 ) {
-            if ( Time.time - lastSpawnTime > spawnTime ) {
+            if ( Time.time - lastSpawnTime > spawnInterval ) {
                 SpawnNewBug();
             }
         }

@@ -1,16 +1,15 @@
 using UnityEngine;
 
+public enum SpawnType   { InsideBox, NextToCurve, BiomePaint }
+public enum AltitudeType { RandomRange, DesiredAltitude, OnGround }
+
 // ─── Module toggles ──────────────────────────────────────────────────────────
 
 [System.Serializable]
 public class PreyModuleFlags
 {
     [Header( "Core" )]
-    public bool scale = true;
-
-    public bool despawn  = true;
     public bool altitude = true;
-    public bool turning  = true;
     public bool flap     = true;
 
     [Header( "Flavor" )]
@@ -23,10 +22,11 @@ public class PreyModuleFlags
     public bool thermal = false;
 
     [Header( "Behavior" )]
-    public bool perch = false;
-
-    public bool takeOff = false;
-    public bool run     = false;
+    public bool perch            = false;
+    public bool takeOff          = false;
+    public bool run              = false;
+    public bool cage             = false;
+    public bool avoidance        = true;
 }
 
 // ─── Core settings ───────────────────────────────────────────────────────────
@@ -42,7 +42,10 @@ public class PreyScaleSettings
 [System.Serializable]
 public class PreyMovementSettings
 {
-    public float speed = .1f;
+    public float minSpeed     = 0.05f;
+    public float maxSpeed     = 0.2f;
+    public float desiredSpeed = 0.1f;
+    public float dampening    = 0.1f;
     public float forwardSpeed;
     public float maxAngleTurnBetweenFrames = 4f;
     public float minimumDotProductMatchForTurn;
@@ -51,6 +54,7 @@ public class PreyMovementSettings
 [System.Serializable]
 public class PreyDespawnSettings
 {
+    public bool  onWrenExit                                   = true;
     public float minimumTimeAlive                            = 30f;
     public float distanceBeforeNotCaught                     = 100f;
     public float timeOutsideDistanceBeforeNotCaughtTriggered = 5f;
@@ -59,7 +63,8 @@ public class PreyDespawnSettings
 [System.Serializable]
 public class PreyAltitudeSettings
 {
-    public float desiredAltitude                = 10;
+    public float desiredAltitudeMin             = 8;
+    public float desiredAltitudeMax             = 12;
     public float minAltitude                    = 5;
     public float maxAltitude                    = 20;
     public float minimumTotalY                  = 0;
@@ -76,12 +81,24 @@ public class PreyPhysicsSettings
 [System.Serializable]
 public class PreyTurningSettings
 {
-    public float groundTurnForce      = 1;
-    public float forwardTurnForce     = 1;
-    public float distanceForStartTurn = 30;
-    public float distanceForHardTurn  = 10;
-    public float bankStrength         = 5f;
-    public float bankSmoothing        = 0.08f;
+    public float bankStrength  = 5f;
+    public float bankSmoothing = 0.08f;
+}
+
+[System.Serializable]
+public class PreyAvoidanceModule
+{
+    public bool  avoidGround            = true;
+    public bool  avoidObjects           = true;
+    public float avoidanceStartDistance = 20f;
+    public float maxForce               = 3f;
+}
+
+[System.Serializable]
+public class PreyCageModule
+{
+    public float borderTurnDistance = 10f;
+    public float borderTurnForce    = 2f;
 }
 
 [System.Serializable]
@@ -96,6 +113,8 @@ public class PreyFlapSettings
 [System.Serializable]
 public class PreyCrystalSettings
 {
+    public float eatRadius         = 1.5f;
+    public float focusRadius       = 15f;
     public int   crystalsOnCollect = 50;
     public float crystalType       = .5f;
 }
@@ -103,9 +122,22 @@ public class PreyCrystalSettings
 [System.Serializable]
 public class PreySpawnSettings
 {
+    [Header( "Animation" )]
     public float spawnSpeed  = 3f;
     public float dieSpeed    = 1f;
     public float ateDieSpeed = .3f;
+
+    [Header( "Placement" )]
+    public SpawnType    spawnType    = SpawnType.InsideBox;
+    public AltitudeType altitudeType = AltitudeType.RandomRange;
+    public float spawnRadius = 5f;
+
+    [Header( "Box Bounds" )]
+    public Vector3 boundsMin;
+    public Vector3 boundsMax;
+
+    [Header( "Curve" )]
+    public float curveOffset = 5f;
 }
 
 [System.Serializable]
@@ -228,17 +260,24 @@ public class PreyConfigSO : ScriptableObject
     [Header( "Modules" )]
     public PreyModuleFlags modules;
 
-    [Header( "Core" )]
-    public PreyScaleSettings scale;
+    [Header( "Crystals" )]
+    public PreyCrystalSettings crystals;
 
-    public PreyMovementSettings movement;
-    public PreyDespawnSettings  despawn;
-    public PreyAltitudeSettings altitude;
+    [Header( "Spawn" )]
+    public PreySpawnSettings spawn;
+
+    [Header( "Despawn" )]
+    public PreyDespawnSettings despawn;
+
+    [Header( "Physics" )]
     public PreyPhysicsSettings  physics;
     public PreyTurningSettings  turning;
+
+    [Header( "Core" )]
+    public PreyScaleSettings    scale;
+    public PreyMovementSettings movement;
+    public PreyAltitudeSettings altitude;
     public PreyFlapSettings     flap;
-    public PreyCrystalSettings  crystals;
-    public PreySpawnSettings    spawn;
     public PreyDistanceSettings distance;
 
     [Header( "Flavor" )]
@@ -251,8 +290,9 @@ public class PreyConfigSO : ScriptableObject
     public PreyThermalModule  thermal;
 
     [Header( "Behavior" )]
-    public PreyPerchModule perch;
-
-    public PreyTakeOffModule takeOff;
-    public PreyRunModule     run;
+    public PreyPerchModule    perch;
+    public PreyTakeOffModule  takeOff;
+    public PreyRunModule      run;
+    public PreyCageModule     cage;
+    public PreyAvoidanceModule avoidance;
 }

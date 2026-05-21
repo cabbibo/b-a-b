@@ -35,6 +35,18 @@ public class PreySpline : MonoBehaviour
         return best;
     }
 
+    // Returns the world position at t (0-1 along total path).
+    public Vector3 GetPointAt( float t )
+    {
+        if ( waypoints == null || waypoints.Length < 2 ) return transform.position;
+        int segments = loop ? waypoints.Length : waypoints.Length - 1;
+        float scaled = t * segments;
+        int   i      = Mathf.FloorToInt( scaled ) % waypoints.Length;
+        int   j      = (i + 1) % waypoints.Length;
+        float frac   = scaled - Mathf.Floor( scaled );
+        return Vector3.Lerp( waypoints[i].position , waypoints[j].position , frac );
+    }
+
     // Returns the forward direction at position t along the spline.
     public Vector3 GetForwardAt( float t )
     {
