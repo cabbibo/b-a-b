@@ -14,7 +14,7 @@ public class HueController : MonoBehaviour
 
 
     MaterialPropertyBlock mpb;
-    Renderer renderer;
+    new Renderer renderer;
 
     // Update is called once per frame
     void Update()

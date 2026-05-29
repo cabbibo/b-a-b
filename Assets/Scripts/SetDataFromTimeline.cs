@@ -12,7 +12,7 @@ public class SetDataFromTimeline : MonoBehaviour
 
 
 
-    public PlayCutScene animation;
+    public new PlayCutScene animation;
 
     public bool startEnd;
 

@@ -13,7 +13,7 @@ public class WrenNetworked : RealtimeComponent<WrenNetworkedModel>
 
     }
 
-    private WrenNetworkedModel model
+    private new WrenNetworkedModel model
     {
         set
         {

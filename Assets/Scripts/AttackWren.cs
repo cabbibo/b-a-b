@@ -9,7 +9,7 @@ public class AttackWren : MonoBehaviour
     public float maxLength = 200;
 
 
-    private Rigidbody rigidbody;
+    private new Rigidbody rigidbody;
 
     // Update is called once per frame
     private void Update()

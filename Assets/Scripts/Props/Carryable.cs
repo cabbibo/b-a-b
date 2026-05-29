@@ -138,7 +138,9 @@ public class Carryable : RealtimeComponent<CarryableModel>
         print( CarryCooldown );
         print( TimeSinceLastCarried );
 
+#pragma warning disable CS0472
         if ( carrier.GetNormalClientId() != null ) {
+#pragma warning restore CS0472
             return !BeingCarried &&
                    (IdOfLastCarrier != carrier.GetNormalClientId() || TimeSinceLastCarried >= CarryCooldown);
         } else {

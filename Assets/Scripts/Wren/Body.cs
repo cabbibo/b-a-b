@@ -5,7 +5,7 @@ using UnityEngine;
 public class Body : MonoBehaviour
 {   
 
-    public bool enabled;
+    public new bool enabled;
 
     public FullBird bird;
 

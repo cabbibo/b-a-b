@@ -7,7 +7,7 @@ using WrenUtils;
 [CreateAssetMenu( fileName = "PhysicsParams" , menuName = "WREN/PhysicsParams" , order = 1 )]
 public class PhysicsParams : ScriptableObject
 {
-    public string name;
+    public new string name;
 
     public bool swapLR;
     public bool invert;

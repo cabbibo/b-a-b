@@ -33,7 +33,7 @@ public class WrenState : MonoBehaviour
 
     public int inRace;
 
-    public string name;
+    public new string name;
     public string uniqueID;
 
     public uint playerID;

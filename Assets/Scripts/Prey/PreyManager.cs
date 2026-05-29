@@ -1,6 +1,19 @@
 using UnityEngine;
+using UnityEngine.Splines;
+using Unity.Mathematics;
 using WrenUtils;
+using System.Collections;
 using System.Collections.Generic;
+using Random = UnityEngine.Random;
+
+public enum RegionType
+{
+    Box ,
+    Collider ,
+    Spline ,
+    Painted
+}
+
 
 public class PreyManager : MonoBehaviour
 {
@@ -13,15 +26,12 @@ public class PreyManager : MonoBehaviour
     public Transform debugWren;
 
     [Header( "Debug" )]
-    public bool stepThrough = false;
+    public bool  stepThrough      = false;
+    [Range( 0.01f , 1f )]
+    public float simulationSpeed  = 1f;
 
     [Header( "Scene References" )]
-    public Transform[] thermalCenters; // orbit points for thermal module (picks closest)
-
-    public Transform[] anchorPoints; // wander centers for anchor/butterfly module (picks closest)
-    public Transform[] perchPoints; // explicit perch targets for this manager's birds
-
-    public PreySpline spawnCurve; // scene curve for NextToCurve spawn type
+    public PreyInterestPoint[] interestPoints; // perch spots, thermals, anchors, updrafts, investigate points
 
     public bool spawnMaxOnWrenEnter;
 
@@ -48,14 +58,11 @@ public class PreyManager : MonoBehaviour
     public ParticleSystem gotAteParticles;
 
 
-    public bool wrenInside;
+    public bool birdInsideRegion;
 
     public Transform preyHolder;
 
-    public Transform cage;
-
     public Transform[] spawnPoints;
-    public Transform[] objectsOfInterest;
 
     public bool wrenEnterOnEnabled;
 
@@ -64,8 +71,21 @@ public class PreyManager : MonoBehaviour
     public float lastSpawnTime;
     public int   currentNumberOfPrey;
 
+    [Header( "Region Detection" )]
+    public RegionType      regionType          = RegionType.Box;
+    public Transform       boxRegion;
+    public Collider        regionCollider;
+    public SplineContainer regionSpline;
+    public float           splineEnterDistance = 20f;
+    public float           splineExitDistance  = 30f;
+    public float           splineCheckInterval = 0.1f;
 
-    public void OnEnable()
+    private Vector3   splineBoundsCenter;
+    private float     splineBoundingRadius;
+    private Coroutine splineCheckCoroutine;
+
+
+    public virtual void OnEnable()
     {
         lastSpawnTime = Time.time - spawnInterval;
         while (preyHolder.childCount > 0) DestroyImmediate( preyHolder.GetChild( 0 ).gameObject );
@@ -73,19 +93,18 @@ public class PreyManager : MonoBehaviour
         if ( wrenEnterOnEnabled ) {
             OnWrenEnter();
         }
-    }
 
-    public void OnTriggerEnter( Collider other )
-    {
-        if ( God.IsOurWren( other ) ) {
-            OnWrenEnter();
+        if ( regionType == RegionType.Spline ) {
+            CacheSplineBounds();
+            splineCheckCoroutine = StartCoroutine( SplineCheckRoutine() );
         }
     }
 
-    public void OnTriggerExit( Collider other )
+    private void OnDisable()
     {
-        if ( God.IsOurWren( other ) ) {
-            OnWrenExit();
+        if ( splineCheckCoroutine != null ) {
+            StopCoroutine( splineCheckCoroutine );
+            splineCheckCoroutine = null;
         }
     }
 
@@ -93,6 +112,53 @@ public class PreyManager : MonoBehaviour
     {
         currentNumberOfPrey = preyHolder.childCount;
         CheckForNewPrey();
+
+        if      ( regionType == RegionType.Box      ) CheckBoxRegion();
+        else if ( regionType == RegionType.Collider ) CheckColliderRegion();
+    }
+
+    private void CheckBoxRegion()
+    {
+        if ( boxRegion == null ) return;
+
+        var wrenT = God.wren != null ? God.wren.transform
+            : debugWren != null ? debugWren
+            : null;
+        if ( wrenT == null ) return;
+
+        var   wrenPos = wrenT.position;
+        var   half    = boxRegion.lossyScale * 0.5f;
+        var   center  = boxRegion.position;
+        bool  inside  = wrenPos.x >= center.x - half.x && wrenPos.x <= center.x + half.x
+                     && wrenPos.y >= center.y - half.y && wrenPos.y <= center.y + half.y
+                     && wrenPos.z >= center.z - half.z && wrenPos.z <= center.z + half.z;
+
+        if ( !birdInsideRegion && inside  ) OnWrenEnter();
+        else if ( birdInsideRegion && !inside ) OnWrenExit();
+    }
+
+    private void CheckColliderRegion()
+    {
+        if ( regionCollider == null ) {
+            return;
+        }
+
+        var wrenT = God.wren != null ? God.wren.transform
+            : debugWren != null ? debugWren
+            : null;
+
+        if ( wrenT == null ) {
+            return;
+        }
+
+        var wrenPos = wrenT.position;
+        bool isInside = (regionCollider.ClosestPoint( wrenPos ) - wrenPos).sqrMagnitude < 0.001f;
+
+        if ( !birdInsideRegion && isInside ) {
+            OnWrenEnter();
+        } else if ( birdInsideRegion && !isInside ) {
+            OnWrenExit();
+        }
     }
 
     public virtual void CheckForNewPrey()
@@ -101,7 +167,7 @@ public class PreyManager : MonoBehaviour
             return;
         }
 
-        if ( Time.time - lastSpawnTime > spawnInterval && wrenInside ) {
+        if ( Time.time - lastSpawnTime > spawnInterval && birdInsideRegion ) {
             SpawnNewBug();
         }
     }
@@ -110,12 +176,18 @@ public class PreyManager : MonoBehaviour
     public void OnWrenEnter()
     {
         Debug.Log( "OnWrenEnter" );
-        wrenInside = true;
+        birdInsideRegion = true;
+
+        if ( spawnMaxOnWrenEnter ) {
+            while ( preyHolder.childCount < maxPray ) {
+                SpawnNewBug();
+            }
+        }
     }
 
     public void OnWrenExit()
     {
-        wrenInside = false;
+        birdInsideRegion = false;
 
         if ( preyConfig == null || !preyConfig.despawn.onWrenExit ) {
             return;
@@ -141,8 +213,9 @@ public class PreyManager : MonoBehaviour
 
         var spawnPos = transform.position;
 
-        if ( s.spawnType == SpawnType.InsideBox ) {
-            
+        if ( regionType == RegionType.Spline ) {
+            spawnPos = SpawnNextToCurve();
+        } else if ( s.spawnType == SpawnType.InsideBox ) {
             spawnPos = SpawnInsideBox();
         } else if ( s.spawnType == SpawnType.NextToCurve ) {
             spawnPos = SpawnNextToCurve();
@@ -182,37 +255,84 @@ public class PreyManager : MonoBehaviour
 
     public Vector3 SpawnInsideBox()
     {
-        if ( cage != null ) {
-            var col = cage.GetComponent<Collider>();
-            if ( col != null ) {
-                var bounds = col.bounds;
-                return new Vector3(
-                    Random.Range( bounds.min.x , bounds.max.x ) ,
-                    Random.Range( bounds.min.y , bounds.max.y ) ,
-                    Random.Range( bounds.min.z , bounds.max.z ) );
+        Vector3 min, max;
+
+        if ( regionType == RegionType.Box && boxRegion != null ) {
+            var half = boxRegion.lossyScale * 0.5f;
+            min = boxRegion.position - half;
+            max = boxRegion.position + half;
+        } else if ( regionType == RegionType.Collider && regionCollider != null ) {
+            min = regionCollider.bounds.min;
+            max = regionCollider.bounds.max;
+        } else {
+            min = preyConfig.spawn.boundsMin;
+            max = preyConfig.spawn.boundsMax;
+        }
+
+        var randomPos = new Vector3(
+            Random.Range( min.x , max.x ) ,
+            Random.Range( min.y , max.y ) ,
+            Random.Range( min.z , max.z ) );
+
+        float closeness = preyConfig.spawn.closenessToBird;
+
+        if ( closeness > 0f ) {
+            var wren = GetWrenPosition();
+
+            if ( wren.HasValue ) {
+                var clamped = new Vector3(
+                    Mathf.Clamp( wren.Value.x , min.x , max.x ) ,
+                    Mathf.Clamp( wren.Value.y , min.y , max.y ) ,
+                    Mathf.Clamp( wren.Value.z , min.z , max.z ) );
+                return Vector3.Lerp( randomPos , clamped , closeness );
             }
         }
 
-        var b = preyConfig.spawn;
-        return new Vector3(
-            Random.Range( b.boundsMin.x , b.boundsMax.x ) ,
-            Random.Range( b.boundsMin.y , b.boundsMax.y ) ,
-            Random.Range( b.boundsMin.z , b.boundsMax.z ) );
+        return randomPos;
     }
 
     public Vector3 SpawnNextToCurve()
     {
-        if ( spawnCurve == null ) {
+        var curve = regionSpline;
+
+        if ( curve == null || curve.Splines.Count == 0 ) {
+            Debug.LogWarning( "[PreyManager] SpawnNextToCurve: no spline assigned — set regionSpline" );
             return SpawnInsideBox();
         }
 
-        var s = preyConfig.spawn;
-        float t = Random.value;
-        var onCurve = spawnCurve.GetPointAt( t );
-        var fwd = spawnCurve.GetForwardAt( t );
-        var right = Vector3.Cross( Vector3.up , fwd ).normalized;
-        float side = Random.value > 0.5f ? 1f : -1f;
-        return onCurve + right * s.curveOffset * side + Random.insideUnitSphere * s.spawnRadius;
+        var   s     = preyConfig.spawn;
+        var   sp    = curve.Spline;
+        var   xform = curve.transform;
+
+        var wren = GetWrenPosition();
+        Vector3 basePos;
+
+        if ( wren.HasValue ) {
+            // always find the nearest point on the spline to the bird, then scatter
+            var localWren = (float3)xform.InverseTransformPoint( wren.Value );
+            SplineUtility.GetNearestPoint( sp , localWren , out float3 nearestLocal , out float _ );
+            var nearestOnCurve = xform.TransformPoint( (Vector3)nearestLocal );
+
+            if ( s.closenessToBird < 1f ) {
+                float t           = Random.value;
+                var   randomPoint = xform.TransformPoint( (Vector3)SplineUtility.EvaluatePosition( sp , t ) );
+                basePos = Vector3.Lerp( randomPoint , nearestOnCurve , s.closenessToBird );
+            } else {
+                basePos = nearestOnCurve;
+            }
+        } else {
+            float t = Random.value;
+            basePos = xform.TransformPoint( (Vector3)SplineUtility.EvaluatePosition( sp , t ) );
+        }
+
+        return basePos + Random.insideUnitSphere * s.spawnRadius;
+    }
+
+    private Vector3? GetWrenPosition()
+    {
+        if ( God.wren != null )  return God.wren.transform.position;
+        if ( debugWren != null ) return debugWren.position;
+        return null;
     }
 
     public virtual Vector3 SpawnBiomePaint()
@@ -221,55 +341,8 @@ public class PreyManager : MonoBehaviour
     }
 
 
-    public Transform GetClosestThermalCenter( Vector3 pos )
-    {
-        Transform best = null;
-        float bestSqr = float.MaxValue;
-
-        if ( thermalCenters == null ) {
-            return null;
-        }
-
-        foreach (var t in thermalCenters) {
-            if ( t == null ) {
-                continue;
-            }
-
-            float d = (t.position - pos).sqrMagnitude;
-
-            if ( d < bestSqr ) {
-                bestSqr = d;
-                best = t;
-            }
-        }
-
-        return best;
-    }
-
-    public Transform GetClosestAnchorPoints( Vector3 pos )
-    {
-        Transform best = null;
-        float bestSqr = float.MaxValue;
-
-        if ( anchorPoints == null ) {
-            return null;
-        }
-
-        foreach (var a in anchorPoints) {
-            if ( a == null ) {
-                continue;
-            }
-
-            float d = (a.position - pos).sqrMagnitude;
-
-            if ( d < bestSqr ) {
-                bestSqr = d;
-                best = a;
-            }
-        }
-
-        return best;
-    }
+    public Transform GetClosestThermalCenter( Vector3 pos ) => null; // thermal removed from interest point system
+    public Transform GetClosestAnchorPoints( Vector3 pos )  => null; // anchor removed from interest point system
 
 
     public void GetNearbyBirds( Vector3 pos , float radius , PreyController exclude , List<PreyController> results )
@@ -302,7 +375,9 @@ public class PreyManager : MonoBehaviour
             ps.Play();
         }
 
-        if ( God.audio != null ) God.audio.Play( God.sounds.eatClip );
+        if ( God.audio != null ) {
+            God.audio.Play( God.sounds.eatClip );
+        }
 
         if ( God.wren != null ) {
             God.wren.stats.FullnessAdd( preyFullnessIncrease );
@@ -310,4 +385,121 @@ public class PreyManager : MonoBehaviour
                 b.transform.position );
         }
     }
+
+
+    private void CacheSplineBounds()
+    {
+        if ( regionSpline == null ) {
+            return;
+        }
+
+        var s = regionSpline.Spline;
+        var xform = regionSpline.transform;
+        int samples = Mathf.Max( 32 , s.Count * 4 );
+
+        var center = Vector3.zero;
+
+        for ( int i = 0; i < samples; i++ ) {
+            float t = (float)i / (samples - 1);
+            center += xform.TransformPoint( (Vector3)SplineUtility.EvaluatePosition( s , t ) );
+        }
+
+        center /= samples;
+
+        float maxSqr = 0f;
+
+        for ( int i = 0; i < samples; i++ ) {
+            float t = (float)i / (samples - 1);
+            var p = xform.TransformPoint( (Vector3)SplineUtility.EvaluatePosition( s , t ) );
+            maxSqr = Mathf.Max( maxSqr , (p - center).sqrMagnitude );
+        }
+
+        splineBoundsCenter = center;
+        splineBoundingRadius = Mathf.Sqrt( maxSqr );
+    }
+
+    private IEnumerator SplineCheckRoutine()
+    {
+        var wait = new WaitForSeconds( splineCheckInterval );
+
+        while (true) {
+            CheckSplineRegion();
+            yield return wait;
+        }
+    }
+
+    private void CheckSplineRegion()
+    {
+        if ( regionSpline == null ) {
+            return;
+        }
+
+        var wrenT = God.wren != null ? God.wren.transform
+            : debugWren != null ? debugWren
+            : null;
+
+        if ( wrenT == null ) {
+            return;
+        }
+
+        var wrenPos = wrenT.position;
+        float threshold = birdInsideRegion ? splineExitDistance : splineEnterDistance;
+
+        float outerLimit = splineBoundingRadius + threshold;
+
+        if ( (wrenPos - splineBoundsCenter).sqrMagnitude > outerLimit * outerLimit ) {
+            if ( birdInsideRegion ) {
+                OnWrenExit();
+            }
+
+            return;
+        }
+
+        var localWren = (float3)regionSpline.transform.InverseTransformPoint( wrenPos );
+        SplineUtility.GetNearestPoint( regionSpline.Spline , localWren , out var nearestLocal , out float _ );
+        float dist = Vector3.Distance( wrenPos , regionSpline.transform.TransformPoint( (Vector3)nearestLocal ) );
+
+        if ( !birdInsideRegion && dist <= splineEnterDistance ) {
+            OnWrenEnter();
+        } else if ( birdInsideRegion && dist > splineExitDistance ) {
+            OnWrenExit();
+        }
+    }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        if ( regionType == RegionType.Box && boxRegion != null ) {
+            Gizmos.color = new Color( 0.2f , 1f , 0.3f , 0.35f );
+            Gizmos.DrawWireCube( boxRegion.position , boxRegion.lossyScale );
+            return;
+        }
+
+        if ( regionType != RegionType.Spline || regionSpline == null ) {
+            return;
+        }
+
+        var s = regionSpline.Spline;
+        var xform = regionSpline.transform;
+        int samples = Mathf.Max( 64 , s.Count * 8 );
+
+        for ( int i = 0; i < samples; i++ ) {
+            float t0 = (float)i / samples;
+            float t1 = (float)(i + 1) / samples;
+            var p0 = xform.TransformPoint( (Vector3)SplineUtility.EvaluatePosition( s , t0 ) );
+            var p1 = xform.TransformPoint( (Vector3)SplineUtility.EvaluatePosition( s , t1 ) );
+
+            var tangent = (p1 - p0).normalized;
+            var perp = Vector3.Cross( tangent , Vector3.up ).normalized;
+
+            Gizmos.color = new Color( 0.2f , 1f , 0.3f , 0.4f );
+            Gizmos.DrawLine( p0 + perp * splineEnterDistance , p1 + perp * splineEnterDistance );
+            Gizmos.DrawLine( p0 - perp * splineEnterDistance , p1 - perp * splineEnterDistance );
+
+            Gizmos.color = new Color( 1f , 0.5f , 0.1f , 0.25f );
+            Gizmos.DrawLine( p0 + perp * splineExitDistance , p1 + perp * splineExitDistance );
+            Gizmos.DrawLine( p0 - perp * splineExitDistance , p1 - perp * splineExitDistance );
+        }
+    }
+#endif
 }

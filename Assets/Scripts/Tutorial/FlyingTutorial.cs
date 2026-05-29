@@ -1081,7 +1081,7 @@ _     _____ _____ _____    ___  ____    ____  ___ ____ _   _ _____   ____  _____
         God.interfaceTutorial.groupContainer.alpha = 1; //FadeFullGroupCoroutine( 0 , 1 );
         God.interfaceTutorial.SetControllerHint( InterfaceTutorial.ControllerHint.Flap , "" );
 
-        bool flapStart = false;
+        // bool flapStart = false;
 
         while (t < 1) {
 

@@ -43,7 +43,7 @@ public class WrenPhysics : MonoBehaviour
 
 
     public bool   showDebugForces;
-    public string name;
+    public new string name;
 
     [Space( 10 )]
     [Header( "Parameters" )]
@@ -1007,7 +1007,7 @@ public class WrenPhysics : MonoBehaviour
         string tmpTag;
         GameObject tmpGO;
 
-        Vector3 closestDirection;
+        // Vector3 closestDirection;
 
         tmpNorm = Vector3.up;
         tmpDir = -Vector3.up;

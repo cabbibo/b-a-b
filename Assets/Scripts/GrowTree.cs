@@ -23,7 +23,7 @@ public class GrowTree: MonoBehaviour
     public Material barkMaterial;
 
 
-    public Renderer renderer;
+    public new Renderer renderer;
 
     public bool growing;
     public float growSpeed;

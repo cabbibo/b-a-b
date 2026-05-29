@@ -19,7 +19,7 @@ public class Monolith : MonoBehaviour
 
 
     private MaterialPropertyBlock materialPropertyBlock;
-    private Renderer renderer;
+    private new Renderer renderer;
 
 
     // Update is called once per frame

@@ -8,7 +8,7 @@ public class FadeIn : MonoBehaviour
 {
 
 
-    public Renderer renderer;
+    public new Renderer renderer;
 
     public float value;
     // Start is called before the first frame update

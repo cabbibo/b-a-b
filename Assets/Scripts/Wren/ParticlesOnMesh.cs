@@ -59,7 +59,7 @@ private int numGroups;
 
         Vector3 pos;
         Vector3 uv;
-        Vector3 tan;
+        // Vector3 tan;
         Vector3 nor;
         int baseTri; int tri0; int tri1; int tri2;
 

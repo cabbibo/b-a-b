@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum SpawnType   { InsideBox, NextToCurve, BiomePaint }
+public enum SpawnType    { InsideBox, NextToCurve, BiomePaint }
 public enum AltitudeType { RandomRange, DesiredAltitude, OnGround }
 
 // ─── Module toggles ──────────────────────────────────────────────────────────
@@ -9,6 +9,7 @@ public enum AltitudeType { RandomRange, DesiredAltitude, OnGround }
 public class PreyModuleFlags
 {
     [Header( "Core" )]
+    public bool social   = false;
     public bool altitude = true;
     public bool flap     = true;
 
@@ -25,8 +26,11 @@ public class PreyModuleFlags
     public bool perch            = false;
     public bool takeOff          = false;
     public bool run              = false;
+    public bool sprint           = false;
+    public bool drive            = false;
     public bool cage             = false;
     public bool avoidance        = true;
+    public bool search           = false;
 }
 
 // ─── Core settings ───────────────────────────────────────────────────────────
@@ -108,6 +112,12 @@ public class PreyFlapSettings
     public float upBounceSize        = 1f;
     public float forwardBounceSize   = .5f;
     public float forwardBounceOffset = .5f;
+
+    [Header( "Ambient Flapping" )]
+    public float defaultFlapRate   = 0f;   // 0 = disabled; matches flapSpeed units (radians/frame)
+    public float medianFlapCluster = 2f;   // average flaps per burst (geometric distribution)
+    public float glideTimeMin      = 0.5f; // seconds between bursts (min)
+    public float glideTimeMax      = 2.0f; // seconds between bursts (max)
 }
 
 [System.Serializable]
@@ -138,6 +148,11 @@ public class PreySpawnSettings
 
     [Header( "Curve" )]
     public float curveOffset = 5f;
+
+    [Header( "Bird Proximity" )]
+    [Range( 0f , 1f )]
+    [Tooltip( "0 = spawn anywhere in region,  1 = spawn at closest point in region to bird" )]
+    public float closenessToBird = 0f;
 }
 
 [System.Serializable]
@@ -184,10 +199,8 @@ public class PreyFlockModule
 [System.Serializable]
 public class PreySplineModule
 {
-    public float pullRadius     = 20f; // distance from spline before pull kicks in
-    public float pullForce      = 1f; // force when inside corridor — pushes along path
-    public float returnForce    = 3f; // force when outside corridor — pulls back to path
-    public bool  returnWhenCalm = true;
+    public float pullForce        = 1f;
+    public float splineForwardForce = 2f;
 }
 
 [System.Serializable]
@@ -220,11 +233,16 @@ public class PreyPerchModule
     public float startleRadius         = 15f; // wren distance that triggers takeoff
     public float landDesireInterval    = 20f; // how often the bird wants to land
     public float landDesireVariance    = 10f;
-    public float perchDuration         = 10f; // how long to stay perched
-    public float perchDurationVariance = 5f;
-    public float approachSpeedMult     = 0.4f; // speed fraction when landing
-    public float socialLandRadius      = 20f; // if another bird lands nearby, also want to
-    public float landingSpacing        = 3f; // min gap between landed birds
+    public float getBored         = 10f;
+    public float getBoredVariance = 5f;
+    public float approachSpeedMult     = 0.4f;
+    public float socialLandRadius      = 20f;
+    public float landingSpacing        = 3f;
+    [Header( "Landing Approach" )]
+    public float landingBlendDuration  = 2.5f; // seconds to ramp from calm forces to landing forces
+    public float approachHeight        = 6f;   // height above target to aim for before diving
+    public float approachRadius        = 14f;  // switch from aim-above to direct aim within this distance
+    public float landingFlapMult       = 4f;   // flap rate multiplier when close to surface
 }
 
 [System.Serializable]
@@ -252,11 +270,73 @@ public class PreyRunModule
 }
 
 
+[System.Serializable]
+public class PreyDriveModule
+{
+    public float driveForce = 1f;
+}
+
+[System.Serializable]
+public class PreySearchModule
+{
+    public float calmBeforeSearch         = 15f;  // seconds calm before a forced search scan
+    public float calmBeforeSearchVariance = 5f;
+    public float noticeChance             = 1f;   // checks per second when already within noticeRadius
+    public float moveForce                = 2f;   // force toward the target while searching
+    public float arrivalRadius            = 4f;   // how close = "arrived"
+    public float giveUpTime              = 30f;  // give up if still not arrived after this long
+}
+
+[System.Serializable]
+public class PreySprintModule
+{
+    public float maxSprintSpeed    = 0.4f;
+    public float staminaDrainRate  = 0.5f;  // stamina/sec drained at full sprint speed
+    public float staminaRefillRate = 0.1f;  // stamina/sec constant refill
+    public float maxStamina        = 1.0f;
+}
+
+// ─── Social pressure ─────────────────────────────────────────────────────────
+
+[System.Serializable]
+public class PreySocialModule
+{
+    public float neighborRadius   = 25f;  // only birds within this range influence us
+    public float socialWeight     = 1f;   // global multiplier on all social pressure
+    public float decayRate        = 1.5f; // desire decays this many units/second when not fed
+    public float sampleInterval   = 0.25f;
+
+    [Header( "Thresholds  (desire ≥ value → trigger)" )]
+    public float takeOffThreshold = 1f;
+    public float disturbThreshold = 1f;
+    public float calmThreshold    = 1f;
+    public float landThreshold    = 1f;
+}
+
+// ─── Debug settings ──────────────────────────────────────────────────────────
+
+[System.Serializable]
+public class PreyDebugSettings
+{
+    public bool showSocialDebug = false;
+    public bool showForceArrows = true;
+    public bool showVelocity    = true;
+    public bool showFlap        = false;
+    public bool showStateLabel  = true;
+    public bool showCalmDebug   = true;
+    public bool showSearchDebug = true;
+    public bool showRunDebug    = true;
+    public bool showEatRadius   = false;
+}
+
 // ─── ScriptableObject ────────────────────────────────────────────────────────
 
 [CreateAssetMenu( fileName = "PreyConfigSO" , menuName = "Prey/PreyConfigSO" , order = 1 )]
 public class PreyConfigSO : ScriptableObject
 {
+    [Header( "Debug" )]
+    public PreyDebugSettings debug;
+
     [Header( "Modules" )]
     public PreyModuleFlags modules;
 
@@ -293,6 +373,10 @@ public class PreyConfigSO : ScriptableObject
     public PreyPerchModule    perch;
     public PreyTakeOffModule  takeOff;
     public PreyRunModule      run;
+    public PreySprintModule   sprint;
+    public PreyDriveModule    drive;
     public PreyCageModule     cage;
     public PreyAvoidanceModule avoidance;
+    public PreySearchModule    search;
+    public PreySocialModule    social;
 }

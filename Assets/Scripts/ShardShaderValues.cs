@@ -21,7 +21,7 @@ public class ShardShaderValues : MonoBehaviour
 
     public float _DeltaStepSize = .1f;
 
-    private Renderer renderer;
+    private new Renderer renderer;
     private MaterialPropertyBlock mpb;
     // Update is called once per frame
     void Update()

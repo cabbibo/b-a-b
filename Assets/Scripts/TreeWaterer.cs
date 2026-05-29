@@ -8,7 +8,7 @@ public class TreeWaterer : MonoBehaviour
 {
 
     public ControlTreeMaterialValues treeController;
-    public GameObject collider;
+    public new GameObject collider;
     // Start is called before the first frame update
     void Start()
     {

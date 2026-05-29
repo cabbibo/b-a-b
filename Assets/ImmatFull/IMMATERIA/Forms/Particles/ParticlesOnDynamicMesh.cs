@@ -81,7 +81,7 @@ public class ParticlesOnDynamicMesh: Particles {
 
     Vector3 pos;
     Vector3 uv;
-    Vector3 tan;
+    // Vector3 tan;
     Vector3 nor;
     int baseTri;
 

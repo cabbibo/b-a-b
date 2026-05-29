@@ -20,7 +20,7 @@ public class Booster : MonoBehaviour
 
     public Life life;
 
-    public Renderer renderer;
+    public new Renderer renderer;
     public MaterialPropertyBlock mpb;
 
 

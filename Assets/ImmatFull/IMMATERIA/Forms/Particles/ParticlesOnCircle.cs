@@ -116,9 +116,9 @@ public class ParticlesOnCircle: Particles {
 
 
     Vector3 pos;
-    Vector3 uv;
-    Vector3 tan;
-    Vector3 nor;
+    // Vector3 uv;
+    // Vector3 tan;
+    // Vector3 nor;
     int baseTri;
 
     for( int i = 0; i < count; i ++ ){

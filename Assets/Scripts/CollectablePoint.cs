@@ -9,7 +9,7 @@ public class CollectablePoint : MonoBehaviour
     // Start is called before the first frame update
     public Collectable collectable;
     public bool collected;
-    MeshRenderer renderer;
+    new MeshRenderer renderer;
     LineRenderer lineRenderer;
 
 
@@ -60,7 +60,7 @@ public class CollectablePoint : MonoBehaviour
         lineRenderer.positionCount = 2;
 
 
-        collectFade = 0;
+        // collectFade = 0;
 
     }
 
@@ -75,7 +75,7 @@ public class CollectablePoint : MonoBehaviour
         lineRenderer.material.SetFloat("_On", v);
     }
 
-    float collectFade;
+    // float collectFade;
     void Update()
     {
 

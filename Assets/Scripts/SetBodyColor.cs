@@ -7,7 +7,7 @@ public class SetBodyColor : Cycle
 {
 
     public IMMATERIA.Body body;
-    public string name;
+    public new string name;
     public Color color;
 
     public override void WhileLiving(float v)

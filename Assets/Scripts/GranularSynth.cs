@@ -36,7 +36,7 @@ public class GranularSynth : MonoBehaviour
         sampleRate = AudioSettings.outputSampleRate;
 
         running = true;
-        positionInGrain = 0;
+        // positionInGrain = 0;
 
         grains = new List<Grain>();
         tmpGrains = new List<Grain>();
@@ -234,7 +234,7 @@ public class GranularSynth : MonoBehaviour
     }
 
 
-    private int         positionInGrain;
+    // private int         positionInGrain;
     private List<Grain> tmpGrains;
 
 

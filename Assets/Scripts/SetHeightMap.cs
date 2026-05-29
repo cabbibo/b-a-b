@@ -10,7 +10,7 @@ public class SetHeightMap : MonoBehaviour
 
 
     private MaterialPropertyBlock mpb;
-    private Renderer renderer;
+    private new Renderer renderer;
     // Start is called before the first frame update
     void Start()
     {

@@ -22,7 +22,7 @@ public class BirdPrey : MonoBehaviour
 
     public float3 startPosition;
 
-    public ParticleSystem particleSystem;
+    public new ParticleSystem particleSystem;
     public Transform startLocation;
 
 

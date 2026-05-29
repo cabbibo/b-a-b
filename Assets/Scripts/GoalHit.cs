@@ -7,7 +7,7 @@ public class GoalHit : MonoBehaviour
 {
 
     public Goal goal;
-    public ParticleSystem particleSystem;
+    public new ParticleSystem particleSystem;
     // Start is called before the first frame update
     void Start()
     {

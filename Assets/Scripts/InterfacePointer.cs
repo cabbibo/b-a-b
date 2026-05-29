@@ -200,11 +200,11 @@ public class InterfacePointer : MonoBehaviour
         }
 
 
-        bool noneOn = true;
+        // bool noneOn = true;
 
         for ( int i = 0; i < fades.Count; i++ ) {
             if ( fades[i] > 0.01f ) {
-                noneOn = false;
+                // noneOn = false;
             }
 
             fades[i] = Mathf.Lerp( fades[i] , targetFades[i] , fades[i] < targetFades[i] ? fadeInSpeed : fadeOutSpeed );

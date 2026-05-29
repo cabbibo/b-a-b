@@ -21,7 +21,7 @@ public class OverallCameraManager : MonoBehaviour
 
     public Transform cameraTransform;
 
-    public Camera camera;
+    public new Camera camera;
     public float  totalWeight;
 
 

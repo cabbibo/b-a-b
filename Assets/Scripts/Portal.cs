@@ -20,7 +20,7 @@ public class Portal : MonoBehaviour
 
     public PortalCollision portalCollision;
 
-    public Collider collider;
+    public new Collider collider;
 
     public Collision collision;
 

@@ -10,7 +10,7 @@ public class WaterPlantArea : MonoBehaviour
 
     public bool eventAdded;
 
-    public GameObject collider;
+    public new GameObject collider;
 
     // Start is called before the first frame update
     void Awake()

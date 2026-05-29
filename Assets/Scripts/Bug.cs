@@ -18,7 +18,7 @@ public class Bug : MonoBehaviour
     public float maxScale;
 
     public BugSpawner  bugSpawner;
-    private Rigidbody rigidbody;
+    private new Rigidbody rigidbody;
     // Start is called before the first frame update
     void OnEnable()
     {

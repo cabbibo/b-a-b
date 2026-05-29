@@ -7,7 +7,7 @@ public class EmitFromCrystalFiller : MonoBehaviour
 
     public CrystalFiller crystalFiller;
 
-    public ParticleSystem particleSystem;
+    public new ParticleSystem particleSystem;
 
     public void OnEnable()
     {

@@ -9,7 +9,7 @@ public class PullTowardsTarget : MonoBehaviour
     public Vector3 target;
     public bool pulling;
 
-    private Rigidbody rigidbody;
+    private new Rigidbody rigidbody;
     // Start is called before the first frame update
     void Start()
     {

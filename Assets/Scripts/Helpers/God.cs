@@ -220,9 +220,9 @@ namespace WrenUtils
         public static FeedbackSystems feedbackSystems => instance._feedbackSystems;
 
 
-        public static AudioPlayer audio => instance._audio;
+        public static new AudioPlayer audio => instance._audio;
 
-        public static Camera camera => instance._camera;
+        public static new Camera camera => instance._camera;
 
         public static OverallCameraManager cameraManager => instance._cameraManager;
 

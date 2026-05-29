@@ -20,7 +20,7 @@ namespace IMMATERIA
 {
     public class Data : Cycle
     {
-        public Transform camera;
+        public new Transform camera;
         public God       god;
 
 

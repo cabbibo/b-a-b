@@ -129,13 +129,13 @@ public class BadBoy : MonoBehaviour
 
 
     Vector3 v1;
-    Vector3 v2;
+    // Vector3 v2;
 
     public void OnEnable()
     {
 
         v1 = new Vector3();
-        v2 = new Vector3();
+        // v2 = new Vector3();
 
         focusLR = GetComponent<LineRenderer>();
         rb = GetComponent<Rigidbody>();

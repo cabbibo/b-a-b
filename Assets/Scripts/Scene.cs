@@ -12,7 +12,7 @@ namespace WrenUtils
     {
         public UnityEvent OnLoadEvent;
 
-        public string        name;
+        public new string        name;
         public PhysicsParams physicsParams;
 
         public Portal[] portals;

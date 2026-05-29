@@ -10,7 +10,7 @@ public class AnimatePowerPath : MonoBehaviour
     public float _Amount;
 
     MaterialPropertyBlock mpb;
-    Renderer renderer;
+    new Renderer renderer;
     // Update is called once per frame
     void Update()
     {

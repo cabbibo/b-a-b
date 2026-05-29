@@ -1,7 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Splines;
+using Unity.Mathematics;
 using WrenUtils;
+using Random = UnityEngine.Random;
 
 public struct PreyForce
 {
@@ -17,7 +20,6 @@ public class PreyController : MonoBehaviour
     // ── References ────────────────────────────────────────────────────────────
     public PreyManager  manager;
     public PreyConfigSO parameters;
-    public Transform    cage;
     public float        spawnTime;
     public Vector3      spawnPoint;
     public bool         spawning;
@@ -25,6 +27,8 @@ public class PreyController : MonoBehaviour
     // ── Observable data (shown in inspector for debugging) ────────────────────
     [Header( "State" )]
     public PreyState state;
+
+    public Transform CurrentPerchTarget => perchState.target;
 
     public float life;
 
@@ -47,6 +51,7 @@ public class PreyController : MonoBehaviour
     public float downTurnNormalizedValue;
 
     [Header( "Movement" )]
+    public float stamina;
     public float positionInFlapCycle;
 
     public Vector3 flapValue;
@@ -74,6 +79,14 @@ public class PreyController : MonoBehaviour
     private float   circleRuntimeAngle;
     private float   currentBank;
     private float   currentSpeed;
+    private float   timeOutsideRegion;
+    private bool    isOutsideRegion;
+    private bool    isDespawning;
+
+    private int   ambientFlapsInBurst = 0;
+    private float ambientGlideTimer   = 0f;
+    private float simTimeAccum        = 0f;
+    private float _flapSpeedMult      = 1f;
 
     // ── Runtime state (one per module that needs per-instance state) ──────────
     private class PerchRuntimeState
@@ -82,15 +95,42 @@ public class PreyController : MonoBehaviour
         public float     landDesireTimer;
         public float     perchedTimer;
         public float     currentPerchDuration;
+        public float     landingBlend;       // 0 = full calm forces, 1 = full landing forces
 
         public void Init( PreyPerchModule cfg )
         {
-            target = null;
-            landDesireTimer = cfg.landDesireInterval + Random.Range( -cfg.landDesireVariance , cfg.landDesireVariance );
-            perchedTimer = 0;
+            target               = null;
+            landDesireTimer      = cfg.landDesireInterval + Random.Range( -cfg.landDesireVariance , cfg.landDesireVariance );
+            perchedTimer         = 0;
             currentPerchDuration = 0;
+            landingBlend         = 0f;
         }
     }
+
+    private class SocialPressureState
+    {
+        public float desireToTakeOff;
+        public float desireToDisturb;
+        public float desireToCalmDown;
+        public float desireToLand;
+        public float sampleTimer;
+
+        public struct Influence {
+            public PreyController bird;
+            public float          weight;
+            public PreyState      sourceState;
+        }
+        public readonly List<Influence> influences = new();
+
+        public void Decay( float rate , float dt ) {
+            float d = rate * dt;
+            desireToTakeOff  = Mathf.Max( 0 , desireToTakeOff  - d );
+            desireToDisturb  = Mathf.Max( 0 , desireToDisturb  - d );
+            desireToCalmDown = Mathf.Max( 0 , desireToCalmDown - d );
+            desireToLand     = Mathf.Max( 0 , desireToLand     - d );
+        }
+    }
+    private SocialPressureState socialState = new();
 
     private class TakeOffRuntimeState
     {
@@ -116,7 +156,8 @@ public class PreyController : MonoBehaviour
 
     private class UpdraftRuntimeState
     {
-        public UpdraftZone zone;
+        public UpdraftZone       zone;
+        public PreyInterestPoint interestPoint;
     }
 
     private class ThermalRuntimeState
@@ -132,6 +173,27 @@ public class PreyController : MonoBehaviour
         public Vector3 jukeDir;
     }
 
+    private class SearchRuntimeState
+    {
+        public PreyInterestPoint currentTarget;
+        public float             calmTimer;
+        public float             nextSearchTime;
+        public float             searchTimer;
+        public float             arrivedTimer;
+        public float             searchCooldown; // blocks all searching after takeoff
+
+        public void Init( PreySearchModule cfg )
+        {
+            currentTarget  = null;
+            calmTimer      = 0f;
+            searchTimer    = 0f;
+            arrivedTimer   = 0f;
+            searchCooldown = 0f;
+            nextSearchTime = cfg.calmBeforeSearch
+                             + Random.Range( -cfg.calmBeforeSearchVariance , cfg.calmBeforeSearchVariance );
+        }
+    }
+
     private PerchRuntimeState   perchState   = new();
     private TakeOffRuntimeState takeOffState = new();
     private FlockRuntimeState   flockState   = new();
@@ -139,6 +201,7 @@ public class PreyController : MonoBehaviour
     private UpdraftRuntimeState updraftState = new();
     private ThermalRuntimeState thermalState = new();
     private RunRuntimeState     runState     = new();
+    private SearchRuntimeState  searchState  = new();
 
     // ─────────────────────────────────────────────────────────────────────────
     // Unity lifecycle
@@ -159,11 +222,20 @@ public class PreyController : MonoBehaviour
         if ( stepThrough || (manager != null && manager.stepThrough) ) {
             if ( !stepForward ) return;
             stepForward = false;
+        } else {
+            float simSpeed = manager != null ? manager.simulationSpeed : 1f;
+            if ( simSpeed < 1f ) {
+                simTimeAccum += Time.deltaTime;
+                float interval = (1f / 60f) / simSpeed;
+                if ( simTimeAccum < interval ) return;
+                simTimeAccum = 0f;
+            }
         }
 
         UpdateVectorToWren();
         UpdateData();
         UpdateModuleStates();
+        UpdateStamina();
         UpdateState();
         DoPhysics();
         CheckForDespawn();
@@ -186,7 +258,6 @@ public class PreyController : MonoBehaviour
     {
         parameters = config;
         manager    = mgr;
-        cage       = mgr.cage;
 
         // seed per-instance randomness
         noiseOffset = Random.Range( 0f , 100f );
@@ -197,9 +268,19 @@ public class PreyController : MonoBehaviour
             perchState.Init( parameters.perch );
         }
 
+        if ( parameters.modules.search ) {
+            searchState.Init( parameters.search );
+        }
+
         SetHeight();
 
-        force = Vector3.zero;
+        stamina           = parameters.modules.sprint ? parameters.sprint.maxStamina : 0f;
+        timeOutsideRegion = 0f;
+        isOutsideRegion   = false;
+        isDespawning      = false;
+        ambientFlapsInBurst = 0;
+        ambientGlideTimer   = Random.Range( parameters.flap.glideTimeMin , parameters.flap.glideTimeMax );
+        force             = Vector3.zero;
         frame = Random.Range( 0 , parameters.physics.physicsResolution );
         enabled = true;
         spawnPoint = transform.position;
@@ -310,6 +391,19 @@ public class PreyController : MonoBehaviour
         }
     }
 
+    private void UpdateStamina()
+    {
+        if ( !parameters.modules.sprint ) return;
+
+        var s = parameters.sprint;
+        stamina = Mathf.Min( stamina + s.staminaRefillRate * Time.deltaTime , s.maxStamina );
+
+        float speedRange = Mathf.Max( s.maxSprintSpeed - parameters.movement.maxSpeed , 0.001f );
+        float excess     = Mathf.Max( 0f , currentSpeed - parameters.movement.maxSpeed );
+        stamina -= s.staminaDrainRate * (excess / speedRange) * Time.deltaTime;
+        stamina  = Mathf.Max( stamina , 0f );
+    }
+
     private void UpdateModuleStates()
     {
         if ( parameters.modules.flock ) {
@@ -355,6 +449,19 @@ public class PreyController : MonoBehaviour
     private void UpdateUpdraftState()
     {
         updraftState.zone = UpdraftZone.FindNearest( position , parameters.updraft.detectionRadius );
+
+        updraftState.interestPoint = null;
+        if ( manager?.interestPoints != null ) {
+            float bestSqr = float.MaxValue;
+            foreach ( var ip in manager.interestPoints ) {
+                if ( ip == null || ip.type != InterestPointType.Updraft ) continue;
+                float sqr = (ip.transform.position - position).sqrMagnitude;
+                if ( sqr < ip.noticeRadius * ip.noticeRadius && sqr < bestSqr ) {
+                    bestSqr = sqr;
+                    updraftState.interestPoint = ip;
+                }
+            }
+        }
     }
 
     private void UpdateSplineState()
@@ -380,10 +487,56 @@ public class PreyController : MonoBehaviour
 
                 if ( parameters.modules.perch ) {
                     perchState.landDesireTimer -= Time.deltaTime;
+                    if ( perchState.landDesireTimer <= 0 ) TryStartLanding();
+                }
 
-                    if ( perchState.landDesireTimer <= 0 ) {
-                        TryStartLanding();
+                if ( parameters.modules.search ) {
+                    searchState.calmTimer += Time.deltaTime;
+
+                    if ( searchState.searchCooldown > 0f ) {
+                        searchState.searchCooldown -= Time.deltaTime;
+                    } else {
+                        // proximity notice — one chance-roll per frame; picks from in-range by priority
+                        if ( Random.value < parameters.search.noticeChance * Time.deltaTime ) {
+                            var noticed = PickSearchTarget( false );
+                            if ( noticed != null ) { EnterSearching( noticed ); break; }
+                        }
+
+                        // forced scan after being calm long enough; includes alwaysInteresting far targets
+                        if ( searchState.calmTimer >= searchState.nextSearchTime ) {
+                            var target = PickSearchTarget( true );
+                            if ( target != null ) { EnterSearching( target ); break; }
+                            searchState.Init( parameters.search ); // nothing found, reset timer
+                        }
                     }
+                }
+
+                break;
+
+            case PreyState.Searching:
+                if ( parameters.modules.run && vectorToWren.magnitude < parameters.run.startleRadius ) {
+                    EnterDisturbed();
+                    break;
+                }
+
+                if ( searchState.currentTarget?.transform == null ) { EnterCalm(); break; }
+
+                searchState.searchTimer += Time.deltaTime;
+
+                if ( Vector3.Distance( position , searchState.currentTarget.transform.position )
+                     <= parameters.search.arrivalRadius ) {
+                    searchState.arrivedTimer += Time.deltaTime;
+                    if ( searchState.arrivedTimer >= searchState.currentTarget.timeToRemainInterested )
+                        ArriveAtSearchTarget( searchState.currentTarget );
+                    break;
+                }
+
+                // drifted back out — reset the linger timer
+                searchState.arrivedTimer = 0f;
+
+                if ( searchState.searchTimer >= parameters.search.giveUpTime ) {
+                    EnterCalm();
+                    break;
                 }
 
                 break;
@@ -406,16 +559,14 @@ public class PreyController : MonoBehaviour
                 break;
 
             case PreyState.Perched:
-                bool wrenClose = vectorToWren.magnitude < parameters.perch.startleRadius;
                 perchState.perchedTimer += Time.deltaTime;
-                bool timerExpired = perchState.perchedTimer >= perchState.currentPerchDuration;
 
-                if ( wrenClose || timerExpired ) {
-                    if ( parameters.modules.takeOff ) {
-                        EnterTakeOff();
-                    } else {
-                        EnterCalm();
-                    }
+                if ( vectorToWren.magnitude < parameters.perch.startleRadius ) {
+                    if ( parameters.modules.takeOff ) EnterTakeOff();
+                    else                              EnterCalm();
+                } else if ( perchState.perchedTimer >= perchState.currentPerchDuration ) {
+                    EnterCalm();
+                    searchState.searchCooldown = searchState.nextSearchTime;
                 }
 
                 break;
@@ -429,9 +580,11 @@ public class PreyController : MonoBehaviour
 
                         if ( takeOffState.circleTimer >= parameters.takeOff.circleAfter ) {
                             EnterCalm();
+                            searchState.searchCooldown = searchState.nextSearchTime;
                         }
                     } else {
                         EnterCalm();
+                        searchState.searchCooldown = searchState.nextSearchTime;
                     }
                 }
 
@@ -454,8 +607,44 @@ public class PreyController : MonoBehaviour
         state = PreyState.Calm;
         circleRuntimeAngle = Random.Range( 0f , Mathf.PI * 2f );
 
-        if ( parameters.modules.perch ) {
-            perchState.Init( parameters.perch );
+        if ( parameters.modules.perch ) perchState.Init( parameters.perch );
+        if ( parameters.modules.search ) searchState.Init( parameters.search );
+    }
+
+    private void EnterSearching( PreyInterestPoint target )
+    {
+        state = PreyState.Searching;
+        searchState.currentTarget = target;
+        searchState.searchTimer   = 0f;
+        searchState.calmTimer     = 0f;
+    }
+
+    private void ArriveAtSearchTarget( PreyInterestPoint target )
+    {
+        searchState.currentTarget = null;
+
+        switch ( target.type ) {
+            case InterestPointType.Perch:
+                var perchSpot = FindBestPerchTarget();
+                if ( perchSpot != null ) {
+                    perchState.target = perchSpot;
+                    state = PreyState.Landing;
+                } else {
+                    EnterCalm();
+                }
+                break;
+
+            case InterestPointType.Updraft:
+            case InterestPointType.NewCalm:
+                EnterCalm();
+                break;
+
+            case InterestPointType.NewInterest:
+                // immediately search for a different point, never returning to this one
+                var next = PickSearchTarget( true , exclude: target );
+                if ( next != null ) EnterSearching( next );
+                else                EnterCalm();
+                break;
         }
     }
 
@@ -473,12 +662,12 @@ public class PreyController : MonoBehaviour
         var target = FindBestPerchTarget();
 
         if ( target == null ) {
-            // no perch available — back off and try again sooner
             perchState.landDesireTimer = parameters.perch.landDesireInterval * 0.5f;
             return;
         }
 
-        perchState.target = target;
+        perchState.target      = target;
+        perchState.landingBlend = 0f;
         state = PreyState.Landing;
     }
 
@@ -490,9 +679,9 @@ public class PreyController : MonoBehaviour
         position = perchState.target.position;
         transform.position = position;
         perchState.perchedTimer = 0;
-        perchState.currentPerchDuration = parameters.perch.perchDuration
-                                          + Random.Range( -parameters.perch.perchDurationVariance ,
-                                              parameters.perch.perchDurationVariance );
+        perchState.currentPerchDuration = parameters.perch.getBored
+                                          + Random.Range( -parameters.perch.getBoredVariance ,
+                                              parameters.perch.getBoredVariance );
     }
 
     private void EnterTakeOff()
@@ -507,14 +696,85 @@ public class PreyController : MonoBehaviour
         perchState.target = null;
     }
 
-    private Transform FindBestPerchTarget()
+    // forcedScan = true  → include alwaysInteresting targets regardless of distance
+    // forcedScan = false → only targets within noticeRadius
+    // exclude           → skip this specific point (used by NewInterest to avoid revisiting)
+    private PreyInterestPoint PickSearchTarget( bool forcedScan , PreyInterestPoint exclude = null )
     {
-        // manager's explicit list first
-        if ( manager.perchPoints != null && manager.perchPoints.Length > 0 ) {
-            return PerchPoint.FindNearest( position , 200f , manager.perchPoints );
+        if ( manager?.interestPoints == null || manager.interestPoints.Length == 0 ) return null;
+
+        var   candidates  = new System.Collections.Generic.List<PreyInterestPoint>();
+        float totalWeight = 0f;
+
+        foreach ( var ip in manager.interestPoints ) {
+            if ( ip == null || ip == exclude ) continue;
+            float dist    = Vector3.Distance( position , ip.transform.position );
+            bool  inRange = dist <= ip.noticeRadius;
+
+            if ( inRange || ( forcedScan && ip.alwaysInteresting ) ) {
+                candidates.Add( ip );
+                totalWeight += Mathf.Max( ip.priority , 0.001f );
+            }
         }
 
-        // fall back to global registry
+        if ( candidates.Count == 0 ) return null;
+
+        float r     = Random.Range( 0f , totalWeight );
+        float accum = 0f;
+
+        foreach ( var c in candidates ) {
+            accum += Mathf.Max( c.priority , 0.001f );
+            if ( r <= accum ) return c;
+        }
+
+        return candidates[ candidates.Count - 1 ];
+    }
+
+    private static readonly List<Transform>      _perchCandidates = new();
+    private static readonly HashSet<Transform>   _occupiedPerches = new();
+    private static readonly List<PreyController> _socialNeighbors = new();
+
+    private Transform FindBestPerchTarget()
+    {
+        // collect perches already claimed by landing or perched birds
+        _occupiedPerches.Clear();
+        if ( manager?.preyHolder != null ) {
+            for ( int i = 0; i < manager.preyHolder.childCount; i++ ) {
+                var other = manager.preyHolder.GetChild( i ).GetComponent<PreyController>();
+                if ( other == null || other == this ) continue;
+                if ( other.state == PreyState.Landing || other.state == PreyState.Perched ) {
+                    var t = other.CurrentPerchTarget;
+                    if ( t != null ) _occupiedPerches.Add( t );
+                }
+            }
+        }
+
+        _perchCandidates.Clear();
+        float searchSqr = 200f * 200f;
+
+        if ( manager?.interestPoints != null ) {
+            foreach ( var ip in manager.interestPoints ) {
+                if ( ip == null || ip.type != InterestPointType.Perch ) continue;
+
+                if ( ip.transform.childCount > 0 ) {
+                    for ( int i = 0; i < ip.transform.childCount; i++ ) {
+                        var child = ip.transform.GetChild( i );
+                        if ( !child.name.StartsWith( "_perch_" ) ) continue;
+                        if ( _occupiedPerches.Contains( child ) ) continue;
+                        if ( (child.position - position).sqrMagnitude < searchSqr )
+                            _perchCandidates.Add( child );
+                    }
+                } else {
+                    if ( _occupiedPerches.Contains( ip.transform ) ) continue;
+                    if ( (ip.transform.position - position).sqrMagnitude < searchSqr )
+                        _perchCandidates.Add( ip.transform );
+                }
+            }
+        }
+
+        if ( _perchCandidates.Count > 0 )
+            return _perchCandidates[ Random.Range( 0 , _perchCandidates.Count ) ];
+
         return PerchPoint.FindNearest( position , 100f );
     }
 
@@ -527,10 +787,11 @@ public class PreyController : MonoBehaviour
         allForces.Clear();
 
         switch (state) {
-            case PreyState.Calm: DoCalmPhysics(); break;
-            case PreyState.Landing: DoLandingPhysics(); break;
-            case PreyState.Perched: DoPerchedPhysics(); break;
-            case PreyState.TakingOff: DoTakeOffPhysics(); break;
+            case PreyState.Calm:      DoCalmPhysics();      break;
+            case PreyState.Searching: DoSearchingPhysics(); break;
+            case PreyState.Landing:   DoLandingPhysics();   break;
+            case PreyState.Perched:   DoPerchedPhysics();   break;
+            case PreyState.TakingOff: DoTakeOffPhysics();   break;
             case PreyState.Disturbed: DoDisturbedPhysics(); break;
         }
     }
@@ -539,15 +800,17 @@ public class PreyController : MonoBehaviour
 
     private void DoCalmPhysics()
     {
+        _flapSpeedMult = 1f;
         force = Vector3.zero;
 
         AddAvoidanceForces();
 
+        if ( parameters.modules.drive )  AddForce( DriveForce()       , new Color( 0.6f , 1f , 0f ) , "drive" );
         if ( parameters.modules.noise )  AddForce( NoiseForce()       , Color.yellow            , "noise" );
         if ( parameters.modules.flock )  AddForce( FlockForce()       , Color.cyan              , "flock" );
-        if ( parameters.modules.spline ) AddForce( SplineForce()      , Color.blue              , "spline" );
+        if ( parameters.modules.spline ) AddForce( SplineForce() , Color.blue , "spline" );
 
-        if ( parameters.modules.updraft && updraftState.zone != null )
+        if ( parameters.modules.updraft && (updraftState.zone != null || updraftState.interestPoint != null) )
             AddForce( UpdraftForce() , Color.green , "updraft" );
 
         if ( parameters.modules.thermal )
@@ -562,7 +825,7 @@ public class PreyController : MonoBehaviour
         if ( parameters.modules.cage )
             AddForce( CageForce() , new Color( 1f , 0.8f , 0f ) , "cage" );
 
-        ApplyVelocity( parameters.movement.desiredSpeed );
+        ApplyVelocity( parameters.movement.desiredSpeed , true );
 
         if ( parameters.modules.flap ) {
             DoFlapInfo();
@@ -573,35 +836,81 @@ public class PreyController : MonoBehaviour
         transform.position = position + flapValue;
     }
 
+    // ── Searching ────────────────────────────────────────────────────────────
+
+    private void DoSearchingPhysics()
+    {
+        force = Vector3.zero;
+
+        if ( searchState.currentTarget?.transform != null ) {
+            var toTarget = (searchState.currentTarget.transform.position - position).normalized;
+            AddForce( toTarget * parameters.search.moveForce , new Color( 0.6f , 0.2f , 1f ) , "search" );
+        }
+
+        AddAvoidanceForces();
+
+        if ( parameters.modules.drive ) AddForce( DriveForce()   , new Color( 0.6f , 1f , 0f ) , "drive" );
+        if ( parameters.modules.cage  ) AddForce( CageForce()    , new Color( 1f , 0.8f , 0f ) , "cage"  );
+        if ( parameters.modules.noise ) AddForce( NoiseForce()   , Color.yellow               , "noise" );
+
+        ApplyVelocity( parameters.movement.desiredSpeed , true );
+
+        if ( parameters.modules.flap ) DoFlapInfo();
+        else flapValue = Vector3.zero;
+
+        transform.position = position + flapValue;
+    }
+
     // ── Landing ──────────────────────────────────────────────────────────────
 
     private void DoLandingPhysics()
     {
-        if ( perchState.target == null ) {
-            return;
-        }
+        if ( perchState.target == null ) { EnterCalm(); return; }
 
+        var   p         = parameters.perch;
+        var   toTarget  = perchState.target.position - position;
+        float dist      = toTarget.magnitude;
+
+        // ramp from calm forces (0) to full landing forces (1) over landingBlendDuration
+        perchState.landingBlend = Mathf.MoveTowards(
+            perchState.landingBlend , 1f , Time.deltaTime / p.landingBlendDuration );
+
+        // ── aim point: above target when far, direct when close (dive approach) ──
+        bool   diving  = dist < p.approachRadius;
+        var    aimPos  = diving
+            ? perchState.target.position
+            : perchState.target.position + Vector3.up * p.approachHeight;
+        var    toAim   = aimPos - position;
+        var    aimDir  = toAim.sqrMagnitude > 0.001f ? toAim.normalized : Vector3.down;
+
+        // ── collect calm forces ───────────────────────────────────────────────
         force = Vector3.zero;
+        var calmF = Vector3.zero;
+        if ( parameters.modules.drive )  calmF += DriveForce();
+        if ( parameters.modules.noise )  calmF += NoiseForce();
+        if ( parameters.modules.flock )  calmF += FlockForce();
+        if ( parameters.modules.spline ) calmF += SplineForce();
+        if ( parameters.modules.cage   ) calmF += CageForce();
 
-        var toTarget = perchState.target.position - position;
-        float dist = toTarget.magnitude;
+        // blend calm → landing
+        force = Vector3.Lerp( calmF , aimDir , perchState.landingBlend );
+        AddForce( MoveAlongGroundAndTurnAwayFromObstacles() * 0.3f , new Color( 1f , 0.4f , 0.1f ) , "avoidance" );
 
-        // slow approach speed the closer we get
-        float t = Mathf.Clamp01( dist / (parameters.perch.snapDistance * 8f) );
-        float approachSpd = Mathf.Lerp( parameters.movement.desiredSpeed * parameters.perch.approachSpeedMult ,
-            parameters.movement.desiredSpeed , t );
-
-        force += toTarget.normalized;
-        force += MoveAlongGroundAndTurnAwayFromObstacles() * 0.3f;
-        if ( parameters.modules.cage ) force += CageForce();
+        // ── speed: slow progressively as we get close ─────────────────────────
+        float distT      = Mathf.Clamp01( dist / (p.snapDistance * 8f) );
+        float approachSpd = Mathf.Lerp( parameters.movement.desiredSpeed * p.approachSpeedMult ,
+                                        parameters.movement.desiredSpeed , distT );
 
         ApplyVelocity( approachSpd );
 
-        if ( parameters.modules.flap ) {
-            DoFlapInfo();
-        } else {
-            flapValue = Vector3.zero;
-        }
+        // ── flap: rapid when close to surface, normal when far ────────────────
+        float closeT    = 1f - Mathf.Clamp01( dist / p.approachRadius );
+        _flapSpeedMult  = Mathf.Lerp( 1f , p.landingFlapMult , closeT * perchState.landingBlend );
+
+        if ( parameters.modules.flap ) DoFlapInfo();
+        else flapValue = Vector3.zero;
+
+        _flapSpeedMult = 1f; // reset so it doesn't bleed into other states
 
         transform.position = position + flapValue;
     }
@@ -630,7 +939,7 @@ public class PreyController : MonoBehaviour
             // burst phase
             force += Vector3.up * parameters.takeOff.upForce;
             force += takeOffState.runDirection * parameters.takeOff.runForce;
-            force += MoveAlongGroundAndTurnAwayFromObstacles();
+            AddForce( MoveAlongGroundAndTurnAwayFromObstacles() , new Color( 1f , 0.4f , 0.1f ) , "avoidance" );
         } else if ( parameters.modules.circle ) {
             // circle phase (only reached when circle module is on)
             takeOffState.circleAngle += Time.deltaTime;
@@ -640,12 +949,13 @@ public class PreyController : MonoBehaviour
                          * parameters.circle.circleRadius
                          + Vector3.up * parameters.takeOff.circleHeight;
             force += (target - transform.position).normalized * parameters.circle.circleForce;
-            force += MoveAlongGroundAndTurnAwayFromObstacles();
+            AddForce( MoveAlongGroundAndTurnAwayFromObstacles() , new Color( 1f , 0.4f , 0.1f ) , "avoidance" );
         }
 
-        if ( parameters.modules.cage ) force += CageForce();
+        if ( parameters.modules.cage )  force += CageForce();
+        if ( parameters.modules.drive ) AddForce( DriveForce() , new Color( 0.6f , 1f , 0f ) , "drive" );
 
-        ApplyVelocity( parameters.movement.desiredSpeed );
+        ApplyVelocity( parameters.movement.desiredSpeed , true );
 
         if ( parameters.modules.flap ) {
             DoFlapInfo();
@@ -681,9 +991,10 @@ public class PreyController : MonoBehaviour
         force += runState.jukeDir * parameters.run.jukeAmount;
 
         force += MoveAlongGroundAndTurnAwayFromObstacles();
-        if ( parameters.modules.cage ) force += CageForce();
+        if ( parameters.modules.cage )  force += CageForce();
+        if ( parameters.modules.drive ) AddForce( DriveForce() , new Color( 0.6f , 1f , 0f ) , "drive" );
 
-        ApplyVelocity( parameters.movement.desiredSpeed * parameters.run.speedMultiplier );
+        ApplyVelocity( parameters.movement.desiredSpeed * parameters.run.speedMultiplier , true );
 
         if ( parameters.modules.flap ) {
             DoFlapInfo();
@@ -746,13 +1057,25 @@ public class PreyController : MonoBehaviour
         return f;
     }
 
+    private Vector3 DriveForce()
+    {
+        if ( velocity.sqrMagnitude < 0.0001f ) return Vector3.zero;
+
+        float effectiveMax = (parameters.modules.sprint && stamina > 0f)
+            ? parameters.sprint.maxSprintSpeed
+            : parameters.movement.maxSpeed;
+
+        float t = Mathf.Clamp01( currentSpeed / Mathf.Max( effectiveMax , 0.0001f ) );
+        return velocity.normalized * parameters.drive.driveForce * (1f - t);
+    }
+
     private Vector3 NoiseForce()
     {
-        float t = Time.time * parameters.noise.noiseSpeed + noiseOffset;
+        float t = Time.time * parameters.noise.noiseSpeed;
         return new Vector3(
-            Mathf.PerlinNoise( t , 0f ) - 0.5f ,
-            Mathf.PerlinNoise( 0f , t ) - 0.5f ,
-            Mathf.PerlinNoise( t + 50f , t ) - 0.5f
+            Mathf.PerlinNoise( t + noiseOffset          , noiseOffset + 31.41f ) * 2f - 1f ,
+            Mathf.PerlinNoise( noiseOffset + 17.32f     , t + noiseOffset       ) * 2f - 1f ,
+            Mathf.PerlinNoise( t + noiseOffset + 53.58f , noiseOffset + 89.79f  ) * 2f - 1f
         ) * parameters.noise.noiseForce;
     }
 
@@ -783,35 +1106,59 @@ public class PreyController : MonoBehaviour
 
     private Vector3 SplineForce()
     {
-        if ( splineState.spline == null ) {
+        var curve = manager?.regionSpline;
+
+        if ( curve == null || curve.Splines.Count == 0 ) {
+            Debug.LogWarning( "[PreyController] SplineForce: no spline found — assign regionSpline on PreyManager" , manager );
             return Vector3.zero;
         }
 
-        float t;
-        var nearest = splineState.spline.GetNearestPoint( position , out t );
-        splineState.currentT = t;
-        var toSpline = nearest - position;
-        float dist = toSpline.magnitude;
+        var sp    = curve.Spline;
+        var xform = curve.transform;
 
-        if ( dist < parameters.spline.pullRadius ) {
-            return splineState.spline.GetForwardAt( t ) * parameters.spline.pullForce;
-        } else {
-            return toSpline.normalized * parameters.spline.returnForce;
-        }
+        var localPos = new float3( xform.InverseTransformPoint( position ) );
+        SplineUtility.GetNearestPoint( sp , localPos , out float3 nearestLocal , out float t );
+
+        var nearestWorld = xform.TransformPoint( new Vector3( nearestLocal.x , nearestLocal.y , nearestLocal.z ) );
+        var tangentWorld = xform.TransformDirection( (Vector3)SplineUtility.EvaluateTangent( sp , t ) );
+
+        var toSpline = nearestWorld - position;
+        var forward  = tangentWorld;
+
+        var pullF    = toSpline.sqrMagnitude > 0.0001f ? toSpline.normalized * parameters.spline.pullForce          : Vector3.zero;
+        var forwardF = forward.sqrMagnitude  > 0.0001f ? forward.normalized  * parameters.spline.splineForwardForce : Vector3.zero;
+
+        Debug.DrawRay( position , pullF    , Color.cyan );
+        Debug.DrawRay( position , forwardF , Color.blue );
+
+        return pullF + forwardF;
     }
 
     private Vector3 UpdraftForce()
     {
-        if ( updraftState.zone == null ) {
-            return Vector3.zero;
+        if ( updraftState.zone != null ) {
+            var toCenter = updraftState.zone.transform.position - position;
+            toCenter.y = 0;
+            var tangent = Vector3.Cross( Vector3.up , toCenter.normalized );
+            return tangent * parameters.updraft.spiralForce
+                   + Vector3.up * parameters.updraft.liftForce * updraftState.zone.strength;
         }
 
-        var toCenter = updraftState.zone.transform.position - position;
-        toCenter.y = 0;
-        var tangent = Vector3.Cross( Vector3.up , toCenter.normalized );
+        if ( updraftState.interestPoint != null ) {
+            var  us       = updraftState.interestPoint.updraftSettings;
+            var  toCenter = updraftState.interestPoint.transform.position - position;
+            toCenter.y = 0;
+            int  curl     = us.curlDirection == CurlDirection.CounterClockwise ? 1 : -1;
+            var  tangent  = toCenter.sqrMagnitude > 0.01f
+                ? Vector3.Cross( Vector3.up , toCenter.normalized ) * curl
+                : Vector3.zero;
+            var inward = toCenter.sqrMagnitude > 0.01f ? toCenter.normalized : Vector3.zero;
+            return Vector3.up * us.forceUp
+                   + tangent   * us.curlForce
+                   + inward    * us.forceIn;
+        }
 
-        return tangent * parameters.updraft.spiralForce
-               + Vector3.up * parameters.updraft.liftForce * updraftState.zone.strength;
+        return Vector3.zero;
     }
 
     private Vector3 ThermalForce()
@@ -859,14 +1206,22 @@ public class PreyController : MonoBehaviour
 
     private Vector3 CageForce()
     {
-        if ( cage == null ) return Vector3.zero;
+        if ( manager == null ) return Vector3.zero;
 
-        var half   = cage.lossyScale * 0.5f;
-        var center = cage.position;
-        var min    = center - half;
-        var max    = center + half;
-        var cfg    = parameters.cage;
-        float d    = cfg.borderTurnDistance;
+        Vector3 min, max;
+        if ( manager.regionType == RegionType.Box && manager.boxRegion != null ) {
+            var half = manager.boxRegion.lossyScale * 0.5f;
+            min = manager.boxRegion.position - half;
+            max = manager.boxRegion.position + half;
+        } else if ( manager.regionType == RegionType.Collider && manager.regionCollider != null ) {
+            min = manager.regionCollider.bounds.min;
+            max = manager.regionCollider.bounds.max;
+        } else {
+            return Vector3.zero;
+        }
+
+        var cfg = parameters.cage;
+        float d = cfg.borderTurnDistance;
 
         var pushDir = Vector3.zero;
         float distMinX = position.x - min.x;
@@ -909,16 +1264,24 @@ public class PreyController : MonoBehaviour
         allForces.Add( new PreyForce( f , c , n ) );
     }
 
-    private void ApplyVelocity( float targetSpeed )
+    private void ApplyVelocity( float targetSpeed , bool allowSprint = false )
     {
         var m = parameters.movement;
+
+        if ( allowSprint && parameters.modules.sprint && stamina > 0f ) {
+            targetSpeed = parameters.sprint.maxSprintSpeed;
+        }
+
+        float effectiveMax = (allowSprint && parameters.modules.sprint && stamina > 0f)
+            ? parameters.sprint.maxSprintSpeed
+            : m.maxSpeed;
 
         oldVelocity = velocity;
         velocity += force;
         velocity *= (1f - m.dampening);                               // friction on full vector
         float speed = velocity.magnitude;
         speed += (targetSpeed - speed) * m.dampening;                // drive back toward target
-        speed = Mathf.Clamp( speed , m.minSpeed , m.maxSpeed );
+        speed = Mathf.Clamp( speed , m.minSpeed , effectiveMax );
         currentSpeed = speed;
         velocity = velocity.sqrMagnitude > 0.0001f
             ? velocity.normalized * speed
@@ -995,17 +1358,51 @@ public class PreyController : MonoBehaviour
     {
         climbRate = Mathf.Clamp( velocity.normalized.y , 0 , 1 );
 
-        if ( climbRate > 0 ) {
-            positionInFlapCycle += parameters.flap.flapSpeed * climbRate * climbRate;
+        if ( climbRate > 0.01f ) {
+            // power-flap while climbing
+            positionInFlapCycle += parameters.flap.flapSpeed * _flapSpeedMult * climbRate * climbRate;
+            // reset so we glide briefly after levelling out before the next burst
+            ambientFlapsInBurst = 0;
+            ambientGlideTimer   = Random.Range( parameters.flap.glideTimeMin , parameters.flap.glideTimeMax );
+        } else if ( parameters.flap.defaultFlapRate > 0f ) {
+            // ambient burst/glide state machine
+            if ( ambientFlapsInBurst > 0 ) {
+                float prev = positionInFlapCycle;
+                positionInFlapCycle += parameters.flap.defaultFlapRate * _flapSpeedMult;
+                int completed = (int)(positionInFlapCycle / (Mathf.PI * 2f)) - (int)(prev / (Mathf.PI * 2f));
+                if ( completed > 0 ) {
+                    ambientFlapsInBurst = Mathf.Max( 0 , ambientFlapsInBurst - completed );
+                    if ( ambientFlapsInBurst == 0 )
+                        ambientGlideTimer = Random.Range( parameters.flap.glideTimeMin , parameters.flap.glideTimeMax );
+                }
+            } else {
+                // gliding — wings settle to mid-cycle rest pose
+                float cycleFloor = Mathf.Floor( positionInFlapCycle / (Mathf.PI * 2f) );
+                positionInFlapCycle = Mathf.Lerp( positionInFlapCycle , cycleFloor * Mathf.PI * 2f + Mathf.PI , 0.1f );
+                ambientGlideTimer -= Time.deltaTime;
+                if ( ambientGlideTimer <= 0f )
+                    ambientFlapsInBurst = DrawFlapClusterSize( parameters.flap.medianFlapCluster );
+            }
         } else {
-            float currentCycle = Mathf.Floor( positionInFlapCycle / (Mathf.PI * 2) );
-            float mid = currentCycle * Mathf.PI * 2 + Mathf.PI;
+            // defaultFlapRate = 0: original behavior — wings settle when not climbing
+            float currentCycle = Mathf.Floor( positionInFlapCycle / (Mathf.PI * 2f) );
+            float mid = currentCycle * Mathf.PI * 2f + Mathf.PI;
             positionInFlapCycle = Mathf.Lerp( positionInFlapCycle , mid , .1f );
         }
 
         flapValue = transform.up * Mathf.Sin( positionInFlapCycle ) * parameters.flap.upBounceSize
                     + transform.forward * Mathf.Sin( positionInFlapCycle + parameters.flap.forwardBounceOffset ) *
                     parameters.flap.forwardBounceSize;
+    }
+
+    private static int DrawFlapClusterSize( float median )
+    {
+        // Geometric distribution: each extra flap continues with prob (median-1)/median
+        // mean = 1/(1-p) = median  →  p = (median-1)/median
+        int   count = 1;
+        float p     = Mathf.Clamp01( (median - 1f) / Mathf.Max( median , 1f ) );
+        while ( count < 20 && Random.value < p ) count++;
+        return count;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1053,10 +1450,30 @@ public class PreyController : MonoBehaviour
         }
 
         if ( Time.time - spawnTime > parameters.despawn.minimumTimeAlive ) {
-            if ( vectorToWren.magnitude > parameters.despawn.distanceBeforeNotCaught ) {
+            bool outsideNow = vectorToWren.magnitude > parameters.despawn.distanceBeforeNotCaught;
+
+            if ( outsideNow && !isOutsideRegion ) OnLeaveRegion();
+            else if ( !outsideNow && isOutsideRegion ) OnEnterRegion();
+        }
+
+        if ( isOutsideRegion ) {
+            timeOutsideRegion += Time.deltaTime;
+            if ( timeOutsideRegion >= parameters.despawn.timeOutsideDistanceBeforeNotCaughtTriggered ) {
                 OnNotCaught();
             }
         }
+    }
+
+    public virtual void OnEnterRegion()
+    {
+        isOutsideRegion   = false;
+        timeOutsideRegion = 0f;
+    }
+
+    public virtual void OnLeaveRegion()
+    {
+        isOutsideRegion   = true;
+        timeOutsideRegion = 0f;
     }
 
     private void OnNotCaught()
@@ -1081,8 +1498,9 @@ public class PreyController : MonoBehaviour
 
     public IEnumerator SpawnCoroutine( float speed )
     {
-        spawning = true;
-        life = 0;
+        spawning     = true;
+        isDespawning = false;
+        life         = 0;
         float start = Time.time;
         float end = start + speed;
 
@@ -1098,8 +1516,9 @@ public class PreyController : MonoBehaviour
 
     public IEnumerator DestroyCoroutine( float speed )
     {
-        spawning = true;
-        float start = Time.time;
+        spawning     = true;
+        isDespawning = true;
+        float start  = Time.time;
 
         while (Time.time < start + speed) {
             life = Mathf.Lerp( 1 , 0 , (Time.time - start) / speed );
@@ -1133,45 +1552,195 @@ public class PreyController : MonoBehaviour
         float scale  = 20f;
         var   origin = transform.position;
 
-        foreach ( var pf in allForces ) {
-            if ( pf.force.sqrMagnitude < 0.00001f ) continue;
-            Gizmos.color = pf.color;
-            var tip = DrawGizmoArrow( origin , pf.force * scale );
+        var dbg = parameters.debug;
+
+        // ── Force arrows ─────────────────────────────────────────────────────
+        if ( dbg.showForceArrows ) {
+            foreach ( var pf in allForces ) {
+                if ( pf.force.sqrMagnitude < 0.00001f ) continue;
+                Gizmos.color = pf.color;
+                var tip = DrawGizmoArrow( origin , pf.force * scale );
 #if UNITY_EDITOR
-            UnityEditor.Handles.Label( tip , pf.name );
+                UnityEditor.Handles.Label( tip , pf.name , GizmoLabel( pf.color ) );
+#endif
+            }
+        }
+
+        // ── Velocity arrows ──────────────────────────────────────────────────
+        if ( dbg.showVelocity ) {
+            var desiredColor = new Color( 0.4f , 0.9f , 1f );
+            Gizmos.color = desiredColor;
+            var desiredTip = DrawGizmoArrow( origin , desiredVelocity * scale );
+#if UNITY_EDITOR
+            UnityEditor.Handles.Label( desiredTip , "desired vel" , GizmoLabel( desiredColor ) );
+#endif
+            Gizmos.color = Color.white;
+            var velTip = DrawGizmoArrow( origin , velocity * scale );
+#if UNITY_EDITOR
+            UnityEditor.Handles.Label( velTip , "velocity" , GizmoLabel( Color.white ) );
 #endif
         }
 
-        // desired velocity — cyan
-        Gizmos.color = Color.cyan;
-        var desiredTip = DrawGizmoArrow( origin , desiredVelocity * scale );
+        // ── Flap arrow ───────────────────────────────────────────────────────
+        if ( dbg.showFlap && parameters.modules.flap && flapValue.sqrMagnitude > 0.00001f ) {
+            float cycleT    = (positionInFlapCycle % (Mathf.PI * 2f)) / (Mathf.PI * 2f);
+            var   flapColor = Color.Lerp( new Color( 0.2f , 1f , 0.4f ) , new Color( 0.2f , 0.4f , 1f ) , cycleT );
+            Gizmos.color    = flapColor;
+            var flapTip     = DrawGizmoArrow( origin , flapValue );
 #if UNITY_EDITOR
-        UnityEditor.Handles.Label( desiredTip , "desired vel" );
-#endif
-
-        // actual velocity — white
-        Gizmos.color = Color.white;
-        var velTip = DrawGizmoArrow( origin , velocity * scale );
-#if UNITY_EDITOR
-        UnityEditor.Handles.Label( velTip , "velocity" );
-#endif
-
-        // flap offset — green→blue over cycle
-        if ( parameters.modules.flap && flapValue.sqrMagnitude > 0.00001f ) {
-            float cycleT  = (positionInFlapCycle % (Mathf.PI * 2f)) / (Mathf.PI * 2f);
-            Gizmos.color  = Color.Lerp( new Color( 0.2f , 1f , 0.4f ) , new Color( 0.2f , 0.4f , 1f ) , cycleT );
-            var flapTip = DrawGizmoArrow( origin , flapValue );
-#if UNITY_EDITOR
-            UnityEditor.Handles.Label( flapTip , $"flap  {cycleT:F2}" );
+            UnityEditor.Handles.Label( flapTip , $"flap  {cycleT:F2}" , GizmoLabel( flapColor ) );
 #endif
         }
 
 #if UNITY_EDITOR
+        // ── State label ──────────────────────────────────────────────────────
+        if ( dbg.showStateLabel ) {
+            Color stateColor;
+            if      ( state == PreyState.Calm      ) stateColor = Color.green;
+            else if ( state == PreyState.Searching ) stateColor = new Color( 0.6f , 0.2f , 1f );
+            else if ( state == PreyState.Disturbed ) stateColor = Color.red;
+            else if ( state == PreyState.Landing   ) stateColor = Color.yellow;
+            else if ( state == PreyState.Perched   ) stateColor = new Color( 0.3f , 0.7f , 1f );
+            else if ( state == PreyState.TakingOff ) stateColor = new Color( 1f , 0.6f , 0.1f );
+            else                                     stateColor = Color.white;
+
+            string stateLabel = state.ToString();
+            if ( state == PreyState.Calm && parameters.modules.search ) {
+                if ( searchState.searchCooldown > 0f )
+                    stateLabel += $"  (can search in {searchState.searchCooldown:F1}s)";
+                else {
+                    float untilSearch = searchState.nextSearchTime - searchState.calmTimer;
+                    stateLabel += $"  (search in {Mathf.Max( untilSearch , 0f ):F1}s)";
+                }
+            } else if ( state == PreyState.Perched && parameters.modules.perch ) {
+                float remaining = perchState.currentPerchDuration - perchState.perchedTimer;
+                stateLabel += $"  {remaining:F1}s";
+            }
+            UnityEditor.Handles.Label( origin + Vector3.up * 2f , stateLabel , GizmoLabel( stateColor ) );
+        }
+
+        // ── Calm search-readiness debug ───────────────────────────────────────
+        if ( dbg.showCalmDebug && parameters.modules.search && state == PreyState.Calm ) {
+            string inRangeLabel = "none in range";
+            if ( manager?.interestPoints != null ) {
+                foreach ( var ip in manager.interestPoints ) {
+                    if ( ip == null ) continue;
+                    float dist = Vector3.Distance( position , ip.transform.position );
+                    if ( dist <= ip.noticeRadius ) {
+                        inRangeLabel = $"can notice: {ip.type} \"{ip.name}\"";
+                        break;
+                    }
+                }
+            }
+            float untilForced = searchState.nextSearchTime - searchState.calmTimer;
+            string cooldownStr = searchState.searchCooldown > 0f ? $"  [cooldown {searchState.searchCooldown:F1}s]" : "";
+            string calmDebug = $"calm {searchState.calmTimer:F1}s  /  forced in {untilForced:F1}s{cooldownStr}\n{inRangeLabel}";
+            UnityEditor.Handles.Label( origin + Vector3.up * 3.3f , calmDebug , GizmoLabel( new Color( 0.4f , 0.9f , 0.4f ) ) );
+        }
+
+        // ── Search module debug ───────────────────────────────────────────────
+        if ( dbg.showSearchDebug && parameters.modules.search && state == PreyState.Searching
+             && searchState.currentTarget?.transform != null ) {
+            var targetPos = searchState.currentTarget.transform.position;
+            Gizmos.color = new Color( 0.6f , 0.2f , 1f , 0.8f );
+            Gizmos.DrawLine( origin , targetPos );
+            UnityEditor.Handles.color = new Color( 0.6f , 0.2f , 1f , 0.4f );
+            UnityEditor.Handles.DrawWireDisc( targetPos , Vector3.up , parameters.search.arrivalRadius );
+            float remaining = parameters.search.giveUpTime - searchState.searchTimer;
+            UnityEditor.Handles.Label(
+                origin + Vector3.up * 3.5f ,
+                $"→ {searchState.currentTarget.type}  give up in {remaining:F1}s" ,
+                GizmoLabel( new Color( 0.6f , 0.2f , 1f ) ) );
+        }
+
+        // ── Run module debug ──────────────────────────────────────────────────
+        if ( dbg.showRunDebug && parameters.modules.run ) {
+            var   run        = parameters.run;
+            float wrenDist   = vectorToWren.magnitude;
+            bool  inStartle  = wrenDist < run.startleRadius;
+            bool  inFullRun  = wrenDist < run.fullRunRadius;
+
+            UnityEditor.Handles.color = inStartle
+                ? new Color( 1f , 0.4f , 0.1f , 0.7f )
+                : new Color( 1f , 0.9f , 0.1f , 0.25f );
+            UnityEditor.Handles.DrawWireDisc( origin , Vector3.up , run.startleRadius );
+            UnityEditor.Handles.Label(
+                origin + new Vector3( run.startleRadius , 0 , 0 ) ,
+                inStartle ? "IN startle" : "startle" ,
+                GizmoLabel( inStartle ? new Color( 1f , 0.4f , 0.1f ) : new Color( 1f , 0.9f , 0.1f ) ) );
+
+            UnityEditor.Handles.color = inFullRun
+                ? new Color( 1f , 0.1f , 0.1f , 0.9f )
+                : new Color( 1f , 0.5f , 0.1f , 0.4f );
+            UnityEditor.Handles.DrawWireDisc( origin , Vector3.up , run.fullRunRadius );
+            UnityEditor.Handles.Label(
+                origin + new Vector3( run.fullRunRadius , 0 , 0 ) ,
+                inFullRun ? "IN full run" : "full run" ,
+                GizmoLabel( inFullRun ? Color.red : new Color( 1f , 0.5f , 0.1f ) ) );
+
+            if ( state == PreyState.Disturbed ) {
+                bool wrenFarEnough = wrenDist > run.calmDownDistance;
+                UnityEditor.Handles.color = wrenFarEnough
+                    ? new Color( 0.5f , 1f , 0.5f , 0.15f )
+                    : new Color( 0.8f , 0.3f , 1f , 0.15f );
+                UnityEditor.Handles.DrawWireDisc( origin , Vector3.up , run.calmDownDistance );
+                UnityEditor.Handles.Label(
+                    origin + new Vector3( run.calmDownDistance , 0 , 0 ) ,
+                    wrenFarEnough ? "wren outside — calming" : "calm dist" ,
+                    GizmoLabel( wrenFarEnough ? Color.green : new Color( 0.8f , 0.3f , 1f ) ) );
+                float calmRemaining = run.calmDownTime - runState.calmTimer;
+                UnityEditor.Handles.Label(
+                    origin + Vector3.up * 3.5f ,
+                    $"calm in {calmRemaining:F1}s" ,
+                    GizmoLabel( Color.Lerp( Color.red , Color.green , runState.calmTimer / run.calmDownTime ) ) );
+                if ( vectorToWren.sqrMagnitude > 0.01f ) {
+                    var fleeDir = run.chaseInstead ? vectorToWren.normalized : -vectorToWren.normalized;
+                    Gizmos.color = Color.red;
+                    DrawGizmoArrow( origin , fleeDir * run.fleeForce * scale * 0.5f );
+                }
+                if ( runState.jukeDir.sqrMagnitude > 0.001f ) {
+                    Gizmos.color = new Color( 1f , 0.3f , 0.6f );
+                    DrawGizmoArrow( origin , runState.jukeDir * run.jukeAmount * scale * 0.5f );
+                    UnityEditor.Handles.Label(
+                        origin + runState.jukeDir * run.jukeAmount * scale * 0.5f ,
+                        "juke" , GizmoLabel( new Color( 1f , 0.3f , 0.6f ) ) );
+                }
+            }
+        }
+
         // eat radius ring
-        UnityEditor.Handles.color = new Color( 1f , 0.3f , 0.3f , 0.8f );
-        UnityEditor.Handles.DrawWireDisc( origin , Vector3.up , parameters.crystals.eatRadius );
+        if ( dbg.showEatRadius ) {
+            UnityEditor.Handles.color = new Color( 1f , 0.3f , 0.3f , 0.8f );
+            UnityEditor.Handles.DrawWireDisc( origin , Vector3.up , parameters.crystals.eatRadius );
+        }
+
+        // spawn-in / spawn-out progress
+        if ( spawning ) {
+            var   spawnColor = isDespawning ? Color.red : Color.green;
+            string spawnLabel = isDespawning
+                ? $"Despawning  {life * 100f:F0}%"
+                : $"Spawning  {life * 100f:F0}%";
+            UnityEditor.Handles.Label( origin + Vector3.up * 4f , spawnLabel , GizmoLabel( spawnColor ) );
+        }
+
+        // countdown when outside not-caught region
+        if ( timeOutsideRegion > 0f ) {
+            float remaining   = parameters.despawn.timeOutsideDistanceBeforeNotCaughtTriggered - timeOutsideRegion;
+            var   leaveColor  = Color.Lerp( Color.yellow , Color.red , timeOutsideRegion / parameters.despawn.timeOutsideDistanceBeforeNotCaughtTriggered );
+            UnityEditor.Handles.Label( origin + Vector3.up * 2f , $"Leaving in  {remaining:F1}s" , GizmoLabel( leaveColor ) );
+        }
 #endif
     }
+
+#if UNITY_EDITOR
+    private static GUIStyle GizmoLabel( Color col )
+    {
+        return new GUIStyle( UnityEditor.EditorStyles.label ) {
+            normal  = { textColor = col },
+            fontSize = 7
+        };
+    }
+#endif
 
     private static Vector3 DrawGizmoArrow( Vector3 origin , Vector3 vec )
     {

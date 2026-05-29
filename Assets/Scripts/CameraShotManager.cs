@@ -65,7 +65,7 @@ public class CameraShotManager : MonoBehaviour
     public TimelinePlayback timelinePlayback;
 
 
-    public AudioSource audio;
+    public new AudioSource audio;
 
 
     public void NextShot()

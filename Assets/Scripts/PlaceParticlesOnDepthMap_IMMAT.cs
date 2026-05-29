@@ -13,7 +13,7 @@ public class PlaceParticlesOnDepthMap_IMMAT : Simulation
 {
 
 
-    public Camera camera;
+    public new Camera camera;
 
     RenderTexture depthTexture;
     RenderTexture colorTexture;
