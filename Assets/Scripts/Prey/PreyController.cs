@@ -24,11 +24,20 @@ public class PreyController : MonoBehaviour
     public Vector3      spawnPoint;
     public bool         spawning;
 
+    // true while the bird is fading out (DestroyCoroutine running) — used by PreyManager's WhenFull logic
+    public bool IsDespawning => isDespawning;
+
     // ── Observable data (shown in inspector for debugging) ────────────────────
     [Header( "State" )]
     public PreyState state;
 
     public Transform CurrentPerchTarget => perchState.target;
+
+    // Land-claim queries (used by Field perches for spacing against other birds)
+    public bool IsClaimingLand => state == PreyState.Landing || state == PreyState.Perched
+        || (state == PreyState.Searching && (perchState.fieldLanding || perchState.target != null));
+    public Vector3 ClaimedLandPosition => perchState.fieldLanding ? perchState.landPos
+        : (perchState.target != null ? perchState.target.position : position);
 
     public float life;
 
@@ -76,7 +85,6 @@ public class PreyController : MonoBehaviour
     private Vector4 rayCastData;
     private int     frame;
     private float   noiseOffset;
-    private float   circleRuntimeAngle;
     private float   currentBank;
     private float   currentSpeed;
     private float   timeOutsideRegion;
@@ -87,23 +95,32 @@ public class PreyController : MonoBehaviour
     private float ambientGlideTimer   = 0f;
     private float simTimeAccum        = 0f;
     private float _flapSpeedMult      = 1f;
+    private Vector3 smoothedForce;     // force eased toward the active state's force (state-change blend)
 
     // ── Runtime state (one per module that needs per-instance state) ──────────
     private class PerchRuntimeState
     {
-        public Transform target;
-        public float     landDesireTimer;
+        public Transform target;        // discrete perch spot (OnCollider / InArea)
+        public bool      fieldLanding;  // true → use landPos/landNormal (Field subtype, runtime-computed)
+        public Vector3   landPos;
+        public Vector3   landNormal;
         public float     perchedTimer;
         public float     currentPerchDuration;
-        public float     landingBlend;       // 0 = full calm forces, 1 = full landing forces
+        public float     landingBlend;   // 0 = full calm forces, 1 = full aim forces
+        public bool      isDiving;       // true once we've reached approach height — no more upward correction
+        public float     spiralAngle;    // accumulated angle for the Spiral approach style
 
         public void Init( PreyPerchModule cfg )
         {
             target               = null;
-            landDesireTimer      = cfg.landDesireInterval + Random.Range( -cfg.landDesireVariance , cfg.landDesireVariance );
+            fieldLanding         = false;
+            landPos              = Vector3.zero;
+            landNormal           = Vector3.up;
             perchedTimer         = 0;
             currentPerchDuration = 0;
             landingBlend         = 0f;
+            isDiving             = false;
+            spiralAngle          = 0f;
         }
     }
 
@@ -114,6 +131,9 @@ public class PreyController : MonoBehaviour
         public float desireToCalmDown;
         public float desireToLand;
         public float sampleTimer;
+
+        public string lastTriggerLabel = "";
+        public float  lastTriggerTime  = -999f;
 
         public struct Influence {
             public PreyController bird;
@@ -134,9 +154,7 @@ public class PreyController : MonoBehaviour
 
     private class TakeOffRuntimeState
     {
-        public float   timer;
-        public float   circleTimer;
-        public float   circleAngle;
+        public Vector3 origin;        // where the bird took off from (forces end once far enough from here)
         public Vector3 runDirection;
     }
 
@@ -156,15 +174,16 @@ public class PreyController : MonoBehaviour
 
     private class UpdraftRuntimeState
     {
-        public UpdraftZone       zone;
-        public PreyInterestPoint interestPoint;
+        public PreyInterestPoint activeTarget;  // the searched-to point we are currently riding
+        public float             remainTimer;   // how long we've ridden activeTarget
     }
 
-    private class ThermalRuntimeState
-    {
-        public float circleAngle;
-        public bool  isThermaling;
-    }
+    // removed — thermal soaring is now handled via interest points
+    // private class ThermalRuntimeState
+    // {
+    //     public float circleAngle;
+    //     public bool  isThermaling;
+    // }
 
     private class RunRuntimeState
     {
@@ -176,19 +195,22 @@ public class PreyController : MonoBehaviour
     private class SearchRuntimeState
     {
         public PreyInterestPoint currentTarget;
+        public Vector3           targetOffset;     // stable random scatter for this search
         public float             calmTimer;
         public float             nextSearchTime;
         public float             searchTimer;
         public float             arrivedTimer;
-        public float             searchCooldown; // blocks all searching after takeoff
+        public float             searchCooldown;   // blocks all searching after takeoff / forced calm
+        public int               newInterestCount; // chained NewInterest hops since the last full calm
 
         public void Init( PreySearchModule cfg )
         {
-            currentTarget  = null;
-            calmTimer      = 0f;
-            searchTimer    = 0f;
-            arrivedTimer   = 0f;
-            searchCooldown = 0f;
+            currentTarget    = null;
+            calmTimer        = 0f;
+            searchTimer      = 0f;
+            arrivedTimer     = 0f;
+            searchCooldown   = 0f;
+            newInterestCount = 0;
             nextSearchTime = cfg.calmBeforeSearch
                              + Random.Range( -cfg.calmBeforeSearchVariance , cfg.calmBeforeSearchVariance );
         }
@@ -199,7 +221,7 @@ public class PreyController : MonoBehaviour
     private FlockRuntimeState   flockState   = new();
     private SplineRuntimeState  splineState  = new();
     private UpdraftRuntimeState updraftState = new();
-    private ThermalRuntimeState thermalState = new();
+    // private ThermalRuntimeState thermalState = new();   // removed (thermal via interest points)
     private RunRuntimeState     runState     = new();
     private SearchRuntimeState  searchState  = new();
 
@@ -261,8 +283,6 @@ public class PreyController : MonoBehaviour
 
         // seed per-instance randomness
         noiseOffset = Random.Range( 0f , 100f );
-        circleRuntimeAngle = Random.Range( 0f , Mathf.PI * 2f );
-        thermalState.circleAngle = Random.Range( 0f , Mathf.PI * 2f );
 
         if ( parameters.modules.perch ) {
             perchState.Init( parameters.perch );
@@ -272,7 +292,12 @@ public class PreyController : MonoBehaviour
             searchState.Init( parameters.search );
         }
 
-        SetHeight();
+        if ( parameters.modules.social )
+            socialState.sampleTimer = Random.Range( 0f , parameters.social.sampleInterval );
+
+        // NOTE: spawn position (incl. altitude) is decided by PreyManager's spawn type.
+        // Do NOT override Y here — SetHeight() used to re-snap to a random altitude and
+        // throw away spline / desired-altitude / in-distance placement.
 
         stamina           = parameters.modules.sprint ? parameters.sprint.maxStamina : 0f;
         timeOutsideRegion = 0f;
@@ -281,6 +306,7 @@ public class PreyController : MonoBehaviour
         ambientFlapsInBurst = 0;
         ambientGlideTimer   = Random.Range( parameters.flap.glideTimeMin , parameters.flap.glideTimeMax );
         force             = Vector3.zero;
+        smoothedForce     = Vector3.zero;
         frame = Random.Range( 0 , parameters.physics.physicsResolution );
         enabled = true;
         spawnPoint = transform.position;
@@ -309,7 +335,7 @@ public class PreyController : MonoBehaviour
 
         focusLine.enabled = false;
 
-        StartCoroutine( SpawnCoroutine( config.spawn.spawnSpeed ) );
+        StartCoroutine( SpawnCoroutine( config.animation.spawnSpeed ) );
         OnInitialize();
     }
 
@@ -317,14 +343,15 @@ public class PreyController : MonoBehaviour
     {
     }
 
-    public void SetHeight()
-    {
-        if ( Physics.Raycast( transform.position , -transform.up , out var hit , 100000 ) ) {
-            transform.position = hit.point + transform.up *
-                Mathf.Lerp( parameters.altitude.minAltitude , parameters.altitude.maxAltitude , Random.value );
-            position = transform.position;
-        }
-    }
+    // unused — spawn position (incl. altitude) is decided by PreyManager's spawn type now.
+    // public void SetHeight()
+    // {
+    //     if ( Physics.Raycast( transform.position , -transform.up , out var hit , 100000 ) ) {
+    //         transform.position = hit.point + transform.up *
+    //             Mathf.Lerp( parameters.altitude.minAltitude , parameters.altitude.maxAltitude , Random.value );
+    //         position = transform.position;
+    //     }
+    // }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Wren / data updates
@@ -361,6 +388,28 @@ public class PreyController : MonoBehaviour
         vectorToWren = wren != null ? wren.position - transform.position : Vector3.one * 9999f;
     }
 
+    // ── Predictive startle ─────────────────────────────────────────────────────
+    // Effective startle reach = base + how far the wren travels toward us in `leadTime` seconds.
+    // A fast head-on approach spooks earlier; perpendicular/receding stays at the base radius.
+    private Vector3 WrenVelocity()
+    {
+        if ( God.wren != null && God.wren.physics != null && God.wren.physics.rb != null )
+            return God.wren.physics.rb.velocity;
+        return Vector3.zero;   // debug wren has no rigidbody → falls back to the plain ring
+    }
+
+    private float EffectiveStartle( float baseRadius , float leadTime )
+    {
+        var v      = WrenVelocity();
+        var toPrey = -vectorToWren;                          // vectorToWren is prey → wren
+        if ( leadTime <= 0f || v.sqrMagnitude < 1e-4f || toPrey.sqrMagnitude < 1e-4f ) return baseRadius;
+        float closing = Vector3.Dot( v , toPrey.normalized );   // + when the wren heads toward us
+        return baseRadius + Mathf.Max( 0f , closing ) * leadTime;
+    }
+
+    private bool WrenWithinStartle( float baseRadius , float leadTime )
+        => vectorToWren.magnitude < EffectiveStartle( baseRadius , leadTime );
+
     public void UpdateData()
     {
         frame++;
@@ -391,6 +440,9 @@ public class PreyController : MonoBehaviour
         }
     }
 
+    // Top sprint speed = configured multiple of normal max speed.
+    private float MaxSprintSpeed() => parameters.movement.maxSpeed * parameters.sprint.maxSprintSpeedMultiplier;
+
     private void UpdateStamina()
     {
         if ( !parameters.modules.sprint ) return;
@@ -398,7 +450,7 @@ public class PreyController : MonoBehaviour
         var s = parameters.sprint;
         stamina = Mathf.Min( stamina + s.staminaRefillRate * Time.deltaTime , s.maxStamina );
 
-        float speedRange = Mathf.Max( s.maxSprintSpeed - parameters.movement.maxSpeed , 0.001f );
+        float speedRange = Mathf.Max( MaxSprintSpeed() - parameters.movement.maxSpeed , 0.001f );
         float excess     = Mathf.Max( 0f , currentSpeed - parameters.movement.maxSpeed );
         stamina -= s.staminaDrainRate * (excess / speedRange) * Time.deltaTime;
         stamina  = Mathf.Max( stamina , 0f );
@@ -408,10 +460,6 @@ public class PreyController : MonoBehaviour
     {
         if ( parameters.modules.flock ) {
             UpdateFlockState();
-        }
-
-        if ( parameters.modules.updraft ) {
-            UpdateUpdraftState();
         }
 
         if ( parameters.modules.spline ) {
@@ -446,23 +494,24 @@ public class PreyController : MonoBehaviour
         }
     }
 
-    private void UpdateUpdraftState()
-    {
-        updraftState.zone = UpdraftZone.FindNearest( position , parameters.updraft.detectionRadius );
-
-        updraftState.interestPoint = null;
-        if ( manager?.interestPoints != null ) {
-            float bestSqr = float.MaxValue;
-            foreach ( var ip in manager.interestPoints ) {
-                if ( ip == null || ip.type != InterestPointType.Updraft ) continue;
-                float sqr = (ip.transform.position - position).sqrMagnitude;
-                if ( sqr < ip.noticeRadius * ip.noticeRadius && sqr < bestSqr ) {
-                    bestSqr = sqr;
-                    updraftState.interestPoint = ip;
-                }
-            }
-        }
-    }
+    // removed — passive updraft soaring; updraft is now entered via Searching → Updrafting.
+    // private void UpdateUpdraftState()
+    // {
+    //     updraftState.zone = UpdraftZone.FindNearest( position , parameters.updraft.detectionRadius );
+    //
+    //     updraftState.interestPoint = null;
+    //     if ( manager?.interestPoints != null ) {
+    //         float bestSqr = float.MaxValue;
+    //         foreach ( var ip in manager.interestPoints ) {
+    //             if ( ip == null || ip.type != InterestPointType.Updraft ) continue;
+    //             float sqr = (ip.transform.position - position).sqrMagnitude;
+    //             if ( sqr < ip.noticeRadius * ip.noticeRadius && sqr < bestSqr ) {
+    //                 bestSqr = sqr;
+    //                 updraftState.interestPoint = ip;
+    //             }
+    //         }
+    //     }
+    // }
 
     private void UpdateSplineState()
     {
@@ -477,44 +526,57 @@ public class PreyController : MonoBehaviour
 
     private void UpdateState()
     {
+        if ( parameters.modules.social ) {
+            socialState.sampleTimer -= Time.deltaTime;
+            if ( socialState.sampleTimer <= 0f ) ScanSocialPressure();
+        }
+
         switch (state) {
 
             case PreyState.Calm:
-                if ( parameters.modules.run && vectorToWren.magnitude < parameters.run.startleRadius ) {
+                if ( parameters.modules.run && WrenWithinStartle( parameters.run.startleRadius , parameters.run.startleLeadTime ) ) {
                     EnterDisturbed();
                     break;
                 }
 
-                if ( parameters.modules.perch ) {
-                    perchState.landDesireTimer -= Time.deltaTime;
-                    if ( perchState.landDesireTimer <= 0 ) TryStartLanding();
+                if ( parameters.modules.social && socialState.desireToDisturb >= parameters.social.disturbThreshold ) {
+                    socialState.desireToDisturb    = 0f;
+                    socialState.lastTriggerLabel   = $"social → Disturbed  ({socialState.desireToDisturb:F2})";
+                    socialState.lastTriggerTime    = Time.time;
+                    EnterDisturbed();
+                    break;
+                }
+
+                // social pressure to land → search toward a perch point (landing is search-driven)
+                if ( parameters.modules.social && parameters.modules.perch && socialState.desireToLand >= parameters.social.landThreshold ) {
+                    var perchPoint = PickSearchTarget( true , onlyType: InterestPointType.Perch );
+                    if ( perchPoint != null ) {
+                        socialState.lastTriggerLabel = $"social → search perch  ({socialState.desireToLand:F2})";
+                        socialState.lastTriggerTime  = Time.time;
+                        socialState.desireToLand     = 0f;
+                        EnterSearching( perchPoint );
+                        break;
+                    }
                 }
 
                 if ( parameters.modules.search ) {
-                    searchState.calmTimer += Time.deltaTime;
+                    // being inside a point's notice range speeds the calm countdown by its urgency
+                    searchState.calmTimer += Time.deltaTime * (1f + InRangeUrgency());
 
                     if ( searchState.searchCooldown > 0f ) {
                         searchState.searchCooldown -= Time.deltaTime;
-                    } else {
-                        // proximity notice — one chance-roll per frame; picks from in-range by priority
-                        if ( Random.value < parameters.search.noticeChance * Time.deltaTime ) {
-                            var noticed = PickSearchTarget( false );
-                            if ( noticed != null ) { EnterSearching( noticed ); break; }
-                        }
-
-                        // forced scan after being calm long enough; includes alwaysInteresting far targets
-                        if ( searchState.calmTimer >= searchState.nextSearchTime ) {
-                            var target = PickSearchTarget( true );
-                            if ( target != null ) { EnterSearching( target ); break; }
-                            searchState.Init( parameters.search ); // nothing found, reset timer
-                        }
+                    } else if ( searchState.calmTimer >= searchState.nextSearchTime ) {
+                        // calm period elapsed — commit to a point of interest and head for it
+                        var target = PickSearchTarget( true );
+                        if ( target != null ) { EnterSearching( target ); break; }
+                        searchState.Init( parameters.search ); // no points exist at all — wait & retry
                     }
                 }
 
                 break;
 
             case PreyState.Searching:
-                if ( parameters.modules.run && vectorToWren.magnitude < parameters.run.startleRadius ) {
+                if ( parameters.modules.run && WrenWithinStartle( parameters.run.startleRadius , parameters.run.startleLeadTime ) ) {
                     EnterDisturbed();
                     break;
                 }
@@ -523,8 +585,17 @@ public class PreyController : MonoBehaviour
 
                 searchState.searchTimer += Time.deltaTime;
 
-                if ( Vector3.Distance( position , searchState.currentTarget.transform.position )
-                     <= parameters.search.arrivalRadius ) {
+                if ( ArrivedAtTarget() ) {
+                    // Perch/Updraft/Despawn use timeToRemainInterested as their action duration
+                    // (perch sit, updraft ride), so commit on contact instead of lingering here.
+                    // NewCalm/NewInterest have no duration, so they linger timeToRemainInterested first.
+                    if ( searchState.currentTarget.type == InterestPointType.Perch
+                         || searchState.currentTarget.type == InterestPointType.Updraft
+                         || searchState.currentTarget.type == InterestPointType.Despawn ) {
+                        ArriveAtSearchTarget( searchState.currentTarget );
+                        break;
+                    }
+
                     searchState.arrivedTimer += Time.deltaTime;
                     if ( searchState.arrivedTimer >= searchState.currentTarget.timeToRemainInterested )
                         ArriveAtSearchTarget( searchState.currentTarget );
@@ -542,18 +613,36 @@ public class PreyController : MonoBehaviour
                 break;
 
             case PreyState.Landing:
-                if ( parameters.modules.run && vectorToWren.magnitude < parameters.run.startleRadius ) {
+                if ( parameters.modules.run && WrenWithinStartle( parameters.run.startleRadius , parameters.run.startleLeadTime ) ) {
                     EnterDisturbed();
                     break;
                 }
 
-                if ( perchState.target == null ) {
+                if ( !HasPerchTarget() ) {
                     EnterCalm();
                     break;
                 }
 
-                if ( Vector3.Distance( position , perchState.target.position ) < parameters.perch.snapDistance ) {
+                if ( Vector3.Distance( position , PerchSurface() ) < parameters.perch.snapDistance ) {
                     EnterPerched();
+                }
+
+                break;
+
+            case PreyState.Updrafting:
+                if ( parameters.modules.run && WrenWithinStartle( parameters.run.startleRadius , parameters.run.startleLeadTime ) ) {
+                    EnterDisturbed();
+                    break;
+                }
+
+                if ( updraftState.activeTarget == null || updraftState.activeTarget.transform == null ) {
+                    ExitUpdraft();
+                    break;
+                }
+
+                updraftState.remainTimer += Time.deltaTime;
+                if ( updraftState.remainTimer >= updraftState.activeTarget.timeToRemainInterested ) {
+                    ExitUpdraft();
                 }
 
                 break;
@@ -561,31 +650,39 @@ public class PreyController : MonoBehaviour
             case PreyState.Perched:
                 perchState.perchedTimer += Time.deltaTime;
 
-                if ( vectorToWren.magnitude < parameters.perch.startleRadius ) {
+                if ( WrenWithinStartle( parameters.perch.startleRadius , parameters.perch.startleLeadTime ) ) {
                     if ( parameters.modules.takeOff ) EnterTakeOff();
                     else                              EnterCalm();
-                } else if ( perchState.perchedTimer >= perchState.currentPerchDuration ) {
-                    EnterCalm();
+                    break;
+                }
+
+                if ( parameters.modules.social && socialState.desireToTakeOff >= parameters.social.takeOffThreshold ) {
+                    socialState.lastTriggerLabel   = $"social → TakeOff  ({socialState.desireToTakeOff:F2})";
+                    socialState.lastTriggerTime    = Time.time;
+                    socialState.desireToTakeOff    = 0f;
+                    if ( parameters.modules.takeOff ) EnterTakeOff();
+                    else                              EnterCalm();
                     searchState.searchCooldown = searchState.nextSearchTime;
+                    break;
+                }
+
+                // perched long enough — take off (if able), otherwise just go calm
+                if ( perchState.perchedTimer >= perchState.currentPerchDuration ) {
+                    if ( parameters.modules.takeOff ) {
+                        EnterTakeOff();
+                    } else {
+                        EnterCalm();
+                        searchState.searchCooldown = searchState.nextSearchTime;
+                    }
                 }
 
                 break;
 
             case PreyState.TakingOff:
-                takeOffState.timer += Time.deltaTime;
-
-                if ( takeOffState.timer > parameters.takeOff.duration ) {
-                    if ( parameters.modules.circle ) {
-                        takeOffState.circleTimer += Time.deltaTime;
-
-                        if ( takeOffState.circleTimer >= parameters.takeOff.circleAfter ) {
-                            EnterCalm();
-                            searchState.searchCooldown = searchState.nextSearchTime;
-                        }
-                    } else {
-                        EnterCalm();
-                        searchState.searchCooldown = searchState.nextSearchTime;
-                    }
+                // pop up and away; once we've travelled far enough from the takeoff point, drop the forces
+                if ( Vector3.Distance( position , takeOffState.origin ) >= parameters.takeOff.takeOffDistance ) {
+                    EnterCalm();
+                    searchState.searchCooldown = searchState.nextSearchTime;
                 }
 
                 break;
@@ -596,6 +693,15 @@ public class PreyController : MonoBehaviour
                 if ( runState.calmTimer > parameters.run.calmDownTime &&
                      vectorToWren.magnitude > parameters.run.calmDownDistance ) {
                     EnterCalm();
+                    break;
+                }
+
+                if ( parameters.modules.social && socialState.desireToCalmDown >= parameters.social.calmThreshold &&
+                     vectorToWren.magnitude > parameters.run.calmDownDistance ) {
+                    socialState.lastTriggerLabel   = $"social → Calm  ({socialState.desireToCalmDown:F2})";
+                    socialState.lastTriggerTime    = Time.time;
+                    socialState.desireToCalmDown   = 0f;
+                    EnterCalm();
                 }
 
                 break;
@@ -605,7 +711,6 @@ public class PreyController : MonoBehaviour
     private void EnterCalm()
     {
         state = PreyState.Calm;
-        circleRuntimeAngle = Random.Range( 0f , Mathf.PI * 2f );
 
         if ( parameters.modules.perch ) perchState.Init( parameters.perch );
         if ( parameters.modules.search ) searchState.Init( parameters.search );
@@ -617,6 +722,52 @@ public class PreyController : MonoBehaviour
         searchState.currentTarget = target;
         searchState.searchTimer   = 0f;
         searchState.calmTimer     = 0f;
+        searchState.arrivedTimer  = 0f;
+
+        // LandPoint: reserve the actual landing spot now and aim straight at it. Otherwise clear any
+        // previous reservation (a spot is acquired on arrival instead).
+        perchState.target       = null;
+        perchState.fieldLanding = false;
+        if ( target.type == InterestPointType.Perch && target.searchTargetType == SearchTargetType.LandPoint )
+            AcquirePerchTarget( target );
+
+        float scatter = target.SearchScatterRadius();
+        searchState.targetOffset = scatter > 0f ? target.RandomOffset( scatter ) : Vector3.zero;
+    }
+
+    // World position the bird is currently flying toward (respects the point's search type).
+    private Vector3 CurrentSearchTargetPos()
+    {
+        // LandPoint: fly precisely to the reserved landing spot (no scatter)
+        if ( searchState.currentTarget.searchTargetType == SearchTargetType.LandPoint ) {
+            if ( perchState.fieldLanding )      return perchState.landPos;
+            if ( perchState.target != null )    return perchState.target.position;
+        }
+
+        return searchState.currentTarget.GetSearchTarget( position , searchState.targetOffset );
+    }
+
+    // Has the bird reached its target's enter radius, respecting the point's entrance shape?
+    private bool ArrivedAtTarget()
+    {
+        var   target = CurrentSearchTargetPos();
+        var   d      = position - target;
+        if ( searchState.currentTarget.entranceShape == EntranceShape.Cylinder ) d.y = 0f;
+        float r = searchState.currentTarget.enterRadius;
+        return d.sqrMagnitude <= r * r;
+    }
+
+    // Highest noticeUrgency among interest points whose notice radius currently contains us (0 if none).
+    private float InRangeUrgency()
+    {
+        if ( manager?.interestPoints == null ) return 0f;
+
+        float best = 0f;
+        foreach ( var ip in manager.interestPoints ) {
+            if ( ip == null || ip.noticeUrgency <= best ) continue;
+            if ( ip.IsWithin( position , ip.noticeRadius ) ) best = ip.noticeUrgency;
+        }
+        return best;
     }
 
     private void ArriveAtSearchTarget( PreyInterestPoint target )
@@ -625,9 +776,12 @@ public class PreyController : MonoBehaviour
 
         switch ( target.type ) {
             case InterestPointType.Perch:
-                var perchSpot = FindBestPerchTarget();
-                if ( perchSpot != null ) {
-                    perchState.target = perchSpot;
+                // LandPoint already reserved a spot in EnterSearching; otherwise acquire one now
+                bool haveSpot = HasPerchTarget() || AcquirePerchTarget( target );
+                if ( haveSpot ) {
+                    // perch duration comes from the point's Time To Remain (± variance)
+                    perchState.currentPerchDuration = Mathf.Max( 0.01f , target.timeToRemainInterested
+                        + Random.Range( -target.timeToRemainVariance , target.timeToRemainVariance ) );
                     state = PreyState.Landing;
                 } else {
                     EnterCalm();
@@ -635,12 +789,31 @@ public class PreyController : MonoBehaviour
                 break;
 
             case InterestPointType.Updraft:
+                updraftState.activeTarget = target;
+                updraftState.remainTimer  = 0f;
+                state = PreyState.Updrafting;
+                break;
+
             case InterestPointType.NewCalm:
                 EnterCalm();
                 break;
 
+            case InterestPointType.Despawn:
+                ForceDespawn();
+                break;
+
             case InterestPointType.NewInterest:
-                // immediately search for a different point, never returning to this one
+                searchState.newInterestCount++;
+
+                // too many search→search hops without a real calm — force a full calm session
+                int maxHops = parameters.search.maxNewInterestsBeforeForcedCalm;
+                if ( maxHops > 0 && searchState.newInterestCount >= maxHops ) {
+                    EnterCalm();                                            // resets newInterestCount via Init
+                    searchState.searchCooldown = searchState.nextSearchTime; // no searching until it completes
+                    break;
+                }
+
+                // otherwise immediately search for a different point, never returning to this one
                 var next = PickSearchTarget( true , exclude: target );
                 if ( next != null ) EnterSearching( next );
                 else                EnterCalm();
@@ -657,92 +830,241 @@ public class PreyController : MonoBehaviour
         runState.jukeDir.y = 0;
     }
 
-    private void TryStartLanding()
-    {
-        var target = FindBestPerchTarget();
-
-        if ( target == null ) {
-            perchState.landDesireTimer = parameters.perch.landDesireInterval * 0.5f;
-            return;
-        }
-
-        perchState.target      = target;
-        perchState.landingBlend = 0f;
-        state = PreyState.Landing;
-    }
-
     private void EnterPerched()
     {
         state = PreyState.Perched;
         velocity = Vector3.zero;
         flapValue = Vector3.zero;
-        position = perchState.target.position;
+        position = PerchSurface();
         transform.position = position;
         perchState.perchedTimer = 0;
-        perchState.currentPerchDuration = parameters.perch.getBored
-                                          + Random.Range( -parameters.perch.getBoredVariance ,
-                                              parameters.perch.getBoredVariance );
+
+        // duration is set when landing is decided, from the Perch point's Time To Remain (± variance).
+        // Guard against a zero value so the bird doesn't take off instantly.
+        if ( perchState.currentPerchDuration <= 0f )
+            perchState.currentPerchDuration = 5f;
     }
 
     private void EnterTakeOff()
     {
         state = PreyState.TakingOff;
-        takeOffState.timer = 0;
-        takeOffState.circleTimer = 0;
-        takeOffState.circleAngle = Random.Range( 0f , Mathf.PI * 2f );
+        takeOffState.origin = position;
         takeOffState.runDirection = vectorToWren.sqrMagnitude > 0.01f
             ? -vectorToWren.normalized
             : Random.insideUnitSphere.normalized;
-        perchState.target = null;
+        perchState.target       = null;
+        perchState.fieldLanding = false;
     }
 
-    // forcedScan = true  → include alwaysInteresting targets regardless of distance
-    // forcedScan = false → only targets within noticeRadius
-    // exclude           → skip this specific point (used by NewInterest to avoid revisiting)
-    private PreyInterestPoint PickSearchTarget( bool forcedScan , PreyInterestPoint exclude = null )
+    // Ride is over: drop the updraft forces and return to Calm. EnterCalm resets calmTimer,
+    // and proximity notice is now gated by calmBeforeSearch, so the bird naturally rests the
+    // full calm period before it can re-pick this same updraft (we're still inside its volume).
+    private void ExitUpdraft()
+    {
+        updraftState.activeTarget = null;
+        updraftState.remainTimer  = 0f;
+        EnterCalm();
+    }
+
+    private void ScanSocialPressure()
+    {
+        var s = parameters.social;
+        socialState.sampleTimer = s.sampleInterval;
+        socialState.Decay( s.decayRate , s.sampleInterval );
+        socialState.influences.Clear();
+
+        if ( manager == null ) return;
+
+        _socialNeighbors.Clear();
+        manager.GetNearbyBirds( position , s.neighborRadius , this , _socialNeighbors );
+
+        foreach ( var neighbor in _socialNeighbors ) {
+            float dist   = (neighbor.position - position).magnitude;
+            float weight = (1f - Mathf.Clamp01( dist / s.neighborRadius )) * s.socialWeight;
+            if ( weight <= 0f ) continue;
+
+            switch ( neighbor.state ) {
+                case PreyState.TakingOff:
+                case PreyState.Disturbed:
+                    socialState.desireToTakeOff += weight;
+                    socialState.desireToDisturb += weight;
+                    break;
+                case PreyState.Perched:
+                case PreyState.Landing:
+                    socialState.desireToLand += weight;
+                    break;
+                case PreyState.Calm:
+                case PreyState.Searching:
+                    socialState.desireToCalmDown += weight;
+                    break;
+            }
+
+            socialState.influences.Add( new SocialPressureState.Influence {
+                bird        = neighbor,
+                weight      = weight,
+                sourceState = neighbor.state
+            } );
+        }
+
+        _socialNeighbors.Clear();
+    }
+
+    // forcedScan = true  → every point is reachable (a deliberate search), weighted toward
+    //                      nearby / urgent / alwaysInteresting points.
+    // forcedScan = false → only points within noticeRadius (or alwaysInteresting).
+    // exclude            → skip this specific point (used by NewInterest to avoid revisiting).
+    // onlyType           → if set, only consider points of this type (used by social-land → Perch).
+    private PreyInterestPoint PickSearchTarget( bool forcedScan , PreyInterestPoint exclude = null ,
+                                                InterestPointType? onlyType = null )
     {
         if ( manager?.interestPoints == null || manager.interestPoints.Length == 0 ) return null;
 
-        var   candidates  = new System.Collections.Generic.List<PreyInterestPoint>();
-        float totalWeight = 0f;
+        _searchCandidates.Clear();
+        _searchWeights.Clear();
+
+        float             closeness   = Mathf.Clamp01( parameters.search.closenessImportance );
+        float             totalWeight = 0f;
+        float             bestDist    = float.MaxValue;
+        PreyInterestPoint nearest     = null;
 
         foreach ( var ip in manager.interestPoints ) {
             if ( ip == null || ip == exclude ) continue;
-            float dist    = Vector3.Distance( position , ip.transform.position );
-            bool  inRange = dist <= ip.noticeRadius;
+            if ( onlyType.HasValue && ip.type != onlyType.Value ) continue;
 
-            if ( inRange || ( forcedScan && ip.alwaysInteresting ) ) {
-                candidates.Add( ip );
-                totalWeight += Mathf.Max( ip.priority , 0.001f );
-            }
+            bool inRange = ip.IsWithin( position , ip.noticeRadius );
+            if ( !inRange && !ip.alwaysInteresting && !forcedScan ) continue; // proximity scan: in-range/always only
+
+            float dist = Vector3.Distance( position , ip.transform.position );
+
+            // base desirability, then bias toward nearer points by closenessImportance
+            float weight = Mathf.Max( ip.priority , 0.001f ) * (inRange ? (1f + ip.noticeUrgency) : 1f);
+            if ( closeness > 0f )
+                weight *= Mathf.Pow( 1f / Mathf.Max( dist , 1f ) , closeness * 3f );
+
+            _searchCandidates.Add( ip );
+            _searchWeights.Add( weight );
+            totalWeight += weight;
+
+            if ( dist < bestDist ) { bestDist = dist; nearest = ip; }
         }
 
-        if ( candidates.Count == 0 ) return null;
+        if ( _searchCandidates.Count == 0 ) return null;
+
+        // at full closeness, deterministically take the nearest
+        if ( closeness >= 1f ) return nearest;
 
         float r     = Random.Range( 0f , totalWeight );
         float accum = 0f;
 
-        foreach ( var c in candidates ) {
-            accum += Mathf.Max( c.priority , 0.001f );
-            if ( r <= accum ) return c;
+        for ( int i = 0; i < _searchCandidates.Count; i++ ) {
+            accum += _searchWeights[i];
+            if ( r <= accum ) return _searchCandidates[i];
         }
 
-        return candidates[ candidates.Count - 1 ];
+        return _searchCandidates[ _searchCandidates.Count - 1 ];
     }
 
-    private static readonly List<Transform>      _perchCandidates = new();
-    private static readonly HashSet<Transform>   _occupiedPerches = new();
-    private static readonly List<PreyController> _socialNeighbors = new();
+    private static readonly List<Transform>          _perchCandidates  = new();
+    private static readonly HashSet<Transform>       _occupiedPerches  = new();
+    private static readonly List<PreyController>     _socialNeighbors  = new();
+    private static readonly List<PreyInterestPoint>  _searchCandidates = new();
+    private static readonly List<float>              _searchWeights    = new();
+    private static readonly List<Vector3>            _occupiedLand     = new();
 
-    private Transform FindBestPerchTarget()
+    // Acquire a landing target on a Perch point: a discrete _perch_ spot (OnCollider/InArea) or a
+    // runtime-computed Field spot. Returns true if a spot was secured.
+    private bool AcquirePerchTarget( PreyInterestPoint point )
     {
+        if ( point.perchSubType == PerchSubType.Field ) {
+            perchState.target = null;
+            perchState.fieldLanding = ComputeFieldLandSpot( point );
+            return perchState.fieldLanding;
+        }
+
+        perchState.fieldLanding = false;
+        perchState.target = FindBestPerchTarget( point );
+        return perchState.target != null;
+    }
+
+    // Field landing: sample ground spots in the field area (biased forward along velocity), respect
+    // spacing from other landing birds, and prefer spots close to us (and to others if desireToBeClose).
+    private bool ComputeFieldLandSpot( PreyInterestPoint point )
+    {
+        var f = point.perchField;
+
+        // gather where other birds are landing / perched (for spacing)
+        _occupiedLand.Clear();
+        if ( manager?.preyHolder != null ) {
+            for ( int i = 0; i < manager.preyHolder.childCount; i++ ) {
+                var other = manager.preyHolder.GetChild( i ).GetComponent<PreyController>();
+                if ( other == null || other == this || !other.IsClaimingLand ) continue;
+                _occupiedLand.Add( other.ClaimedLandPosition );
+            }
+        }
+
+        // sample area, biased forward along our flattened velocity
+        Vector3 fwd    = velocity; fwd.y = 0f;
+        fwd            = fwd.sqrMagnitude > 0.0001f ? fwd.normalized : Vector3.zero;
+        Vector3 center = point.transform.position + fwd * f.forwardFromVelocity;
+
+        // cast from a bit past the prey along the cast direction (offset avoids self-intersection),
+        // down by default or up if toggled — follows the bird's current altitude
+        Vector3 castDir = f.castUp ? Vector3.up : Vector3.down;
+        float   startY  = position.y + (f.castUp ? f.castHeightOffset : -f.castHeightOffset);
+
+        float   spacingSqr   = f.spacing * f.spacing;
+        bool    found        = false;
+        float   bestScore    = float.MaxValue;
+        Vector3 bestPos      = Vector3.zero, bestNormal = Vector3.up;
+        // least-crowded fallback when the field is full
+        bool    spreadFound  = false;
+        float   bestSpread   = -1f;
+        Vector3 spreadPos    = Vector3.zero, spreadNormal = Vector3.up;
+
+        const int samples = 16;
+        for ( int i = 0; i < samples; i++ ) {
+            var xz     = Random.insideUnitCircle * f.radius;
+            var origin = new Vector3( center.x + xz.x , startY , center.z + xz.y );
+            if ( !Physics.Raycast( origin , castDir , out var hit , 10000f , f.groundLayers ) ) continue;
+
+            var cand = hit.point;
+
+            float nearestSqr = float.MaxValue;
+            for ( int j = 0; j < _occupiedLand.Count; j++ ) {
+                float d = (cand - _occupiedLand[j]).sqrMagnitude;
+                if ( d < nearestSqr ) nearestSqr = d;
+            }
+            float nearest = _occupiedLand.Count > 0 ? Mathf.Sqrt( nearestSqr ) : f.radius;
+
+            if ( nearest > bestSpread ) { bestSpread = nearest; spreadPos = cand; spreadNormal = hit.normal; spreadFound = true; }
+
+            if ( _occupiedLand.Count > 0 && nearestSqr < spacingSqr ) continue; // too close to another bird
+
+            // lower = better: prefer close to us; desireToBeClose also prefers being near others (clump)
+            float score = Vector3.Distance( position , cand ) + f.desireToBeClose * nearest;
+            if ( score < bestScore ) { bestScore = score; bestPos = cand; bestNormal = hit.normal; found = true; }
+        }
+
+        if ( found )       { perchState.landPos = bestPos;   perchState.landNormal = bestNormal;   return true; }
+        if ( spreadFound ) { perchState.landPos = spreadPos; perchState.landNormal = spreadNormal; return true; }
+        return false; // no ground found in the field at all
+    }
+
+    // Pick a free perch spot on the arrived-at Perch interest point: one of its generated
+    // _perch_ children, or the point itself if it has none.
+    private Transform FindBestPerchTarget( PreyInterestPoint point )
+    {
+        if ( point == null ) return null;
+
         // collect perches already claimed by landing or perched birds
         _occupiedPerches.Clear();
         if ( manager?.preyHolder != null ) {
             for ( int i = 0; i < manager.preyHolder.childCount; i++ ) {
                 var other = manager.preyHolder.GetChild( i ).GetComponent<PreyController>();
                 if ( other == null || other == this ) continue;
-                if ( other.state == PreyState.Landing || other.state == PreyState.Perched ) {
+                // Searching covers LandPoint birds that have reserved a spot but haven't landed yet
+                if ( other.state == PreyState.Searching || other.state == PreyState.Landing
+                     || other.state == PreyState.Perched ) {
                     var t = other.CurrentPerchTarget;
                     if ( t != null ) _occupiedPerches.Add( t );
                 }
@@ -750,32 +1072,18 @@ public class PreyController : MonoBehaviour
         }
 
         _perchCandidates.Clear();
-        float searchSqr = 200f * 200f;
-
-        if ( manager?.interestPoints != null ) {
-            foreach ( var ip in manager.interestPoints ) {
-                if ( ip == null || ip.type != InterestPointType.Perch ) continue;
-
-                if ( ip.transform.childCount > 0 ) {
-                    for ( int i = 0; i < ip.transform.childCount; i++ ) {
-                        var child = ip.transform.GetChild( i );
-                        if ( !child.name.StartsWith( "_perch_" ) ) continue;
-                        if ( _occupiedPerches.Contains( child ) ) continue;
-                        if ( (child.position - position).sqrMagnitude < searchSqr )
-                            _perchCandidates.Add( child );
-                    }
-                } else {
-                    if ( _occupiedPerches.Contains( ip.transform ) ) continue;
-                    if ( (ip.transform.position - position).sqrMagnitude < searchSqr )
-                        _perchCandidates.Add( ip.transform );
-                }
-            }
+        for ( int i = 0; i < point.transform.childCount; i++ ) {
+            var child = point.transform.GetChild( i );
+            if ( !child.name.StartsWith( "_perch_" ) ) continue;
+            if ( _occupiedPerches.Contains( child ) ) continue;
+            _perchCandidates.Add( child );
         }
 
         if ( _perchCandidates.Count > 0 )
             return _perchCandidates[ Random.Range( 0 , _perchCandidates.Count ) ];
 
-        return PerchPoint.FindNearest( position , 100f );
+        // no free generated perch points — land at the point itself if it's not taken
+        return _occupiedPerches.Contains( point.transform ) ? null : point.transform;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -790,6 +1098,7 @@ public class PreyController : MonoBehaviour
             case PreyState.Calm:      DoCalmPhysics();      break;
             case PreyState.Searching: DoSearchingPhysics(); break;
             case PreyState.Landing:   DoLandingPhysics();   break;
+            case PreyState.Updrafting:DoUpdraftingPhysics();break;
             case PreyState.Perched:   DoPerchedPhysics();   break;
             case PreyState.TakingOff: DoTakeOffPhysics();   break;
             case PreyState.Disturbed: DoDisturbedPhysics(); break;
@@ -810,17 +1119,8 @@ public class PreyController : MonoBehaviour
         if ( parameters.modules.flock )  AddForce( FlockForce()       , Color.cyan              , "flock" );
         if ( parameters.modules.spline ) AddForce( SplineForce() , Color.blue , "spline" );
 
-        if ( parameters.modules.updraft && (updraftState.zone != null || updraftState.interestPoint != null) )
-            AddForce( UpdraftForce() , Color.green , "updraft" );
-
-        if ( parameters.modules.thermal )
-            AddForce( ThermalForce() , new Color( 1f , 0.5f , 0f ) , "thermal" );
-
         if ( parameters.modules.circle )
             AddForce( CalmCircleForce() , Color.magenta , "circle" );
-
-        if ( parameters.modules.perch && manager.GetClosestAnchorPoints( position ) != null )
-            AddForce( AnchorForce() , Color.white , "anchor" );
 
         if ( parameters.modules.cage )
             AddForce( CageForce() , new Color( 1f , 0.8f , 0f ) , "cage" );
@@ -843,7 +1143,7 @@ public class PreyController : MonoBehaviour
         force = Vector3.zero;
 
         if ( searchState.currentTarget?.transform != null ) {
-            var toTarget = (searchState.currentTarget.transform.position - position).normalized;
+            var toTarget = (CurrentSearchTargetPos() - position).normalized;
             AddForce( toTarget * parameters.search.moveForce , new Color( 0.6f , 0.2f , 1f ) , "search" );
         }
 
@@ -863,54 +1163,132 @@ public class PreyController : MonoBehaviour
 
     // ── Landing ──────────────────────────────────────────────────────────────
 
+    private bool    HasPerchTarget() => perchState.fieldLanding || perchState.target != null;
+    private Vector3 PerchNormal()    => perchState.fieldLanding ? perchState.landNormal
+                                      : (perchState.target != null ? perchState.target.up : Vector3.up);
+
+    private Vector3 PerchSurface()
+    {
+        if ( perchState.fieldLanding )
+            return perchState.landPos + perchState.landNormal * parameters.perch.landingOffset;
+        if ( perchState.target == null ) return Vector3.zero;
+        return perchState.target.position + perchState.target.up * parameters.perch.landingOffset;
+    }
+
     private void DoLandingPhysics()
     {
-        if ( perchState.target == null ) { EnterCalm(); return; }
+        if ( !HasPerchTarget() ) { EnterCalm(); return; }
 
-        var   p         = parameters.perch;
-        var   toTarget  = perchState.target.position - position;
-        float dist      = toTarget.magnitude;
+        var   p        = parameters.perch;
+        var   surface  = PerchSurface();
+        var   normal   = PerchNormal();
+        // approach waypoint: directly above the surface along the surface normal
+        var   approach = surface + normal * p.approachHeight;
 
-        // ramp from calm forces (0) to full landing forces (1) over landingBlendDuration
+        // ramp calm→aim blend
         perchState.landingBlend = Mathf.MoveTowards(
             perchState.landingBlend , 1f , Time.deltaTime / p.landingBlendDuration );
 
-        // ── aim point: above target when far, direct when close (dive approach) ──
-        bool   diving  = dist < p.approachRadius;
-        var    aimPos  = diving
-            ? perchState.target.position
-            : perchState.target.position + Vector3.up * p.approachHeight;
-        var    toAim   = aimPos - position;
-        var    aimDir  = toAim.sqrMagnitude > 0.001f ? toAim.normalized : Vector3.down;
+        // ── Phase 1: approach — fly to the waypoint above the surface ─────────
+        // ── Phase 2: dive    — once at waypoint, drop straight down; no return ─
+        // (Spiral commits to the dive from inside its own branch once it's wound in tight.)
+        if ( !perchState.isDiving && p.approachStyle == PerchApproachStyle.Dive ) {
+            float distToApproach = Vector3.Distance( position , approach );
+            if ( distToApproach < p.approachRadius )
+                perchState.isDiving = true;
+        }
 
-        // ── collect calm forces ───────────────────────────────────────────────
         force = Vector3.zero;
-        var calmF = Vector3.zero;
-        if ( parameters.modules.drive )  calmF += DriveForce();
-        if ( parameters.modules.noise )  calmF += NoiseForce();
-        if ( parameters.modules.flock )  calmF += FlockForce();
-        if ( parameters.modules.spline ) calmF += SplineForce();
-        if ( parameters.modules.cage   ) calmF += CageForce();
+        float distToSurface;
 
-        // blend calm → landing
-        force = Vector3.Lerp( calmF , aimDir , perchState.landingBlend );
-        AddForce( MoveAlongGroundAndTurnAwayFromObstacles() * 0.3f , new Color( 1f , 0.4f , 0.1f ) , "avoidance" );
+        if ( perchState.isDiving ) {
+            // dive phase: aim straight at surface, ignore calm forces
+            var toSurface = surface - position;
+            distToSurface = toSurface.magnitude;
+            var aimDir = toSurface.sqrMagnitude > 0.001f ? toSurface.normalized : -normal;
+            force = aimDir;
+        } else if ( p.approachStyle == PerchApproachStyle.Spiral ) {
+            // spiral phase: a logarithmic spiral that winds inward and descends onto the surface
+            distToSurface = (surface - position).magnitude;
 
-        // ── speed: slow progressively as we get close ─────────────────────────
-        float distT      = Mathf.Clamp01( dist / (p.snapDistance * 8f) );
+            // basis perpendicular to the surface normal
+            var right = Vector3.Cross( normal , Vector3.up );
+            if ( right.sqrMagnitude < 1e-4f ) right = Vector3.Cross( normal , Vector3.forward );
+            right.Normalize();
+            var fwd = Vector3.Cross( right , normal ).normalized;
+
+            perchState.spiralAngle += p.spiralSpeed * Time.deltaTime;
+            float a      = perchState.spiralAngle;
+            float radius = p.spiralRadius * Mathf.Exp( -p.spiralTightness * a );          // shrinks each turn
+            float height = Mathf.Max( 0f , p.approachHeight - p.spiralDescentRate * a );  // descends each turn
+            var   target = surface + ( right * Mathf.Cos( a ) + fwd * Mathf.Sin( a ) ) * radius + normal * height;
+
+            var toTarget = target - position;
+            force = toTarget.sqrMagnitude > 0.001f ? toTarget.normalized : -normal;
+
+            // wound in tight and low → commit to the final straight dive (UpdateState snaps on contact)
+            if ( radius < p.snapDistance && height < p.snapDistance ) perchState.isDiving = true;
+        } else {
+            // dive approach: blend calm forces → aim at the waypoint above the surface
+            var toApproach = approach - position;
+            distToSurface  = (surface - position).magnitude;
+            var aimDir     = toApproach.sqrMagnitude > 0.001f ? toApproach.normalized : normal;
+
+            var calmF = Vector3.zero;
+            if ( parameters.modules.drive )  calmF += DriveForce();
+            if ( parameters.modules.noise )  calmF += NoiseForce();
+            if ( parameters.modules.flock )  calmF += FlockForce();
+            if ( parameters.modules.spline ) calmF += SplineForce();
+            if ( parameters.modules.cage   ) calmF += CageForce();
+
+            force = Vector3.Lerp( calmF , aimDir , perchState.landingBlend );
+        }
+
+        // fade out avoidance as we close on the landing surface: avoid obstacles on the way in,
+        // but stop fighting the landing point itself once we're nearly there
+        float avoidFade = p.landingAvoidanceFalloff > 0.01f
+            ? Mathf.Clamp01( distToSurface / p.landingAvoidanceFalloff )
+            : 1f;
+        AddForce( MoveAlongGroundAndTurnAwayFromObstacles() * 0.3f * avoidFade , new Color( 1f , 0.4f , 0.1f ) , "avoidance" );
+
+        // speed: slow as we close in on the surface
+        float distT      = Mathf.Clamp01( distToSurface / (p.snapDistance * 8f) );
         float approachSpd = Mathf.Lerp( parameters.movement.desiredSpeed * p.approachSpeedMult ,
                                         parameters.movement.desiredSpeed , distT );
-
         ApplyVelocity( approachSpd );
 
-        // ── flap: rapid when close to surface, normal when far ────────────────
-        float closeT    = 1f - Mathf.Clamp01( dist / p.approachRadius );
-        _flapSpeedMult  = Mathf.Lerp( 1f , p.landingFlapMult , closeT * perchState.landingBlend );
+        // flap: rapid when close to surface during dive
+        float closeT   = perchState.isDiving ? 1f - Mathf.Clamp01( distToSurface / p.approachHeight ) : 0f;
+        _flapSpeedMult = Mathf.Lerp( 1f , p.landingFlapMult , closeT );
 
         if ( parameters.modules.flap ) DoFlapInfo();
         else flapValue = Vector3.zero;
 
-        _flapSpeedMult = 1f; // reset so it doesn't bleed into other states
+        _flapSpeedMult = 1f;
+
+        transform.position = position + flapValue;
+    }
+
+    // ── Updrafting ─────────────────────────────────────────────────────────────
+
+    private void DoUpdraftingPhysics()
+    {
+        _flapSpeedMult = 1f;
+        force = Vector3.zero;
+
+        AddAvoidanceForces();
+
+        if ( updraftState.activeTarget != null && updraftState.activeTarget.transform != null )
+            AddForce( UpdraftForceFromPoint( updraftState.activeTarget ) , Color.green , "updraft" );
+
+        if ( parameters.modules.drive ) AddForce( DriveForce() , new Color( 0.6f , 1f , 0f ) , "drive" );
+        if ( parameters.modules.noise ) AddForce( NoiseForce() , Color.yellow               , "noise" );
+        if ( parameters.modules.cage  ) AddForce( CageForce()  , new Color( 1f , 0.8f , 0f ) , "cage"  );
+
+        ApplyVelocity( parameters.movement.desiredSpeed , true );
+
+        if ( parameters.modules.flap ) DoFlapInfo();
+        else                           flapValue = Vector3.zero;
 
         transform.position = position + flapValue;
     }
@@ -922,8 +1300,8 @@ public class PreyController : MonoBehaviour
         velocity = Vector3.zero;
         flapValue = Vector3.zero;
 
-        if ( perchState.target != null ) {
-            position = perchState.target.position;
+        if ( HasPerchTarget() ) {
+            position = PerchSurface();
         }
 
         transform.position = position;
@@ -935,33 +1313,23 @@ public class PreyController : MonoBehaviour
     {
         force = Vector3.zero;
 
-        if ( takeOffState.timer < parameters.takeOff.duration ) {
-            // burst phase
-            force += Vector3.up * parameters.takeOff.upForce;
-            force += takeOffState.runDirection * parameters.takeOff.runForce;
-            AddForce( MoveAlongGroundAndTurnAwayFromObstacles() , new Color( 1f , 0.4f , 0.1f ) , "avoidance" );
-        } else if ( parameters.modules.circle ) {
-            // circle phase (only reached when circle module is on)
-            takeOffState.circleAngle += Time.deltaTime;
-            var wrenPos = transform.position + vectorToWren;
-            var target = wrenPos
-                         + new Vector3( Mathf.Cos( takeOffState.circleAngle ) , 0 , Mathf.Sin( takeOffState.circleAngle ) )
-                         * parameters.circle.circleRadius
-                         + Vector3.up * parameters.takeOff.circleHeight;
-            force += (target - transform.position).normalized * parameters.circle.circleForce;
-            AddForce( MoveAlongGroundAndTurnAwayFromObstacles() , new Color( 1f , 0.4f , 0.1f ) , "avoidance" );
-        }
+        // pop up and push away from the wren; runs until far enough from the takeoff point (UpdateState)
+        force += Vector3.up * parameters.takeOff.upForce;
+        force += takeOffState.runDirection * parameters.takeOff.runForce;
+        AddForce( MoveAlongGroundAndTurnAwayFromObstacles() , new Color( 1f , 0.4f , 0.1f ) , "avoidance" );
 
         if ( parameters.modules.cage )  force += CageForce();
         if ( parameters.modules.drive ) AddForce( DriveForce() , new Color( 0.6f , 1f , 0f ) , "drive" );
 
         ApplyVelocity( parameters.movement.desiredSpeed , true );
 
+        _flapSpeedMult = parameters.takeOff.takeOffFlapMult;   // boosted flapping during the pop
         if ( parameters.modules.flap ) {
             DoFlapInfo();
         } else {
             flapValue = Vector3.zero;
         }
+        _flapSpeedMult = 1f;
 
         transform.position = position + flapValue;
     }
@@ -1062,7 +1430,7 @@ public class PreyController : MonoBehaviour
         if ( velocity.sqrMagnitude < 0.0001f ) return Vector3.zero;
 
         float effectiveMax = (parameters.modules.sprint && stamina > 0f)
-            ? parameters.sprint.maxSprintSpeed
+            ? MaxSprintSpeed()
             : parameters.movement.maxSpeed;
 
         float t = Mathf.Clamp01( currentSpeed / Mathf.Max( effectiveMax , 0.0001f ) );
@@ -1134,125 +1502,155 @@ public class PreyController : MonoBehaviour
         return pullF + forwardF;
     }
 
-    private Vector3 UpdraftForce()
+    // removed — passive updraft soaring. The searched-to updraft uses UpdraftForceFromPoint (below).
+    // private Vector3 UpdraftForce()
+    // {
+    //     if ( updraftState.zone != null ) {
+    //         var toCenter = updraftState.zone.transform.position - position;
+    //         toCenter.y = 0;
+    //         var tangent = Vector3.Cross( Vector3.up , toCenter.normalized );
+    //         return tangent * parameters.updraft.spiralForce
+    //                + Vector3.up * parameters.updraft.liftForce * updraftState.zone.strength;
+    //     }
+    //
+    //     if ( updraftState.interestPoint != null ) {
+    //         return UpdraftForceFromPoint( updraftState.interestPoint );
+    //     }
+    //
+    //     return Vector3.zero;
+    // }
+
+    // Spiral/lift force toward and around an updraft interest point's center.
+    private Vector3 UpdraftForceFromPoint( PreyInterestPoint ip )
     {
-        if ( updraftState.zone != null ) {
-            var toCenter = updraftState.zone.transform.position - position;
-            toCenter.y = 0;
-            var tangent = Vector3.Cross( Vector3.up , toCenter.normalized );
-            return tangent * parameters.updraft.spiralForce
-                   + Vector3.up * parameters.updraft.liftForce * updraftState.zone.strength;
-        }
-
-        if ( updraftState.interestPoint != null ) {
-            var  us       = updraftState.interestPoint.updraftSettings;
-            var  toCenter = updraftState.interestPoint.transform.position - position;
-            toCenter.y = 0;
-            int  curl     = us.curlDirection == CurlDirection.CounterClockwise ? 1 : -1;
-            var  tangent  = toCenter.sqrMagnitude > 0.01f
-                ? Vector3.Cross( Vector3.up , toCenter.normalized ) * curl
-                : Vector3.zero;
-            var inward = toCenter.sqrMagnitude > 0.01f ? toCenter.normalized : Vector3.zero;
-            return Vector3.up * us.forceUp
-                   + tangent   * us.curlForce
-                   + inward    * us.forceIn;
-        }
-
-        return Vector3.zero;
+        var us = ip.updraftSettings;
+        return SoarForce( ip.transform.position , us.forceUp , us.forceIn , us.curlForce ,
+                          us.curlDirection , us.desiredAltitude , us.altitudeRange , us.altitudeHoldStrength );
     }
 
-    private Vector3 ThermalForce()
+    // Shared soaring force: curl (tangent) + inward pull around `center`, plus a climb that eases
+    // across the altitude band [desiredAltitude - altitudeRange .. desiredAltitude] above center.y.
+    // forceUp 0 = no vertical (pure horizontal circling). Used by both updraft and the calm circle.
+    private Vector3 SoarForce( Vector3 center , float forceUp , float forceIn , float curlForce ,
+                               CurlDirection curlDir , float desiredAltitude , float altitudeRange ,
+                               float altitudeHoldStrength )
     {
-        if ( manager == null ) {
-            return Vector3.zero;
+        var toCenter = center - position;
+        toCenter.y = 0;
+        int curl    = curlDir == CurlDirection.CounterClockwise ? 1 : -1;
+        var tangent = toCenter.sqrMagnitude > 0.01f
+            ? Vector3.Cross( Vector3.up , toCenter.normalized ) * curl
+            : Vector3.zero;
+        var inward  = toCenter.sqrMagnitude > 0.01f ? toCenter.normalized : Vector3.zero;
+
+        // vertical: full climb until within altitudeRange of the top, then ease the lift to 0
+        // across the band so birds settle gently anywhere in it instead of snapping to one plane.
+        float topY = center.y + desiredAltitude;
+        float dy   = topY - position.y;   // > 0 = below the top of the band
+        float up;
+        if ( dy <= 0f ) {
+            up = Mathf.Max( dy * altitudeHoldStrength , -forceUp );        // above the band: ease down
+        } else {
+            up = forceUp * Mathf.Clamp01( dy / Mathf.Max( altitudeRange , 0.01f ) ); // 1 far below → 0 at top
         }
 
-        var center = manager.GetClosestThermalCenter( position );
-
-        if ( center == null ) {
-            return Vector3.zero;
-        }
-
-        var t = parameters.thermal;
-        bool thermaling = distanceToGround < t.minAltitude;
-        thermalState.isThermaling = thermaling;
-
-        thermalState.circleAngle += Time.deltaTime * t.circleSpeed * (thermaling ? 1.5f : 1f);
-        float radius = thermaling
-            ? parameters.circle.circleRadius * t.thermalTightness
-            : parameters.circle.circleRadius;
-
-        var target = center.position
-                     + new Vector3( Mathf.Cos( thermalState.circleAngle ) , 0 , Mathf.Sin( thermalState.circleAngle ) ) * radius;
-
-        var f = (target - transform.position).normalized * parameters.circle.circleForce;
-
-        if ( thermaling ) {
-            f += Vector3.up * parameters.circle.updraft;
-        }
-
-        return f;
+        return Vector3.up * up
+               + tangent  * curlForce
+               + inward   * forceIn;
     }
 
+    // removed — thermal soaring is now handled via interest points.
+    // private Vector3 ThermalForce()
+    // {
+    //     if ( manager == null ) return Vector3.zero;
+    //     var center = manager.GetClosestThermalCenter( position );
+    //     if ( center == null ) return Vector3.zero;
+    //
+    //     var t = parameters.thermal;
+    //     bool thermaling = distanceToGround < t.minAltitude;
+    //     thermalState.isThermaling = thermaling;
+    //
+    //     thermalState.circleAngle += Time.deltaTime * t.circleSpeed * (thermaling ? 1.5f : 1f);
+    //     float radius = thermaling
+    //         ? parameters.circle.circleRadius * t.thermalTightness
+    //         : parameters.circle.circleRadius;
+    //
+    //     var target = center.position
+    //                  + new Vector3( Mathf.Cos( thermalState.circleAngle ) , 0 , Mathf.Sin( thermalState.circleAngle ) ) * radius;
+    //
+    //     var f = (target - transform.position).normalized * parameters.circle.circleForce;
+    //     if ( thermaling ) f += Vector3.up * parameters.circle.updraft;
+    //     return f;
+    // }
+
+    // Soaring circle around this bird's PreyManager — same shape as an updraft.
     private Vector3 CalmCircleForce()
     {
-        circleRuntimeAngle += Time.deltaTime;
-        var wrenPos = transform.position + vectorToWren;
-        var target = wrenPos
-                     + new Vector3( Mathf.Cos( circleRuntimeAngle ) , 0 , Mathf.Sin( circleRuntimeAngle ) )
-                     * parameters.circle.circleRadius;
-        return (target - transform.position).normalized * parameters.circle.circleForce;
+        if ( manager == null ) return Vector3.zero;
+        var c = parameters.circle;
+        return SoarForce( manager.transform.position , c.forceUp , c.forceIn , c.curlForce ,
+                          c.curlDirection , c.desiredAltitude , c.altitudeRange , c.altitudeHoldStrength );
     }
 
     private Vector3 CageForce()
     {
         if ( manager == null ) return Vector3.zero;
 
-        Vector3 min, max;
+        var   cfg = parameters.cage;
+        float d   = cfg.borderTurnDistance;
+
+        // Box region: use the cage transform fully (position + rotation + scale). Push along the
+        // box's own local axes so a rotated cage turns birds along its faces, not world X/Z.
         if ( manager.regionType == RegionType.Box && manager.boxRegion != null ) {
-            var half = manager.boxRegion.lossyScale * 0.5f;
-            min = manager.boxRegion.position - half;
-            max = manager.boxRegion.position + half;
-        } else if ( manager.regionType == RegionType.Collider && manager.regionCollider != null ) {
-            min = manager.regionCollider.bounds.min;
-            max = manager.regionCollider.bounds.max;
-        } else {
-            return Vector3.zero;
+            var t      = manager.boxRegion;
+            var toBird = position - t.position;
+            float alongX = Vector3.Dot( toBird , t.right );    // signed world distance along local X
+            float alongZ = Vector3.Dot( toBird , t.forward );  //                          along local Z
+            float halfX  = t.lossyScale.x * 0.5f;
+            float halfZ  = t.lossyScale.z * 0.5f;
+
+            var push = Vector3.zero;
+            float distMinX = alongX + halfX, distMaxX = halfX - alongX;
+            float distMinZ = alongZ + halfZ, distMaxZ = halfZ - alongZ;
+            if ( distMinX < d ) push += t.right   * (1f - distMinX / d);
+            if ( distMaxX < d ) push -= t.right   * (1f - distMaxX / d);
+            if ( distMinZ < d ) push += t.forward * (1f - distMinZ / d);
+            if ( distMaxZ < d ) push -= t.forward * (1f - distMaxZ / d);
+
+            return push * cfg.borderTurnForce;
         }
 
-        var cfg = parameters.cage;
-        float d = cfg.borderTurnDistance;
-
-        var pushDir = Vector3.zero;
-        float distMinX = position.x - min.x;
-        float distMaxX = max.x - position.x;
-        float distMinZ = position.z - min.z;
-        float distMaxZ = max.z - position.z;
-
-        if ( distMinX < d ) pushDir.x += 1f - distMinX / d;
-        if ( distMaxX < d ) pushDir.x -= 1f - distMaxX / d;
-        if ( distMinZ < d ) pushDir.z += 1f - distMinZ / d;
-        if ( distMaxZ < d ) pushDir.z -= 1f - distMaxZ / d;
-
-        return pushDir * cfg.borderTurnForce;
-    }
-
-    private Vector3 AnchorForce()
-    {
-        var anchor = manager.GetClosestAnchorPoints( position );
-
-        if ( anchor == null ) {
-            return Vector3.zero;
-        }
-
-        var toAnchor = anchor.position - position;
-
-        if ( toAnchor.magnitude > parameters.perch.anchorRadius ) {
-            return toAnchor.normalized * parameters.perch.anchorPullForce;
+        // Collider region: an arbitrary collider has no single orientation — use its world AABB.
+        if ( manager.regionType == RegionType.Collider && manager.regionCollider != null ) {
+            var b    = manager.regionCollider.bounds;
+            var push = Vector3.zero;
+            if ( position.x - b.min.x < d ) push.x += 1f - (position.x - b.min.x) / d;
+            if ( b.max.x - position.x < d ) push.x -= 1f - (b.max.x - position.x) / d;
+            if ( position.z - b.min.z < d ) push.z += 1f - (position.z - b.min.z) / d;
+            if ( b.max.z - position.z < d ) push.z -= 1f - (b.max.z - position.z) / d;
+            return push * cfg.borderTurnForce;
         }
 
         return Vector3.zero;
     }
+
+    // unused — anchor was removed from the interest-point system (GetClosestAnchorPoints returns null).
+    // private Vector3 AnchorForce()
+    // {
+    //     var anchor = manager.GetClosestAnchorPoints( position );
+    //
+    //     if ( anchor == null ) {
+    //         return Vector3.zero;
+    //     }
+    //
+    //     var toAnchor = anchor.position - position;
+    //
+    //     if ( toAnchor.magnitude > parameters.perch.anchorRadius ) {
+    //         return toAnchor.normalized * parameters.perch.anchorPullForce;
+    //     }
+    //
+    //     return Vector3.zero;
+    // }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Shared velocity application
@@ -1268,12 +1666,18 @@ public class PreyController : MonoBehaviour
     {
         var m = parameters.movement;
 
+        // ease the total force toward the active state's force so transitions aren't rigid.
+        // 1 = instant (no smoothing); lower lags the force, blending across state changes.
+        float forceLerp = Mathf.Clamp01( m.newStateForceLerpSpeed );
+        smoothedForce = forceLerp >= 1f ? force : Vector3.Lerp( smoothedForce , force , forceLerp );
+        force = smoothedForce;
+
         if ( allowSprint && parameters.modules.sprint && stamina > 0f ) {
-            targetSpeed = parameters.sprint.maxSprintSpeed;
+            targetSpeed = MaxSprintSpeed();
         }
 
         float effectiveMax = (allowSprint && parameters.modules.sprint && stamina > 0f)
-            ? parameters.sprint.maxSprintSpeed
+            ? MaxSprintSpeed()
             : m.maxSpeed;
 
         oldVelocity = velocity;
@@ -1293,12 +1697,69 @@ public class PreyController : MonoBehaviour
 
         ApplyAltitudeCorrection();
 
-        position += velocity;
+        // Landing is intentionally moving onto a surface — don't let collision stop it short.
+        if ( parameters.modules.collision && state != PreyState.Landing ) position = CollideMove( position , velocity );
+        else                                                              position += velocity;
+
+        // Hard floor: a bird must NEVER end a frame below the ground (safety net beyond the sweep —
+        // e.g. fleeing straight down off a perch when the wren is above it). Landing is exempt so the
+        // clamp doesn't stop the bird a radius above its perch target.
+        if ( parameters.modules.collision && state != PreyState.Landing ) ClampAboveGround();
+    }
+
+    // Raycast straight down and keep the body at least `radius` above the ground.
+    private void ClampAboveGround()
+    {
+        var c = parameters.collision;
+        const float castStart = 5f;   // start above the bird so we catch it even if it dipped slightly under
+        if ( Physics.Raycast( position + Vector3.up * castStart , Vector3.down , out var hit ,
+                              castStart + 10000f , c.layers , QueryTriggerInteraction.Ignore ) ) {
+            float minY = hit.point.y + c.radius;
+            if ( position.y < minY ) {
+                position.y = minY;
+                if ( velocity.y < 0f ) velocity.y = 0f;   // stop driving further into the floor
+            }
+        }
+    }
+
+    // Swept collide-and-slide: sweep a sphere from `from` along `move`; stop at the first surface
+    // (minus skin) and slide the remaining motion along it so the bird can't pass through geometry.
+    private Vector3 CollideMove( Vector3 from , Vector3 move )
+    {
+        var   c    = parameters.collision;
+        float dist = move.magnitude;
+        if ( dist < 1e-5f ) return from + move;
+        var dir = move / dist;
+
+        if ( !Physics.SphereCast( from , c.radius , dir , out var hit , dist + c.skin , c.layers , QueryTriggerInteraction.Ignore ) )
+            return from + move;   // clear path
+
+        float allowed = Mathf.Max( 0f , hit.distance - c.skin );
+        var   stopped = from + dir * allowed;
+
+        if ( !c.slide ) { velocity = Vector3.ProjectOnPlane( velocity , hit.normal ); return stopped; }
+
+        // slide the leftover motion along the contact plane; kill the into-surface velocity
+        var slid = Vector3.ProjectOnPlane( ( dist - allowed ) * dir , hit.normal );
+        velocity = Vector3.ProjectOnPlane( velocity , hit.normal );
+
+        // one extra sweep so sliding into a second surface (a corner) doesn't tunnel
+        if ( slid.sqrMagnitude > 1e-6f ) {
+            float sd = slid.magnitude;
+            if ( Physics.SphereCast( stopped , c.radius , slid / sd , out var hit2 , sd + c.skin , c.layers , QueryTriggerInteraction.Ignore ) )
+                slid = slid.normalized * Mathf.Max( 0f , hit2.distance - c.skin );
+        }
+
+        return stopped + slid;
     }
 
     private void ApplyAltitudeCorrection()
     {
         if ( !parameters.modules.altitude ) return;
+        if ( state == PreyState.Updrafting ) return; // updraft owns altitude while riding
+        // searching/landing own their own Y (e.g. diving to a perch) — desired-altitude must not
+        // fight the descent, otherwise the bird never reaches the ground to land.
+        if ( state == PreyState.Searching || state == PreyState.Landing ) return;
 
         var alt = parameters.altitude;
         float targetVY;
@@ -1441,16 +1902,19 @@ public class PreyController : MonoBehaviour
         if ( vectorToWren.magnitude <= parameters.crystals.eatRadius ) {
             manager.PreyGotAte( this );
             spawning = true;
-            StartCoroutine( DestroyCoroutine( parameters.spawn.ateDieSpeed ) );
+            StartCoroutine( DestroyCoroutine( parameters.animation.ateDieSpeed ) );
             return;
         }
 
-        if ( state == PreyState.Perched || state == PreyState.Landing || state == PreyState.TakingOff ) {
+        // Perched birds CAN despawn (e.g. the wren left the cage). Only the transient/active
+        // states are exempt so we don't kill a bird mid-landing / mid-takeoff / mid-updraft.
+        if ( state == PreyState.Landing
+             || state == PreyState.Updrafting || state == PreyState.TakingOff ) {
             return;
         }
 
-        if ( Time.time - spawnTime > parameters.despawn.minimumTimeAlive ) {
-            bool outsideNow = vectorToWren.magnitude > parameters.despawn.distanceBeforeNotCaught;
+        if ( Time.time - spawnTime > manager.minimumTimeAlive ) {
+            bool outsideNow = IsOutsideDespawnRegion();
 
             if ( outsideNow && !isOutsideRegion ) OnLeaveRegion();
             else if ( !outsideNow && isOutsideRegion ) OnEnterRegion();
@@ -1458,9 +1922,20 @@ public class PreyController : MonoBehaviour
 
         if ( isOutsideRegion ) {
             timeOutsideRegion += Time.deltaTime;
-            if ( timeOutsideRegion >= parameters.despawn.timeOutsideDistanceBeforeNotCaughtTriggered ) {
+            if ( timeOutsideRegion >= manager.timeOutsideBeforeDespawn ) {
                 OnNotCaught();
             }
+        }
+    }
+
+    // "Outside" test per the manager's despawn type (distance to wren / despawn collider / cage).
+    private bool IsOutsideDespawnRegion()
+    {
+        switch ( manager.despawnType ) {
+            case DespawnType.Collider: return manager.IsOutsideDespawnCollider( position );
+            case DespawnType.Cage:     return manager.wrenOutsideCage;   // wren left the cage (shared, not per-prey)
+            case DespawnType.Distance:
+            default:                   return vectorToWren.magnitude > manager.distanceBeforeNotCaught;
         }
     }
 
@@ -1480,7 +1955,7 @@ public class PreyController : MonoBehaviour
     {
         if ( !spawning ) {
             spawning = true;
-            StartCoroutine( DestroyCoroutine( parameters.spawn.dieSpeed ) );
+            StartCoroutine( DestroyCoroutine( parameters.animation.dieSpeed ) );
         }
     }
 
@@ -1488,7 +1963,7 @@ public class PreyController : MonoBehaviour
     {
         if ( !spawning ) {
             spawning = true;
-            StartCoroutine( DestroyCoroutine( parameters.spawn.dieSpeed ) );
+            StartCoroutine( DestroyCoroutine( parameters.animation.dieSpeed ) );
         }
     }
 
@@ -1600,6 +2075,7 @@ public class PreyController : MonoBehaviour
             else if ( state == PreyState.Searching ) stateColor = new Color( 0.6f , 0.2f , 1f );
             else if ( state == PreyState.Disturbed ) stateColor = Color.red;
             else if ( state == PreyState.Landing   ) stateColor = Color.yellow;
+            else if ( state == PreyState.Updrafting) stateColor = Color.green;
             else if ( state == PreyState.Perched   ) stateColor = new Color( 0.3f , 0.7f , 1f );
             else if ( state == PreyState.TakingOff ) stateColor = new Color( 1f , 0.6f , 0.1f );
             else                                     stateColor = Color.white;
@@ -1615,7 +2091,11 @@ public class PreyController : MonoBehaviour
             } else if ( state == PreyState.Perched && parameters.modules.perch ) {
                 float remaining = perchState.currentPerchDuration - perchState.perchedTimer;
                 stateLabel += $"  {remaining:F1}s";
+            } else if ( state == PreyState.Updrafting && updraftState.activeTarget != null ) {
+                float remaining = updraftState.activeTarget.timeToRemainInterested - updraftState.remainTimer;
+                stateLabel += $"  ride {Mathf.Max( remaining , 0f ):F1}s";
             }
+
             UnityEditor.Handles.Label( origin + Vector3.up * 2f , stateLabel , GizmoLabel( stateColor ) );
         }
 
@@ -1625,8 +2105,7 @@ public class PreyController : MonoBehaviour
             if ( manager?.interestPoints != null ) {
                 foreach ( var ip in manager.interestPoints ) {
                     if ( ip == null ) continue;
-                    float dist = Vector3.Distance( position , ip.transform.position );
-                    if ( dist <= ip.noticeRadius ) {
+                    if ( ip.IsWithin( position , ip.noticeRadius ) ) {
                         inRangeLabel = $"can notice: {ip.type} \"{ip.name}\"";
                         break;
                     }
@@ -1641,16 +2120,27 @@ public class PreyController : MonoBehaviour
         // ── Search module debug ───────────────────────────────────────────────
         if ( dbg.showSearchDebug && parameters.modules.search && state == PreyState.Searching
              && searchState.currentTarget?.transform != null ) {
-            var targetPos = searchState.currentTarget.transform.position;
+            var targetPos = CurrentSearchTargetPos();
             Gizmos.color = new Color( 0.6f , 0.2f , 1f , 0.8f );
             Gizmos.DrawLine( origin , targetPos );
             UnityEditor.Handles.color = new Color( 0.6f , 0.2f , 1f , 0.4f );
-            UnityEditor.Handles.DrawWireDisc( targetPos , Vector3.up , parameters.search.arrivalRadius );
+            UnityEditor.Handles.DrawWireDisc( targetPos , Vector3.up , searchState.currentTarget.enterRadius );
             float remaining = parameters.search.giveUpTime - searchState.searchTimer;
             UnityEditor.Handles.Label(
                 origin + Vector3.up * 3.5f ,
                 $"→ {searchState.currentTarget.type}  give up in {remaining:F1}s" ,
                 GizmoLabel( new Color( 0.6f , 0.2f , 1f ) ) );
+        }
+
+        // ── Landing target line ───────────────────────────────────────────────
+        if ( dbg.showLandDebug && state == PreyState.Landing && HasPerchTarget() ) {
+            var landSpot = PerchSurface();
+            var landCol  = new Color( 1f , 0.85f , 0.1f , 0.9f );
+            Gizmos.color = landCol;
+            Gizmos.DrawLine( origin , landSpot );
+            UnityEditor.Handles.color = new Color( landCol.r , landCol.g , landCol.b , 0.5f );
+            UnityEditor.Handles.DrawWireDisc( landSpot , PerchNormal() , parameters.perch.snapDistance );
+            UnityEditor.Handles.Label( landSpot , "land here" , GizmoLabel( landCol ) );
         }
 
         // ── Run module debug ──────────────────────────────────────────────────
@@ -1664,6 +2154,16 @@ public class PreyController : MonoBehaviour
                 ? new Color( 1f , 0.4f , 0.1f , 0.7f )
                 : new Color( 1f , 0.9f , 0.1f , 0.25f );
             UnityEditor.Handles.DrawWireDisc( origin , Vector3.up , run.startleRadius );
+
+            // live predictive reach (grows as the wren closes head-on)
+            float effStartle = EffectiveStartle( run.startleRadius , run.startleLeadTime );
+            if ( effStartle > run.startleRadius + 0.01f ) {
+                UnityEditor.Handles.color = new Color( 1f , 0.55f , 0f , 0.5f );
+                UnityEditor.Handles.DrawWireDisc( origin , Vector3.up , effStartle );
+                UnityEditor.Handles.Label( origin + new Vector3( 0 , 0 , effStartle ) ,
+                    $"startle reach {effStartle:F0}" , GizmoLabel( new Color( 1f , 0.55f , 0f ) ) );
+            }
+
             UnityEditor.Handles.Label(
                 origin + new Vector3( run.startleRadius , 0 , 0 ) ,
                 inStartle ? "IN startle" : "startle" ,
@@ -1723,22 +2223,130 @@ public class PreyController : MonoBehaviour
             UnityEditor.Handles.Label( origin + Vector3.up * 4f , spawnLabel , GizmoLabel( spawnColor ) );
         }
 
-        // countdown when outside not-caught region
-        if ( timeOutsideRegion > 0f ) {
-            float remaining   = parameters.despawn.timeOutsideDistanceBeforeNotCaughtTriggered - timeOutsideRegion;
-            var   leaveColor  = Color.Lerp( Color.yellow , Color.red , timeOutsideRegion / parameters.despawn.timeOutsideDistanceBeforeNotCaughtTriggered );
-            UnityEditor.Handles.Label( origin + Vector3.up * 2f , $"Leaving in  {remaining:F1}s" , GizmoLabel( leaveColor ) );
+        // ── Despawn debug: how/when this bird will despawn (per the manager's despawn type) ────
+        // (the leaving countdown lives in this block's summary now, below the bird — no overlap with the state label)
+        if ( manager != null && manager.showDespawnDebug ) {
+            var   green     = new Color( 0.3f , 1f , 0.4f );
+            var   red       = new Color( 1f , 0.3f , 0.2f );
+            float alive     = Time.time - spawnTime;
+            bool  oldEnough = alive > manager.minimumTimeAlive;
+
+            switch ( manager.despawnType ) {
+                case DespawnType.Distance: {
+                    var   wrenPos = origin + vectorToWren;
+                    float dist    = vectorToWren.magnitude;
+                    float thresh  = manager.distanceBeforeNotCaught;
+                    bool  outside = dist > thresh;
+
+                    Gizmos.color = outside ? red : green;
+                    Gizmos.DrawLine( origin , wrenPos );
+                    UnityEditor.Handles.color = new Color( red.r , red.g , red.b , 0.5f );
+                    UnityEditor.Handles.DrawWireDisc( wrenPos , Vector3.up , thresh );   // catch boundary around the wren
+                    UnityEditor.Handles.Label( (origin + wrenPos) * 0.5f ,
+                        $"dist {dist:F0} / {thresh:F0}  {(outside ? "OUTSIDE" : "in range")}" ,
+                        GizmoLabel( outside ? red : green ) );
+                    break;
+                }
+                case DespawnType.Collider: {
+                    if ( manager.despawnCollider != null ) {
+                        var  cp      = manager.despawnCollider.ClosestPoint( origin );
+                        bool outside = manager.IsOutsideDespawnCollider( origin );
+                        Gizmos.color = outside ? red : green;
+                        Gizmos.DrawWireCube( manager.despawnCollider.bounds.center , manager.despawnCollider.bounds.size );
+                        Gizmos.DrawLine( origin , cp );
+                        UnityEditor.Handles.Label( cp ,
+                            outside ? "OUTSIDE despawn collider" : "inside despawn collider" ,
+                            GizmoLabel( outside ? red : green ) );
+                    } else {
+                        UnityEditor.Handles.Label( origin + Vector3.up * 2.6f , "no despawn collider set" , GizmoLabel( red ) );
+                    }
+                    break;
+                }
+                case DespawnType.Cage: {
+                    // Cage despawn is wren-based (shared) — show the cage relative to the WREN, not this prey.
+                    bool outside = manager.wrenOutsideCage;
+                    var  col     = outside ? red : green;
+                    var  wrenPos = origin + vectorToWren;
+                    Gizmos.color = col;
+                    if ( manager.regionType == RegionType.Box && manager.boxRegion != null ) {
+                        var c    = manager.boxRegion.position;
+                        var half = manager.boxRegion.lossyScale * 0.5f;
+                        Gizmos.DrawWireCube( c , manager.boxRegion.lossyScale );
+                        var cp = new Vector3(
+                            Mathf.Clamp( wrenPos.x , c.x - half.x , c.x + half.x ) ,
+                            Mathf.Clamp( wrenPos.y , c.y - half.y , c.y + half.y ) ,
+                            Mathf.Clamp( wrenPos.z , c.z - half.z , c.z + half.z ) );
+                        Gizmos.DrawLine( wrenPos , cp );   // wren → nearest cage edge
+                    } else if ( manager.regionType == RegionType.Collider && manager.regionCollider != null ) {
+                        Gizmos.DrawWireCube( manager.regionCollider.bounds.center , manager.regionCollider.bounds.size );
+                        Gizmos.DrawLine( wrenPos , manager.regionCollider.ClosestPoint( wrenPos ) );
+                    }
+                    UnityEditor.Handles.Label( wrenPos + Vector3.up * 1f ,
+                        outside ? "wren OUTSIDE cage" : "wren inside cage" , GizmoLabel( col ) );
+                    break;
+                }
+            }
+
+            // eligibility (minimumTimeAlive) + grace (timeOutsideBeforeDespawn) summary — placed BELOW
+            // the bird so it never stacks on the state ("Perched") / calm / search labels above.
+            string graceStr = isOutsideRegion
+                ? $"leaving in {Mathf.Max( manager.timeOutsideBeforeDespawn - timeOutsideRegion , 0f ):F1}s"
+                : "in region";
+            UnityEditor.Handles.Label( origin - Vector3.up * 0.8f ,
+                $"despawn[{manager.despawnType}]  alive {alive:F0}s {(oldEnough ? "(eligible)" : $"(min {manager.minimumTimeAlive:F0}s)")}\n{graceStr}" ,
+                GizmoLabel( oldEnough ? Color.white : new Color( 0.6f , 0.6f , 0.6f ) ) );
+        }
+
+        // ── Social pressure debug ─────────────────────────────────────────────
+        if ( dbg.showSocialDebug && parameters.modules.social ) {
+            var soc = parameters.social;
+
+            UnityEditor.Handles.color = new Color( 1f , 0.8f , 0.2f , 0.18f );
+            UnityEditor.Handles.DrawWireDisc( origin , Vector3.up , soc.neighborRadius );
+            UnityEditor.Handles.Label(
+                origin + new Vector3( soc.neighborRadius , 0 , 0 ) ,
+                "social" , GizmoLabel( new Color( 1f , 0.8f , 0.2f ) ) );
+
+            foreach ( var inf in socialState.influences ) {
+                if ( inf.bird == null ) continue;
+                Color lc;
+                switch ( inf.sourceState ) {
+                    case PreyState.TakingOff: lc = new Color( 1f  , 0.6f , 0.1f , Mathf.Clamp01( inf.weight ) ); break;
+                    case PreyState.Disturbed: lc = new Color( 1f  , 0.2f , 0.2f , Mathf.Clamp01( inf.weight ) ); break;
+                    case PreyState.Perched:
+                    case PreyState.Landing:   lc = new Color( 0.3f , 0.7f , 1f  , Mathf.Clamp01( inf.weight ) ); break;
+                    default:                  lc = new Color( 0.4f , 1f   , 0.4f , Mathf.Clamp01( inf.weight ) ); break;
+                }
+                Gizmos.color = lc;
+                Gizmos.DrawLine( origin , inf.bird.transform.position );
+            }
+
+            string desireLabel = $"↑takeOff {socialState.desireToTakeOff:F2}/{soc.takeOffThreshold:F1}\n" +
+                                 $"⚡disturb {socialState.desireToDisturb:F2}/{soc.disturbThreshold:F1}\n" +
+                                 $"↓calm    {socialState.desireToCalmDown:F2}/{soc.calmThreshold:F1}\n" +
+                                 $"⬤land    {socialState.desireToLand:F2}/{soc.landThreshold:F1}";
+            UnityEditor.Handles.Label( origin + Vector3.up * 5.5f , desireLabel , GizmoLabel( new Color( 1f , 0.8f , 0.2f ) ) );
+
+            // flash last trigger for 3 seconds
+            float triggerAge = Time.time - socialState.lastTriggerTime;
+            if ( triggerAge < 3f && socialState.lastTriggerLabel.Length > 0 ) {
+                float alpha = Mathf.Lerp( 1f , 0f , triggerAge / 3f );
+                var   col   = new Color( 1f , 1f , 0f , alpha );
+                UnityEditor.Handles.Label( origin + Vector3.up * 4.5f , socialState.lastTriggerLabel , GizmoLabel( col ) );
+            }
         }
 #endif
     }
 
 #if UNITY_EDITOR
+    // One reusable style — recolored per call rather than allocated, so repaints don't churn the GC.
+    private static GUIStyle _gizmoLabelStyle;
     private static GUIStyle GizmoLabel( Color col )
     {
-        return new GUIStyle( UnityEditor.EditorStyles.label ) {
-            normal  = { textColor = col },
-            fontSize = 7
-        };
+        if ( _gizmoLabelStyle == null )
+            _gizmoLabelStyle = new GUIStyle( UnityEditor.EditorStyles.label ) { fontSize = 7 };
+        _gizmoLabelStyle.normal.textColor = col;
+        return _gizmoLabelStyle;
     }
 #endif
 

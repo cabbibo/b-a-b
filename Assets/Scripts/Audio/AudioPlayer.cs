@@ -117,6 +117,14 @@ public class AudioPlayer : MonoBehaviour
         {
             if (sources[playID] != null)
             {
+                // Skip if the pooled source (or its GameObject/holder) is inactive — Play() throws
+                // "Can not play a disabled audio source" otherwise. Happens when the pool isn't ready
+                // yet (e.g. called in edit mode before OnEnable rebuilt it) or AudioPlayer is inactive.
+                if (!sources[playID].isActiveAndEnabled)
+                {
+                    return;
+                }
+
                 sources[playID].clip = clip;
                 sources[playID].Play();
 

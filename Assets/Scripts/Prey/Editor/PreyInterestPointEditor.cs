@@ -4,48 +4,42 @@ using UnityEditor;
 [CustomEditor( typeof( PreyInterestPoint ) )]
 public class PreyInterestPointEditor : Editor
 {
+    private Editor _cfgEditor;   // inline embedded inspector for the config asset
+
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
         var ip = (PreyInterestPoint)target;
 
-        // ── Common fields ────────────────────────────────────────────────────
+        // ── Scene references ──────────────────────────────────────────────────
         EditorGUILayout.PropertyField( serializedObject.FindProperty( "manager" ) , new GUIContent( "Prey Manager (optional)" ) );
-        EditorGUILayout.PropertyField( serializedObject.FindProperty( "type" ) );
-        EditorGUILayout.PropertyField( serializedObject.FindProperty( "noticeRadius" ) );
-        EditorGUILayout.PropertyField( serializedObject.FindProperty( "alwaysInteresting" ) );
-        EditorGUILayout.PropertyField( serializedObject.FindProperty( "priority" ) );
-        EditorGUILayout.PropertyField( serializedObject.FindProperty( "timeToRemainInterested" ) , new GUIContent( "Time To Remain (s)" ) );
 
-        // ── Type-specific fields ──────────────────────────────────────────────
-        switch ( ip.type ) {
+        // ── Config asset (params) ─────────────────────────────────────────────
+        EditorGUILayout.PropertyField( serializedObject.FindProperty( "config" ) );
+        if ( ip.config == null ) {
+            EditorGUILayout.HelpBox( "No config assigned — this point uses inert default params. " +
+                                     "Assign or create one to set its behavior." , MessageType.Warning );
+            if ( GUILayout.Button( "Create Interest Point Config" ) ) CreateConfig( ip );
+        } else {
+            EditorGUILayout.Space( 4 );
+            EditorGUILayout.LabelField( "Interest Point Config (asset)" , EditorStyles.boldLabel );
+            using ( new EditorGUILayout.VerticalScope( EditorStyles.helpBox ) ) {
+                CreateCachedEditor( ip.config , null , ref _cfgEditor );
+                _cfgEditor.OnInspectorGUI();
+            }
+        }
 
-            case InterestPointType.Perch:
-                EditorGUILayout.Space( 8 );
-                EditorGUILayout.LabelField( "── Perch ───────────────────────────" , EditorStyles.boldLabel );
-                EditorGUILayout.PropertyField( serializedObject.FindProperty( "perchSubType" ) ,
-                    new GUIContent( "Sub-Type" ) );
+        // ── OnCollider scene refs + perch-point generation (component-side) ───
+        if ( ip.type == InterestPointType.Perch ) {
+            EditorGUILayout.Space( 8 );
 
+            if ( ip.perchSubType == PerchSubType.OnCollider ) {
+                EditorGUILayout.LabelField( "── On-Collider Targets ──────────────" , EditorStyles.boldLabel );
+                EditorGUILayout.PropertyField( serializedObject.FindProperty( "perchColliders" ) , new GUIContent( "Colliders" ) , true );
+            }
+
+            if ( ip.perchSubType != PerchSubType.Field ) {
                 EditorGUILayout.Space( 4 );
-
-                if ( ip.perchSubType == PerchSubType.OnCollider ) {
-                    var s = serializedObject.FindProperty( "perchOnCollider" );
-                    EditorGUILayout.PropertyField( s.FindPropertyRelative( "collider" )     , new GUIContent( "Collider" ) );
-                    EditorGUILayout.PropertyField( s.FindPropertyRelative( "facing" )       , new GUIContent( "Facing" ) );
-                    EditorGUILayout.PropertyField( s.FindPropertyRelative( "radius" )       , new GUIContent( "Radius" ) );
-                    EditorGUILayout.PropertyField( s.FindPropertyRelative( "pointCount" )   , new GUIContent( "Point Count" ) );
-                    EditorGUILayout.PropertyField( s.FindPropertyRelative( "minNormalDot" ) , new GUIContent( "Min Normal Dot" ) );
-                } else {
-                    var s = serializedObject.FindProperty( "perchInArea" );
-                    EditorGUILayout.PropertyField( s.FindPropertyRelative( "facing" )       , new GUIContent( "Facing" ) );
-                    EditorGUILayout.PropertyField( s.FindPropertyRelative( "radius" )       , new GUIContent( "Radius" ) );
-                    EditorGUILayout.PropertyField( s.FindPropertyRelative( "pointCount" )   , new GUIContent( "Point Count" ) );
-                    EditorGUILayout.PropertyField( s.FindPropertyRelative( "castHeight" )   , new GUIContent( "Cast Height" ) );
-                    EditorGUILayout.PropertyField( s.FindPropertyRelative( "groundLayers" ) , new GUIContent( "Ground Layers" ) );
-                    EditorGUILayout.PropertyField( s.FindPropertyRelative( "minNormalDot" ) , new GUIContent( "Min Normal Dot" ) );
-                }
-
-                EditorGUILayout.Space( 8 );
 
                 int childCount = 0;
                 for ( int i = 0; i < ip.transform.childCount; i++ )
@@ -53,9 +47,8 @@ public class PreyInterestPointEditor : Editor
 
                 int targetCount = ip.manager != null ? ip.manager.maxPray
                     : (ip.perchSubType == PerchSubType.OnCollider ? ip.perchOnCollider.pointCount : ip.perchInArea.pointCount);
-                string countLabel = childCount > 0 ? $"{childCount}/{targetCount} perch point(s) generated." : "No points generated yet.";
                 if ( childCount > 0 )
-                    EditorGUILayout.HelpBox( countLabel , MessageType.Info );
+                    EditorGUILayout.HelpBox( $"{childCount}/{targetCount} perch point(s) generated." , MessageType.Info );
 
                 EditorGUILayout.BeginHorizontal();
                 if ( GUILayout.Button( "Generate Points" , GUILayout.Height( 30 ) ) ) {
@@ -71,29 +64,23 @@ public class PreyInterestPointEditor : Editor
                     }
                 }
                 EditorGUILayout.EndHorizontal();
-                break;
-
-            case InterestPointType.Updraft:
-                EditorGUILayout.Space( 8 );
-                EditorGUILayout.LabelField( "── Updraft ─────────────────────────" , EditorStyles.boldLabel );
-                var us = serializedObject.FindProperty( "updraftSettings" );
-                EditorGUILayout.PropertyField( us.FindPropertyRelative( "forceUp" )       , new GUIContent( "Force Up" ) );
-                EditorGUILayout.PropertyField( us.FindPropertyRelative( "forceIn" )       , new GUIContent( "Force In" ) );
-                EditorGUILayout.PropertyField( us.FindPropertyRelative( "curlForce" )     , new GUIContent( "Curl Force" ) );
-                EditorGUILayout.PropertyField( us.FindPropertyRelative( "curlDirection" ) , new GUIContent( "Curl Direction" ) );
-                break;
-
-            case InterestPointType.NewInterest:
-                EditorGUILayout.Space( 4 );
-                EditorGUILayout.HelpBox( "On arrival: immediately searches for a different interest point (never revisits the one just reached)." , MessageType.None );
-                break;
-
-            case InterestPointType.NewCalm:
-                EditorGUILayout.Space( 4 );
-                EditorGUILayout.HelpBox( "On arrival: bird enters Calm state." , MessageType.None );
-                break;
+            }
         }
 
+        serializedObject.ApplyModifiedProperties();
+    }
+
+    private void CreateConfig( PreyInterestPoint ip )
+    {
+        var asset = ScriptableObject.CreateInstance<PreyInterestPointConfigSO>();
+        string path = EditorUtility.SaveFilePanelInProject(
+            "Create PreyInterestPointConfigSO" , ip.name + "Config" , "asset" ,
+            "Choose where to save the interest-point config asset" );
+        if ( string.IsNullOrEmpty( path ) ) { Object.DestroyImmediate( asset ); return; }
+
+        AssetDatabase.CreateAsset( asset , path );
+        AssetDatabase.SaveAssets();
+        serializedObject.FindProperty( "config" ).objectReferenceValue = asset;
         serializedObject.ApplyModifiedProperties();
     }
 }

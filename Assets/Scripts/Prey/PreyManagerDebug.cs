@@ -22,6 +22,7 @@ public class PreyManagerDebug : MonoBehaviour
         { PreyState.Calm      , Color.green                     },
         { PreyState.Searching , new Color( 0.6f , 0.2f , 1f )  }, // purple
         { PreyState.Landing   , Color.yellow                    },
+        { PreyState.Updrafting, Color.green                     },
         { PreyState.Perched   , new Color( 1f , 0.5f , 0f )    }, // orange
         { PreyState.TakingOff , Color.cyan                      },
         { PreyState.Disturbed , Color.red                       },
@@ -29,12 +30,14 @@ public class PreyManagerDebug : MonoBehaviour
 
     private void Awake() => manager = GetComponent<PreyManager>();
 
+    private readonly Dictionary<PreyState, int> counts = new Dictionary<PreyState, int>();
+
     private void OnDrawGizmos()
     {
         if ( manager == null ) manager = GetComponent<PreyManager>();
         if ( manager == null || manager.preyHolder == null ) return;
 
-        var counts = new Dictionary<PreyState, int>();
+        counts.Clear();
 
         for ( int i = 0; i < manager.preyHolder.childCount; i++ ) {
             var bird = manager.preyHolder.GetChild( i ).GetComponent<PreyController>();
@@ -77,7 +80,7 @@ public class PreyManagerDebug : MonoBehaviour
         Handles.Label( transform.position + Vector3.up * 5f , label );
 
         // draw interest point markers
-        if ( manager.interestPoints != null ) {
+        if ( manager.showInterestPointDebug && manager.interestPoints != null ) {
             foreach ( var ip in manager.interestPoints ) {
                 if ( ip == null ) continue;
 
@@ -86,6 +89,7 @@ public class PreyManagerDebug : MonoBehaviour
                     InterestPointType.Updraft     => Color.green,
                     InterestPointType.NewInterest => new Color( 1f , 0.7f , 0.1f ),
                     InterestPointType.NewCalm     => new Color( 0.6f , 0.9f , 0.6f ),
+                    InterestPointType.Despawn     => new Color( 1f , 0.2f , 0.2f ),
                     _                             => Color.white
                 };
 
@@ -106,28 +110,30 @@ public class PreyManagerDebug : MonoBehaviour
         if ( !Application.isPlaying ) return;
         if ( manager == null || manager.preyHolder == null ) return;
 
-        int calm = 0 , searching = 0 , landing = 0 , perched = 0 , takingOff = 0 , disturbed = 0;
+        int calm = 0 , searching = 0 , landing = 0 , updrafting = 0 , perched = 0 , takingOff = 0 , disturbed = 0;
 
         for ( int i = 0; i < manager.preyHolder.childCount; i++ ) {
             var bird = manager.preyHolder.GetChild( i ).GetComponent<PreyController>();
             if ( bird == null ) continue;
             switch ( bird.state ) {
-                case PreyState.Calm:      calm++;      break;
-                case PreyState.Searching: searching++; break;
-                case PreyState.Landing:   landing++;   break;
-                case PreyState.Perched:   perched++;   break;
-                case PreyState.TakingOff: takingOff++; break;
-                case PreyState.Disturbed: disturbed++; break;
+                case PreyState.Calm:       calm++;       break;
+                case PreyState.Searching:  searching++;  break;
+                case PreyState.Landing:    landing++;    break;
+                case PreyState.Updrafting: updrafting++; break;
+                case PreyState.Perched:    perched++;    break;
+                case PreyState.TakingOff:  takingOff++;  break;
+                case PreyState.Disturbed:  disturbed++;  break;
             }
         }
 
         int total = manager.preyHolder.childCount;
-        GUILayout.BeginArea( new Rect( 10 , 10 , 200 , 180 ) );
-        GUI.Box( new Rect( 0 , 0 , 200 , 180 ) , "" );
+        GUILayout.BeginArea( new Rect( 10 , 10 , 200 , 200 ) );
+        GUI.Box( new Rect( 0 , 0 , 200 , 200 ) , "" );
         GUILayout.Label( $"<b>{manager.name}</b> ({total} birds)" );
         GUILayout.Label( $"<color=green>Calm: {calm}</color>" );
         GUILayout.Label( $"<color=#9933FF>Searching: {searching}</color>" );
         GUILayout.Label( $"<color=yellow>Landing: {landing}</color>" );
+        GUILayout.Label( $"<color=green>Updrafting: {updrafting}</color>" );
         GUILayout.Label( $"Orange  Perched: {perched}" );
         GUILayout.Label( $"<color=cyan>TakingOff: {takingOff}</color>" );
         GUILayout.Label( $"<color=red>Disturbed: {disturbed}</color>" );

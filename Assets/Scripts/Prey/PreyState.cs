@@ -4,6 +4,7 @@ public enum PreyState
     Searching,
     Landing,
     Perched,
+    Updrafting,
     TakingOff,
     Disturbed
 }

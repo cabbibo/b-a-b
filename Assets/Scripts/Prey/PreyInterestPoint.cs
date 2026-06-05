@@ -1,16 +1,23 @@
 using UnityEngine;
 
-public enum InterestPointType { Perch, Updraft, NewInterest, NewCalm }
-public enum PerchSubType      { OnCollider, InArea }
+public enum InterestPointType { Perch, Updraft, NewInterest, NewCalm, Despawn }
+public enum PerchSubType      { OnCollider, InArea, Field }
 public enum PerchFacing       { Up, Down }
 public enum CurlDirection     { CounterClockwise, Clockwise }
+
+// How the searched-to target position is derived from the point.
+// LandPoint (Perch points only): aim straight at the actual perch spot the bird will land on.
+public enum SearchTargetType  { Center, RandomInRange, XZOnly, LandPoint }
+// Shape used for notice / arrival detection. Cylinder ignores Y (infinite vertical extent).
+public enum EntranceShape     { Sphere, Cylinder }
 
 // ── Per-type settings ─────────────────────────────────────────────────────────
 
 [System.Serializable]
 public class PerchOnColliderSettings
 {
-    public Collider    collider;
+    // The colliders themselves are a scene reference and live on the PreyInterestPoint component
+    // (perchColliders); only the generation params live here / on the config asset.
     public PerchFacing facing       = PerchFacing.Up;
     public float       radius       = 10f;
     public int         pointCount   = 10;
@@ -30,6 +37,25 @@ public class PerchInAreaSettings
     public float       minNormalDot = 0.5f;
 }
 
+// Field: no pre-generated points — birds compute where to land in real time, spaced from each other.
+[System.Serializable]
+public class PerchFieldSettings
+{
+    public float     radius              = 20f;  // area the birds may land within (around the point)
+    public float     spacing             = 3f;   // desired minimum distance between landed birds
+    [Tooltip( "Shift the landing area forward along the bird's velocity by this distance (0 = centered)." )]
+    public float     forwardFromVelocity = 0f;
+    [Range( 0f , 1f )]
+    [Tooltip( "1 = pack tightly at the minimum spacing (clump); 0 = land wherever (just closest to self)." )]
+    public float     desireToBeClose     = 0.5f;
+    [Tooltip( "Cast upward to find a surface above the bird (ledge underside) instead of down to the ground." )]
+    public bool      castUp              = false;
+    [Tooltip( "Start the landing raycast this far past the prey along the cast direction — always a bit, " +
+              "so the ray never starts inside the bird and self-intersects." )]
+    public float     castHeightOffset    = 1f;
+    public LayerMask groundLayers        = ~0;
+}
+
 [System.Serializable]
 public class UpdraftPointSettings
 {
@@ -37,34 +63,102 @@ public class UpdraftPointSettings
     public float         forceIn       = 1f;
     public float         curlForce     = 2f;
     public CurlDirection curlDirection = CurlDirection.CounterClockwise;
+
+    [Header( "Desired Altitude" )]
+    [Tooltip( "Top of the soaring band (height above the point)." )]
+    public float desiredAltitude      = 40f;
+    [Tooltip( "How far below the top the lift starts easing off — the soaring band is " +
+              "[desiredAltitude - altitudeRange .. desiredAltitude]. Larger = softer, less rigid." )]
+    public float altitudeRange        = 15f;
+    [Tooltip( "How hard the bird is eased back down when above the top of the band." )]
+    public float altitudeHoldStrength = 1f;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 public class PreyInterestPoint : MonoBehaviour
 {
-    public InterestPointType type                  = InterestPointType.NewCalm;
-    public float             noticeRadius          = 40f;
-    public bool              alwaysInteresting     = false;
-    public float             priority              = 1f;
-    public float             timeToRemainInterested = 0f;
+    // ── Tunable params live on this asset; scene refs stay on the component ────────────────────
+    [Header( "Config" )]
+    public PreyInterestPointConfigSO config;
 
-    // Optional: when set, point count for generation uses manager.maxPray
+    [Header( "Scene References" )]
+    [Tooltip( "Optional: when set, perch point-count generation uses manager.maxPray." )]
     public PreyManager manager;
+    [Tooltip( "OnCollider perch: the colliders birds may land on (scene refs — params live on the config)." )]
+    public Collider[]  perchColliders;
 
-    // Type-specific — shown via custom editor only
-    public PerchSubType            perchSubType    = PerchSubType.InArea;
-    public PerchOnColliderSettings perchOnCollider = new PerchOnColliderSettings();
-    public PerchInAreaSettings     perchInArea     = new PerchInAreaSettings();
-    public UpdraftPointSettings    updraftSettings = new UpdraftPointSettings();
+    // ── Proxy properties: forward to config, null-safe with the old defaults ───────────────────
+    private static readonly PerchOnColliderSettings _defOnCollider = new();
+    private static readonly PerchInAreaSettings     _defInArea     = new();
+    private static readonly PerchFieldSettings      _defField      = new();
+    private static readonly UpdraftPointSettings    _defUpdraft    = new();
+
+    public InterestPointType type                   => config != null ? config.type                   : InterestPointType.NewCalm;
+    public float             noticeRadius           => config != null ? config.noticeRadius           : 40f;
+    public float             enterRadius            => config != null ? config.enterRadius            : 5f;
+    public bool              alwaysInteresting      => config != null ? config.alwaysInteresting      : false;
+    public float             priority               => config != null ? config.priority               : 1f;
+    public float             timeToRemainInterested => config != null ? config.timeToRemainInterested : 0f;
+    public float             timeToRemainVariance   => config != null ? config.timeToRemainVariance   : 0f;
+    public float             noticeUrgency          => config != null ? config.noticeUrgency          : 0f;
+
+    public SearchTargetType  searchTargetType   => config != null ? config.searchTargetType   : SearchTargetType.Center;
+    public float             searchRandomRadius => config != null ? config.searchRandomRadius : 10f;
+    public float             targetRandomness   => config != null ? config.targetRandomness   : 0f;
+    public EntranceShape     entranceShape      => config != null ? config.entranceShape      : EntranceShape.Sphere;
+
+    public PerchSubType            perchSubType    => config != null ? config.perchSubType    : PerchSubType.InArea;
+    public PerchOnColliderSettings perchOnCollider => config != null ? config.perchOnCollider : _defOnCollider;
+    public PerchInAreaSettings     perchInArea     => config != null ? config.perchInArea     : _defInArea;
+    public PerchFieldSettings      perchField      => config != null ? config.perchField      : _defField;
+    public UpdraftPointSettings    updraftSettings => config != null ? config.updraftSettings : _defUpdraft;
+
+    // ── Detection / targeting ─────────────────────────────────────────────────
+
+    // Is pos within the given radius, respecting the entrance shape?
+    // Sphere = 3D distance; Cylinder = XZ distance only (any height).
+    public bool IsWithin( Vector3 pos , float radius )
+    {
+        var d = pos - transform.position;
+        if ( entranceShape == EntranceShape.Cylinder ) d.y = 0f;
+        return d.sqrMagnitude <= radius * radius;
+    }
+
+    // World position the bird should fly toward, given its current position and a
+    // per-search random offset (applied to every search type — see SearchScatterRadius).
+    public Vector3 GetSearchTarget( Vector3 birdPos , Vector3 randomOffset )
+    {
+        Vector3 basePos = searchTargetType == SearchTargetType.XZOnly
+            ? new Vector3( transform.position.x , birdPos.y , transform.position.z )
+            : transform.position;
+
+        return basePos + randomOffset;
+    }
+
+    // Total XZ scatter radius for this search: the general targetRandomness, plus the
+    // larger searchRandomRadius when the type is RandomInRange.
+    public float SearchScatterRadius()
+    {
+        return targetRandomness
+               + (searchTargetType == SearchTargetType.RandomInRange ? searchRandomRadius : 0f);
+    }
+
+    // A stable random XZ offset within the given radius, picked once per search.
+    public Vector3 RandomOffset( float radius )
+    {
+        var c = Random.insideUnitCircle * radius;
+        return new Vector3( c.x , 0f , c.y );
+    }
 
     // ── Perch point generation ────────────────────────────────────────────────
 
     public void GeneratePerchPoints()
     {
         ClearPerchPoints();
-        if ( perchSubType == PerchSubType.OnCollider ) GenerateOnCollider();
-        else                                           GenerateInArea();
+        if      ( perchSubType == PerchSubType.OnCollider ) GenerateOnCollider();
+        else if ( perchSubType == PerchSubType.InArea )     GenerateInArea();
+        // Field: nothing to pre-generate — landing spots are computed at runtime
     }
 
     public void ClearPerchPoints()
@@ -80,13 +174,23 @@ public class PreyInterestPoint : MonoBehaviour
     {
         var s = perchOnCollider;
 
-        if ( s.collider == null ) {
-            Debug.LogWarning( "[PreyInterestPoint] OnCollider: no collider assigned." , this );
+        // combined bounds across all assigned colliders → drives the raycast origin height & distance
+        bool   haveBounds = false;
+        Bounds bounds     = default;
+        if ( perchColliders != null ) {
+            foreach ( var c in perchColliders ) {
+                if ( c == null ) continue;
+                if ( !haveBounds ) { bounds = c.bounds; haveBounds = true; }
+                else               bounds.Encapsulate( c.bounds );
+            }
+        }
+
+        if ( !haveBounds ) {
+            Debug.LogWarning( "[PreyInterestPoint] OnCollider: no colliders assigned." , this );
             return;
         }
 
         bool    wantUp     = s.facing == PerchFacing.Up;
-        var     bounds     = s.collider.bounds;
         float   originY    = wantUp ? bounds.max.y + 1f : bounds.min.y - 1f;
         Vector3 castDir    = wantUp ? Vector3.down : Vector3.up;
         float   castDist   = (bounds.size.y + 2f) * 2f;
@@ -98,7 +202,7 @@ public class PreyInterestPoint : MonoBehaviour
             var origin = new Vector3( transform.position.x + xz.x , originY , transform.position.z + xz.y );
 
             if ( !Physics.Raycast( origin , castDir , out var hit , castDist ) ) continue;
-            if ( hit.collider != s.collider ) continue;
+            if ( !ColliderInSet( hit.collider , perchColliders ) ) continue;
 
             float dot = wantUp ? hit.normal.y : -hit.normal.y;
             if ( dot < s.minNormalDot ) continue;
@@ -106,7 +210,14 @@ public class PreyInterestPoint : MonoBehaviour
             CreatePerchChild( hit.point , hit.normal , gen++ );
         }
 
-        Debug.Log( $"[PreyInterestPoint] Generated {gen}/{pointCount} points on collider." , this );
+        Debug.Log( $"[PreyInterestPoint] Generated {gen}/{pointCount} points on collider(s)." , this );
+    }
+
+    private static bool ColliderInSet( Collider c , Collider[] set )
+    {
+        for ( int i = 0; i < set.Length; i++ )
+            if ( set[i] == c ) return true;
+        return false;
     }
 
     private void GenerateInArea()
@@ -149,18 +260,31 @@ public class PreyInterestPoint : MonoBehaviour
         else if ( type == InterestPointType.Updraft     ) col = Color.green;
         else if ( type == InterestPointType.NewInterest ) col = new Color( 1f , 0.7f , 0.1f );
         else if ( type == InterestPointType.NewCalm     ) col = new Color( 0.6f , 0.9f , 0.6f );
+        else if ( type == InterestPointType.Despawn     ) col = new Color( 1f , 0.2f , 0.2f );
         else                                              col = Color.grey;
 
-        // notice radius
-        Gizmos.color = new Color( col.r , col.g , col.b , 0.12f );
-        Gizmos.DrawWireSphere( transform.position , noticeRadius );
+        // notice volume (outer) and enter volume (inner) — sphere or vertical cylinder
+        var faint  = new Color( col.r , col.g , col.b , 0.12f );
+        var strong = new Color( col.r , col.g , col.b , 0.35f );
+        if ( entranceShape == EntranceShape.Cylinder ) {
+            float h = Mathf.Max( noticeRadius , type == InterestPointType.Updraft ? updraftSettings.desiredAltitude : 0f );
+            DrawWireCylinder( transform.position , noticeRadius , h , faint );
+            DrawWireCylinder( transform.position , enterRadius  , h , strong );
+        } else {
+            Gizmos.color = faint;
+            Gizmos.DrawWireSphere( transform.position , noticeRadius );
+            Gizmos.color = strong;
+            Gizmos.DrawWireSphere( transform.position , enterRadius );
+        }
 
         // center sphere
         Gizmos.color = new Color( col.r , col.g , col.b , 0.9f );
         Gizmos.DrawSphere( transform.position , 0.4f );
 
         if ( type == InterestPointType.Perch ) {
-            float r = perchSubType == PerchSubType.OnCollider ? perchOnCollider.radius : perchInArea.radius;
+            float r = perchSubType == PerchSubType.OnCollider ? perchOnCollider.radius
+                    : perchSubType == PerchSubType.Field      ? perchField.radius
+                    :                                           perchInArea.radius;
             Gizmos.color = new Color( col.r , col.g , col.b , 0.2f );
             Gizmos.DrawWireSphere( transform.position , r );
 
@@ -189,11 +313,37 @@ public class PreyInterestPoint : MonoBehaviour
             var inDir = (transform.position - (transform.position + Vector3.forward * 5f)).normalized;
             Gizmos.DrawLine( transform.position + Vector3.forward * 5f ,
                              transform.position + Vector3.forward * (5f - us.forceIn) );
+
+            // soaring band: top (desiredAltitude) and bottom (desiredAltitude - altitudeRange)
+            float r     = entranceShape == EntranceShape.Cylinder ? noticeRadius : 5f;
+            var   topP  = transform.position + Vector3.up * us.desiredAltitude;
+            var   botP  = transform.position + Vector3.up * Mathf.Max( 0f , us.desiredAltitude - us.altitudeRange );
+            UnityEditor.Handles.color = new Color( 0.4f , 0.9f , 1f , 0.7f );
+            UnityEditor.Handles.DrawWireDisc( topP , Vector3.up , r );
+            UnityEditor.Handles.color = new Color( 0.4f , 0.9f , 1f , 0.3f );
+            UnityEditor.Handles.DrawWireDisc( botP , Vector3.up , r );
+            UnityEditor.Handles.DrawLine( topP + Vector3.right * r , botP + Vector3.right * r );
+            UnityEditor.Handles.Label( topP + Vector3.right * r , $"soar band {us.desiredAltitude - us.altitudeRange:F0}–{us.desiredAltitude:F0}" );
         }
 
         string lbl = alwaysInteresting ? $"[{type}  ★  p={priority:F1}]" : $"[{type}  p={priority:F1}]";
         UnityEditor.Handles.color = col;
         UnityEditor.Handles.Label( transform.position + Vector3.up * 1.2f , lbl );
+    }
+
+    // Vertical cylinder: bottom disc at base, top disc at base + height, plus 4 risers.
+    private static void DrawWireCylinder( Vector3 baseCenter , float radius , float height , Color color )
+    {
+        UnityEditor.Handles.color = color;
+        var top = baseCenter + Vector3.up * height;
+        UnityEditor.Handles.DrawWireDisc( baseCenter , Vector3.up , radius );
+        UnityEditor.Handles.DrawWireDisc( top        , Vector3.up , radius );
+
+        for ( int i = 0; i < 4; i++ ) {
+            float a   = i * Mathf.PI * 0.5f;
+            var   off = new Vector3( Mathf.Cos( a ) , 0f , Mathf.Sin( a ) ) * radius;
+            UnityEditor.Handles.DrawLine( baseCenter + off , top + off );
+        }
     }
 #endif
 }

@@ -1,17 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using UnityEngine.Audio;
+
 [ExecuteAlways]
 public class SampleSynth : MonoBehaviour
 {
-
     public AudioPlayer player;
-    public AudioClip clip;
+    public AudioClip   clip;
 
     public AudioMixer mixer;
-    public string group;
+    public string     group;
 
     public float volume;
     public float pitch;
@@ -26,8 +25,8 @@ public class SampleSynth : MonoBehaviour
     public float speedRandomness;
 
     public float lastTime;
-    public int currentStep;
-    public int currentStepID;
+    public int   currentStep;
+    public int   currentStepID;
 
     public float randomOffset;
 
@@ -44,8 +43,7 @@ public class SampleSynth : MonoBehaviour
     public void Update()
     {
 
-        if (Time.time - lastTime > speed + randomOffset)
-        {
+        if ( Time.time - lastTime > speed + randomOffset ) {
             lastTime = Time.time;
             PlayGrain();
         }
@@ -55,27 +53,29 @@ public class SampleSynth : MonoBehaviour
     public void PlayGrain()
     {
 
-        if (player == null)
-        {
-            player = GameObject.Find("AudioPlayer").GetComponent<AudioPlayer>();
+        if ( player == null ) {
+            player = GameObject.Find( "AudioPlayer" ).GetComponent<AudioPlayer>();
         }
-        randomOffset = speedRandomness * Random.Range(-.5f, .5f);
 
-        float fLocation = location + locationRandomness * Random.Range(-.5f, .5f);
-        float fLength = length + lengthRandomness * Random.Range(-.5f, .5f);
-        float fPitch = pitch + pitchRandomness * Random.Range(-.5f, .5f);
+        randomOffset = speedRandomness * Random.Range( -.5f , .5f );
 
-        if (fLocation < 0) { fLocation = Mathf.Abs(fLocation); }
-        if (fLocation > clip.length) { fLocation = clip.length - (fLocation - clip.length); }
-        if (gameObject.activeSelf)
-        {
+        float fLocation = location + locationRandomness * Random.Range( -.5f , .5f );
+        float fLength = length + lengthRandomness * Random.Range( -.5f , .5f );
+        float fPitch = pitch + pitchRandomness * Random.Range( -.5f , .5f );
+
+        if ( fLocation < 0 ) {
+            fLocation = Mathf.Abs( fLocation );
+        }
+
+        if ( fLocation > clip.length ) {
+            fLocation = clip.length - (fLocation - clip.length);
+        }
+
+        if ( gameObject.activeSelf  ) {
 
 
-            player.Play(clip, fPitch, volume, fLocation, fLength, mixer, group, gameObject.transform.position);
+            player.Play( clip , fPitch , volume , fLocation , fLength , mixer , group , gameObject.transform.position );
 
         }
     }
-
-
-
 }

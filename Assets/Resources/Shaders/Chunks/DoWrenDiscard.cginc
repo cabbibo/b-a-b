@@ -11,7 +11,17 @@ float3 _WrenPos;
 void DoWrenDiscard( float3 worldPos )
 {
 
-    // Discards around bird!
+    // Only carve geometry BETWEEN the camera and the wren (camera -> geometry -> wren).
+    // If the geometry is BEHIND the wren (camera -> wren -> geometry), keep it: project the
+    // fragment onto the camera->wren axis and bail when it's deeper than the wren.
+    float3 toWren    = _WrenPos - _WorldSpaceCameraPos;        // camera -> wren
+    float  wrenDist  = length( toWren );
+    float3 viewDir   = toWren / max( wrenDist , 1e-4 );
+    float  fragDepth = dot( worldPos - _WorldSpaceCameraPos , viewDir );
+    if ( fragDepth >= wrenDist )
+    {
+        return;   // at or behind the wren — don't discard
+    }
 
 
     float3 dir         = ( _WorldSpaceCameraPos - _WrenPos );

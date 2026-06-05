@@ -4,13 +4,13 @@ using UnityEditor;
 [CustomEditor( typeof(PreyManager) , true )]
 public class PreyManagerEditor : Editor
 {
-    private bool _foldDebug       = false;
-    private bool _foldScene       = true;
-    private bool _foldSpawnTiming = true;
-    private bool _foldConfig      = true;
-    private bool _foldOnEat       = false;
-    private bool _foldRegion      = true;
-    private bool _foldRuntime     = false;
+    private bool _foldDebug   = false;
+    private bool _foldScene   = true;
+    private bool _foldConfig  = true;
+    private bool _foldWiring  = true;
+    private bool _foldRuntime = false;
+
+    private Editor _cfgEditor;   // inline embedded inspector for the manager config asset
 
     public override void OnInspectorGUI()
     {
@@ -18,50 +18,56 @@ public class PreyManagerEditor : Editor
         var mgr = (PreyManager)target;
 
         Section( "Debug" , ref _foldDebug , () => {
+            EditorGUILayout.PropertyField( serializedObject.FindProperty( "debugWren" ) );
             EditorGUILayout.PropertyField( serializedObject.FindProperty( "stepThrough" ) );
             EditorGUILayout.PropertyField( serializedObject.FindProperty( "simulationSpeed" ) );
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "debugWren" ) );
+            EditorGUILayout.PropertyField( serializedObject.FindProperty( "showRegionEntrance" ) );
+            EditorGUILayout.PropertyField( serializedObject.FindProperty( "showInterestPointDebug" ) );
+            EditorGUILayout.PropertyField( serializedObject.FindProperty( "showDespawnDebug" ) );
         });
 
         Section( "Scene References" , ref _foldScene , () => {
             EditorGUILayout.PropertyField( serializedObject.FindProperty( "interestPoints" ) , true );
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "spawnPoints" ) , true );
             EditorGUILayout.PropertyField( serializedObject.FindProperty( "preyHolder" ) );
-        });
-
-        Section( "Spawn Timing" , ref _foldSpawnTiming , () => {
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "spawnInterval" ) );
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "bugsPerCluster" ) );
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "clusterRadius" ) );
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "spawnMaxOnWrenEnter" ) );
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "wrenEnterOnEnabled" ) );
         });
 
         Section( "Config" , ref _foldConfig , () => {
             EditorGUILayout.PropertyField( serializedObject.FindProperty( "preyConfig" ) );
             EditorGUILayout.PropertyField( serializedObject.FindProperty( "preyPrefab" ) );
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "maxPray" ) );
+            EditorGUILayout.PropertyField( serializedObject.FindProperty( "managerConfig" ) );
+
+            if ( mgr.managerConfig == null ) {
+                EditorGUILayout.HelpBox( "No manager config assigned — this manager is inert (won't spawn). " +
+                                         "Assign or create one to set spawn timing, capacity, placement, etc." , MessageType.Warning );
+                if ( GUILayout.Button( "Create Manager Config Asset" ) ) CreateManagerConfig( mgr );
+            } else {
+                EditorGUILayout.Space( 4 );
+                EditorGUILayout.LabelField( "Manager Config (asset)" , EditorStyles.boldLabel );
+                using ( new EditorGUILayout.VerticalScope( EditorStyles.helpBox ) ) {
+                    CreateCachedEditor( mgr.managerConfig , null , ref _cfgEditor );
+                    _cfgEditor.OnInspectorGUI();
+                }
+            }
         });
 
-        Section( "On Eat Effects" , ref _foldOnEat , () => {
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "preyFullnessIncrease" ) );
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "preyStaminaIncrease" ) );
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "gotAteParticles" ) );
-        });
-
-        Section( "Region Detection" , ref _foldRegion , () => {
-            EditorGUILayout.PropertyField( serializedObject.FindProperty( "regionType" ) , new GUIContent( "Type" ) );
+        // Scene wiring whose visibility depends on the config's type enums (read via proxies).
+        Section( "Scene Wiring" , ref _foldWiring , () => {
+            // Region scene refs
+            EditorGUILayout.LabelField( $"Region: {mgr.regionType}" , EditorStyles.miniBoldLabel );
             if ( mgr.regionType == RegionType.Box ) {
                 EditorGUILayout.PropertyField( serializedObject.FindProperty( "boxRegion" ) , new GUIContent( "Box Transform" ) );
             } else if ( mgr.regionType == RegionType.Spline ) {
                 EditorGUILayout.PropertyField( serializedObject.FindProperty( "regionSpline" ) , new GUIContent( "Spline" ) );
-                EditorGUILayout.PropertyField( serializedObject.FindProperty( "splineEnterDistance" ) , new GUIContent( "Enter Distance" ) );
-                EditorGUILayout.PropertyField( serializedObject.FindProperty( "splineExitDistance" ) , new GUIContent( "Exit Distance" ) );
-                EditorGUILayout.PropertyField( serializedObject.FindProperty( "splineCheckInterval" ) , new GUIContent( "Check Interval (s)" ) );
             } else if ( mgr.regionType == RegionType.Collider ) {
                 EditorGUILayout.PropertyField( serializedObject.FindProperty( "regionCollider" ) , new GUIContent( "Collider" ) );
             } else {
                 EditorGUILayout.HelpBox( "Painted region detection coming soon." , MessageType.None );
+            }
+
+            // Despawn collider only matters for the Collider despawn type
+            if ( mgr.despawnType == DespawnType.Collider ) {
+                EditorGUILayout.Space( 2 );
+                EditorGUILayout.PropertyField( serializedObject.FindProperty( "despawnCollider" ) );
             }
         });
 
@@ -77,12 +83,26 @@ public class PreyManagerEditor : Editor
                     if ( GUILayout.Button( "Step Forward" , GUILayout.Height( 36 ) ) )
                         StepAllBirds( mgr );
                 if ( !mgr.stepThrough )
-                    EditorGUILayout.HelpBox( "Enable 'Step Through' in Debug to step frame by frame." , MessageType.None );
+                    EditorGUILayout.HelpBox( "Enable 'Step Through' in the manager config to step frame by frame." , MessageType.None );
             } else {
                 EditorGUILayout.HelpBox( "Enter Play Mode to step the simulation." , MessageType.Info );
             }
         });
 
+        serializedObject.ApplyModifiedProperties();
+    }
+
+    private void CreateManagerConfig( PreyManager mgr )
+    {
+        var asset = ScriptableObject.CreateInstance<PreyManagerConfigSO>();
+        string path = EditorUtility.SaveFilePanelInProject(
+            "Create PreyManagerConfigSO" , mgr.name + "ManagerConfig" , "asset" ,
+            "Choose where to save the manager config asset" );
+        if ( string.IsNullOrEmpty( path ) ) { Object.DestroyImmediate( asset ); return; }
+
+        AssetDatabase.CreateAsset( asset , path );
+        AssetDatabase.SaveAssets();
+        serializedObject.FindProperty( "managerConfig" ).objectReferenceValue = asset;
         serializedObject.ApplyModifiedProperties();
     }
 

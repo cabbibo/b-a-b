@@ -14,6 +14,19 @@ public enum RegionType
     Painted
 }
 
+public enum DespawnType
+{
+    Distance ,   // despawn when far enough from the wren (distance + grace time)
+    Collider ,   // despawn when outside a despawn collider
+    Cage         // despawn when outside the region/cage (box or region collider)
+}
+
+public enum WhenFull
+{
+    DespawnOld ,       // at max: fade out the oldest bird, then spawn the new one once it's gone
+    HoldTilDespawned   // at max: never spawn — wait until existing birds despawn on their own
+}
+
 
 public class PreyManager : MonoBehaviour
 {
@@ -23,70 +36,81 @@ public class PreyManager : MonoBehaviour
 
     */
 
-    public Transform debugWren;
-
+    // ── Debug (lives on the component, not the shared config — per-instance / per-session) ──────
     [Header( "Debug" )]
-    public bool  stepThrough      = false;
+    public Transform debugWren;
+    public bool      stepThrough            = false;
     [Range( 0.01f , 1f )]
-    public float simulationSpeed  = 1f;
+    public float     simulationSpeed        = 1f;
+    public bool      showRegionEntrance     = true;  // region box / spline enter-exit gizmos
+    public bool      showInterestPointDebug = true;  // interest-point markers (via PreyManagerDebug)
+    public bool      showDespawnDebug       = true;  // per-prey despawn decision viz (on selected prey)
+
+    // ── Tunable params live on this asset; scene refs + runtime stay on the component ──────────
+    [Header( "Manager Config" )]
+    public PreyManagerConfigSO managerConfig;
 
     [Header( "Scene References" )]
     public PreyInterestPoint[] interestPoints; // perch spots, thermals, anchors, updrafts, investigate points
 
-    public bool spawnMaxOnWrenEnter;
-
-
-    [Header( "Spawn Timing" )]
-    public float spawnInterval = 3f;
-
-    public int   bugsPerCluster = 1;
-    public float clusterRadius  = 0f;
-
     [Header( "Config" )]
-    public PreyConfigSO preyConfig;
+    public PreyConfigSO preyConfig;            // the prey's params
+    public GameObject   preyPrefab;            // what to spawn
 
-    public GameObject preyPrefab;
+    [Header( "Scene Wiring" )]
+    public Collider        despawnCollider;    // Collider despawn type: outside this → despawn
+    public Transform       preyHolder;
+    public Transform       boxRegion;          // Box region
+    public Collider        regionCollider;     // Collider region
+    public SplineContainer regionSpline;       // Spline region
 
-    public int maxPray = 100;
-
-
-    [Header( "On Eat Effects" )]
-    public float preyFullnessIncrease;
-
-    public float preyStaminaIncrease;
-
-    public ParticleSystem gotAteParticles;
-
-
-    public bool birdInsideRegion;
-
-    public Transform preyHolder;
-
-    public Transform[] spawnPoints;
-
-    public bool wrenEnterOnEnabled;
-
+    // ── Runtime state ─────────────────────────────────────────────────────────────────────────
+    public bool              birdInsideRegion;
     public List<Transform[]> clusters;
-
-    public float lastSpawnTime;
-    public int   currentNumberOfPrey;
-
-    [Header( "Region Detection" )]
-    public RegionType      regionType          = RegionType.Box;
-    public Transform       boxRegion;
-    public Collider        regionCollider;
-    public SplineContainer regionSpline;
-    public float           splineEnterDistance = 20f;
-    public float           splineExitDistance  = 30f;
-    public float           splineCheckInterval = 0.1f;
+    public float             lastSpawnTime;
+    public int               currentNumberOfPrey;
+    [HideInInspector] public bool wrenOutsideCage;   // computed once/frame; Cage despawn tests the wren, not each prey
 
     private Vector3   splineBoundsCenter;
     private float     splineBoundingRadius;
     private Coroutine splineCheckCoroutine;
 
+    // ── Proxy properties: forward to managerConfig, null-safe with the old defaults ────────────
+    public float spawnInterval       => managerConfig != null ? managerConfig.spawnInterval       : 3f;
+    public int   preyPerCluster      => managerConfig != null ? managerConfig.preyPerCluster      : 1;
+    public float clusterRadius       => managerConfig != null ? managerConfig.clusterRadius       : 0f;
+    public bool  spawnMaxOnWrenEnter => managerConfig != null ? managerConfig.spawnMaxOnWrenEnter : false;
+    public bool  wrenEnterOnEnabled  => managerConfig != null ? managerConfig.wrenEnterOnEnabled  : false;
+
+    public int      maxPray  => managerConfig != null ? managerConfig.maxPray  : 100;
+    public WhenFull whenFull => managerConfig != null ? managerConfig.whenFull : WhenFull.DespawnOld;
+
+    public SpawnType spawnType            => managerConfig != null ? managerConfig.spawnType            : SpawnType.InsideBox;
+    public float     spawnRadius          => managerConfig != null ? managerConfig.spawnRadius          : 5f;
+    public float     spawnDistanceMin     => managerConfig != null ? managerConfig.spawnDistanceMin     : 80f;
+    public float     spawnDistanceMax     => managerConfig != null ? managerConfig.spawnDistanceMax     : 150f;
+    public float     spawnClosenessToBird => managerConfig != null ? managerConfig.spawnClosenessToBird : 0f;
+
+    public DespawnType despawnType              => managerConfig != null ? managerConfig.despawnType              : DespawnType.Distance;
+    public bool        despawnOnWrenExit        => managerConfig != null ? managerConfig.despawnOnWrenExit        : true;
+    public float       minimumTimeAlive         => managerConfig != null ? managerConfig.minimumTimeAlive         : 30f;
+    public float       timeOutsideBeforeDespawn => managerConfig != null ? managerConfig.timeOutsideBeforeDespawn : 5f;
+    public float       distanceBeforeNotCaught  => managerConfig != null ? managerConfig.distanceBeforeNotCaught  : 100f;
+
+    public RegionType regionType          => managerConfig != null ? managerConfig.regionType          : RegionType.Box;
+    public float      splineEnterDistance => managerConfig != null ? managerConfig.splineEnterDistance : 20f;
+    public float      splineExitDistance  => managerConfig != null ? managerConfig.splineExitDistance  : 30f;
+    public float      splineCheckInterval => managerConfig != null ? managerConfig.splineCheckInterval : 0.1f;
+
+    public float preyFullnessIncrease => managerConfig != null ? managerConfig.preyFullnessIncrease : 0f;
+    public float preyStaminaIncrease  => managerConfig != null ? managerConfig.preyStaminaIncrease  : 0f;
+    public GodParticleType gotAteParticle => managerConfig != null ? managerConfig.gotAteParticle : GodParticleType.Eat;
+
 
     public virtual void OnEnable()
     {
+        if ( managerConfig == null ) return;   // no params assigned → manager is inert
+
         lastSpawnTime = Time.time - spawnInterval;
         while (preyHolder.childCount > 0) DestroyImmediate( preyHolder.GetChild( 0 ).gameObject );
 
@@ -110,11 +134,17 @@ public class PreyManager : MonoBehaviour
 
     private void Update()
     {
+        if ( managerConfig == null ) return;   // no params assigned → manager is inert
+
         currentNumberOfPrey = preyHolder.childCount;
         CheckForNewPrey();
 
         if      ( regionType == RegionType.Box      ) CheckBoxRegion();
         else if ( regionType == RegionType.Collider ) CheckColliderRegion();
+
+        // Cage despawn is wren-based: compute the wren-outside-cage test ONCE here; every prey reads it.
+        var wp = GetWrenPosition();
+        wrenOutsideCage = wp.HasValue && IsOutsideCage( wp.Value );
     }
 
     private void CheckBoxRegion()
@@ -161,9 +191,33 @@ public class PreyManager : MonoBehaviour
         }
     }
 
+    // Despawn helpers ────────────────────────────────────────────────────────
+    // Is a world position outside the region/cage (box or region collider)? Used by Cage despawn.
+    public bool IsOutsideCage( Vector3 pos )
+    {
+        if ( regionType == RegionType.Box && boxRegion != null ) {
+            var half = boxRegion.lossyScale * 0.5f;
+            var c    = boxRegion.position;
+            return pos.x < c.x - half.x || pos.x > c.x + half.x
+                || pos.y < c.y - half.y || pos.y > c.y + half.y
+                || pos.z < c.z - half.z || pos.z > c.z + half.z;
+        }
+        if ( regionType == RegionType.Collider && regionCollider != null )
+            return (regionCollider.ClosestPoint( pos ) - pos).sqrMagnitude > 0.0001f;
+
+        return false;
+    }
+
+    // Is a world position outside the dedicated despawn collider? Used by Collider despawn.
+    public bool IsOutsideDespawnCollider( Vector3 pos )
+    {
+        if ( despawnCollider == null ) return true;
+        return (despawnCollider.ClosestPoint( pos ) - pos).sqrMagnitude > 0.0001f;
+    }
+
     public virtual void CheckForNewPrey()
     {
-        if ( preyConfig == null || preyPrefab == null ) {
+        if ( managerConfig == null || preyConfig == null || preyPrefab == null ) {
             return;
         }
 
@@ -189,7 +243,7 @@ public class PreyManager : MonoBehaviour
     {
         birdInsideRegion = false;
 
-        if ( preyConfig == null || !preyConfig.despawn.onWrenExit ) {
+        if ( !despawnOnWrenExit ) {
             return;
         }
 
@@ -205,43 +259,30 @@ public class PreyManager : MonoBehaviour
 
     public virtual void SpawnNewBug()
     {
-        var s = preyConfig.spawn;
-
-        // destroy any over max
-        while (preyHolder.childCount >= maxPray) DestroyImmediate( preyHolder.GetChild( 0 ).gameObject );
-
-
-        var spawnPos = transform.position;
-
-        if ( regionType == RegionType.Spline ) {
-            spawnPos = SpawnNextToCurve();
-        } else if ( s.spawnType == SpawnType.InsideBox ) {
-            spawnPos = SpawnInsideBox();
-        } else if ( s.spawnType == SpawnType.NextToCurve ) {
-            spawnPos = SpawnNextToCurve();
-        } else if ( s.spawnType == SpawnType.BiomePaint ) {
-            spawnPos = SpawnBiomePaint();
+        // at capacity: don't spawn yet. DespawnOld starts the oldest bird fading out (one at a time)
+        // so a slot frees up; HoldTilDespawned just waits for natural despawns. The new bird spawns
+        // on a later tick once childCount actually drops below maxPray.
+        if ( preyHolder.childCount >= maxPray ) {
+            if ( whenFull == WhenFull.DespawnOld && !AnyPreyDespawning() ) {
+                var oldest = OldestLivePrey();
+                if ( oldest != null ) oldest.ForceDespawn();
+            }
+            return;
         }
 
-        if ( s.spawnType != SpawnType.InsideBox ) {
-            RaycastHit hit;
-            float groundY = spawnPos.y;
 
-            if ( Physics.Raycast( new Vector3( spawnPos.x , 10000f , spawnPos.z ) , Vector3.down , out hit , 20000 ) ) {
-                groundY = hit.point.y + s.spawnRadius * 2;
-            }
+        Vector3 spawnPos;
 
-            if ( s.altitudeType == AltitudeType.RandomRange ) {
-                spawnPos.y = groundY + preyConfig.altitude.minAltitude +
-                             Random.Range( 0 , preyConfig.altitude.maxAltitude - preyConfig.altitude.minAltitude );
-            } else if ( s.altitudeType == AltitudeType.DesiredAltitude ) {
-                spawnPos.y = groundY + Random.Range( preyConfig.altitude.desiredAltitudeMin , preyConfig.altitude.desiredAltitudeMax );
-            } else if ( s.altitudeType == AltitudeType.OnGround ) {
-                spawnPos.y = groundY;
-            }
+        switch ( spawnType ) {
+            case SpawnType.NextToCurve:     spawnPos = SpawnNextToCurve();       break;
+            case SpawnType.BiomePaint:      spawnPos = SpawnBiomePaint();        break;
+            case SpawnType.DesiredAltitude: spawnPos = SpawnAtDesiredAltitude(); break;
+            case SpawnType.InDistance:      spawnPos = SpawnInDistance();        break;
+            case SpawnType.InsideBox:
+            default:                        spawnPos = SpawnInsideBox();         break;
         }
 
-        for ( int i = 0; i < bugsPerCluster; i++ ) {
+        for ( int i = 0; i < preyPerCluster; i++ ) {
             spawnPos += Random.insideUnitSphere * clusterRadius;
 
             var newPrey = Instantiate( preyPrefab , spawnPos , Quaternion.identity ).GetComponent<PreyController>();
@@ -252,6 +293,26 @@ public class PreyManager : MonoBehaviour
         }
     }
 
+
+    // Is any bird currently fading out? Used by DespawnOld so we only free one slot at a time.
+    private bool AnyPreyDespawning()
+    {
+        for ( int i = 0; i < preyHolder.childCount; i++ ) {
+            var p = preyHolder.GetChild( i ).GetComponent<PreyController>();
+            if ( p != null && p.IsDespawning ) return true;
+        }
+        return false;
+    }
+
+    // Oldest bird that isn't already despawning (children are appended, so index 0 is oldest).
+    private PreyController OldestLivePrey()
+    {
+        for ( int i = 0; i < preyHolder.childCount; i++ ) {
+            var p = preyHolder.GetChild( i ).GetComponent<PreyController>();
+            if ( p != null && !p.IsDespawning ) return p;
+        }
+        return null;
+    }
 
     public Vector3 SpawnInsideBox()
     {
@@ -265,8 +326,7 @@ public class PreyManager : MonoBehaviour
             min = regionCollider.bounds.min;
             max = regionCollider.bounds.max;
         } else {
-            min = preyConfig.spawn.boundsMin;
-            max = preyConfig.spawn.boundsMax;
+            min = max = transform.position;   // no region assigned → spawn at the manager origin
         }
 
         var randomPos = new Vector3(
@@ -274,7 +334,7 @@ public class PreyManager : MonoBehaviour
             Random.Range( min.y , max.y ) ,
             Random.Range( min.z , max.z ) );
 
-        float closeness = preyConfig.spawn.closenessToBird;
+        float closeness = spawnClosenessToBird;
 
         if ( closeness > 0f ) {
             var wren = GetWrenPosition();
@@ -300,7 +360,6 @@ public class PreyManager : MonoBehaviour
             return SpawnInsideBox();
         }
 
-        var   s     = preyConfig.spawn;
         var   sp    = curve.Spline;
         var   xform = curve.transform;
 
@@ -313,10 +372,10 @@ public class PreyManager : MonoBehaviour
             SplineUtility.GetNearestPoint( sp , localWren , out float3 nearestLocal , out float _ );
             var nearestOnCurve = xform.TransformPoint( (Vector3)nearestLocal );
 
-            if ( s.closenessToBird < 1f ) {
+            if ( spawnClosenessToBird < 1f ) {
                 float t           = Random.value;
                 var   randomPoint = xform.TransformPoint( (Vector3)SplineUtility.EvaluatePosition( sp , t ) );
-                basePos = Vector3.Lerp( randomPoint , nearestOnCurve , s.closenessToBird );
+                basePos = Vector3.Lerp( randomPoint , nearestOnCurve , spawnClosenessToBird );
             } else {
                 basePos = nearestOnCurve;
             }
@@ -325,7 +384,41 @@ public class PreyManager : MonoBehaviour
             basePos = xform.TransformPoint( (Vector3)SplineUtility.EvaluatePosition( sp , t ) );
         }
 
-        return basePos + Random.insideUnitSphere * s.spawnRadius;
+        return basePos + Random.insideUnitSphere * spawnRadius;
+    }
+
+    // XZ from the region, Y set to ground + the altitude module's desired-altitude range.
+    public Vector3 SpawnAtDesiredAltitude()
+    {
+        var basePos = regionType == RegionType.Spline ? SpawnNextToCurve() : SpawnInsideBox();
+
+        var alt = preyConfig.altitude;
+        basePos.y = GroundYAt( basePos ) + Random.Range( alt.desiredAltitudeMin , alt.desiredAltitudeMax );
+        return basePos;
+    }
+
+    // On a ring around the bird (distanceMin..distanceMax), Y set to the desired-altitude range.
+    public Vector3 SpawnInDistance()
+    {
+        var   wren  = GetWrenPosition() ?? transform.position;
+        float angle = Random.value * Mathf.PI * 2f;
+        float dist  = Random.Range( spawnDistanceMin , spawnDistanceMax );
+
+        var pos = wren + new Vector3( Mathf.Cos( angle ) , 0f , Mathf.Sin( angle ) ) * dist;
+
+        var alt = preyConfig.altitude;
+        pos.y = GroundYAt( pos ) + Random.Range( alt.desiredAltitudeMin , alt.desiredAltitudeMax );
+        return pos;
+    }
+
+    // World ground height under an XZ position; falls back to the position's own Y if nothing is hit.
+    private float GroundYAt( Vector3 pos )
+    {
+        if ( Physics.Raycast( new Vector3( pos.x , 10000f , pos.z ) , Vector3.down , out var hit , 20000f ) ) {
+            return hit.point.y;
+        }
+
+        return pos.y;
     }
 
     private Vector3? GetWrenPosition()
@@ -364,15 +457,12 @@ public class PreyManager : MonoBehaviour
 
     public virtual void PreyGotAte( PreyController b )
     {
-        if ( gotAteParticles != null ) {
-            gotAteParticles.transform.position = b.transform.position;
-            gotAteParticles.Play();
-        }
-
-        if ( God.particleSystems != null && God.particleSystems.eatParticleSystem != null ) {
-            var ps = God.particleSystems.eatParticleSystem;
-            ps.transform.position = b.transform.position;
-            ps.Play();
+        if ( God.particleSystems != null ) {
+            var ps = God.particleSystems.Get( gotAteParticle );
+            if ( ps != null ) {
+                ps.transform.position = b.transform.position;
+                ps.Play();
+            }
         }
 
         if ( God.audio != null ) {
@@ -469,6 +559,8 @@ public class PreyManager : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
+        if ( !showRegionEntrance ) return;
+
         if ( regionType == RegionType.Box && boxRegion != null ) {
             Gizmos.color = new Color( 0.2f , 1f , 0.3f , 0.35f );
             Gizmos.DrawWireCube( boxRegion.position , boxRegion.lossyScale );
@@ -483,22 +575,28 @@ public class PreyManager : MonoBehaviour
         var xform = regionSpline.transform;
         int samples = Mathf.Max( 64 , s.Count * 8 );
 
+        // pre-compute world positions + per-sample perpendiculars using spline tangents
+        var centers = new Vector3[samples + 1];
+        var perps   = new Vector3[samples + 1];
+        for ( int i = 0; i <= samples; i++ ) {
+            float t   = (float)i / samples;
+            centers[i] = xform.TransformPoint( (Vector3)SplineUtility.EvaluatePosition( s , t ) );
+            var   tan  = xform.TransformDirection( (Vector3)SplineUtility.EvaluateTangent( s , t ) );
+            perps[i]   = Vector3.Cross( tan , Vector3.up ).normalized;
+        }
+
         for ( int i = 0; i < samples; i++ ) {
-            float t0 = (float)i / samples;
-            float t1 = (float)(i + 1) / samples;
-            var p0 = xform.TransformPoint( (Vector3)SplineUtility.EvaluatePosition( s , t0 ) );
-            var p1 = xform.TransformPoint( (Vector3)SplineUtility.EvaluatePosition( s , t1 ) );
-
-            var tangent = (p1 - p0).normalized;
-            var perp = Vector3.Cross( tangent , Vector3.up ).normalized;
-
             Gizmos.color = new Color( 0.2f , 1f , 0.3f , 0.4f );
-            Gizmos.DrawLine( p0 + perp * splineEnterDistance , p1 + perp * splineEnterDistance );
-            Gizmos.DrawLine( p0 - perp * splineEnterDistance , p1 - perp * splineEnterDistance );
+            Gizmos.DrawLine( centers[i] + perps[i] * splineEnterDistance ,
+                             centers[i + 1] + perps[i + 1] * splineEnterDistance );
+            Gizmos.DrawLine( centers[i] - perps[i] * splineEnterDistance ,
+                             centers[i + 1] - perps[i + 1] * splineEnterDistance );
 
             Gizmos.color = new Color( 1f , 0.5f , 0.1f , 0.25f );
-            Gizmos.DrawLine( p0 + perp * splineExitDistance , p1 + perp * splineExitDistance );
-            Gizmos.DrawLine( p0 - perp * splineExitDistance , p1 - perp * splineExitDistance );
+            Gizmos.DrawLine( centers[i] + perps[i] * splineExitDistance ,
+                             centers[i + 1] + perps[i + 1] * splineExitDistance );
+            Gizmos.DrawLine( centers[i] - perps[i] * splineExitDistance ,
+                             centers[i + 1] - perps[i + 1] * splineExitDistance );
         }
     }
 #endif

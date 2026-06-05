@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(claude mcp *)",
-      "PowerShell(New-Item *)"
+      "PowerShell(New-Item *)",
+      "PowerShell(Get-WinEvent *)"
     ]
   }
 }
