@@ -29,8 +29,27 @@ public class PreyManagerConfigSO : ScriptableObject
     [Range( 0f , 1f )]
     public float     spawnClosenessToBird = 0f;
 
+    [Tooltip( "OnPointOfInterest: ideal distance IN FRONT of the wren for a spawn point." )]
+    public float     poiIdealDistance        = 80f;
+    [Tooltip( "OnPointOfInterest: tolerance radius around the ideal point (how far off-ideal still counts as close)." )]
+    public float     poiIdealSpread          = 30f;
+    [Tooltip( "OnPointOfInterest: 0 = random POI, 1 = strongly prefer the POI nearest the ideal point. " +
+              "Mid values allow a few near-ideal points but exclude far ones." )]
+    [Range( 0f , 1f )]
+    public float     poiIdealDistanceWeight  = 0f;
+
+    [Header( "Painted Region" )]
+    [Tooltip( "Which food-map channels gate Painted spawn/despawn (R=0, G=1, B=2, A=3). " +
+              "Multiple channels are OR'd: a spot counts as painted if ANY listed channel is above threshold." )]
+    public int[] paintedChannels = { 0 };
+    [Tooltip( "A channel counts as painted where its value is at least this." )]
+    [Range( 0f , 1f )]
+    public float paintedThreshold = 0.5f;
+
     [Header( "Despawn" )]
-    public DespawnType despawnType              = DespawnType.Distance;
+    public DespawnType    despawnType    = DespawnType.Distance;
+    [Tooltip( "Collider/Region despawn: test the WREN's position (shared, cheap) or each PREY's own position." )]
+    public DespawnSubject despawnSubject = DespawnSubject.Wren;
     public bool        despawnOnWrenExit        = true;
     public float       minimumTimeAlive         = 30f;
     public float       timeOutsideBeforeDespawn = 5f;       // grace period once "outside" before despawning

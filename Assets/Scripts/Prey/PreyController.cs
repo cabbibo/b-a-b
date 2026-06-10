@@ -83,6 +83,24 @@ public class PreyController : MonoBehaviour
     // ── Private physics ───────────────────────────────────────────────────────
     private Vector3 startPosition;
     private Vector4 rayCastData;
+
+    // Filled by PreyRaycastBatcher when batched raycasting is active. Same layout
+    // as RaycastDown()/RaycastForward() returns: (normal.xyz, distance).
+    [HideInInspector] public Vector4 batchedDown;
+    [HideInInspector] public Vector4 batchedForward;
+    private bool _batchRegistered;
+
+    // Spline-force cache: the expensive SplineUtility.GetNearestPoint search is
+    // refreshed at most every SplineQueryInterval (or after moving far enough),
+    // not every frame. The pull is still recomputed each frame from the cached
+    // nearest point against the live position, so it stays responsive.
+    private const float SplineQueryInterval = 0.15f;
+    private float   _splineQueryTimer;
+    private Vector3 _splineNearestWorld;
+    private Vector3 _splineTangentWorld;
+    private Vector3 _splineQueryPos;
+    private bool    _splineCached;
+
     private int     frame;
     private float   noiseOffset;
     private float   currentBank;
@@ -235,9 +253,21 @@ public class PreyController : MonoBehaviour
 
     public void OnDisable()
     {
+        if ( _batchRegistered ) {
+            if ( PreyRaycastBatcher.HasInstance ) PreyRaycastBatcher.Instance.Unregister( this );
+            _batchRegistered = false;
+        }
     }
 
     private void Update()
+    {
+        PreyProfiler.FrameGate( Time.frameCount );
+        long __t0 = PreyProfiler.Now;
+        UpdateBird();
+        PreyProfiler.controllerTicks += PreyProfiler.Now - __t0;
+    }
+
+    private void UpdateBird()
     {
         UpdateFocusLine();
 
@@ -318,6 +348,12 @@ public class PreyController : MonoBehaviour
         spawnTime = Time.time;
         life = 0;
         state = PreyState.Calm;
+
+        // join the batched-raycast system (lazily creates the batcher if needed)
+        if ( !_batchRegistered ) {
+            PreyRaycastBatcher.Instance.Register( this );
+            _batchRegistered = true;
+        }
 
         focusLine = gameObject.AddComponent<LineRenderer>();
         focusLine.positionCount = 2;
@@ -415,13 +451,22 @@ public class PreyController : MonoBehaviour
         frame++;
 
         if ( frame % parameters.physics.physicsResolution == 0 ) {
-            rayCastData = RaycastDown();
-            rawDistanceToGround = rayCastData.w;
-            rawGroundNormal = new Vector3( rayCastData.x , rayCastData.y , rayCastData.z );
+            if ( _batchRegistered && PreyRaycastBatcher.HasInstance ) {
+                // batched path: PreyRaycastBatcher filled these from a worker-thread job
+                rawDistanceToGround  = batchedDown.w;
+                rawGroundNormal      = new Vector3( batchedDown.x , batchedDown.y , batchedDown.z );
+                rawDistanceToForward = batchedForward.w;
+                rawForwardNormal     = new Vector3( batchedForward.x , batchedForward.y , batchedForward.z );
+            } else {
+                // fallback: synchronous main-thread raycasts (no batcher in scene)
+                rayCastData = RaycastDown();
+                rawDistanceToGround = rayCastData.w;
+                rawGroundNormal = new Vector3( rayCastData.x , rayCastData.y , rayCastData.z );
 
-            rayCastData = RaycastForward();
-            rawDistanceToForward = rayCastData.w;
-            rawForwardNormal = new Vector3( rayCastData.x , rayCastData.y , rayCastData.z );
+                rayCastData = RaycastForward();
+                rawDistanceToForward = rayCastData.w;
+                rawForwardNormal = new Vector3( rayCastData.x , rayCastData.y , rayCastData.z );
+            }
         }
 
         distanceToGround = Mathf.Lerp( distanceToGround , rawDistanceToGround , parameters.physics.physicsInfoLerpSpeed );
@@ -866,6 +911,31 @@ public class PreyController : MonoBehaviour
         EnterCalm();
     }
 
+    // ── Spawn-state entry points (used by SpawnType.OnPointOfInterest) ─────────
+    // Spawn this bird already perched at a Perch interest point. Returns false if no
+    // free perch spot could be acquired (caller can leave it calm where it spawned).
+    public bool SpawnPerchedAt( PreyInterestPoint poi )
+    {
+        if ( poi == null ) return false;
+
+        perchState.Init( parameters.perch );
+        if ( !AcquirePerchTarget( poi ) ) return false;
+
+        perchState.currentPerchDuration = Mathf.Max( 0.01f , poi.timeToRemainInterested
+            + Random.Range( -poi.timeToRemainVariance , poi.timeToRemainVariance ) );
+        EnterPerched();   // snaps to the perch surface, zeroes velocity, sets state = Perched
+        return true;
+    }
+
+    // Spawn this bird already riding (circling) an Updraft interest point.
+    public void SpawnUpdraftingAt( PreyInterestPoint poi )
+    {
+        if ( poi == null ) return;
+        updraftState.activeTarget = poi;
+        updraftState.remainTimer  = 0f;
+        state = PreyState.Updrafting;
+    }
+
     private void ScanSocialPressure()
     {
         var s = parameters.social;
@@ -1025,6 +1095,7 @@ public class PreyController : MonoBehaviour
         for ( int i = 0; i < samples; i++ ) {
             var xz     = Random.insideUnitCircle * f.radius;
             var origin = new Vector3( center.x + xz.x , startY , center.z + xz.y );
+            PreyProfiler.raycastCount++;
             if ( !Physics.Raycast( origin , castDir , out var hit , 10000f , f.groundLayers ) ) continue;
 
             var cand = hit.point;
@@ -1109,6 +1180,8 @@ public class PreyController : MonoBehaviour
 
     private void DoCalmPhysics()
     {
+        if ( parameters.modules.bounce ) { DoBouncePhysics(); return; }
+
         _flapSpeedMult = 1f;
         force = Vector3.zero;
 
@@ -1134,6 +1207,77 @@ public class PreyController : MonoBehaviour
         }
 
         transform.position = position + flapValue;
+    }
+
+    // Ballistic "drop and bounce" calm behavior (modules.bounce). Vertical is pure gravity + a
+    // reflect-on-ground bounce; horizontal still comes from the usual calm forces if they're toggled.
+    private void DoBouncePhysics()
+    {
+        var bnc = parameters.bounce;
+        var m   = parameters.movement;
+
+        oldVelocity = velocity;
+
+        // optional horizontal steering from the usual calm modules (only the toggled ones)
+        force = Vector3.zero;
+        if ( parameters.modules.drive )  AddForce( DriveForce()      , new Color( 0.6f , 1f , 0f ) , "drive" );
+        if ( parameters.modules.noise )  AddForce( NoiseForce()      , Color.yellow , "noise" );
+        if ( parameters.modules.flock )  AddForce( FlockForce()      , Color.cyan , "flock" );
+        if ( parameters.modules.circle ) AddForce( CalmCircleForce() , Color.magenta , "circle" );
+        if ( parameters.modules.cage )   AddForce( CageForce()       , new Color( 1f , 0.8f , 0f ) , "cage" );
+        force.y = 0f;   // bounce owns the vertical axis
+
+        // horizontal velocity: steer toward desiredSpeed when there's input, otherwise just damp
+        Vector3 hVel = new Vector3( velocity.x , 0f , velocity.z ) + force;
+        hVel *= ( 1f - m.dampening );
+        if ( force.sqrMagnitude > 1e-8f ) {
+            float hSpeed = hVel.magnitude;
+            hSpeed += ( m.desiredSpeed - hSpeed ) * m.dampening;
+            hSpeed  = Mathf.Min( hSpeed , m.maxSpeed );
+            if ( hVel.sqrMagnitude > 1e-8f ) hVel = hVel.normalized * hSpeed;
+        }
+        velocity.x = hVel.x;
+        velocity.z = hVel.z;
+
+        // vertical: gravity (per-frame, matching the rest of the sim's integration)
+        velocity.y -= bnc.gravity;
+
+        // integrate, then resolve the ground bounce
+        position += velocity;
+        BounceOnGround( bnc );
+
+        currentSpeed = velocity.magnitude;
+        flapValue    = Vector3.zero;
+        transform.position = position;
+    }
+
+    // Reflect off the ground once the bird has fallen onto it.
+    private void BounceOnGround( PreyBounceModule bnc )
+    {
+        const float castStart = 5f;
+        PreyProfiler.raycastCount++;
+        if ( !Physics.Raycast( position + Vector3.up * castStart , Vector3.down , out var hit ,
+                               castStart + 10000f , bnc.groundLayers , QueryTriggerInteraction.Ignore ) )
+            return;
+
+        float groundY = hit.point.y + bnc.radius;
+        if ( position.y > groundY || velocity.y >= 0f ) return;   // above ground or already rising
+
+        position.y = groundY;
+        float vy = -velocity.y * bnc.restitution;
+
+        if ( vy < bnc.settleSpeed ) {
+            if ( bnc.settle ) {
+                // weak bounce → go look for a perch (so it can land); fall back to bouncing if none
+                var t = parameters.modules.search ? PickSearchTarget( true ) : null;
+                if ( t != null ) { velocity = Vector3.zero; EnterSearching( t ); return; }
+            }
+            vy = bnc.settleSpeed;   // keep it bouncing
+        }
+
+        velocity.y  = vy;
+        velocity.x *= bnc.bounceFriction;
+        velocity.z *= bnc.bounceFriction;
     }
 
     // ── Searching ────────────────────────────────────────────────────────────
@@ -1481,17 +1625,24 @@ public class PreyController : MonoBehaviour
             return Vector3.zero;
         }
 
-        var sp    = curve.Spline;
-        var xform = curve.transform;
+        // Throttle the lookup and reuse the cached result otherwise. The lookup
+        // itself now hits the manager's baked spline LUT (a flat array scan), not
+        // SplineUtility's live subdivision search.
+        _splineQueryTimer -= Time.deltaTime;
+        bool movedFar = ( position - _splineQueryPos ).sqrMagnitude > 4f;   // > 2m since last query
+        if ( !_splineCached || _splineQueryTimer <= 0f || movedFar ) {
+            if ( manager.TryGetNearestOnRegionSpline( position , out var nearW , out var tanW ) ) {
+                _splineNearestWorld = nearW;
+                _splineTangentWorld = tanW;
+                _splineCached       = true;
+                _splineQueryTimer   = SplineQueryInterval;
+                _splineQueryPos     = position;
+                PreyProfiler.splineQueryCount++;
+            }
+        }
 
-        var localPos = new float3( xform.InverseTransformPoint( position ) );
-        SplineUtility.GetNearestPoint( sp , localPos , out float3 nearestLocal , out float t );
-
-        var nearestWorld = xform.TransformPoint( new Vector3( nearestLocal.x , nearestLocal.y , nearestLocal.z ) );
-        var tangentWorld = xform.TransformDirection( (Vector3)SplineUtility.EvaluateTangent( sp , t ) );
-
-        var toSpline = nearestWorld - position;
-        var forward  = tangentWorld;
+        var toSpline = _splineNearestWorld - position;
+        var forward  = _splineTangentWorld;
 
         var pullF    = toSpline.sqrMagnitude > 0.0001f ? toSpline.normalized * parameters.spline.pullForce          : Vector3.zero;
         var forwardF = forward.sqrMagnitude  > 0.0001f ? forward.normalized  * parameters.spline.splineForwardForce : Vector3.zero;
@@ -1712,6 +1863,7 @@ public class PreyController : MonoBehaviour
     {
         var c = parameters.collision;
         const float castStart = 5f;   // start above the bird so we catch it even if it dipped slightly under
+        PreyProfiler.raycastCount++;
         if ( Physics.Raycast( position + Vector3.up * castStart , Vector3.down , out var hit ,
                               castStart + 10000f , c.layers , QueryTriggerInteraction.Ignore ) ) {
             float minY = hit.point.y + c.radius;
@@ -1731,6 +1883,7 @@ public class PreyController : MonoBehaviour
         if ( dist < 1e-5f ) return from + move;
         var dir = move / dist;
 
+        PreyProfiler.spherecastCount++;
         if ( !Physics.SphereCast( from , c.radius , dir , out var hit , dist + c.skin , c.layers , QueryTriggerInteraction.Ignore ) )
             return from + move;   // clear path
 
@@ -1746,6 +1899,7 @@ public class PreyController : MonoBehaviour
         // one extra sweep so sliding into a second surface (a corner) doesn't tunnel
         if ( slid.sqrMagnitude > 1e-6f ) {
             float sd = slid.magnitude;
+            PreyProfiler.spherecastCount++;
             if ( Physics.SphereCast( stopped , c.radius , slid / sd , out var hit2 , sd + c.skin , c.layers , QueryTriggerInteraction.Ignore ) )
                 slid = slid.normalized * Mathf.Max( 0f , hit2.distance - c.skin );
         }
@@ -1872,6 +2026,7 @@ public class PreyController : MonoBehaviour
 
     public Vector4 RaycastDown()
     {
+        PreyProfiler.raycastCount++;
         if ( Physics.Raycast( transform.position , -transform.up , out var hit , parameters.distance.maxDownDistance ) ) {
             float d = hit.point.y < parameters.altitude.minimumTotalY
                 ? transform.position.y - parameters.altitude.minimumTotalY
@@ -1884,6 +2039,7 @@ public class PreyController : MonoBehaviour
 
     public Vector4 RaycastForward()
     {
+        PreyProfiler.raycastCount++;
         if ( Physics.Raycast( transform.position , transform.forward , out var hit , parameters.distance.maxForwardDistance ) ) {
             return new Vector4( hit.normal.x , hit.normal.y , hit.normal.z , hit.distance );
         }
@@ -1931,11 +2087,17 @@ public class PreyController : MonoBehaviour
     // "Outside" test per the manager's despawn type (distance to wren / despawn collider / cage).
     private bool IsOutsideDespawnRegion()
     {
+        bool useWren = manager.despawnSubject == DespawnSubject.Wren;
         switch ( manager.despawnType ) {
-            case DespawnType.Collider: return manager.IsOutsideDespawnCollider( position );
-            case DespawnType.Cage:     return manager.wrenOutsideCage;   // wren left the cage (shared, not per-prey)
+            case DespawnType.Collider:
+                return useWren ? manager.wrenOutsideDespawnCollider
+                               : manager.IsOutsideDespawnCollider( position );
+            case DespawnType.Region:
+                return useWren ? manager.wrenOutsideRegion
+                               : manager.IsOutsideRegion( position );
             case DespawnType.Distance:
-            default:                   return vectorToWren.magnitude > manager.distanceBeforeNotCaught;
+            default:
+                return vectorToWren.magnitude > manager.distanceBeforeNotCaught;   // symmetric (prey↔wren)
         }
     }
 
@@ -2262,9 +2424,9 @@ public class PreyController : MonoBehaviour
                     }
                     break;
                 }
-                case DespawnType.Cage: {
-                    // Cage despawn is wren-based (shared) — show the cage relative to the WREN, not this prey.
-                    bool outside = manager.wrenOutsideCage;
+                case DespawnType.Region: {
+                    // Region despawn is wren-based (shared) — show the region relative to the WREN, not this prey.
+                    bool outside = manager.wrenOutsideRegion;
                     var  col     = outside ? red : green;
                     var  wrenPos = origin + vectorToWren;
                     Gizmos.color = col;

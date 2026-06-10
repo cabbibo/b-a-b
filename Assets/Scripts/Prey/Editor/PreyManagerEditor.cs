@@ -61,13 +61,20 @@ public class PreyManagerEditor : Editor
             } else if ( mgr.regionType == RegionType.Collider ) {
                 EditorGUILayout.PropertyField( serializedObject.FindProperty( "regionCollider" ) , new GUIContent( "Collider" ) );
             } else {
-                EditorGUILayout.HelpBox( "Painted region detection coming soon." , MessageType.None );
+                EditorGUILayout.HelpBox( "Painted region uses the food map — choose the channels in the Manager Config above (Region Detection → Painted)." , MessageType.None );
             }
 
             // Despawn collider only matters for the Collider despawn type
             if ( mgr.despawnType == DespawnType.Collider ) {
                 EditorGUILayout.Space( 2 );
                 EditorGUILayout.PropertyField( serializedObject.FindProperty( "despawnCollider" ) );
+            }
+
+            // OnPointOfInterest spawn: which interest points to spawn at (culling-mask dropdown)
+            if ( mgr.spawnType == SpawnType.OnPointOfInterest ) {
+                EditorGUILayout.Space( 2 );
+                EditorGUILayout.LabelField( "Spawn Placement: On Point Of Interest" , EditorStyles.miniBoldLabel );
+                DrawSpawnAtPointsMask( mgr );
             }
         });
 
@@ -114,6 +121,76 @@ public class PreyManagerEditor : Editor
             EditorGUI.indentLevel++;
             body();
             EditorGUI.indentLevel--;
+        }
+    }
+
+    // Culling-mask-style dropdown of which assigned interest points to spawn at (OnPointOfInterest).
+    private void DrawSpawnAtPointsMask( PreyManager mgr )
+    {
+        var list = serializedObject.FindProperty( "spawnAtPoints" );
+        if ( list == null ) {   // stale/recompiling assembly — don't throw and break the rest of the inspector
+            EditorGUILayout.HelpBox( "spawnAtPoints not found — recompile the project." , MessageType.None );
+            return;
+        }
+
+        var pts = mgr.interestPoints;
+        if ( pts == null || pts.Length == 0 ) {
+            EditorGUILayout.HelpBox( "Assign Interest Points first, then choose which to spawn at." , MessageType.Info );
+            return;
+        }
+
+        // MaskField is limited to 32 entries; fall back to a toggle list beyond that.
+        if ( pts.Length > 32 ) {
+            foreach ( var poi in pts ) {
+                if ( poi == null ) continue;
+                bool on  = ListContains( list , poi );
+                bool now = EditorGUILayout.ToggleLeft( $"{poi.name}   ({poi.type})" , on );
+                if ( now && !on )      ListAdd( list , poi );
+                else if ( !now && on ) ListRemove( list , poi );
+            }
+            return;
+        }
+
+        var names = new string[ pts.Length ];
+        for ( int i = 0; i < pts.Length; i++ )
+            names[i] = pts[i] != null ? $"{pts[i].name} ({pts[i].type})" : "(missing)";
+
+        int mask = 0;
+        for ( int i = 0; i < pts.Length; i++ )
+            if ( pts[i] != null && ListContains( list , pts[i] ) ) mask |= ( 1 << i );
+
+        int newMask = EditorGUILayout.MaskField( "Spawn At" , mask , names );
+        if ( newMask == mask ) return;
+
+        list.ClearArray();
+        for ( int i = 0; i < pts.Length; i++ ) {
+            if ( pts[i] == null ) continue;
+            if ( ( newMask & ( 1 << i ) ) != 0 ) ListAdd( list , pts[i] );
+        }
+    }
+
+    private static bool ListContains( SerializedProperty list , Object obj )
+    {
+        for ( int i = 0; i < list.arraySize; i++ )
+            if ( list.GetArrayElementAtIndex( i ).objectReferenceValue == obj ) return true;
+        return false;
+    }
+
+    private static void ListAdd( SerializedProperty list , Object obj )
+    {
+        int idx = list.arraySize;
+        list.InsertArrayElementAtIndex( idx );
+        list.GetArrayElementAtIndex( idx ).objectReferenceValue = obj;
+    }
+
+    private static void ListRemove( SerializedProperty list , Object obj )
+    {
+        for ( int i = 0; i < list.arraySize; i++ ) {
+            var e = list.GetArrayElementAtIndex( i );
+            if ( e.objectReferenceValue != obj ) continue;
+            e.objectReferenceValue = null;                 // object-ref arrays: null first, then delete
+            list.DeleteArrayElementAtIndex( i );
+            return;
         }
     }
 

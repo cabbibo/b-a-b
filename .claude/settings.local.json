@@ -3,7 +3,8 @@
     "allow": [
       "Bash(claude mcp *)",
       "PowerShell(New-Item *)",
-      "PowerShell(Get-WinEvent *)"
+      "PowerShell(Get-WinEvent *)",
+      "Bash(grep -v \"//\")"
     ]
   }
 }

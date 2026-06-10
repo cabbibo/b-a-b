@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum SpawnType { InsideBox, NextToCurve, BiomePaint, DesiredAltitude, InDistance }
+public enum SpawnType { InsideBox, NextToCurve, Painted, DesiredAltitude, InDistance, OnPointOfInterest }
 
 // How a bird approaches its perch when landing.
 public enum PerchApproachStyle { Dive, Spiral }
@@ -24,6 +24,7 @@ public class PreyModuleFlags
     public bool flock    = false;
     public bool spline   = false;
     public bool cage     = false;
+    public bool bounce   = false;   // ballistic drop + bounce off the ground (replaces normal calm steering)
     // updraft / thermal removed — now defined by interest points
 
     [Header( "Behavior" )]
@@ -112,6 +113,31 @@ public class PreyCollisionModule
     public float     skin   = 0.05f;
     [Tooltip( "Slide along the surface instead of stopping dead on contact." )]
     public bool      slide  = true;
+}
+
+// Ballistic "drop and bounce" calm behavior (modules.bounce). Gravity pulls the bird down; it
+// reflects off the ground (velocity * restitution). Settle ON → weak bounces send it Searching to
+// land/perch; Settle OFF → it bounces forever.
+[System.Serializable]
+public class PreyBounceModule
+{
+    [Tooltip( "Downward acceleration per frame while falling." )]
+    public float     gravity        = 0.01f;
+    [Range( 0f , 1.2f )]
+    [Tooltip( "Fraction of vertical speed kept on each bounce. 1 = perfect, <1 = decays, >1 = grows." )]
+    public float     restitution    = 0.6f;
+    [Range( 0f , 1f )]
+    [Tooltip( "Fraction of horizontal speed kept on each bounce." )]
+    public float     bounceFriction = 0.85f;
+    [Tooltip( "Keep the body this far above the ground (its 'radius')." )]
+    public float     radius         = 0.5f;
+    public LayerMask groundLayers   = ~0;
+
+    [Header( "Settle" )]
+    [Tooltip( "When a bounce gets weaker than Settle Speed: ON → start Searching (to land/perch); OFF → keep bouncing." )]
+    public bool      settle         = true;
+    [Tooltip( "Upward bounce speed to settle below (Settle on), or the minimum bounce kept (Settle off)." )]
+    public float     settleSpeed    = 0.03f;
 }
 
 [System.Serializable]
@@ -393,6 +419,7 @@ public class PreyConfigSO : ScriptableObject
     public PreyFlockModule      flock;
     public PreySplineModule     spline;
     public PreyCageModule       cage;
+    public PreyBounceModule     bounce;
     // public PreyUpdraftModule  updraft;   // removed — defined per Updraft interest point
     // public PreyThermalModule  thermal;   // removed — handled via interest points
 

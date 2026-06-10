@@ -210,16 +210,16 @@ public class IslandData : MonoBehaviour
 
     }
 
-    public Vector3 GetFood( Vector2 uv )
+    public Vector4 GetFood( Vector2 uv )
     {
 
         var c = foodMap.GetPixelBilinear( uv.x , uv.y );
 
 
         if ( uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1 ) {
-            return new Vector3( c.r , c.g , c.b );
+            return new Vector4( c.r , c.g , c.b , c.a );
         } else {
-            return Vector3.zero;
+            return Vector4.zero;
         }
 
     }
