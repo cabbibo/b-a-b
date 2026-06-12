@@ -26,6 +26,9 @@ public class PreyInterestPointConfigSOEditor : Editor
             Prop( "searchRandomRadius" , "Random Radius" );
         Prop( "targetRandomness" , "Target Randomness" );
         Prop( "entranceShape" , "Entrance Shape" );
+        if ( cfg.entranceShape == EntranceShape.Collider )
+            EditorGUILayout.HelpBox( "Collider entrance: the bird arrives when it enters a collider assigned on the " +
+                                     "PreyInterestPoint component (Enter Radius is ignored; Notice Radius still applies)." , MessageType.None );
 
         // ── Type-specific ────────────────────────────────────────────────────
         switch ( cfg.type ) {
@@ -92,7 +95,9 @@ public class PreyInterestPointConfigSOEditor : Editor
 
             case InterestPointType.Despawn:
                 EditorGUILayout.Space( 4 );
-                EditorGUILayout.HelpBox( "On arrival (within Enter Radius): the bird despawns itself." , MessageType.None );
+                EditorGUILayout.HelpBox( cfg.entranceShape == EntranceShape.Collider
+                    ? "On arrival (entering the assigned Entrance Collider): the bird despawns itself."
+                    : "On arrival (within Enter Radius): the bird despawns itself." , MessageType.None );
                 break;
         }
 

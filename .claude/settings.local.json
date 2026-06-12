@@ -4,7 +4,12 @@
       "Bash(claude mcp *)",
       "PowerShell(New-Item *)",
       "PowerShell(Get-WinEvent *)",
-      "Bash(grep -v \"//\")"
+      "Bash(grep -v \"//\")",
+      "Bash(xargs grep -l \"maxPray\")",
+      "Bash(xargs grep -l \"DrawMeshInstancedIndirect\\\\|Graphics.DrawMesh\\\\|Graphics.DrawProceduralIndirect\")",
+      "Read(//c/Program Files/Unity/Hub/Editor/**)",
+      "Read(//c/Program Files/Unity/**)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

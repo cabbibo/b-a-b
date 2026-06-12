@@ -27,7 +27,7 @@ public class PreySpatialGrid
 
     private int Coord( float v ) => Mathf.FloorToInt( v * _inv );
 
-    public void Rebuild( Transform holder , float cellSize )
+    public void Rebuild( IReadOnlyList<PreyController> birds , float cellSize )
     {
         _cell = Mathf.Max( 0.5f , cellSize );
         _inv  = 1f / _cell;
@@ -37,11 +37,11 @@ public class PreySpatialGrid
         _cells.Clear();
         BirdCount = 0;
 
-        if ( holder == null ) return;
+        if ( birds == null ) return;
 
-        int n = holder.childCount;
+        int n = birds.Count;
         for ( int i = 0; i < n; i++ ) {
-            var bird = holder.GetChild( i ).GetComponent<PreyController>();
+            var bird = birds[i];
             if ( bird == null ) continue;
 
             var p = bird.position;

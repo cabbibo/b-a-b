@@ -116,15 +116,16 @@ public class PreyCollisionModule
 }
 
 // Ballistic "drop and bounce" calm behavior (modules.bounce). Gravity pulls the bird down; it
-// reflects off the ground (velocity * restitution). Settle ON → weak bounces send it Searching to
-// land/perch; Settle OFF → it bounces forever.
+// reflects off the ground (velocity * restitution) with decreasing bounces. Settle ON → once a bounce
+// drops below Settle Speed it settles in place where it landed, waits Time To Remain Settled, then
+// relaunches (up + forward along its heading) back into the bounce loop. Settle OFF → bounces forever.
 [System.Serializable]
 public class PreyBounceModule
 {
     [Tooltip( "Downward acceleration per frame while falling." )]
     public float     gravity        = 0.01f;
     [Range( 0f , 1.2f )]
-    [Tooltip( "Fraction of vertical speed kept on each bounce. 1 = perfect, <1 = decays, >1 = grows." )]
+    [Tooltip( "Fraction of vertical speed kept on each bounce. 1 = perfect, <1 = decays toward Settle, >1 = grows." )]
     public float     restitution    = 0.6f;
     [Range( 0f , 1f )]
     [Tooltip( "Fraction of horizontal speed kept on each bounce." )]
@@ -134,10 +135,24 @@ public class PreyBounceModule
     public LayerMask groundLayers   = ~0;
 
     [Header( "Settle" )]
-    [Tooltip( "When a bounce gets weaker than Settle Speed: ON → start Searching (to land/perch); OFF → keep bouncing." )]
+    [Tooltip( "When a bounce gets weaker than Settle Speed: ON → settle in place where it landed, then relaunch; " +
+              "OFF → keep bouncing forever (never settles)." )]
     public bool      settle         = true;
     [Tooltip( "Upward bounce speed to settle below (Settle on), or the minimum bounce kept (Settle off)." )]
     public float     settleSpeed    = 0.03f;
+    [Tooltip( "Seconds to stay settled before relaunching. Huge = effectively stays put (perch-like); 0 = relaunch immediately." )]
+    public float     timeToRemainSettled         = 3f;
+    [Tooltip( "Random ± variance (seconds) applied to Time To Remain Settled." )]
+    public float     timeToRemainSettledVariance = 0f;
+
+    [Header( "Relaunch" )]
+    [Tooltip( "Upward speed kicked in when relaunching out of a settle." )]
+    public float     relaunchForce             = 0.2f;
+    [Tooltip( "Horizontal speed kicked in on relaunch, along the bird's current heading." )]
+    public float     relaunchForwardVelocity   = 0.1f;
+    [Range( 0f , 1f )]
+    [Tooltip( "Scatter on the relaunch heading. 0 = straight along current heading; 1 = any horizontal direction." )]
+    public float     relaunchForwardRandomness = 0.25f;
 }
 
 [System.Serializable]

@@ -29,6 +29,16 @@ public class PreyInterestPointEditor : Editor
             }
         }
 
+        // ── Collider entrance shape: scene-ref collider (component-side) ──────
+        if ( ip.entranceShape == EntranceShape.Collider ) {
+            EditorGUILayout.Space( 8 );
+            EditorGUILayout.LabelField( "── Entrance Collider ───────────────" , EditorStyles.boldLabel );
+            EditorGUILayout.PropertyField( serializedObject.FindProperty( "entranceCollider" ) , new GUIContent( "Entrance Collider" ) );
+            if ( ip.entranceCollider == null )
+                EditorGUILayout.HelpBox( "Assign the collider the bird must enter to arrive at this point " +
+                                         "(for a Despawn point, this is where it despawns)." , MessageType.Warning );
+        }
+
         // ── OnCollider scene refs + perch-point generation (component-side) ───
         if ( ip.type == InterestPointType.Perch ) {
             EditorGUILayout.Space( 8 );

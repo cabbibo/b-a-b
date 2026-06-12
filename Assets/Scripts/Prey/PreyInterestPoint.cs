@@ -9,7 +9,9 @@ public enum CurlDirection     { CounterClockwise, Clockwise }
 // LandPoint (Perch points only): aim straight at the actual perch spot the bird will land on.
 public enum SearchTargetType  { Center, RandomInRange, XZOnly, LandPoint }
 // Shape used for notice / arrival detection. Cylinder ignores Y (infinite vertical extent).
-public enum EntranceShape     { Sphere, Cylinder }
+// Collider = arrival fires when the bird enters an assigned collider (entranceCollider on the component);
+// notice still uses noticeRadius and Enter Radius is ignored.
+public enum EntranceShape     { Sphere, Cylinder, Collider }
 
 // ── Per-type settings ─────────────────────────────────────────────────────────
 
@@ -87,6 +89,8 @@ public class PreyInterestPoint : MonoBehaviour
     public PreyManager manager;
     [Tooltip( "OnCollider perch: the colliders birds may land on (scene refs — params live on the config)." )]
     public Collider[]  perchColliders;
+    [Tooltip( "Collider entrance shape: the bird arrives (and a Despawn point fires) the moment it enters this collider." )]
+    public Collider    entranceCollider;
 
     // ── Proxy properties: forward to config, null-safe with the old defaults ───────────────────
     private static readonly PerchOnColliderSettings _defOnCollider = new();
@@ -125,10 +129,23 @@ public class PreyInterestPoint : MonoBehaviour
         return d.sqrMagnitude <= radius * radius;
     }
 
+    // Collider entrance shape: is pos inside the assigned entrance collider? Used for arrival
+    // (and thus despawn) instead of the enterRadius distance test. False if no collider assigned.
+    public bool ContainsPoint( Vector3 pos )
+    {
+        if ( entranceCollider == null ) return false;
+        return ( entranceCollider.ClosestPoint( pos ) - pos ).sqrMagnitude <= 0.0001f;
+    }
+
     // World position the bird should fly toward, given its current position and a
     // per-search random offset (applied to every search type — see SearchScatterRadius).
     public Vector3 GetSearchTarget( Vector3 birdPos , Vector3 randomOffset )
     {
+        // Collider entrance: steer straight at the nearest point on the collider surface so the
+        // bird flies into it (no scatter — we want it to actually enter and trigger arrival).
+        if ( entranceShape == EntranceShape.Collider && entranceCollider != null )
+            return entranceCollider.ClosestPoint( birdPos );
+
         Vector3 basePos = searchTargetType == SearchTargetType.XZOnly
             ? new Vector3( transform.position.x , birdPos.y , transform.position.z )
             : transform.position;
@@ -270,6 +287,15 @@ public class PreyInterestPoint : MonoBehaviour
             float h = Mathf.Max( noticeRadius , type == InterestPointType.Updraft ? updraftSettings.desiredAltitude : 0f );
             DrawWireCylinder( transform.position , noticeRadius , h , faint );
             DrawWireCylinder( transform.position , enterRadius  , h , strong );
+        } else if ( entranceShape == EntranceShape.Collider ) {
+            // notice is still a sphere; the enter volume IS the assigned collider's bounds
+            Gizmos.color = faint;
+            Gizmos.DrawWireSphere( transform.position , noticeRadius );
+            if ( entranceCollider != null ) {
+                var b = entranceCollider.bounds;
+                Gizmos.color = strong;
+                Gizmos.DrawWireCube( b.center , b.size );
+            }
         } else {
             Gizmos.color = faint;
             Gizmos.DrawWireSphere( transform.position , noticeRadius );

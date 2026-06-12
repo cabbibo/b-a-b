@@ -18,14 +18,14 @@ public enum DespawnType
 {
     Distance , // despawn when far enough from the wren (distance + grace time)
     Collider , // despawn when outside a dedicated despawn collider
-    Region     // despawn when the region is exited (box / collider / painted)
+    Region // despawn when the region is exited (box / collider / painted)
 }
 
 // Whether Collider / Region despawn is tested against the wren or each prey's own position.
 public enum DespawnSubject
 {
     Wren , // shared test against the wren — one test/frame for all prey (cheap, default)
-    Prey   // per-prey test against each bird's own position
+    Prey // per-prey test against each bird's own position
 }
 
 public enum WhenFull
@@ -56,10 +56,12 @@ public class PreyManager : MonoBehaviour
     public bool showInterestPointDebug = true; // interest-point markers (via PreyManagerDebug)
     public bool showDespawnDebug       = true; // per-prey despawn decision viz (on selected prey)
     public bool showPaintedDebug       = true; // Painted spawn/despawn: contour the configured food channel(s)
+
     [Range( 16 , 256 )]
-    public int  paintedDebugResolution = 96;
-    public bool showSpawnPointDebug    = true; // OnPointOfInterest: ring-mark the toggled spawn POIs
-    public bool showPOIRegionDebug     = true; // OnPointOfInterest: label each spawn POI in/out of THIS region
+    public int paintedDebugResolution = 96;
+
+    public bool showSpawnPointDebug = true; // OnPointOfInterest: ring-mark the toggled spawn POIs
+    public bool showPOIRegionDebug  = true; // OnPointOfInterest: label each spawn POI in/out of THIS region
 
     // ── Tunable params live on this asset; scene refs + runtime stay on the component ──────────
     [Header( "Manager Config" )]
@@ -70,9 +72,9 @@ public class PreyManager : MonoBehaviour
 
     // OnPointOfInterest spawn: which of the above interest points to spawn at (toggled in the
     // custom PreyManager inspector). Perch → spawn landed, Updraft → circling, others → sphere.
-    public List<PreyInterestPoint> spawnAtPoints = new List<PreyInterestPoint>();
-    private readonly List<PreyInterestPoint> _poiPick    = new List<PreyInterestPoint>();
-    private readonly List<float>             _poiWeights = new List<float>();
+    public           List<PreyInterestPoint> spawnAtPoints = new();
+    private readonly List<PreyInterestPoint> _poiPick      = new();
+    private readonly List<float>             _poiWeights   = new();
 
     [Header( "Config" )]
     public PreyConfigSO preyConfig; // the prey's params
@@ -94,13 +96,50 @@ public class PreyManager : MonoBehaviour
     public int               currentNumberOfPrey;
 
     [HideInInspector]
-    public bool wrenOutsideRegion;          // computed once/frame; Region despawn (Wren subject)
+    public bool wrenOutsideRegion; // computed once/frame; Region despawn (Wren subject)
+
     [HideInInspector]
     public bool wrenOutsideDespawnCollider; // computed once/frame; Collider despawn (Wren subject)
 
     private Vector3   splineBoundsCenter;
     private float     splineBoundingRadius;
     private Coroutine splineCheckCoroutine;
+
+    // ── LOD: distance tick-striding ───────────────────────────────────────────
+    // Birds far from the player run their expensive sim (forces, state machine,
+    // raycasts, collision) only every Nth frame and dead-reckon position in between.
+    // Disable, or set lodFarStride = 1, for identical-to-before behavior.
+    [Header( "LOD (distance tick-striding)" )]
+    [Tooltip( "Cut update rate for birds far from the player. Off = every bird ticks every frame." )]
+    public bool  lodEnabled = true;
+    [Tooltip( "Within this distance from the player a bird always ticks every frame." )]
+    public float lodNearDistance = 60f;
+    [Tooltip( "At/beyond this distance a bird ticks at lodFarStride." )]
+    public float lodFarDistance = 160f;
+    [Tooltip( "Tick every Nth frame for the most distant birds (1 = no striding). 3 ≈ 1/3 the cost." )]
+    public int   lodFarStride = 3;
+
+    // ── Live birds owned by this manager ──────────────────────────────────────
+    // Maintained by RegisterBird/UnregisterBird (called from PreyController's
+    // Initialize/OnDisable). Lets us drive every bird from ONE manager loop and
+    // skip the GetChild(i).GetComponent<PreyController>() scans the old per-frame
+    // loops used. Mirrors preyHolder's children 1:1 for live birds.
+    private readonly List<PreyController> _birds = new List<PreyController>();
+    public IReadOnlyList<PreyController> Birds => _birds;
+
+    // reusable snapshot so a bird that despawns mid-tick (removing itself from
+    // _birds) can't corrupt the loop we're iterating
+    private PreyController[] _tickSnapshot = new PreyController[0];
+
+    public void RegisterBird( PreyController bird )
+    {
+        if ( bird != null && !_birds.Contains( bird ) ) _birds.Add( bird );
+    }
+
+    public void UnregisterBird( PreyController bird )
+    {
+        if ( bird != null ) _birds.Remove( bird );
+    }
 
     // ── Neighbor spatial hash (rebuilt once/frame; used by GetNearbyBirds) ─────
     private PreySpatialGrid _neighborGrid;
@@ -110,6 +149,7 @@ public class PreyManager : MonoBehaviour
     [Header( "Spline Cache" )]
     [Tooltip( "Samples baked along regionSpline for fast nearest-point lookups. Higher = more accurate, one-time bake cost only." )]
     public int splineCacheSamples = 128;
+
     private PreySplineCache _splineCache;
 
     // ── Proxy properties: forward to managerConfig, null-safe with the old defaults ────────────
@@ -128,14 +168,14 @@ public class PreyManager : MonoBehaviour
     public float spawnDistanceMax => managerConfig != null ? managerConfig.spawnDistanceMax : 150f;
     public float spawnClosenessToBird => managerConfig != null ? managerConfig.spawnClosenessToBird : 0f;
 
-    public int[] paintedChannels  => managerConfig != null ? managerConfig.paintedChannels  : null;
+    public int[] paintedChannels => managerConfig != null ? managerConfig.paintedChannels : null;
     public float paintedThreshold => managerConfig != null ? managerConfig.paintedThreshold : 0.5f;
 
-    public float poiIdealDistance       => managerConfig != null ? managerConfig.poiIdealDistance       : 80f;
-    public float poiIdealSpread         => managerConfig != null ? managerConfig.poiIdealSpread         : 30f;
+    public float poiIdealDistance => managerConfig != null ? managerConfig.poiIdealDistance : 80f;
+    public float poiIdealSpread => managerConfig != null ? managerConfig.poiIdealSpread : 30f;
     public float poiIdealDistanceWeight => managerConfig != null ? managerConfig.poiIdealDistanceWeight : 0f;
 
-    public DespawnType    despawnType    => managerConfig != null ? managerConfig.despawnType    : DespawnType.Distance;
+    public DespawnType despawnType => managerConfig != null ? managerConfig.despawnType : DespawnType.Distance;
     public DespawnSubject despawnSubject => managerConfig != null ? managerConfig.despawnSubject : DespawnSubject.Wren;
     public bool despawnOnWrenExit => managerConfig != null ? managerConfig.despawnOnWrenExit : true;
     public float minimumTimeAlive => managerConfig != null ? managerConfig.minimumTimeAlive : 30f;
@@ -171,7 +211,9 @@ public class PreyManager : MonoBehaviour
         }
 
         // bake the spline LUT up front (birds may follow regionSpline regardless of region type)
-        if ( regionSpline != null ) RebakeSplineCache();
+        if ( regionSpline != null ) {
+            RebakeSplineCache();
+        }
     }
 
     private void OnDisable()
@@ -188,6 +230,55 @@ public class PreyManager : MonoBehaviour
         long __t0 = PreyProfiler.Now;
         UpdateManager();
         PreyProfiler.managerTicks += PreyProfiler.Now - __t0;
+
+        // Drive every live bird from here (one loop) instead of each bird having
+        // its own MonoBehaviour.Update — removes the per-object native call
+        // overhead and gives deterministic ordering after the grid is built.
+        // Timed into controllerTicks so the HUD's manager/controller split stays
+        // meaningful (bird cost is NOT counted in managerTicks above).
+        TickBirds();
+    }
+
+    private void TickBirds()
+    {
+        int n = _birds.Count;
+        if ( n == 0 ) return;
+
+        // snapshot: a bird may despawn (and Unregister itself) inside Tick()
+        if ( _tickSnapshot.Length < n ) _tickSnapshot = new PreyController[n];
+        for ( int i = 0; i < n; i++ ) _tickSnapshot[i] = _birds[i];
+
+        // LOD reference point: the player (wren), else the main camera. When neither
+        // exists we leave every bird at full rate.
+        bool    hasRef = false;
+        Vector3 refPos = Vector3.zero;
+        if ( lodEnabled && lodFarStride > 1 ) {
+            var wp = GetWrenPosition();
+            if ( wp.HasValue ) { refPos = wp.Value; hasRef = true; }
+            else if ( Camera.main != null ) { refPos = Camera.main.transform.position; hasRef = true; }
+        }
+        float near2 = lodNearDistance * lodNearDistance;
+        float far2  = Mathf.Max( lodFarDistance * lodFarDistance , near2 + 0.01f );
+
+        long t0 = PreyProfiler.Now;
+        for ( int i = 0; i < n; i++ ) {
+            var bird = _tickSnapshot[i];
+            if ( bird == null ) continue;
+
+            bird.lodStride = hasRef ? StrideFor( (bird.position - refPos).sqrMagnitude , near2 , far2 ) : 1;
+            bird.Tick();
+        }
+        PreyProfiler.controllerTicks += PreyProfiler.Now - t0;
+    }
+
+    // Map squared distance from the player to a tick stride: 1 inside lodNearDistance,
+    // ramping up to lodFarStride at/beyond lodFarDistance.
+    private int StrideFor( float sqrDist , float near2 , float far2 )
+    {
+        if ( sqrDist <= near2 ) return 1;
+        if ( sqrDist >= far2 )  return Mathf.Max( 1 , lodFarStride );
+        float t = Mathf.InverseLerp( near2 , far2 , sqrDist );
+        return Mathf.Clamp( 1 + Mathf.RoundToInt( t * (lodFarStride - 1) ) , 1 , Mathf.Max( 1 , lodFarStride ) );
     }
 
     private void UpdateManager()
@@ -210,7 +301,7 @@ public class PreyManager : MonoBehaviour
 
         // Wren-subject despawn tests: compute ONCE here; every prey reads them (no per-prey work).
         var wp = GetWrenPosition();
-        wrenOutsideRegion          = wp.HasValue && IsOutsideRegion( wp.Value );
+        wrenOutsideRegion = wp.HasValue && IsOutsideRegion( wp.Value );
         wrenOutsideDespawnCollider = wp.HasValue && IsOutsideDespawnCollider( wp.Value );
 
         CheckForNewPrey();
@@ -220,11 +311,18 @@ public class PreyManager : MonoBehaviour
     private void CheckPaintedRegion()
     {
         var wp = GetWrenPosition();
-        if ( !wp.HasValue ) return;
+
+        if ( !wp.HasValue ) {
+            return;
+        }
 
         bool inside = IsPainted( wp.Value );
-        if ( !birdInsideRegion && inside ) OnWrenEnter();
-        else if ( birdInsideRegion && !inside ) OnWrenExit();
+
+        if ( !birdInsideRegion && inside ) {
+            OnWrenEnter();
+        } else if ( birdInsideRegion && !inside ) {
+            OnWrenExit();
+        }
     }
 
     private void CheckBoxRegion()
@@ -307,7 +405,7 @@ public class PreyManager : MonoBehaviour
     // Spline / unset → no spatial filter (always inside).
     public bool IsInsideRegion( Vector3 pos )
     {
-        switch ( regionType ) {
+        switch (regionType) {
             case RegionType.Box:
             case RegionType.Collider:
             case RegionType.Painted:
@@ -353,10 +451,14 @@ public class PreyManager : MonoBehaviour
             // Bounded: stop if a spawn attempt adds nothing (e.g. no valid POI in the wren's chunk
             // this frame) — otherwise this loops forever and hangs the editor.
             int guard = maxPray + 8;
-            while ( preyHolder.childCount < maxPray && guard-- > 0 ) {
+
+            while (preyHolder.childCount < maxPray && guard-- > 0) {
                 int before = preyHolder.childCount;
                 SpawnNewBug();
-                if ( preyHolder.childCount <= before ) break;
+
+                if ( preyHolder.childCount <= before ) {
+                    break;
+                }
             }
         }
     }
@@ -369,8 +471,8 @@ public class PreyManager : MonoBehaviour
             return;
         }
 
-        for ( int i = 0; i < preyHolder.childCount; i++ ) {
-            var prey = preyHolder.GetChild( i ).GetComponent<PreyController>();
+        for ( int i = 0; i < _birds.Count; i++ ) {
+            var prey = _birds[i];
 
             if ( prey != null ) {
                 prey.ForceDespawn();
@@ -399,14 +501,20 @@ public class PreyManager : MonoBehaviour
 
         // OnPointOfInterest does its own placement + state setup per bird, so it bypasses the
         // generic single-position spawn loop below.
-        if ( spawnType == SpawnType.OnPointOfInterest ) { SpawnOnPointOfInterest(); return; }
+        if ( spawnType == SpawnType.OnPointOfInterest ) {
+            SpawnOnPointOfInterest();
+            return;
+        }
 
         Vector3 spawnPos;
 
         switch (spawnType) {
             case SpawnType.NextToCurve: spawnPos = SpawnNextToCurve(); break;
             case SpawnType.Painted:
-                if ( !TryGetPaintedSpawn( out spawnPos ) ) return; // no painted area ahead → skip this tick
+                if ( !TryGetPaintedSpawn( out spawnPos ) ) {
+                    return; // no painted area ahead → skip this tick
+                }
+
                 break;
             case SpawnType.DesiredAltitude: spawnPos = SpawnAtDesiredAltitude(); break;
             case SpawnType.InDistance: spawnPos = SpawnInDistance(); break;
@@ -429,8 +537,8 @@ public class PreyManager : MonoBehaviour
     // Is any bird currently fading out? Used by DespawnOld so we only free one slot at a time.
     private bool AnyPreyDespawning()
     {
-        for ( int i = 0; i < preyHolder.childCount; i++ ) {
-            var p = preyHolder.GetChild( i ).GetComponent<PreyController>();
+        for ( int i = 0; i < _birds.Count; i++ ) {
+            var p = _birds[i];
 
             if ( p != null && p.IsDespawning ) {
                 return true;
@@ -440,11 +548,12 @@ public class PreyManager : MonoBehaviour
         return false;
     }
 
-    // Oldest bird that isn't already despawning (children are appended, so index 0 is oldest).
+    // Oldest bird that isn't already despawning (birds are appended in spawn order, so the
+    // first non-despawning entry is the oldest).
     private PreyController OldestLivePrey()
     {
-        for ( int i = 0; i < preyHolder.childCount; i++ ) {
-            var p = preyHolder.GetChild( i ).GetComponent<PreyController>();
+        for ( int i = 0; i < _birds.Count; i++ ) {
+            var p = _birds[i];
 
             if ( p != null && !p.IsDespawning ) {
                 return p;
@@ -585,18 +694,22 @@ public class PreyManager : MonoBehaviour
         pos = transform.position;
 
         var wren = GetWrenPosition();
-        if ( !wren.HasValue || !God.hasIslandData ) return false;
 
-        Vector3 wp    = wren.Value;
-        Vector3 fwd   = WrenHeadingHorizontal();
-        Vector3 right = Vector3.Cross( Vector3.up , fwd );
-        var     alt   = preyConfig.altitude;
+        if ( !wren.HasValue || !God.hasIslandData ) {
+            return false;
+        }
+
+        var wp = wren.Value;
+        var fwd = WrenHeadingHorizontal();
+        var right = Vector3.Cross( Vector3.up , fwd );
+        var alt = preyConfig.altitude;
 
         const int attempts = 16;
+
         for ( int i = 0; i < attempts; i++ ) {
-            float   dist = Random.Range( spawnDistanceMin , spawnDistanceMax );
-            float   side = Random.Range( -spawnRadius , spawnRadius );
-            Vector3 cand = wp + fwd * dist + right * side;
+            float dist = Random.Range( spawnDistanceMin , spawnDistanceMax );
+            float side = Random.Range( -spawnRadius , spawnRadius );
+            var cand = wp + fwd * dist + right * side;
 
             if ( IsPainted( cand ) ) {
                 cand.y = GroundYAt( cand ) + Random.Range( alt.desiredAltitudeMin , alt.desiredAltitudeMax );
@@ -604,14 +717,15 @@ public class PreyManager : MonoBehaviour
                 return true;
             }
         }
+
         return false;
     }
 
     // The bird's horizontal heading (forward), used to spawn "ahead of" it.
     private Vector3 WrenHeadingHorizontal()
     {
-        Transform t = God.wren != null ? God.wren.transform : debugWren;
-        Vector3   f = t != null ? t.forward : Vector3.forward;
+        var t = God.wren != null ? God.wren.transform : debugWren;
+        var f = t != null ? t.forward : Vector3.forward;
         f.y = 0f;
         return f.sqrMagnitude > 1e-4f ? f.normalized : Vector3.forward;
     }
@@ -621,7 +735,10 @@ public class PreyManager : MonoBehaviour
     // despawn works even when God.hasIslandData wasn't set.
     private static IslandData PaintedIsland()
     {
-        if ( God.hasIslandData && God.islandData != null ) return God.islandData;
+        if ( God.hasIslandData && God.islandData != null ) {
+            return God.islandData;
+        }
+
         var ic = God.islandController;
         return ic != null ? ic.currentIsland : null;
     }
@@ -630,52 +747,82 @@ public class PreyManager : MonoBehaviour
     private Vector4 SampleFood( Vector3 worldPos )
     {
         var data = PaintedIsland();
-        if ( data == null || data.foodMap == null ) return Vector4.zero;
+
+        if ( data == null || data.foodMap == null ) {
+            return Vector4.zero;
+        }
+
         return data.GetFood( God.UVInMap( worldPos ) );
     }
 
     // True if ANY of the manager's painted channels is above the threshold at this world position.
     private bool IsPainted( Vector3 pos )
     {
-        var chans = paintedChannels;
-        if ( chans == null || chans.Length == 0 ) return false;
-        Vector4 food = SampleFood( pos );
+        int[] chans = paintedChannels;
+
+        if ( chans == null || chans.Length == 0 ) {
+            return false;
+        }
+
+        var food = SampleFood( pos );
+
         for ( int i = 0; i < chans.Length; i++ ) {
             int ch = Mathf.Clamp( chans[i] , 0 , 3 );
-            if ( food[ch] >= paintedThreshold ) return true;
+
+            if ( food[ch] >= paintedThreshold ) {
+                return true;
+            }
         }
+
         return false;
     }
 
 
     // ── Painted "islands": connected components (chunks) of the painted area ───
-    private int[]   _islandLabels;   // res*res, chunk id per cell (-1 = unpainted)
+    private int[]   _islandLabels; // res*res, chunk id per cell (-1 = unpainted)
     private int     _islandRes;
     private int     _islandCount;
-    private Vector3 _islandSize, _islandOffset;
+    private Vector3 _islandSize , _islandOffset;
     private int     _islandHash = int.MinValue;
 
     // Which painted chunk a world position is in. -1 = unpainted / no data.
     public int PaintIslandAt( Vector3 worldPos )
     {
         EnsureIslandsBuilt();
-        if ( _islandLabels == null || _islandSize.x <= 0f || _islandSize.z <= 0f ) return -1;
 
-        float u = ( worldPos.x - _islandOffset.x ) / _islandSize.x;
-        float v = ( worldPos.z - _islandOffset.z ) / _islandSize.z;
-        if ( u < 0f || u > 1f || v < 0f || v > 1f ) return -1;
+        if ( _islandLabels == null || _islandSize.x <= 0f || _islandSize.z <= 0f ) {
+            return -1;
+        }
 
-        int i = Mathf.Clamp( (int)( u * _islandRes ) , 0 , _islandRes - 1 );
-        int j = Mathf.Clamp( (int)( v * _islandRes ) , 0 , _islandRes - 1 );
-        return _islandLabels[ j * _islandRes + i ];
+        float u = (worldPos.x - _islandOffset.x) / _islandSize.x;
+        float v = (worldPos.z - _islandOffset.z) / _islandSize.z;
+
+        if ( u < 0f || u > 1f || v < 0f || v > 1f ) {
+            return -1;
+        }
+
+        int i = Mathf.Clamp( (int)(u * _islandRes) , 0 , _islandRes - 1 );
+        int j = Mathf.Clamp( (int)(v * _islandRes) , 0 , _islandRes - 1 );
+        return _islandLabels[j * _islandRes + i];
     }
 
-    public int PaintIslandCount { get { EnsureIslandsBuilt(); return _islandCount; } }
+    public int PaintIslandCount
+    {
+        get
+        {
+            EnsureIslandsBuilt();
+            return _islandCount;
+        }
+    }
 
     private void EnsureIslandsBuilt()
     {
         int hash = PaintedDebugHash();
-        if ( _islandLabels != null && hash == _islandHash ) return;
+
+        if ( _islandLabels != null && hash == _islandHash ) {
+            return;
+        }
+
         BuildPaintIslands();
         _islandHash = hash;
     }
@@ -686,66 +833,104 @@ public class PreyManager : MonoBehaviour
     public void BuildPaintIslands()
     {
         _islandLabels = null;
-        _islandCount  = 0;
+        _islandCount = 0;
 
-        var     data  = ResolvePaintedIsland();
-        Terrain ter   = ResolvePaintedTerrain( data );
-        var     chans = paintedChannels;
+        var data = ResolvePaintedIsland();
+        var ter = ResolvePaintedTerrain( data );
+        int[] chans = paintedChannels;
+
         if ( data == null || data.foodMap == null || ter == null || ter.terrainData == null
-             || chans == null || chans.Length == 0 ) return;
+             || chans == null || chans.Length == 0 ) {
+            return;
+        }
 
-        int   res = Mathf.Clamp( paintedDebugResolution , 16 , 256 );
+        int res = Mathf.Clamp( paintedDebugResolution , 16 , 256 );
         float thr = paintedThreshold;
-        var   tex = data.foodMap;
-        _islandSize   = ter.terrainData.size;
+        var tex = data.foodMap;
+        _islandSize = ter.terrainData.size;
         _islandOffset = ter.transform.position;
 
         // 1) painted / not-painted per cell
-        bool[] painted = new bool[ res * res ];
+        bool[] painted = new bool[res * res];
+
         for ( int j = 0; j < res; j++ )
         for ( int i = 0; i < res; i++ ) {
-            Color c = tex.GetPixelBilinear( ( i + 0.5f ) / res , ( j + 0.5f ) / res );
+            var c = tex.GetPixelBilinear( (i + 0.5f) / res , (j + 0.5f) / res );
             bool p = false;
-            for ( int k = 0; k < chans.Length; k++ )
-                if ( Chan( c , Mathf.Clamp( chans[k] , 0 , 3 ) ) >= thr ) { p = true; break; }
-            painted[ j * res + i ] = p;
+
+            for ( int k = 0; k < chans.Length; k++ ) {
+                if ( Chan( c , Mathf.Clamp( chans[k] , 0 , 3 ) ) >= thr ) {
+                    p = true;
+                    break;
+                }
+            }
+
+            painted[j * res + i] = p;
         }
 
         // 2) label connected components (4-connectivity) via iterative flood fill
-        int[] label = new int[ res * res ];
-        for ( int n = 0; n < label.Length; n++ ) label[n] = -1;
-        var stack = new System.Collections.Generic.Stack<int>();
+        int[] label = new int[res * res];
+
+        for ( int n = 0; n < label.Length; n++ ) {
+            label[n] = -1;
+        }
+
+        var stack = new Stack<int>();
         int next = 0;
+
         for ( int start = 0; start < label.Length; start++ ) {
-            if ( !painted[start] || label[start] != -1 ) continue;
+            if ( !painted[start] || label[start] != -1 ) {
+                continue;
+            }
+
             stack.Push( start );
             label[start] = next;
-            while ( stack.Count > 0 ) {
+
+            while (stack.Count > 0) {
                 int idx = stack.Pop();
-                int x = idx % res, y = idx / res;
-                if ( x > 0 )       FloodInto( idx - 1   , painted , label , next , stack );
-                if ( x < res - 1 ) FloodInto( idx + 1   , painted , label , next , stack );
-                if ( y > 0 )       FloodInto( idx - res , painted , label , next , stack );
-                if ( y < res - 1 ) FloodInto( idx + res , painted , label , next , stack );
+                int x = idx % res , y = idx / res;
+
+                if ( x > 0 ) {
+                    FloodInto( idx - 1 , painted , label , next , stack );
+                }
+
+                if ( x < res - 1 ) {
+                    FloodInto( idx + 1 , painted , label , next , stack );
+                }
+
+                if ( y > 0 ) {
+                    FloodInto( idx - res , painted , label , next , stack );
+                }
+
+                if ( y < res - 1 ) {
+                    FloodInto( idx + res , painted , label , next , stack );
+                }
             }
+
             next++;
         }
 
         _islandLabels = label;
-        _islandRes    = res;
-        _islandCount  = next;
+        _islandRes = res;
+        _islandCount = next;
     }
 
-    private static void FloodInto( int idx , bool[] painted , int[] label , int id , System.Collections.Generic.Stack<int> stack )
+    private static void FloodInto( int idx , bool[] painted , int[] label , int id , Stack<int> stack )
     {
-        if ( painted[idx] && label[idx] == -1 ) { label[idx] = id; stack.Push( idx ); }
+        if ( painted[idx] && label[idx] == -1 ) {
+            label[idx] = id;
+            stack.Push( idx );
+        }
     }
 
     // Distinct color per chunk id (golden-ratio hue spacing); red for unpainted.
     public static Color IslandColor( int id )
     {
-        if ( id < 0 ) return Color.red;
-        float h = ( id * 0.618034f ) % 1f;
+        if ( id < 0 ) {
+            return Color.red;
+        }
+
+        float h = id * 0.618034f % 1f;
         return Color.HSVToRGB( h , 0.65f , 1f );
     }
 
@@ -753,11 +938,13 @@ public class PreyManager : MonoBehaviour
     private void SpawnOnPointOfInterest()
     {
         // the whole cluster spawns at ONE shared POI
-        if ( !TryPickSpawnPOI( out var poi ) ) return;   // none toggled / in-region → skip this tick
+        if ( !TryPickSpawnPOI( out var poi ) ) {
+            return; // none toggled / in-region → skip this tick
+        }
 
         for ( int i = 0; i < preyPerCluster; i++ ) {
-            Vector3 pos  = POISpawnPosition( poi );
-            var     bird = Instantiate( preyPrefab , pos , Quaternion.identity ).GetComponent<PreyController>();
+            var pos = POISpawnPosition( poi );
+            var bird = Instantiate( preyPrefab , pos , Quaternion.identity ).GetComponent<PreyController>();
             bird.Initialize( preyConfig , this );
             bird.transform.parent = preyHolder;
 
@@ -772,54 +959,75 @@ public class PreyManager : MonoBehaviour
     private bool TryPickSpawnPOI( out PreyInterestPoint poi )
     {
         poi = null;
-        if ( spawnAtPoints == null || spawnAtPoints.Count == 0 ) return false;
+
+        if ( spawnAtPoints == null || spawnAtPoints.Count == 0 ) {
+            return false;
+        }
 
         var wren = GetWrenPosition();
         // For a painted region, only consider POIs in the SAME painted chunk as the wren.
-        int wrenChunk = ( regionType == RegionType.Painted && wren.HasValue ) ? PaintIslandAt( wren.Value ) : -1;
+        int wrenChunk = regionType == RegionType.Painted && wren.HasValue ? PaintIslandAt( wren.Value ) : -1;
 
         _poiPick.Clear();
+
         for ( int i = 0; i < spawnAtPoints.Count; i++ ) {
             var p = spawnAtPoints[i];
-            if ( p == null ) continue;
+
+            if ( p == null ) {
+                continue;
+            }
 
             if ( regionType == RegionType.Painted ) {
-                if ( wrenChunk < 0 || PaintIslandAt( p.transform.position ) != wrenChunk ) continue;
+                if ( wrenChunk < 0 || PaintIslandAt( p.transform.position ) != wrenChunk ) {
+                    continue;
+                }
             } else if ( !IsInsideRegion( p.transform.position ) ) {
                 continue;
             }
+
             _poiPick.Add( p );
         }
-        if ( _poiPick.Count == 0 ) return false;
+
+        if ( _poiPick.Count == 0 ) {
+            return false;
+        }
 
         float weight = Mathf.Clamp01( poiIdealDistanceWeight );
+
         if ( weight <= 0f || !wren.HasValue ) {
-            poi = _poiPick[ Random.Range( 0 , _poiPick.Count ) ];   // 0 → pure random
+            poi = _poiPick[Random.Range( 0 , _poiPick.Count )]; // 0 → pure random
             return true;
         }
 
         // Prefer POIs near a point `idealDistance` in front of the wren. `spread` is the tolerance
         // radius; `weight` (0..1) sharpens the preference (1 → strongly favor the nearest-to-ideal).
-        Vector3 ideal  = wren.Value + WrenHeadingHorizontal() * poiIdealDistance;
-        float   spread = Mathf.Max( 0.01f , poiIdealSpread );
-        float   sharp  = weight * 8f;
+        var ideal = wren.Value + WrenHeadingHorizontal() * poiIdealDistance;
+        float spread = Mathf.Max( 0.01f , poiIdealSpread );
+        float sharp = weight * 8f;
 
         _poiWeights.Clear();
         float total = 0f;
+
         for ( int i = 0; i < _poiPick.Count; i++ ) {
             float e = Vector3.Distance( _poiPick[i].transform.position , ideal ) / spread;
-            float score = 1f / ( 1f + e * e );             // 1 at the ideal point, falls off past `spread`
-            float w     = Mathf.Pow( score , sharp );
+            float score = 1f / (1f + e * e); // 1 at the ideal point, falls off past `spread`
+            float w = Mathf.Pow( score , sharp );
             _poiWeights.Add( w );
             total += w;
         }
 
         float r = Random.value * total;
+
         for ( int i = 0; i < _poiPick.Count; i++ ) {
             r -= _poiWeights[i];
-            if ( r <= 0f ) { poi = _poiPick[i]; return true; }
+
+            if ( r <= 0f ) {
+                poi = _poiPick[i];
+                return true;
+            }
         }
-        poi = _poiPick[ _poiPick.Count - 1 ];
+
+        poi = _poiPick[_poiPick.Count - 1];
         return true;
     }
 
@@ -827,40 +1035,47 @@ public class PreyManager : MonoBehaviour
     // so its exact value here doesn't matter; Updraft/others scatter within spawnRadius (randomness).
     private Vector3 POISpawnPosition( PreyInterestPoint poi )
     {
-        Vector3 c = poi.transform.position;
-        switch ( poi.type ) {
+        var c = poi.transform.position;
+
+        switch (poi.type) {
             case InterestPointType.Perch:
                 return c;
             default:
-                return c + Random.insideUnitSphere * spawnRadius;   // sphere around the point
+                return c + Random.insideUnitSphere * spawnRadius; // sphere around the point
         }
     }
 
     // Put the freshly-spawned bird into the right state for the POI it spawned at.
     private void ApplyPOISpawnState( PreyController bird , PreyInterestPoint poi )
     {
-        switch ( poi.type ) {
+        switch (poi.type) {
             case InterestPointType.Perch:
-                bird.SpawnPerchedAt( poi );    // false → stays calm where it spawned (acceptable fallback)
+                bird.SpawnPerchedAt( poi ); // false → stays calm where it spawned (acceptable fallback)
                 break;
             case InterestPointType.Updraft:
                 bird.SpawnUpdraftingAt( poi );
                 break;
             default:
-                break;                          // others: stay Calm, already scattered in a sphere
+                break; // others: stay Calm, already scattered in a sphere
         }
     }
 
     // ── Painted debug: contour the painted regions of all 4 channels, once ────
-    private struct PaintSeg { public Vector3 a; public Vector3 b; public Color c; }
-    private System.Collections.Generic.List<PaintSeg> _paintSegs;
+    private struct PaintSeg
+    {
+        public Vector3 a;
+        public Vector3 b;
+        public Color   c;
+    }
+
+    private List<PaintSeg> _paintSegs;
 
     private static readonly Color[] _foodChannelColors =
     {
-        new Color( 1f , 0.35f , 0.35f ), // R
-        new Color( 0.35f , 1f , 0.40f ), // G
-        new Color( 0.40f , 0.60f , 1f ), // B
-        new Color( 1f , 0.90f , 0.35f ), // A
+        new(1f , 0.35f , 0.35f) , // R
+        new(0.35f , 1f , 0.40f) , // G
+        new(0.40f , 0.60f , 1f) , // B
+        new(1f , 0.90f , 0.35f) // A
     };
 
     // Marching-squares contour at paintedThreshold for each channel, projected onto
@@ -869,65 +1084,80 @@ public class PreyManager : MonoBehaviour
     public void BakePaintedDebug()
     {
         // resolve the food map + terrain straight from the scene so this also works in edit mode
-        var     data = ResolvePaintedIsland();
-        Terrain ter  = ResolvePaintedTerrain( data );
+        var data = ResolvePaintedIsland();
+        var ter = ResolvePaintedTerrain( data );
+
         if ( data == null || data.foodMap == null || ter == null || ter.terrainData == null ) {
-            _paintSegs = null;   // data not ready → retry next time rather than caching an empty result
+            _paintSegs = null; // data not ready → retry next time rather than caching an empty result
             return;
         }
 
         _paintTerrain = ter;
-        _paintSegs    = new System.Collections.Generic.List<PaintSeg>();
+        _paintSegs = new List<PaintSeg>();
 
-        int     res  = Mathf.Clamp( paintedDebugResolution , 16 , 256 );
-        Vector3 size = ter.terrainData.size;
-        Vector3 off  = ter.transform.position;
-        var     tex  = data.foodMap;
-        float   thr  = paintedThreshold;
+        int res = Mathf.Clamp( paintedDebugResolution , 16 , 256 );
+        var size = ter.terrainData.size;
+        var off = ter.transform.position;
+        var tex = data.foodMap;
+        float thr = paintedThreshold;
 
         // sample the food map on a (res+1)² grid
-        var grid = new Color[ ( res + 1 ) * ( res + 1 ) ];
-        for ( int j = 0; j <= res; j++ )
-        for ( int i = 0; i <= res; i++ )
-            grid[ j * ( res + 1 ) + i ] = tex.GetPixelBilinear( (float)i / res , (float)j / res );
+        var grid = new Color[(res + 1) * (res + 1)];
 
-        var chans = paintedChannels;
-        if ( chans == null || chans.Length == 0 ) return;   // nothing selected → nothing to draw
+        for ( int j = 0; j <= res; j++ )
+        for ( int i = 0; i <= res; i++ ) {
+            grid[j * (res + 1) + i] = tex.GetPixelBilinear( (float)i / res , (float)j / res );
+        }
+
+        int[] chans = paintedChannels;
+
+        if ( chans == null || chans.Length == 0 ) {
+            return; // nothing selected → nothing to draw
+        }
 
         for ( int k = 0; k < chans.Length; k++ ) {
-            int   ch  = Mathf.Clamp( chans[k] , 0 , 3 );
-            Color col = _foodChannelColors[ch];
+            int ch = Mathf.Clamp( chans[k] , 0 , 3 );
+            var col = _foodChannelColors[ch];
 
             for ( int j = 0; j < res; j++ )
             for ( int i = 0; i < res; i++ ) {
-                float c00 = Chan( grid[ j * ( res + 1 ) + i ]         , ch );  // BL
-                float c10 = Chan( grid[ j * ( res + 1 ) + i + 1 ]     , ch );  // BR
-                float c11 = Chan( grid[ ( j + 1 ) * ( res + 1 ) + i + 1 ] , ch ); // TR
-                float c01 = Chan( grid[ ( j + 1 ) * ( res + 1 ) + i ] , ch );  // TL
+                float c00 = Chan( grid[j * (res + 1) + i] , ch ); // BL
+                float c10 = Chan( grid[j * (res + 1) + i + 1] , ch ); // BR
+                float c11 = Chan( grid[(j + 1) * (res + 1) + i + 1] , ch ); // TR
+                float c01 = Chan( grid[(j + 1) * (res + 1) + i] , ch ); // TL
 
-                int id = ( c00 >= thr ? 1 : 0 ) | ( c10 >= thr ? 2 : 0 )
-                       | ( c11 >= thr ? 4 : 0 ) | ( c01 >= thr ? 8 : 0 );
-                if ( id == 0 || id == 15 ) continue;
+                int id = (c00 >= thr ? 1 : 0) | (c10 >= thr ? 2 : 0)
+                                              | (c11 >= thr ? 4 : 0) | (c01 >= thr ? 8 : 0);
 
-                float u0 = (float)i / res, u1 = (float)( i + 1 ) / res;
-                float v0 = (float)j / res, v1 = (float)( j + 1 ) / res;
+                if ( id == 0 || id == 15 ) {
+                    continue;
+                }
 
-                Vector2 eB = new Vector2( Mathf.Lerp( u0 , u1 , Frac( c00 , c10 , thr ) ) , v0 );
-                Vector2 eR = new Vector2( u1 , Mathf.Lerp( v0 , v1 , Frac( c10 , c11 , thr ) ) );
-                Vector2 eT = new Vector2( Mathf.Lerp( u0 , u1 , Frac( c01 , c11 , thr ) ) , v1 );
-                Vector2 eL = new Vector2( u0 , Mathf.Lerp( v0 , v1 , Frac( c00 , c01 , thr ) ) );
+                float u0 = (float)i / res , u1 = (float)(i + 1) / res;
+                float v0 = (float)j / res , v1 = (float)(j + 1) / res;
 
-                switch ( id ) {
-                    case 1:  AddSeg( eL , eB , size , off , col ); break;
-                    case 2:  AddSeg( eB , eR , size , off , col ); break;
-                    case 3:  AddSeg( eL , eR , size , off , col ); break;
-                    case 4:  AddSeg( eR , eT , size , off , col ); break;
-                    case 5:  AddSeg( eL , eB , size , off , col ); AddSeg( eR , eT , size , off , col ); break;
-                    case 6:  AddSeg( eB , eT , size , off , col ); break;
-                    case 7:  AddSeg( eL , eT , size , off , col ); break;
-                    case 8:  AddSeg( eT , eL , size , off , col ); break;
-                    case 9:  AddSeg( eT , eB , size , off , col ); break;
-                    case 10: AddSeg( eB , eR , size , off , col ); AddSeg( eT , eL , size , off , col ); break;
+                var eB = new Vector2( Mathf.Lerp( u0 , u1 , Frac( c00 , c10 , thr ) ) , v0 );
+                var eR = new Vector2( u1 , Mathf.Lerp( v0 , v1 , Frac( c10 , c11 , thr ) ) );
+                var eT = new Vector2( Mathf.Lerp( u0 , u1 , Frac( c01 , c11 , thr ) ) , v1 );
+                var eL = new Vector2( u0 , Mathf.Lerp( v0 , v1 , Frac( c00 , c01 , thr ) ) );
+
+                switch (id) {
+                    case 1: AddSeg( eL , eB , size , off , col ); break;
+                    case 2: AddSeg( eB , eR , size , off , col ); break;
+                    case 3: AddSeg( eL , eR , size , off , col ); break;
+                    case 4: AddSeg( eR , eT , size , off , col ); break;
+                    case 5:
+                        AddSeg( eL , eB , size , off , col );
+                        AddSeg( eR , eT , size , off , col );
+                        break;
+                    case 6: AddSeg( eB , eT , size , off , col ); break;
+                    case 7: AddSeg( eL , eT , size , off , col ); break;
+                    case 8: AddSeg( eT , eL , size , off , col ); break;
+                    case 9: AddSeg( eT , eB , size , off , col ); break;
+                    case 10:
+                        AddSeg( eB , eR , size , off , col );
+                        AddSeg( eT , eL , size , off , col );
+                        break;
                     case 11: AddSeg( eT , eR , size , off , col ); break;
                     case 12: AddSeg( eR , eL , size , off , col ); break;
                     case 13: AddSeg( eB , eR , size , off , col ); break;
@@ -937,20 +1167,27 @@ public class PreyManager : MonoBehaviour
         }
     }
 
-    private static float Chan( Color c , int ch ) => ch == 0 ? c.r : ch == 1 ? c.g : ch == 2 ? c.b : c.a;
+    private static float Chan( Color c , int ch )
+    {
+        return ch == 0 ? c.r : ch == 1 ? c.g : ch == 2 ? c.b : c.a;
+    }
 
     // fraction along corner a→b where the value crosses thr
     private static float Frac( float a , float b , float thr )
     {
         float d = b - a;
-        return Mathf.Abs( d ) < 1e-6f ? 0.5f : Mathf.Clamp01( ( thr - a ) / d );
+        return Mathf.Abs( d ) < 1e-6f ? 0.5f : Mathf.Clamp01( (thr - a) / d );
     }
 
     private void AddSeg( Vector2 a , Vector2 b , Vector3 size , Vector3 off , Color col )
-        => _paintSegs.Add( new PaintSeg {
-            a = UvToTerrain( a , size , off ),
-            b = UvToTerrain( b , size , off ),
-            c = col } );
+    {
+        _paintSegs.Add( new PaintSeg
+        {
+            a = UvToTerrain( a , size , off ) ,
+            b = UvToTerrain( b , size , off ) ,
+            c = col
+        } );
+    }
 
     private Vector3 UvToTerrain( Vector2 uv , Vector3 size , Vector3 off )
     {
@@ -962,8 +1199,15 @@ public class PreyManager : MonoBehaviour
     private float TerrainY( float x , float z )
     {
         var ter = _paintTerrain;
-        if ( ter != null ) return ter.transform.position.y + ter.SampleHeight( new Vector3( x , 0 , z ) );
-        if ( Physics.Raycast( new Vector3( x , 10000f , z ) , Vector3.down , out var hit , 20000f ) ) return hit.point.y;
+
+        if ( ter != null ) {
+            return ter.transform.position.y + ter.SampleHeight( new Vector3( x , 0 , z ) );
+        }
+
+        if ( Physics.Raycast( new Vector3( x , 10000f , z ) , Vector3.down , out var hit , 20000f ) ) {
+            return hit.point.y;
+        }
+
         return 0f;
     }
 
@@ -979,19 +1223,28 @@ public class PreyManager : MonoBehaviour
 
     private void DrawPaintedGizmos()
     {
-        if ( !showPaintedDebug ) return;
+        if ( !showPaintedDebug ) {
+            return;
+        }
+
         // show whenever this manager uses paint at all — painted spawn OR painted region (edit mode too)
-        if ( spawnType != SpawnType.Painted && regionType != RegionType.Painted ) return;
+        if ( spawnType != SpawnType.Painted && regionType != RegionType.Painted ) {
+            return;
+        }
 
         // Rebake when the cache is empty OR the channels/threshold/resolution changed. Hashing the
         // live values (not OnValidate) is what makes edits on the config SO refresh the overlay —
         // the SO is a separate asset, so editing it never fires this component's OnValidate.
         int hash = PaintedDebugHash();
+
         if ( _paintSegs == null || hash != _bakeHash ) {
             BakePaintedDebug();
             _bakeHash = hash;
         }
-        if ( _paintSegs == null ) return;
+
+        if ( _paintSegs == null ) {
+            return;
+        }
 
         for ( int i = 0; i < _paintSegs.Count; i++ ) {
             Gizmos.color = _paintSegs[i].c;
@@ -1000,15 +1253,21 @@ public class PreyManager : MonoBehaviour
     }
 
     private int _bakeHash;
+
     private int PaintedDebugHash()
     {
         unchecked {
             int h = 17;
             h = h * 31 + paintedThreshold.GetHashCode();
             h = h * 31 + paintedDebugResolution;
-            var chans = paintedChannels;
-            if ( chans != null )
-                for ( int i = 0; i < chans.Length; i++ ) h = h * 31 + chans[i];
+            int[] chans = paintedChannels;
+
+            if ( chans != null ) {
+                for ( int i = 0; i < chans.Length; i++ ) {
+                    h = h * 31 + chans[i];
+                }
+            }
+
             return h;
         }
     }
@@ -1016,14 +1275,19 @@ public class PreyManager : MonoBehaviour
     // Ring-mark each interest point toggled on for OnPointOfInterest spawning, colored by type.
     private void DrawSpawnPOIGizmos()
     {
-        if ( !showSpawnPointDebug || spawnType != SpawnType.OnPointOfInterest || spawnAtPoints == null ) return;
+        if ( !showSpawnPointDebug || spawnType != SpawnType.OnPointOfInterest || spawnAtPoints == null ) {
+            return;
+        }
 
         for ( int i = 0; i < spawnAtPoints.Count; i++ ) {
             var poi = spawnAtPoints[i];
-            if ( poi == null ) continue;
 
-            Vector3 c   = poi.transform.position;
-            float   r   = poi.type == InterestPointType.Perch ? 1.5f : Mathf.Max( 1.5f , spawnRadius );
+            if ( poi == null ) {
+                continue;
+            }
+
+            var c = poi.transform.position;
+            float r = poi.type == InterestPointType.Perch ? 1.5f : Mathf.Max( 1.5f , spawnRadius );
 
             Gizmos.color = POIGizmoColor( poi.type );
             GizmoRing( c , r , 28 );
@@ -1034,20 +1298,21 @@ public class PreyManager : MonoBehaviour
 
     private static Color POIGizmoColor( InterestPointType t )
     {
-        switch ( t ) {
-            case InterestPointType.Perch:   return new Color( 1f , 0.85f , 0.2f );  // yellow
-            case InterestPointType.Updraft: return new Color( 0.3f , 1f , 0.5f );   // green
-            default:                        return new Color( 0.4f , 0.8f , 1f );   // cyan
+        switch (t) {
+            case InterestPointType.Perch: return new Color( 1f , 0.85f , 0.2f ); // yellow
+            case InterestPointType.Updraft: return new Color( 0.3f , 1f , 0.5f ); // green
+            default: return new Color( 0.4f , 0.8f , 1f ); // cyan
         }
     }
 
     // Horizontal wire ring drawn with plain Gizmos (no editor-only Handles needed).
     private static void GizmoRing( Vector3 c , float r , int seg )
     {
-        Vector3 prev = c + new Vector3( r , 0 , 0 );
+        var prev = c + new Vector3( r , 0 , 0 );
+
         for ( int i = 1; i <= seg; i++ ) {
             float a = i / (float)seg * Mathf.PI * 2f;
-            Vector3 p = c + new Vector3( Mathf.Cos( a ) * r , 0 , Mathf.Sin( a ) * r );
+            var p = c + new Vector3( Mathf.Cos( a ) * r , 0 , Mathf.Sin( a ) * r );
             Gizmos.DrawLine( prev , p );
             prev = p;
         }
@@ -1058,35 +1323,50 @@ public class PreyManager : MonoBehaviour
     // painted vs. unpainted ground. Also dumps the raw sampled values to show WHY it triggers.
     private void DrawWrenRegionDebug()
     {
-        if ( !showPaintedDebug ) return;
+        if ( !showPaintedDebug ) {
+            return;
+        }
+
         bool usesPaint = spawnType == SpawnType.Painted || regionType == RegionType.Painted;
-        if ( !usesPaint ) return;
+
+        if ( !usesPaint ) {
+            return;
+        }
 
         var wren = GetWrenPosition();
-        if ( !wren.HasValue ) return;
-        Vector3 wp = wren.Value;
 
-        var     data    = PaintedIsland();
-        bool    noData  = data == null || data.foodMap == null;
-        Vector4 food    = SampleFood( wp );
-        bool    painted = !noData && IsPainted( wp );
+        if ( !wren.HasValue ) {
+            return;
+        }
 
-        string status = noData ? "NO ISLAND DATA" : ( painted ? "PAINTED: IN" : "PAINTED: OUT" );
-        Color  col    = noData ? Color.yellow     : ( painted ? Color.green   : Color.red );
+        var wp = wren.Value;
 
-        var chans  = paintedChannels;
+        var data = PaintedIsland();
+        bool noData = data == null || data.foodMap == null;
+        var food = SampleFood( wp );
+        bool painted = !noData && IsPainted( wp );
+
+        string status = noData ? "NO ISLAND DATA" : painted ? "PAINTED: IN" : "PAINTED: OUT";
+        var col = noData ? Color.yellow : painted ? Color.green : Color.red;
+
+        int[] chans = paintedChannels;
         string chStr = "";
-        if ( chans != null ) for ( int i = 0; i < chans.Length; i++ ) chStr += chans[i] + " ";
+
+        if ( chans != null ) {
+            for ( int i = 0; i < chans.Length; i++ ) {
+                chStr += chans[i] + " ";
+            }
+        }
 
         string label =
             $"{name}: {status}\n" +
             $"region: {regionType}   inRegion: {birdInsideRegion}\n" +
             $"despawn: {despawnType} ({despawnSubject})   onExit: {despawnOnWrenExit}   wrenOutsideRegion: {wrenOutsideRegion}\n" +
             $"minAlive: {minimumTimeAlive}s   graceOutside: {timeOutsideBeforeDespawn}s\n" +
-            ( regionType == RegionType.Painted ? $"wren chunk: {PaintIslandAt( wp )} / {PaintIslandCount} chunks\n" : "" ) +
+            (regionType == RegionType.Painted ? $"wren chunk: {PaintIslandAt( wp )} / {PaintIslandCount} chunks\n" : "") +
             $"food RGBA: {food.x:0.00} {food.y:0.00} {food.z:0.00} {food.w:0.00}\n" +
             $"channels [{chStr.Trim()}]  thr {paintedThreshold:0.00}\n" +
-            $"island: {( noData ? "<none>" : data.name )}";
+            $"island: {(noData ? "<none>" : data.name)}";
 
         var style = new GUIStyle( UnityEditor.EditorStyles.boldLabel );
         style.normal.textColor = col;
@@ -1100,28 +1380,35 @@ public class PreyManager : MonoBehaviour
     // see which points this manager will actually spawn at (and why a "foreign" point qualifies).
     private void DrawPOIRegionDebug()
     {
-        if ( !showPOIRegionDebug || spawnType != SpawnType.OnPointOfInterest || spawnAtPoints == null ) return;
+        if ( !showPOIRegionDebug || spawnType != SpawnType.OnPointOfInterest || spawnAtPoints == null ) {
+            return;
+        }
 
         var wren = GetWrenPosition();
-        int wrenChunk = ( regionType == RegionType.Painted && wren.HasValue ) ? PaintIslandAt( wren.Value ) : -1;
+        int wrenChunk = regionType == RegionType.Painted && wren.HasValue ? PaintIslandAt( wren.Value ) : -1;
 
         for ( int i = 0; i < spawnAtPoints.Count; i++ ) {
             var poi = spawnAtPoints[i];
-            if ( poi == null ) continue;
-            Vector3 c = poi.transform.position;
 
-            Color  col;
+            if ( poi == null ) {
+                continue;
+            }
+
+            var c = poi.transform.position;
+
+            Color col;
             string info;
+
             if ( regionType == RegionType.Painted ) {
-                int  chunk   = PaintIslandAt( c );
+                int chunk = PaintIslandAt( c );
                 bool isWrens = chunk >= 0 && chunk == wrenChunk;
-                col  = chunk < 0 ? Color.red : ( isWrens ? IslandColor( chunk ) : new Color( 1f , 0.6f , 0f ) );
+                col = chunk < 0 ? Color.red : isWrens ? IslandColor( chunk ) : new Color( 1f , 0.6f , 0f );
                 info = chunk < 0 ? "unpainted (OUT)"
-                     : isWrens   ? $"chunk {chunk}  ← wren's (spawns here)"
-                     :             $"chunk {chunk}  (other chunk — skipped)";
+                    : isWrens ? $"chunk {chunk}  ← wren's (spawns here)"
+                    : $"chunk {chunk}  (other chunk — skipped)";
             } else {
                 bool inside = IsInsideRegion( c );
-                col  = inside ? Color.green : Color.red;
+                col = inside ? Color.green : Color.red;
                 info = inside ? $"IN ({regionType})" : $"OUT ({regionType})";
             }
 
@@ -1144,17 +1431,30 @@ public class PreyManager : MonoBehaviour
     private IslandData ResolvePaintedIsland()
     {
         var controllers = FindObjectsByType<IslandController>( FindObjectsSortMode.None );
-        if ( controllers == null || controllers.Length == 0 ) return null;
+
+        if ( controllers == null || controllers.Length == 0 ) {
+            return null;
+        }
+
         var ic = controllers[0];
-        if ( ic.currentIsland != null ) return ic.currentIsland;
-        if ( ic.islands != null && ic.islands.Length > 0 )
-            return ic.islands[ Mathf.Clamp( ic.defaultIslandID , 0 , ic.islands.Length - 1 ) ];
+
+        if ( ic.currentIsland != null ) {
+            return ic.currentIsland;
+        }
+
+        if ( ic.islands != null && ic.islands.Length > 0 ) {
+            return ic.islands[Mathf.Clamp( ic.defaultIslandID , 0 , ic.islands.Length - 1 )];
+        }
+
         return null;
     }
 
     private Terrain ResolvePaintedTerrain( IslandData island )
     {
-        if ( island != null && island.terrain != null ) return island.terrain;
+        if ( island != null && island.terrain != null ) {
+            return island.terrain;
+        }
+
         return Terrain.activeTerrain;
     }
 
@@ -1177,18 +1477,38 @@ public class PreyManager : MonoBehaviour
     // query radius so any query touches at most a 3×3×3 cell neighborhood.
     private void BuildNeighborGrid()
     {
-        if ( preyConfig == null || preyHolder == null ) { _gridFrame = -1; return; }
+        if ( preyConfig == null || preyHolder == null ) {
+            _gridFrame = -1;
+            return;
+        }
 
         bool needs = preyConfig.modules.flock || preyConfig.modules.social;
-        if ( !needs ) { _gridFrame = -1; return; }
+
+        if ( !needs ) {
+            _gridFrame = -1;
+            return;
+        }
 
         float cell = 0f;
-        if ( preyConfig.modules.flock )  cell = Mathf.Max( cell , preyConfig.flock.detectionRadius );
-        if ( preyConfig.modules.social ) cell = Mathf.Max( cell , preyConfig.social.neighborRadius );
-        if ( cell <= 0.01f ) { _gridFrame = -1; return; }
 
-        if ( _neighborGrid == null ) _neighborGrid = new PreySpatialGrid();
-        _neighborGrid.Rebuild( preyHolder , cell );
+        if ( preyConfig.modules.flock ) {
+            cell = Mathf.Max( cell , preyConfig.flock.detectionRadius );
+        }
+
+        if ( preyConfig.modules.social ) {
+            cell = Mathf.Max( cell , preyConfig.social.neighborRadius );
+        }
+
+        if ( cell <= 0.01f ) {
+            _gridFrame = -1;
+            return;
+        }
+
+        if ( _neighborGrid == null ) {
+            _neighborGrid = new PreySpatialGrid();
+        }
+
+        _neighborGrid.Rebuild( _birds , cell );
         _gridFrame = Time.frameCount;
     }
 
@@ -1197,10 +1517,19 @@ public class PreyManager : MonoBehaviour
     public bool TryGetNearestOnRegionSpline( Vector3 worldPos , out Vector3 nearestWorld , out Vector3 tangentWorld )
     {
         if ( regionSpline == null || regionSpline.Splines.Count == 0 ) {
-            nearestWorld = worldPos; tangentWorld = Vector3.forward; return false;
+            nearestWorld = worldPos;
+            tangentWorld = Vector3.forward;
+            return false;
         }
-        if ( _splineCache == null ) _splineCache = new PreySplineCache();
-        if ( !_splineCache.IsBaked ) _splineCache.Bake( regionSpline , splineCacheSamples );
+
+        if ( _splineCache == null ) {
+            _splineCache = new PreySplineCache();
+        }
+
+        if ( !_splineCache.IsBaked ) {
+            _splineCache.Bake( regionSpline , splineCacheSamples );
+        }
+
         return _splineCache.Nearest( worldPos , out nearestWorld , out tangentWorld );
     }
 
@@ -1208,7 +1537,10 @@ public class PreyManager : MonoBehaviour
     [ContextMenu( "Rebake Spline Cache" )]
     public void RebakeSplineCache()
     {
-        if ( _splineCache == null ) _splineCache = new PreySplineCache();
+        if ( _splineCache == null ) {
+            _splineCache = new PreySplineCache();
+        }
+
         _splineCache.Bake( regionSpline , splineCacheSamples );
     }
 
@@ -1223,8 +1555,8 @@ public class PreyManager : MonoBehaviour
         // fallback: linear scan (grid not built this frame)
         float sqrRadius = radius * radius;
 
-        for ( int i = 0; i < preyHolder.childCount; i++ ) {
-            var bird = preyHolder.GetChild( i ).GetComponent<PreyController>();
+        for ( int i = 0; i < _birds.Count; i++ ) {
+            var bird = _birds[i];
 
             if ( bird == null || bird == exclude ) {
                 continue;

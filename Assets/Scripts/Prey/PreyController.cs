@@ -78,7 +78,12 @@ public class PreyController : MonoBehaviour
 
     public List<PreyForce> allForces = new List<PreyForce>();
 
+    // Borrowed from PreyFocusLinePool only while this bird is within focusRadius
+    // of the wren; null otherwise. No per-bird LineRenderer/Material allocation.
     private LineRenderer focusLine;
+    // Lazily created on first use — must NOT be a field initializer: MaterialPropertyBlock's
+    // ctor calls Unity native code, which Unity forbids during MonoBehaviour construction.
+    private static MaterialPropertyBlock _focusMPB;
 
     // ── Private physics ───────────────────────────────────────────────────────
     private Vector3 startPosition;
@@ -102,12 +107,30 @@ public class PreyController : MonoBehaviour
     private bool    _splineCached;
 
     private int     frame;
+
+    // ── LOD (distance tick-striding) ──────────────────────────────────────────
+    // PreyManager sets lodStride each frame from this bird's distance to the player.
+    // stride 1 = full simulation every frame (unchanged behavior). stride > 1 = run
+    // the expensive sim (forces, state, raycasts, collision) only every Nth frame and
+    // cheaply dead-reckon position on the frames in between. simDt carries the real
+    // elapsed time for the current full tick so all timers stay correct regardless of
+    // stride (it replaces Time.deltaTime everywhere in the per-tick code).
+    public  int     lodStride = 1;
+    private float   simDt;
+    private float   _simDtAccum;
+    private int     _framesSinceFull;
+
     private float   noiseOffset;
     private float   currentBank;
     private float   currentSpeed;
     private float   timeOutsideRegion;
     private bool    isOutsideRegion;
     private bool    isDespawning;
+
+    // ── Bounce calm behavior: settle-in-place state (modules.bounce) ──────────
+    private bool    bounceSettled;        // pinned where it landed, waiting to relaunch
+    private float   bounceSettleTimer;    // seconds elapsed since settling
+    private float   bounceSettleDuration; // rolled timeToRemainSettled (+variance) for this settle
 
     private int   ambientFlapsInBurst = 0;
     private float ambientGlideTimer   = 0f;
@@ -249,6 +272,10 @@ public class PreyController : MonoBehaviour
 
     public void OnEnable()
     {
+        // Re-join the manager's tick loop if this bird was toggled off then on.
+        // (manager is null on the very first enable, before Initialize runs — that
+        // first registration is handled in Initialize. RegisterBird dedupes.)
+        if ( manager != null ) manager.RegisterBird( this );
     }
 
     public void OnDisable()
@@ -257,14 +284,55 @@ public class PreyController : MonoBehaviour
             if ( PreyRaycastBatcher.HasInstance ) PreyRaycastBatcher.Instance.Unregister( this );
             _batchRegistered = false;
         }
+
+        if ( manager != null ) manager.UnregisterBird( this );
+
+        ReleaseFocusLine();
     }
 
-    private void Update()
+    // Driven once per frame by PreyManager.TickBirds() — a single loop over all of
+    // a manager's birds, instead of every bird carrying its own MonoBehaviour.Update
+    // (which costs a managed→native call per object before any work happens).
+    // FrameGate + profiler timing are handled by the manager around the loop.
+    public void Tick()
     {
-        PreyProfiler.FrameGate( Time.frameCount );
-        long __t0 = PreyProfiler.Now;
+        bool stepMode = stepThrough || (manager != null && manager.stepThrough);
+        bool slowMo   = manager != null && manager.simulationSpeed < 1f;
+
+        // Debug stepping, slow-mo and the spawn/despawn fade always run at full rate
+        // so nothing visible to the player is ever dead-reckoned.
+        int stride = (spawning || stepMode || slowMo) ? 1 : Mathf.Max( 1 , lodStride );
+
+        if ( stride <= 1 ) {
+            simDt            = Time.deltaTime;   // identical to pre-LOD behavior
+            _simDtAccum      = 0f;
+            _framesSinceFull = 0;
+            UpdateBird();
+            return;
+        }
+
+        // Far bird: bank the elapsed time and only run the full sim every `stride`
+        // frames; advance position cheaply on the frames in between.
+        _simDtAccum += Time.deltaTime;
+        _framesSinceFull++;
+        if ( _framesSinceFull < stride ) {
+            DeadReckon();
+            return;
+        }
+
+        simDt            = _simDtAccum;
+        _simDtAccum      = 0f;
+        _framesSinceFull = 0;
         UpdateBird();
-        PreyProfiler.controllerTicks += PreyProfiler.Now - __t0;
+    }
+
+    // Cheap between-tick step for strided (far) birds: keep gliding along the last
+    // computed velocity so motion stays smooth, without recomputing forces, state,
+    // raycasts or collision. flapValue is reused from the last full tick.
+    private void DeadReckon()
+    {
+        position          += velocity;
+        transform.position = position + flapValue;
     }
 
     private void UpdateBird()
@@ -277,7 +345,7 @@ public class PreyController : MonoBehaviour
         } else {
             float simSpeed = manager != null ? manager.simulationSpeed : 1f;
             if ( simSpeed < 1f ) {
-                simTimeAccum += Time.deltaTime;
+                simTimeAccum += simDt;
                 float interval = (1f / 60f) / simSpeed;
                 if ( simTimeAccum < interval ) return;
                 simTimeAccum = 0f;
@@ -355,21 +423,11 @@ public class PreyController : MonoBehaviour
             _batchRegistered = true;
         }
 
-        focusLine = gameObject.AddComponent<LineRenderer>();
-        focusLine.positionCount = 2;
-        focusLine.startWidth    = 0.15f;
-        focusLine.endWidth      = 0.04f;
-        focusLine.useWorldSpace = true;
-        focusLine.startColor    = new Color( 1f , 1f , 1f , 0.9f );
-        focusLine.endColor      = new Color( 1f , 1f , 1f , 0.2f );
-        focusLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        focusLine.receiveShadows    = false;
+        // join the manager's tick loop (the manager drives Tick() for all its birds)
+        if ( manager != null ) manager.RegisterBird( this );
 
-        var focusShader = Shader.Find( "Prey/FocusLine" );
-        if ( focusShader != null )
-            focusLine.material = new Material( focusShader );
-
-        focusLine.enabled = false;
+        // focus line is now borrowed on demand from PreyFocusLinePool (see UpdateFocusLine) —
+        // no per-bird LineRenderer/Material allocated here anymore.
 
         StartCoroutine( SpawnCoroutine( config.animation.spawnSpeed ) );
         OnInitialize();
@@ -395,25 +453,37 @@ public class PreyController : MonoBehaviour
 
     private void UpdateFocusLine()
     {
-        if ( focusLine == null || parameters == null ) return;
+        if ( parameters == null ) return;
 
         var wren = God.wren != null         ? God.wren.transform
                  : manager?.debugWren != null ? manager.debugWren.transform
                  : null;
 
-        if ( wren == null ) { focusLine.enabled = false; return; }
+        bool inFocus = wren != null &&
+            Vector3.Distance( transform.position , wren.position ) <= parameters.crystals.focusRadius;
 
-        bool inFocus = Vector3.Distance( transform.position , wren.position ) <= parameters.crystals.focusRadius;
-        focusLine.enabled = inFocus;
+        if ( !inFocus ) { ReleaseFocusLine(); return; }
 
-        if ( inFocus ) {
-            focusLine.SetPosition( 0 , transform.position );
-            focusLine.SetPosition( 1 , wren.position );
+        // borrow a pooled line on the frame we enter focus (lazily creates the pool)
+        if ( focusLine == null ) focusLine = PreyFocusLinePool.Instance.Acquire();
+        if ( focusLine == null ) return; // focus shader missing
 
-            var mat = focusLine.material;
-            mat.SetVector( "_BirdPos"   , transform.position );
-            mat.SetFloat(  "_EatRadius" , parameters.crystals.eatRadius );
-        }
+        focusLine.SetPosition( 0 , transform.position );
+        focusLine.SetPosition( 1 , wren.position );
+
+        // per-bird shader values via a shared property block — no material instance
+        if ( _focusMPB == null ) _focusMPB = new MaterialPropertyBlock();
+        focusLine.GetPropertyBlock( _focusMPB );
+        _focusMPB.SetVector( "_BirdPos"   , transform.position );
+        _focusMPB.SetFloat(  "_EatRadius" , parameters.crystals.eatRadius );
+        focusLine.SetPropertyBlock( _focusMPB );
+    }
+
+    private void ReleaseFocusLine()
+    {
+        if ( focusLine == null ) return;
+        if ( PreyFocusLinePool.HasInstance ) PreyFocusLinePool.Instance.Release( focusLine );
+        focusLine = null;
     }
 
     private void UpdateVectorToWren()
@@ -493,11 +563,11 @@ public class PreyController : MonoBehaviour
         if ( !parameters.modules.sprint ) return;
 
         var s = parameters.sprint;
-        stamina = Mathf.Min( stamina + s.staminaRefillRate * Time.deltaTime , s.maxStamina );
+        stamina = Mathf.Min( stamina + s.staminaRefillRate * simDt , s.maxStamina );
 
         float speedRange = Mathf.Max( MaxSprintSpeed() - parameters.movement.maxSpeed , 0.001f );
         float excess     = Mathf.Max( 0f , currentSpeed - parameters.movement.maxSpeed );
-        stamina -= s.staminaDrainRate * (excess / speedRange) * Time.deltaTime;
+        stamina -= s.staminaDrainRate * (excess / speedRange) * simDt;
         stamina  = Mathf.Max( stamina , 0f );
     }
 
@@ -514,7 +584,7 @@ public class PreyController : MonoBehaviour
 
     private void UpdateFlockState()
     {
-        flockState.queryTimer += Time.deltaTime;
+        flockState.queryTimer += simDt;
 
         if ( flockState.queryTimer < parameters.flock.neighborQueryInterval ) {
             return;
@@ -572,7 +642,7 @@ public class PreyController : MonoBehaviour
     private void UpdateState()
     {
         if ( parameters.modules.social ) {
-            socialState.sampleTimer -= Time.deltaTime;
+            socialState.sampleTimer -= simDt;
             if ( socialState.sampleTimer <= 0f ) ScanSocialPressure();
         }
 
@@ -606,10 +676,10 @@ public class PreyController : MonoBehaviour
 
                 if ( parameters.modules.search ) {
                     // being inside a point's notice range speeds the calm countdown by its urgency
-                    searchState.calmTimer += Time.deltaTime * (1f + InRangeUrgency());
+                    searchState.calmTimer += simDt * (1f + InRangeUrgency());
 
                     if ( searchState.searchCooldown > 0f ) {
-                        searchState.searchCooldown -= Time.deltaTime;
+                        searchState.searchCooldown -= simDt;
                     } else if ( searchState.calmTimer >= searchState.nextSearchTime ) {
                         // calm period elapsed — commit to a point of interest and head for it
                         var target = PickSearchTarget( true );
@@ -628,7 +698,7 @@ public class PreyController : MonoBehaviour
 
                 if ( searchState.currentTarget?.transform == null ) { EnterCalm(); break; }
 
-                searchState.searchTimer += Time.deltaTime;
+                searchState.searchTimer += simDt;
 
                 if ( ArrivedAtTarget() ) {
                     // Perch/Updraft/Despawn use timeToRemainInterested as their action duration
@@ -641,7 +711,7 @@ public class PreyController : MonoBehaviour
                         break;
                     }
 
-                    searchState.arrivedTimer += Time.deltaTime;
+                    searchState.arrivedTimer += simDt;
                     if ( searchState.arrivedTimer >= searchState.currentTarget.timeToRemainInterested )
                         ArriveAtSearchTarget( searchState.currentTarget );
                     break;
@@ -685,7 +755,7 @@ public class PreyController : MonoBehaviour
                     break;
                 }
 
-                updraftState.remainTimer += Time.deltaTime;
+                updraftState.remainTimer += simDt;
                 if ( updraftState.remainTimer >= updraftState.activeTarget.timeToRemainInterested ) {
                     ExitUpdraft();
                 }
@@ -693,7 +763,7 @@ public class PreyController : MonoBehaviour
                 break;
 
             case PreyState.Perched:
-                perchState.perchedTimer += Time.deltaTime;
+                perchState.perchedTimer += simDt;
 
                 if ( WrenWithinStartle( parameters.perch.startleRadius , parameters.perch.startleLeadTime ) ) {
                     if ( parameters.modules.takeOff ) EnterTakeOff();
@@ -733,7 +803,7 @@ public class PreyController : MonoBehaviour
                 break;
 
             case PreyState.Disturbed:
-                runState.calmTimer += Time.deltaTime;
+                runState.calmTimer += simDt;
 
                 if ( runState.calmTimer > parameters.run.calmDownTime &&
                      vectorToWren.magnitude > parameters.run.calmDownDistance ) {
@@ -756,6 +826,8 @@ public class PreyController : MonoBehaviour
     private void EnterCalm()
     {
         state = PreyState.Calm;
+
+        bounceSettled = false;   // bounce calm behavior restarts falling, not mid-settle
 
         if ( parameters.modules.perch ) perchState.Init( parameters.perch );
         if ( parameters.modules.search ) searchState.Init( parameters.search );
@@ -795,10 +867,16 @@ public class PreyController : MonoBehaviour
     // Has the bird reached its target's enter radius, respecting the point's entrance shape?
     private bool ArrivedAtTarget()
     {
+        var ct = searchState.currentTarget;
+
+        // Collider entrance: arrived the moment we're inside the assigned collider (enterRadius ignored).
+        if ( ct.entranceShape == EntranceShape.Collider )
+            return ct.ContainsPoint( position );
+
         var   target = CurrentSearchTargetPos();
         var   d      = position - target;
-        if ( searchState.currentTarget.entranceShape == EntranceShape.Cylinder ) d.y = 0f;
-        float r = searchState.currentTarget.enterRadius;
+        if ( ct.entranceShape == EntranceShape.Cylinder ) d.y = 0f;
+        float r = ct.enterRadius;
         return d.sqrMagnitude <= r * r;
     }
 
@@ -1218,6 +1296,18 @@ public class PreyController : MonoBehaviour
 
         oldVelocity = velocity;
 
+        // Settled: pinned where it landed. Hold still until the settle time elapses, then relaunch
+        // (up + a forward kick along the current heading) back into the bounce loop.
+        if ( bounceSettled ) {
+            velocity         = Vector3.zero;
+            currentSpeed     = 0f;
+            flapValue        = Vector3.zero;
+            bounceSettleTimer += simDt;
+            if ( bounceSettleTimer >= bounceSettleDuration ) Relaunch( bnc );
+            transform.position = position;
+            return;
+        }
+
         // optional horizontal steering from the usual calm modules (only the toggled ones)
         force = Vector3.zero;
         if ( parameters.modules.drive )  AddForce( DriveForce()      , new Color( 0.6f , 1f , 0f ) , "drive" );
@@ -1268,16 +1358,40 @@ public class PreyController : MonoBehaviour
 
         if ( vy < bnc.settleSpeed ) {
             if ( bnc.settle ) {
-                // weak bounce → go look for a perch (so it can land); fall back to bouncing if none
-                var t = parameters.modules.search ? PickSearchTarget( true ) : null;
-                if ( t != null ) { velocity = Vector3.zero; EnterSearching( t ); return; }
+                // bounce has decayed below the cutoff → settle in place where it landed (just a state:
+                // it perches right here). It holds for bounceSettleDuration, then relaunches.
+                velocity             = Vector3.zero;
+                bounceSettled        = true;
+                bounceSettleTimer    = 0f;
+                bounceSettleDuration = Mathf.Max( 0f , bnc.timeToRemainSettled
+                    + Random.Range( -bnc.timeToRemainSettledVariance , bnc.timeToRemainSettledVariance ) );
+                return;
             }
-            vy = bnc.settleSpeed;   // keep it bouncing
+            vy = bnc.settleSpeed;   // Settle off → keep it bouncing forever
         }
 
         velocity.y  = vy;
         velocity.x *= bnc.bounceFriction;
         velocity.z *= bnc.bounceFriction;
+    }
+
+    // Pop out of a settle: upward kick + a horizontal kick along the current heading (scattered by
+    // relaunchForwardRandomness), then fall back into the bounce loop.
+    private void Relaunch( PreyBounceModule bnc )
+    {
+        Vector3 fwd = transform.forward;
+        fwd.y = 0f;
+        if ( fwd.sqrMagnitude < 1e-6f ) fwd = Vector3.forward;
+        fwd.Normalize();
+
+        // randomness: rotate the heading by up to ±180° around Y (0 = dead ahead, 1 = any direction)
+        float ang = Random.Range( -1f , 1f ) * bnc.relaunchForwardRandomness * 180f;
+        Vector3 dir = Quaternion.AngleAxis( ang , Vector3.up ) * fwd;
+
+        velocity   = dir * bnc.relaunchForwardVelocity;
+        velocity.y = bnc.relaunchForce;
+
+        bounceSettled = false;
     }
 
     // ── Searching ────────────────────────────────────────────────────────────
@@ -1331,7 +1445,7 @@ public class PreyController : MonoBehaviour
 
         // ramp calm→aim blend
         perchState.landingBlend = Mathf.MoveTowards(
-            perchState.landingBlend , 1f , Time.deltaTime / p.landingBlendDuration );
+            perchState.landingBlend , 1f , simDt / p.landingBlendDuration );
 
         // ── Phase 1: approach — fly to the waypoint above the surface ─────────
         // ── Phase 2: dive    — once at waypoint, drop straight down; no return ─
@@ -1361,7 +1475,7 @@ public class PreyController : MonoBehaviour
             right.Normalize();
             var fwd = Vector3.Cross( right , normal ).normalized;
 
-            perchState.spiralAngle += p.spiralSpeed * Time.deltaTime;
+            perchState.spiralAngle += p.spiralSpeed * simDt;
             float a      = perchState.spiralAngle;
             float radius = p.spiralRadius * Mathf.Exp( -p.spiralTightness * a );          // shrinks each turn
             float height = Mathf.Max( 0f , p.approachHeight - p.spiralDescentRate * a );  // descends each turn
@@ -1492,7 +1606,7 @@ public class PreyController : MonoBehaviour
         force += runDir * parameters.run.fleeForce * fleeMult;
 
         // juke — random lateral burst to make escape less predictable
-        runState.jukeTimer += Time.deltaTime;
+        runState.jukeTimer += simDt;
 
         if ( runState.jukeTimer > 1f / Mathf.Max( parameters.run.jukeFrequency , 0.01f ) ) {
             runState.jukeTimer = 0;
@@ -1628,7 +1742,7 @@ public class PreyController : MonoBehaviour
         // Throttle the lookup and reuse the cached result otherwise. The lookup
         // itself now hits the manager's baked spline LUT (a flat array scan), not
         // SplineUtility's live subdivision search.
-        _splineQueryTimer -= Time.deltaTime;
+        _splineQueryTimer -= simDt;
         bool movedFar = ( position - _splineQueryPos ).sqrMagnitude > 4f;   // > 2m since last query
         if ( !_splineCached || _splineQueryTimer <= 0f || movedFar ) {
             if ( manager.TryGetNearestOnRegionSpline( position , out var nearW , out var tanW ) ) {
@@ -1721,7 +1835,7 @@ public class PreyController : MonoBehaviour
     //     bool thermaling = distanceToGround < t.minAltitude;
     //     thermalState.isThermaling = thermaling;
     //
-    //     thermalState.circleAngle += Time.deltaTime * t.circleSpeed * (thermaling ? 1.5f : 1f);
+    //     thermalState.circleAngle += simDt * t.circleSpeed * (thermaling ? 1.5f : 1f);
     //     float radius = thermaling
     //         ? parameters.circle.circleRadius * t.thermalTightness
     //         : parameters.circle.circleRadius;
@@ -1994,7 +2108,7 @@ public class PreyController : MonoBehaviour
                 // gliding — wings settle to mid-cycle rest pose
                 float cycleFloor = Mathf.Floor( positionInFlapCycle / (Mathf.PI * 2f) );
                 positionInFlapCycle = Mathf.Lerp( positionInFlapCycle , cycleFloor * Mathf.PI * 2f + Mathf.PI , 0.1f );
-                ambientGlideTimer -= Time.deltaTime;
+                ambientGlideTimer -= simDt;
                 if ( ambientGlideTimer <= 0f )
                     ambientFlapsInBurst = DrawFlapClusterSize( parameters.flap.medianFlapCluster );
             }
@@ -2077,7 +2191,7 @@ public class PreyController : MonoBehaviour
         }
 
         if ( isOutsideRegion ) {
-            timeOutsideRegion += Time.deltaTime;
+            timeOutsideRegion += simDt;
             if ( timeOutsideRegion >= manager.timeOutsideBeforeDespawn ) {
                 OnNotCaught();
             }
