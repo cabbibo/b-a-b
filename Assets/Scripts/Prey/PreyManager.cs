@@ -21,11 +21,12 @@ public enum DespawnType
     Region // despawn when the region is exited (box / collider / painted)
 }
 
-// Whether Collider / Region despawn is tested against the wren or each prey's own position.
+// Whether Collider / Region despawn is tested against the wren, each prey's own position, or either.
 public enum DespawnSubject
 {
     Wren , // shared test against the wren — one test/frame for all prey (cheap, default)
-    Prey // per-prey test against each bird's own position
+    Prey , // per-prey test against each bird's own position
+    Both   // despawn if EITHER the wren OR the bird is outside (wren test is shared; prey test per-bird)
 }
 
 public enum WhenFull
@@ -163,10 +164,18 @@ public class PreyManager : MonoBehaviour
     public WhenFull whenFull => managerConfig != null ? managerConfig.whenFull : WhenFull.DespawnOld;
 
     public SpawnType spawnType => managerConfig != null ? managerConfig.spawnType : SpawnType.InsideBox;
+    public bool spawnSettled => managerConfig != null ? managerConfig.spawnSettled : false;
     public float spawnRadius => managerConfig != null ? managerConfig.spawnRadius : 5f;
     public float spawnDistanceMin => managerConfig != null ? managerConfig.spawnDistanceMin : 80f;
     public float spawnDistanceMax => managerConfig != null ? managerConfig.spawnDistanceMax : 150f;
     public float spawnClosenessToBird => managerConfig != null ? managerConfig.spawnClosenessToBird : 0f;
+    public float clusterCloseness => managerConfig != null ? managerConfig.clusterCloseness : 0f;
+    public float spawnNearBirdImportance => managerConfig != null ? managerConfig.spawnNearBirdImportance : 0f;
+    public float spawnDesiredDistance => managerConfig != null ? managerConfig.spawnDesiredDistance : 80f;
+    public float spawnDesiredDistanceImportance => managerConfig != null ? managerConfig.spawnDesiredDistanceImportance : 0f;
+    public bool spawnAboveGround => managerConfig != null ? managerConfig.spawnAboveGround : true;
+    public float spawnGroundClearance => managerConfig != null ? managerConfig.spawnGroundClearance : 0.5f;
+    public LayerMask spawnGroundLayers => managerConfig != null ? managerConfig.spawnGroundLayers : ~0;
 
     public int[] paintedChannels => managerConfig != null ? managerConfig.paintedChannels : null;
     public float paintedThreshold => managerConfig != null ? managerConfig.paintedThreshold : 0.5f;
@@ -179,6 +188,7 @@ public class PreyManager : MonoBehaviour
     public DespawnSubject despawnSubject => managerConfig != null ? managerConfig.despawnSubject : DespawnSubject.Wren;
     public bool despawnOnWrenExit => managerConfig != null ? managerConfig.despawnOnWrenExit : true;
     public float minimumTimeAlive => managerConfig != null ? managerConfig.minimumTimeAlive : 30f;
+    public float maximumTimeAlive => managerConfig != null ? managerConfig.maximumTimeAlive : 0f;
     public float timeOutsideBeforeDespawn => managerConfig != null ? managerConfig.timeOutsideBeforeDespawn : 5f;
     public float distanceBeforeNotCaught => managerConfig != null ? managerConfig.distanceBeforeNotCaught : 100f;
 
@@ -475,7 +485,7 @@ public class PreyManager : MonoBehaviour
             var prey = _birds[i];
 
             if ( prey != null ) {
-                prey.ForceDespawn();
+                prey.ForceDespawn( "wren left region" );
             }
         }
     }
@@ -491,7 +501,7 @@ public class PreyManager : MonoBehaviour
                 var oldest = OldestLivePrey();
 
                 if ( oldest != null ) {
-                    oldest.ForceDespawn();
+                    oldest.ForceDespawn( "at capacity" );
                 }
             }
 
@@ -522,17 +532,47 @@ public class PreyManager : MonoBehaviour
             default: spawnPos = SpawnInsideBox(); break;
         }
 
-        for ( int i = 0; i < preyPerCluster; i++ ) {
-            spawnPos += Random.insideUnitSphere * clusterRadius;
+        // flock cohesion: pull the spawn toward a random existing bird (0 = ignore, 1 = right on it)
+        if ( spawnNearBirdImportance > 0f && _birds.Count > 0 ) {
+            var other = _birds[ Random.Range( 0 , _birds.Count ) ];
+            if ( other != null ) spawnPos = Vector3.Lerp( spawnPos , other.position , spawnNearBirdImportance );
+        }
 
-            var newPrey = Instantiate( preyPrefab , spawnPos , Quaternion.identity ).GetComponent<PreyController>();
+        // Each bird scatters around the SHARED cluster center (not off the previous bird), so the
+        // cluster spreads out instead of drifting/stacking on one spot. Cluster Spacing is the radius;
+        // Cluster Closeness tightens it (1 = all on the same point).
+        Vector3 clusterCenter  = spawnPos;
+        float   clusterScatter = clusterRadius * ( 1f - clusterCloseness );
+
+        for ( int i = 0; i < preyPerCluster; i++ ) {
+            var placePos = ClampAboveGround( clusterCenter + Random.insideUnitSphere * clusterScatter );   // never spawn under the terrain
+
+            var newPrey = Instantiate( preyPrefab , placePos , Quaternion.identity ).GetComponent<PreyController>();
             newPrey.Initialize( preyConfig , this );
             newPrey.transform.parent = preyHolder;
+
+            if ( spawnSettled ) newPrey.SpawnSettled();   // drop to the ground below and rest in the Settled state
 
             lastSpawnTime = Time.time;
         }
     }
 
+
+    // Lift a spawn point above the terrain if it would otherwise be underground. Probes straight down
+    // from high above the point's XZ to find the ground surface, then clamps Y to surface + clearance.
+    public Vector3 ClampAboveGround( Vector3 pos )
+    {
+        if ( !spawnAboveGround ) return pos;
+
+        const float probe = 10000f;
+        if ( Physics.Raycast( pos + Vector3.up * probe , Vector3.down , out var hit ,
+                              probe * 2f , spawnGroundLayers , QueryTriggerInteraction.Ignore ) ) {
+            float minY = hit.point.y + spawnGroundClearance;
+            if ( pos.y < minY ) pos.y = minY;
+        }
+
+        return pos;
+    }
 
     // Is any bird currently fading out? Used by DespawnOld so we only free one slot at a time.
     private bool AnyPreyDespawning()
@@ -1293,6 +1333,11 @@ public class PreyManager : MonoBehaviour
             GizmoRing( c , r , 28 );
             Gizmos.DrawLine( c , c + Vector3.up * 2f );
             Gizmos.DrawWireSphere( c , 0.4f );
+
+#if UNITY_EDITOR
+            // the POI's actual entrance volume (sphere / cylinder / collider / plane)
+            poi.DrawEntranceVolumeGizmo( POIGizmoColor( poi.type ) );
+#endif
         }
     }
 

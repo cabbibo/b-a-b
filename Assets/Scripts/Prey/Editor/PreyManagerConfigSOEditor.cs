@@ -64,6 +64,28 @@ public class PreyManagerConfigSOEditor : Editor
                         "(within Ideal Spread).", MessageType.None );
                     break;
             }
+
+            if ( cfg.spawnType != SpawnType.OnPointOfInterest ) {
+                EditorGUILayout.Space( 2 );
+                Prop( "spawnSettled" , "Spawn Settled (drop to ground)" );
+                if ( cfg.spawnSettled )
+                    EditorGUILayout.HelpBox( "Birds spawn resting in the Settled state on the ground below the spawn point. " +
+                        "With the Relaunch module on, they launch after their settle time.", MessageType.None );
+            }
+
+            EditorGUILayout.Space( 2 );
+            Prop( "spawnNearBirdImportance" , "Spawn Near Other Prey Importance" );
+            if ( cfg.preyPerCluster > 1 ) {
+                Prop( "clusterRadius" , "Cluster Spacing" );
+                Prop( "clusterCloseness" , "Cluster Closeness" );
+            }
+
+            EditorGUILayout.Space( 2 );
+            Prop( "spawnAboveGround" , "Spawn Above Ground" );
+            if ( cfg.spawnAboveGround ) {
+                Prop( "spawnGroundClearance" , "Ground Clearance" );
+                Prop( "spawnGroundLayers" , "Ground Layers" );
+            }
         } );
 
         Section( "Despawn" , ref _foldDespawn , () => {
@@ -72,9 +94,12 @@ public class PreyManagerConfigSOEditor : Editor
                 Prop( "despawnSubject" , "Tested On" );
             Prop( "despawnOnWrenExit" );
             Prop( "minimumTimeAlive" );
+            Prop( "maximumTimeAlive" , "Maximum Time Alive (0 = none)" );
             Prop( "timeOutsideBeforeDespawn" );
 
-            string subject = cfg.despawnSubject == DespawnSubject.Wren ? "the WREN" : "each BIRD";
+            string subject = cfg.despawnSubject == DespawnSubject.Wren ? "the WREN"
+                           : cfg.despawnSubject == DespawnSubject.Prey ? "each BIRD"
+                           :                                             "the WREN OR each BIRD";
             switch ( cfg.despawnType ) {
                 case DespawnType.Distance:
                     Prop( "distanceBeforeNotCaught" );

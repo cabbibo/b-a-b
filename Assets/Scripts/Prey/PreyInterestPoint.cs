@@ -11,7 +11,9 @@ public enum SearchTargetType  { Center, RandomInRange, XZOnly, LandPoint }
 // Shape used for notice / arrival detection. Cylinder ignores Y (infinite vertical extent).
 // Collider = arrival fires when the bird enters an assigned collider (entranceCollider on the component);
 // notice still uses noticeRadius and Enter Radius is ignored.
-public enum EntranceShape     { Sphere, Cylinder, Collider }
+// Plane = a horizontal plane at the point's Y; "inside" = anything BELOW it (a kill-floor / under-line),
+// radius ignored.
+public enum EntranceShape     { Sphere, Cylinder, Collider, Plane }
 
 // ── Per-type settings ─────────────────────────────────────────────────────────
 
@@ -50,6 +52,9 @@ public class PerchFieldSettings
     [Range( 0f , 1f )]
     [Tooltip( "1 = pack tightly at the minimum spacing (clump); 0 = land wherever (just closest to self)." )]
     public float     desireToBeClose     = 0.5f;
+    [Tooltip( "Preference for flat, upward-facing spots. 0 = ignore slope; higher = increasingly avoid " +
+              "slanted/steep surfaces (at 1, a vertical face costs about a full radius of extra distance)." )]
+    public float     upImportance        = 0f;
     [Tooltip( "Cast upward to find a surface above the bird (ledge underside) instead of down to the ground." )]
     public bool      castUp              = false;
     [Tooltip( "Start the landing raycast this far past the prey along the cast direction — always a bit, " +
@@ -124,6 +129,10 @@ public class PreyInterestPoint : MonoBehaviour
     // Sphere = 3D distance; Cylinder = XZ distance only (any height).
     public bool IsWithin( Vector3 pos , float radius )
     {
+        // Plane: purely a Y test — "within" = at or below the point's height (radius ignored).
+        if ( entranceShape == EntranceShape.Plane )
+            return pos.y <= transform.position.y;
+
         var d = pos - transform.position;
         if ( entranceShape == EntranceShape.Cylinder ) d.y = 0f;
         return d.sqrMagnitude <= radius * radius;
@@ -135,6 +144,27 @@ public class PreyInterestPoint : MonoBehaviour
     {
         if ( entranceCollider == null ) return false;
         return ( entranceCollider.ClosestPoint( pos ) - pos ).sqrMagnitude <= 0.0001f;
+    }
+
+    // Is pos within this point's ENTER volume, per the entrance shape? Drives arrival and the passive
+    // "Despawn point = kill-zone" overlap test.
+    //   Sphere/Cylinder → within enterRadius of the point.
+    //   Collider        → within enterRadius of the collider SURFACE (or inside). Treating enterRadius
+    //                      as a "hit reach" (not a strict inside test) makes it robust to fast birds
+    //                      tunnelling through thin colliders between frames. enterRadius 0 → strictly inside.
+    public bool WithinEnter( Vector3 pos )
+    {
+        if ( entranceShape != EntranceShape.Collider )
+            return IsWithin( pos , enterRadius );
+
+        if ( entranceCollider == null ) return false;
+
+        // Non-convex mesh colliders don't support ClosestPoint — fall back to a bounds test.
+        if ( entranceCollider is MeshCollider mc && !mc.convex )
+            return entranceCollider.bounds.Contains( pos );
+
+        float r = Mathf.Max( enterRadius , 0.01f );
+        return ( entranceCollider.ClosestPoint( pos ) - pos ).sqrMagnitude <= r * r;
     }
 
     // World position the bird should fly toward, given its current position and a
@@ -280,28 +310,8 @@ public class PreyInterestPoint : MonoBehaviour
         else if ( type == InterestPointType.Despawn     ) col = new Color( 1f , 0.2f , 0.2f );
         else                                              col = Color.grey;
 
-        // notice volume (outer) and enter volume (inner) — sphere or vertical cylinder
-        var faint  = new Color( col.r , col.g , col.b , 0.12f );
-        var strong = new Color( col.r , col.g , col.b , 0.35f );
-        if ( entranceShape == EntranceShape.Cylinder ) {
-            float h = Mathf.Max( noticeRadius , type == InterestPointType.Updraft ? updraftSettings.desiredAltitude : 0f );
-            DrawWireCylinder( transform.position , noticeRadius , h , faint );
-            DrawWireCylinder( transform.position , enterRadius  , h , strong );
-        } else if ( entranceShape == EntranceShape.Collider ) {
-            // notice is still a sphere; the enter volume IS the assigned collider's bounds
-            Gizmos.color = faint;
-            Gizmos.DrawWireSphere( transform.position , noticeRadius );
-            if ( entranceCollider != null ) {
-                var b = entranceCollider.bounds;
-                Gizmos.color = strong;
-                Gizmos.DrawWireCube( b.center , b.size );
-            }
-        } else {
-            Gizmos.color = faint;
-            Gizmos.DrawWireSphere( transform.position , noticeRadius );
-            Gizmos.color = strong;
-            Gizmos.DrawWireSphere( transform.position , enterRadius );
-        }
+        // notice volume (outer) and enter volume (inner), per the entrance shape
+        DrawEntranceVolumeGizmo( col );
 
         // center sphere
         Gizmos.color = new Color( col.r , col.g , col.b , 0.9f );
@@ -355,6 +365,45 @@ public class PreyInterestPoint : MonoBehaviour
         string lbl = alwaysInteresting ? $"[{type}  ★  p={priority:F1}]" : $"[{type}  p={priority:F1}]";
         UnityEditor.Handles.color = col;
         UnityEditor.Handles.Label( transform.position + Vector3.up * 1.2f , lbl );
+    }
+
+    // Draws the notice volume (faint) and enter volume (strong) for this point's entrance shape,
+    // including the Plane shape. Shared by OnDrawGizmosSelected and PreyManager's spawn-point
+    // debug overlay so both render the same volumes.
+    public void DrawEntranceVolumeGizmo( Color col )
+    {
+        var faint  = new Color( col.r , col.g , col.b , 0.12f );
+        var strong = new Color( col.r , col.g , col.b , 0.35f );
+
+        if ( entranceShape == EntranceShape.Cylinder ) {
+            float h = Mathf.Max( noticeRadius , type == InterestPointType.Updraft ? updraftSettings.desiredAltitude : 0f );
+            DrawWireCylinder( transform.position , noticeRadius , h , faint );
+            DrawWireCylinder( transform.position , enterRadius  , h , strong );
+        } else if ( entranceShape == EntranceShape.Collider ) {
+            // notice is still a sphere; the enter volume IS the assigned collider's bounds
+            Gizmos.color = faint;
+            Gizmos.DrawWireSphere( transform.position , noticeRadius );
+            if ( entranceCollider != null ) {
+                var b = entranceCollider.bounds;
+                Gizmos.color = strong;
+                Gizmos.DrawWireCube( b.center , b.size );
+            }
+        } else if ( entranceShape == EntranceShape.Plane ) {
+            // horizontal plane at the point's Y — everything below it is "inside"
+            float s2 = Mathf.Max( noticeRadius , enterRadius , 1f );
+            var c = transform.position;
+            UnityEditor.Handles.color = strong;
+            UnityEditor.Handles.DrawSolidRectangleWithOutline(
+                new[] { c + new Vector3( -s2 , 0 , -s2 ) , c + new Vector3( -s2 , 0 , s2 ) ,
+                        c + new Vector3(  s2 , 0 ,  s2 ) , c + new Vector3(  s2 , 0 , -s2 ) } ,
+                new Color( col.r , col.g , col.b , 0.10f ) , strong );
+            UnityEditor.Handles.Label( c + Vector3.right * s2 , "inside = below this plane" );
+        } else {
+            Gizmos.color = faint;
+            Gizmos.DrawWireSphere( transform.position , noticeRadius );
+            Gizmos.color = strong;
+            Gizmos.DrawWireSphere( transform.position , enterRadius );
+        }
     }
 
     // Vertical cylinder: bottom disc at base, top disc at base + height, plus 4 risers.

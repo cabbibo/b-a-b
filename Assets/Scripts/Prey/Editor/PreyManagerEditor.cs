@@ -4,13 +4,16 @@ using UnityEditor;
 [CustomEditor( typeof(PreyManager) , true )]
 public class PreyManagerEditor : Editor
 {
-    private bool _foldDebug   = false;
-    private bool _foldScene   = true;
-    private bool _foldConfig  = true;
-    private bool _foldWiring  = true;
-    private bool _foldRuntime = false;
+    private bool _foldDebug      = false;
+    private bool _foldScene      = true;
+    private bool _foldConfig     = true;
+    private bool _foldWiring     = true;
+    private bool _foldRuntime    = false;
+    private bool _foldPreyCfg    = true;   // embedded prey config expanded?
+    private bool _foldManagerCfg = true;   // embedded manager config expanded?
 
-    private Editor _cfgEditor;   // inline embedded inspector for the manager config asset
+    private Editor _cfgEditor;       // inline embedded inspector for the manager config asset
+    private Editor _preyCfgEditor;   // inline embedded inspector for the prey config asset
 
     public override void OnInspectorGUI()
     {
@@ -32,8 +35,27 @@ public class PreyManagerEditor : Editor
         });
 
         Section( "Config" , ref _foldConfig , () => {
+            // ── Prey config (the bird's behavior params) — embedded like the manager config ────────
             EditorGUILayout.PropertyField( serializedObject.FindProperty( "preyConfig" ) );
+            if ( mgr.preyConfig == null ) {
+                EditorGUILayout.HelpBox( "No prey config assigned — this manager can't spawn birds. " +
+                                         "Assign or create one to set the bird's behavior params." , MessageType.Warning );
+                if ( GUILayout.Button( "Create Prey Config Asset" ) ) CreatePreyConfig( mgr );
+            } else {
+                EditorGUILayout.Space( 4 );
+                _foldPreyCfg = EditorGUILayout.Foldout( _foldPreyCfg , "Prey Config (asset)" , true , EditorStyles.foldoutHeader );
+                if ( _foldPreyCfg ) {
+                    using ( new EditorGUILayout.VerticalScope( EditorStyles.helpBox ) ) {
+                        CreateCachedEditor( mgr.preyConfig , null , ref _preyCfgEditor );
+                        _preyCfgEditor.OnInspectorGUI();
+                    }
+                }
+            }
+
+            EditorGUILayout.Space( 4 );
             EditorGUILayout.PropertyField( serializedObject.FindProperty( "preyPrefab" ) );
+
+            EditorGUILayout.Space( 4 );
             EditorGUILayout.PropertyField( serializedObject.FindProperty( "managerConfig" ) );
 
             if ( mgr.managerConfig == null ) {
@@ -42,10 +64,12 @@ public class PreyManagerEditor : Editor
                 if ( GUILayout.Button( "Create Manager Config Asset" ) ) CreateManagerConfig( mgr );
             } else {
                 EditorGUILayout.Space( 4 );
-                EditorGUILayout.LabelField( "Manager Config (asset)" , EditorStyles.boldLabel );
-                using ( new EditorGUILayout.VerticalScope( EditorStyles.helpBox ) ) {
-                    CreateCachedEditor( mgr.managerConfig , null , ref _cfgEditor );
-                    _cfgEditor.OnInspectorGUI();
+                _foldManagerCfg = EditorGUILayout.Foldout( _foldManagerCfg , "Manager Config (asset)" , true , EditorStyles.foldoutHeader );
+                if ( _foldManagerCfg ) {
+                    using ( new EditorGUILayout.VerticalScope( EditorStyles.helpBox ) ) {
+                        CreateCachedEditor( mgr.managerConfig , null , ref _cfgEditor );
+                        _cfgEditor.OnInspectorGUI();
+                    }
                 }
             }
         });
@@ -110,6 +134,20 @@ public class PreyManagerEditor : Editor
         AssetDatabase.CreateAsset( asset , path );
         AssetDatabase.SaveAssets();
         serializedObject.FindProperty( "managerConfig" ).objectReferenceValue = asset;
+        serializedObject.ApplyModifiedProperties();
+    }
+
+    private void CreatePreyConfig( PreyManager mgr )
+    {
+        var asset = ScriptableObject.CreateInstance<PreyConfigSO>();
+        string path = EditorUtility.SaveFilePanelInProject(
+            "Create PreyConfigSO" , mgr.name + "PreyConfig" , "asset" ,
+            "Choose where to save the prey config asset" );
+        if ( string.IsNullOrEmpty( path ) ) { Object.DestroyImmediate( asset ); return; }
+
+        AssetDatabase.CreateAsset( asset , path );
+        AssetDatabase.SaveAssets();
+        serializedObject.FindProperty( "preyConfig" ).objectReferenceValue = asset;
         serializedObject.ApplyModifiedProperties();
     }
 

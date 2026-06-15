@@ -25,6 +25,10 @@ public class PreyModuleFlags
     public bool spline   = false;
     public bool cage     = false;
     public bool bounce   = false;   // ballistic drop + bounce off the ground (replaces normal calm steering)
+    public bool slide    = false;   // hug the ground when near it + steer down the steepest slope
+    public bool settle   = false;   // a slow-enough bouncing bird lands into the Settled state
+    public bool relaunch = false;   // a Settled bird springs back up when its settle time elapses
+    public bool pop      = false;   // periodic upward impulse while near the ground (popcorn)
     // updraft / thermal removed — now defined by interest points
 
     [Header( "Behavior" )]
@@ -115,10 +119,9 @@ public class PreyCollisionModule
     public bool      slide  = true;
 }
 
-// Ballistic "drop and bounce" calm behavior (modules.bounce). Gravity pulls the bird down; it
-// reflects off the ground (velocity * restitution) with decreasing bounces. Settle ON → once a bounce
-// drops below Settle Speed it settles in place where it landed, waits Time To Remain Settled, then
-// relaunches (up + forward along its heading) back into the bounce loop. Settle OFF → bounces forever.
+// Ballistic "drop and bounce" calm behavior (modules.bounce). Gravity pulls the bird down; it reflects
+// off the surface normal with decreasing bounces and slides downhill. On its own it bounces forever —
+// pair it with the Settle module to make birds come to rest, and the Relaunch module to spring them up.
 [System.Serializable]
 public class PreyBounceModule
 {
@@ -134,25 +137,91 @@ public class PreyBounceModule
     public float     radius         = 0.5f;
     public LayerMask groundLayers   = ~0;
 
-    [Header( "Settle" )]
-    [Tooltip( "When a bounce gets weaker than Settle Speed: ON → settle in place where it landed, then relaunch; " +
-              "OFF → keep bouncing forever (never settles)." )]
-    public bool      settle         = true;
-    [Tooltip( "Upward bounce speed to settle below (Settle on), or the minimum bounce kept (Settle off)." )]
-    public float     settleSpeed    = 0.03f;
-    [Tooltip( "Seconds to stay settled before relaunching. Huge = effectively stays put (perch-like); 0 = relaunch immediately." )]
-    public float     timeToRemainSettled         = 3f;
-    [Tooltip( "Random ± variance (seconds) applied to Time To Remain Settled." )]
-    public float     timeToRemainSettledVariance = 0f;
+    [Header( "Terrain Drive" )]
+    [Tooltip( "Horizontal (XZ) push along the ground/terrain normal under the bird — drives it downhill / " +
+              "away from the surface it's bouncing on, on top of gravity. 0 = off." )]
+    public float     terrainNormalDrive = 0f;
+}
 
-    [Header( "Relaunch" )]
-    [Tooltip( "Upward speed kicked in when relaunching out of a settle." )]
-    public float     relaunchForce             = 0.2f;
+// Automatic landing (modules.settle). When a bouncing bird's speed drops below Settle Speed it switches
+// to the SETTLED state — pinned where it landed — for Time To Remain Settled seconds. This is NOT the
+// Perch state and uses none of the perch/takeoff params. With the Relaunch module on it springs back up
+// when the time elapses; without it the bird just stays settled. (Needs the Bounce module to fall.)
+[System.Serializable]
+public class PreySettleModule
+{
+    [Tooltip( "Bounce/motion speed below which the bird settles (lands). Without the Settle module a weak " +
+              "bounce instead keeps a minimum hop of this speed (bounces forever)." )]
+    public float settleSpeed                 = 0.03f;
+    [Tooltip( "Seconds to stay settled. Huge = effectively stays put; 0 = leave immediately (relaunch at once if Relaunch is on)." )]
+    public float timeToRemainSettled         = 3f;
+    [Tooltip( "Random ± variance (seconds) applied to Time To Remain Settled." )]
+    public float timeToRemainSettledVariance = 0f;
+    [Tooltip( "If the wren comes within this distance of a settled bird, it relaunches immediately " +
+              "instead of waiting out its settle time (needs the Relaunch module on). 0 = disabled." )]
+    public float relaunchWrenRadius          = 0f;
+    [Tooltip( "How far above the surface a spawn-settled bird rests. It raycasts straight down to the " +
+              "ground and sits this far along the surface normal above it." )]
+    public float settleOffset                = 0.3f;
+    [Tooltip( "Spawn-settled only: if the ground is further than this below the spawn point (or there's " +
+              "no ground below), the bird does NOT settle — it stays a normal flying/bouncing bird. " +
+              "0 = no limit (always settle)." )]
+    public float maxSettleHeight             = 0f;
+}
+
+// Automatic launch (modules.relaunch). When a Settled bird's settle time elapses it launches back into
+// the air — an upward kick plus a horizontal kick along its current heading (scattered) — and returns
+// to Calm (resuming Bounce if that's on). Settle + Relaunch + Bounce together make a trampoline loop.
+[System.Serializable]
+public class PreyRelaunchModule
+{
+    [Tooltip( "Upward speed kicked in on relaunch." )]
+    public float relaunchForce             = 0.2f;
     [Tooltip( "Horizontal speed kicked in on relaunch, along the bird's current heading." )]
-    public float     relaunchForwardVelocity   = 0.1f;
+    public float relaunchForwardVelocity   = 0.1f;
     [Range( 0f , 1f )]
     [Tooltip( "Scatter on the relaunch heading. 0 = straight along current heading; 1 = any horizontal direction." )]
-    public float     relaunchForwardRandomness = 0.25f;
+    public float relaunchForwardRandomness = 0.25f;
+    [Range( 0f , 1f )]
+    [Tooltip( "Aim the upward kick along the terrain normal under the bird instead of straight up. " +
+              "0 = straight up (world up); 1 = fully along the surface normal, so birds on a slope launch " +
+              "out perpendicular to it. Uses the last ground normal under the bird (best paired with Bounce)." )]
+    public float relaunchTerrainNormal     = 0f;
+    [Tooltip( "Horizontal speed kicked AWAY from the wren on relaunch, so a disturbed flock scatters away " +
+              "from it. Layered on top of the heading kick. 0 = no away-from-wren push." )]
+    public float relaunchAwayFromWren      = 0f;
+}
+
+// Periodic upward impulse (modules.pop) — "popcorn". While within Ground Closeness of the surface
+// below, the bird gets a Pop Force upward kick every Time Between Pops (±variance) seconds. Best
+// paired with Bounce (which owns the vertical axis); pops a Settled bird back into Calm so it takes.
+[System.Serializable]
+public class PreyPopModule
+{
+    [Tooltip( "Upward speed kicked in on each pop." )]
+    public float popForce                = 0.2f;
+    [Tooltip( "Seconds between pops." )]
+    public float timeBetweenPops         = 2f;
+    [Tooltip( "Random ± variance (seconds) applied to Time Between Pops." )]
+    public float timeBetweenPopsVariance = 0.5f;
+    [Tooltip( "Only pop when the bird is within this distance of the ground below it. 0 = pop at any height." )]
+    public float groundCloseness         = 2f;
+}
+
+// Hug-the-terrain calm behavior (modules.slide). While within Ground Range of the surface below, pull
+// toward the ground and steer down the steepest-descent direction (zero on flat ground). A steering
+// module — it adds forces; it doesn't take over the vertical axis like Bounce does.
+[System.Serializable]
+public class PreySlideModule
+{
+    [Tooltip( "Only acts while the bird is within this distance of the ground (straight down)." )]
+    public float     groundRange   = 8f;
+    [Tooltip( "Downward force that keeps the bird hugging the ground while it's within range." )]
+    public float     pullForce     = 2f;
+    [Tooltip( "Force along the steepest-downhill direction of the surface below — automatically zero on " +
+              "flat ground and stronger on steeper slopes." )]
+    public float     downhillForce = 3f;
+    public LayerMask groundLayers  = ~0;
 }
 
 [System.Serializable]
@@ -169,6 +238,12 @@ public class PreyFlapSettings
     public float upBounceSize        = 1f;
     public float forwardBounceSize   = .5f;
     public float forwardBounceOffset = .5f;
+
+    [Range( 0f , 1f )]
+    [Tooltip( "Forces flapping based on climb direction. 0 = off (normal flap behavior). 1 = the bird MUST " +
+              "flap whenever it's moving, at a rate set by how steeply it climbs: ~4x flapSpeed going " +
+              "straight up, ~0.5x going level/forward. Makes launching birds flap hard to climb." )]
+    public float climbSpeedFlapMultiplier = 0f;
 
     [Header( "Ambient Flapping" )]
     public float defaultFlapRate   = 0f;   // 0 = disabled; matches flapSpeed units (radians/frame)
@@ -312,9 +387,16 @@ public class PreyPerchModule
 public class PreyTakeOffModule
 {
     public float upForce         = 5f;   // upward pop on takeoff (on startle, or scheduled after perching)
-    public float runForce        = 4f;   // away-from-wren push
+    public float runForce        = 4f;   // away-from-wren push (all takeoffs)
     public float takeOffDistance = 15f;  // once this far from the takeoff point, drop the forces → Calm
     public float takeOffFlapMult = 3f;   // flap-rate boost during takeoff
+    [Tooltip( "Launch along the normal of the surface the bird was sitting on, scaled by this × Up Force. " +
+              "0 = straight up (old behavior); higher = pushed off perpendicular to a slope/wall." )]
+    public float colliderNormalForce = 0f;
+    [Tooltip( "Extra away-from-the-wren push applied ONLY when takeoff was triggered by being startled " +
+              "(wren got close) — so panic jumps fling away from the wren. 0 = no extra (timed/social " +
+              "takeoffs are unaffected either way)." )]
+    public float startleAwayForce = 0f;
 }
 
 [System.Serializable]
@@ -435,6 +517,10 @@ public class PreyConfigSO : ScriptableObject
     public PreySplineModule     spline;
     public PreyCageModule       cage;
     public PreyBounceModule     bounce;
+    public PreySlideModule      slide;
+    public PreySettleModule     settle;
+    public PreyRelaunchModule   relaunch;
+    public PreyPopModule        pop;
     // public PreyUpdraftModule  updraft;   // removed — defined per Updraft interest point
     // public PreyThermalModule  thermal;   // removed — handled via interest points
 

@@ -126,11 +126,15 @@ public class PreyController : MonoBehaviour
     private float   timeOutsideRegion;
     private bool    isOutsideRegion;
     private bool    isDespawning;
+    private string  despawnReason = "";   // why this bird is despawning (shown in the despawn debug label)
 
-    // ── Bounce calm behavior: settle-in-place state (modules.bounce) ──────────
-    private bool    bounceSettled;        // pinned where it landed, waiting to relaunch
-    private float   bounceSettleTimer;    // seconds elapsed since settling
-    private float   bounceSettleDuration; // rolled timeToRemainSettled (+variance) for this settle
+    // ── Settle state (modules.settle): pinned where it landed until relaunch ──
+    private float   settleTimer;          // seconds elapsed in the Settled state
+    private float   settleDuration;       // rolled timeToRemainSettled (+variance) for this settle
+    private Vector3 _bounceGroundNormal = Vector3.up; // last ground normal under the bird (terrain-normal drive)
+
+    private float   popTimer;             // countdown to the next pop (modules.pop)
+    private static readonly RaycastHit[] _settleHits = new RaycastHit[16]; // reused by SpawnSettled's ground probe
 
     private int   ambientFlapsInBurst = 0;
     private float ambientGlideTimer   = 0f;
@@ -197,6 +201,8 @@ public class PreyController : MonoBehaviour
     {
         public Vector3 origin;        // where the bird took off from (forces end once far enough from here)
         public Vector3 runDirection;
+        public Vector3 surfaceNormal; // normal of the surface the bird was sitting on (collider-normal launch)
+        public bool    fromStartle;   // takeoff was triggered by the wren startling us → extra away push
     }
 
     private class FlockRuntimeState
@@ -357,6 +363,7 @@ public class PreyController : MonoBehaviour
         UpdateModuleStates();
         UpdateStamina();
         UpdateState();
+        TickPop();
         DoPhysics();
         CheckForDespawn();
 
@@ -393,6 +400,9 @@ public class PreyController : MonoBehaviour
         if ( parameters.modules.social )
             socialState.sampleTimer = Random.Range( 0f , parameters.social.sampleInterval );
 
+        if ( parameters.modules.pop )
+            popTimer = Random.Range( 0f , Mathf.Max( 0.01f , parameters.pop.timeBetweenPops ) );
+
         // NOTE: spawn position (incl. altitude) is decided by PreyManager's spawn type.
         // Do NOT override Y here — SetHeight() used to re-snap to a random altitude and
         // throw away spline / desired-altitude / in-distance placement.
@@ -401,6 +411,7 @@ public class PreyController : MonoBehaviour
         timeOutsideRegion = 0f;
         isOutsideRegion   = false;
         isDespawning      = false;
+        despawnReason     = "";
         ambientFlapsInBurst = 0;
         ambientGlideTimer   = Random.Range( parameters.flap.glideTimeMin , parameters.flap.glideTimeMax );
         force             = Vector3.zero;
@@ -766,7 +777,7 @@ public class PreyController : MonoBehaviour
                 perchState.perchedTimer += simDt;
 
                 if ( WrenWithinStartle( parameters.perch.startleRadius , parameters.perch.startleLeadTime ) ) {
-                    if ( parameters.modules.takeOff ) EnterTakeOff();
+                    if ( parameters.modules.takeOff ) EnterTakeOff( startled: true );
                     else                              EnterCalm();
                     break;
                 }
@@ -820,14 +831,29 @@ public class PreyController : MonoBehaviour
                 }
 
                 break;
+
+            case PreyState.Settled:
+                // pinned in place; relaunch (if the module is on) back into Calm — which resumes the
+                // bounce — once the settle time elapses OR the wren gets within Relaunch Wren Radius.
+                // No Relaunch module → it just stays settled.
+                settleTimer += simDt;
+                if ( parameters.modules.relaunch ) {
+                    bool timeUp    = settleTimer >= settleDuration;
+                    bool wrenClose = parameters.settle.relaunchWrenRadius > 0f
+                                  && vectorToWren.magnitude < parameters.settle.relaunchWrenRadius;
+                    if ( timeUp || wrenClose ) {
+                        DoRelaunch();
+                        EnterCalm();
+                    }
+                }
+
+                break;
         }
     }
 
     private void EnterCalm()
     {
         state = PreyState.Calm;
-
-        bounceSettled = false;   // bounce calm behavior restarts falling, not mid-settle
 
         if ( parameters.modules.perch ) perchState.Init( parameters.perch );
         if ( parameters.modules.search ) searchState.Init( parameters.search );
@@ -869,9 +895,10 @@ public class PreyController : MonoBehaviour
     {
         var ct = searchState.currentTarget;
 
-        // Collider entrance: arrived the moment we're inside the assigned collider (enterRadius ignored).
-        if ( ct.entranceShape == EntranceShape.Collider )
-            return ct.ContainsPoint( position );
+        // Collider / Plane entrance: arrival is the shape's own containment test (collider surface, or
+        // below the plane) — not a radius around the point.
+        if ( ct.entranceShape == EntranceShape.Collider || ct.entranceShape == EntranceShape.Plane )
+            return ct.WithinEnter( position );
 
         var   target = CurrentSearchTargetPos();
         var   d      = position - target;
@@ -922,7 +949,7 @@ public class PreyController : MonoBehaviour
                 break;
 
             case InterestPointType.Despawn:
-                ForceDespawn();
+                ForceDespawn( "reached despawn point" );
                 break;
 
             case InterestPointType.NewInterest:
@@ -968,13 +995,15 @@ public class PreyController : MonoBehaviour
             perchState.currentPerchDuration = 5f;
     }
 
-    private void EnterTakeOff()
+    private void EnterTakeOff( bool startled = false )
     {
         state = PreyState.TakingOff;
         takeOffState.origin = position;
         takeOffState.runDirection = vectorToWren.sqrMagnitude > 0.01f
             ? -vectorToWren.normalized
             : Random.insideUnitSphere.normalized;
+        takeOffState.surfaceNormal = PerchNormal();   // capture before clearing the perch (collider-normal launch)
+        takeOffState.fromStartle   = startled;
         perchState.target       = null;
         perchState.fieldLanding = false;
     }
@@ -1003,6 +1032,52 @@ public class PreyController : MonoBehaviour
             + Random.Range( -poi.timeToRemainVariance , poi.timeToRemainVariance ) );
         EnterPerched();   // snaps to the perch surface, zeroes velocity, sets state = Perched
         return true;
+    }
+
+    // Spawn this bird already resting in the Settled state, on the ground straight below where it
+    // spawned (used by the manager's "Spawn Settled" toggle). Raycasts down with the bounce ground
+    // layers; if nothing's below it just settles in place. Independent of the bounce/settle modules.
+    public void SpawnSettled()
+    {
+        // Find the terrain surface and sit ON it. Probe from high ABOVE the spawn point (not from just
+        // above it) so we still hit the ground when the spawn point is at/under the surface, and use the
+        // manager's Spawn Ground Layers — the same mask used for spawn placement — not the bounce mask.
+        const float probe = 10000f;
+        var layers = manager != null ? manager.spawnGroundLayers : parameters.bounce.groundLayers;
+
+        // Take the nearest hit that ISN'T another bird, so a freshly-spawned cluster snaps to the terrain
+        // instead of landing on its own / its cluster-mates' colliders (which leaves it floating).
+        int n = Physics.RaycastNonAlloc( position + Vector3.up * probe , Vector3.down , _settleHits ,
+                                         probe * 2f , layers , QueryTriggerInteraction.Ignore );
+        float bestDist = float.MaxValue;
+        bool  found    = false;
+        Vector3 gp = position, gn = Vector3.up;
+
+        for ( int i = 0; i < n; i++ ) {
+            if ( _settleHits[i].collider.GetComponentInParent<PreyController>() != null ) {
+                continue; // skip prey colliders (this bird and its cluster-mates)
+            }
+            if ( _settleHits[i].distance < bestDist ) {
+                bestDist = _settleHits[i].distance;
+                gp       = _settleHits[i].point;
+                gn       = _settleHits[i].normal;
+                found    = true;
+            }
+        }
+
+        // max settle height: if the ground is too far below the spawn point (or none was found), don't
+        // settle — leave the bird as a normal flying/bouncing bird at its spawn point.
+        float maxH = parameters.settle.maxSettleHeight;
+        if ( maxH > 0f && ( !found || position.y - gp.y > maxH ) ) {
+            return;
+        }
+
+        if ( found ) {
+            position = gp + gn * parameters.settle.settleOffset;
+        }
+
+        transform.position = position;
+        EnterSettled();
     }
 
     // Spawn this bird already riding (circling) an Updraft interest point.
@@ -1189,8 +1264,10 @@ public class PreyController : MonoBehaviour
 
             if ( _occupiedLand.Count > 0 && nearestSqr < spacingSqr ) continue; // too close to another bird
 
-            // lower = better: prefer close to us; desireToBeClose also prefers being near others (clump)
-            float score = Vector3.Distance( position , cand ) + f.desireToBeClose * nearest;
+            // lower = better: prefer close to us; desireToBeClose also prefers being near others (clump);
+            // upImportance penalizes non-upward-facing surfaces (1 - normal.y), scaled to radius units
+            float score = Vector3.Distance( position , cand ) + f.desireToBeClose * nearest
+                          + f.upImportance * f.radius * ( 1f - hit.normal.y );
             if ( score < bestScore ) { bestScore = score; bestPos = cand; bestNormal = hit.normal; found = true; }
         }
 
@@ -1243,6 +1320,16 @@ public class PreyController : MonoBehaviour
     {
         allForces.Clear();
 
+        // Global speed cap: no state may exceed maxSpeed (or the sprint max). The steering path
+        // (ApplyVelocity) already clamps, but bounce / pop / relaunch set velocity directly and would
+        // otherwise ignore it — so cap here, before integration, so it applies in every state.
+        float speedCap = (parameters.modules.sprint && stamina > 0f)
+            ? MaxSprintSpeed()
+            : parameters.movement.maxSpeed;
+        if ( velocity.sqrMagnitude > speedCap * speedCap ) {
+            velocity = velocity.normalized * speedCap;
+        }
+
         switch (state) {
             case PreyState.Calm:      DoCalmPhysics();      break;
             case PreyState.Searching: DoSearchingPhysics(); break;
@@ -1251,6 +1338,7 @@ public class PreyController : MonoBehaviour
             case PreyState.Perched:   DoPerchedPhysics();   break;
             case PreyState.TakingOff: DoTakeOffPhysics();   break;
             case PreyState.Disturbed: DoDisturbedPhysics(); break;
+            case PreyState.Settled:   DoSettledPhysics();   break;
         }
     }
 
@@ -1276,6 +1364,9 @@ public class PreyController : MonoBehaviour
         if ( parameters.modules.cage )
             AddForce( CageForce() , new Color( 1f , 0.8f , 0f ) , "cage" );
 
+        if ( parameters.modules.slide )
+            AddForce( SlideForce() , new Color( 0.55f , 0.4f , 0.2f ) , "slide" );
+
         ApplyVelocity( parameters.movement.desiredSpeed , true );
 
         if ( parameters.modules.flap ) {
@@ -1287,52 +1378,58 @@ public class PreyController : MonoBehaviour
         transform.position = position + flapValue;
     }
 
-    // Ballistic "drop and bounce" calm behavior (modules.bounce). Vertical is pure gravity + a
-    // reflect-on-ground bounce; horizontal still comes from the usual calm forces if they're toggled.
+    // Hug-the-terrain steering (modules.slide). When within Ground Range of the surface below: pull
+    // toward the ground + push along the steepest-descent direction. ProjectOnPlane(down, normal) has
+    // magnitude sin(slope) and direction downhill, so the slide force is naturally zero on flat ground.
+    private Vector3 SlideForce()
+    {
+        var s = parameters.slide;
+        PreyProfiler.raycastCount++;
+        if ( !Physics.Raycast( position , Vector3.down , out var hit , s.groundRange ,
+                               s.groundLayers , QueryTriggerInteraction.Ignore ) )
+            return Vector3.zero;   // no ground within range → don't slide
+
+        return Vector3.down * s.pullForce
+             + Vector3.ProjectOnPlane( Vector3.down , hit.normal ) * s.downhillForce;
+    }
+
+    // Ballistic "drop and bounce" calm behavior (modules.bounce) — marble physics. Gravity pulls the
+    // bird down; on contact it bounces off the actual surface NORMAL (so it ricochets and slides
+    // DOWNHILL along slopes rather than popping straight up) and slows via friction until it settles.
+    // Vertical is owned by gravity + the bounce; any toggled calm modules (drive/noise/flock/circle/
+    // cage) add OPTIONAL horizontal steering layered on top — off by default, there if you want them.
     private void DoBouncePhysics()
     {
         var bnc = parameters.bounce;
-        var m   = parameters.movement;
 
         oldVelocity = velocity;
 
-        // Settled: pinned where it landed. Hold still until the settle time elapses, then relaunch
-        // (up + a forward kick along the current heading) back into the bounce loop.
-        if ( bounceSettled ) {
-            velocity         = Vector3.zero;
-            currentSpeed     = 0f;
-            flapValue        = Vector3.zero;
-            bounceSettleTimer += simDt;
-            if ( bounceSettleTimer >= bounceSettleDuration ) Relaunch( bnc );
-            transform.position = position;
-            return;
-        }
-
-        // optional horizontal steering from the usual calm modules (only the toggled ones)
-        force = Vector3.zero;
-        if ( parameters.modules.drive )  AddForce( DriveForce()      , new Color( 0.6f , 1f , 0f ) , "drive" );
-        if ( parameters.modules.noise )  AddForce( NoiseForce()      , Color.yellow , "noise" );
-        if ( parameters.modules.flock )  AddForce( FlockForce()      , Color.cyan , "flock" );
-        if ( parameters.modules.circle ) AddForce( CalmCircleForce() , Color.magenta , "circle" );
-        if ( parameters.modules.cage )   AddForce( CageForce()       , new Color( 1f , 0.8f , 0f ) , "cage" );
-        force.y = 0f;   // bounce owns the vertical axis
-
-        // horizontal velocity: steer toward desiredSpeed when there's input, otherwise just damp
-        Vector3 hVel = new Vector3( velocity.x , 0f , velocity.z ) + force;
-        hVel *= ( 1f - m.dampening );
-        if ( force.sqrMagnitude > 1e-8f ) {
-            float hSpeed = hVel.magnitude;
-            hSpeed += ( m.desiredSpeed - hSpeed ) * m.dampening;
-            hSpeed  = Mathf.Min( hSpeed , m.maxSpeed );
-            if ( hVel.sqrMagnitude > 1e-8f ) hVel = hVel.normalized * hSpeed;
-        }
-        velocity.x = hVel.x;
-        velocity.z = hVel.z;
-
-        // vertical: gravity (per-frame, matching the rest of the sim's integration)
+        // gravity (per-frame, matching the rest of the sim's integration)
         velocity.y -= bnc.gravity;
 
-        // integrate, then resolve the ground bounce
+        // optional horizontal steering from the toggled calm modules — added on top of the physics as
+        // an acceleration (not a velocity override), so it nudges the marble without floating it. The
+        // vertical axis stays pure gravity/bounce.
+        force = Vector3.zero;
+        if ( parameters.modules.drive )  AddForce( DriveForce()      , new Color( 0.6f , 1f , 0f ) , "drive" );
+        if ( parameters.modules.noise )  AddForce( NoiseForce()      , Color.yellow                , "noise" );
+        if ( parameters.modules.flock )  AddForce( FlockForce()      , Color.cyan                  , "flock" );
+        if ( parameters.modules.circle ) AddForce( CalmCircleForce() , Color.magenta               , "circle" );
+        if ( parameters.modules.cage )   AddForce( CageForce()       , new Color( 1f , 0.8f , 0f ) , "cage" );
+        velocity.x += force.x;
+        velocity.z += force.z;   // force.y intentionally dropped — bounce owns the vertical axis
+
+        // optional terrain-normal drive: a steady downhill nudge along the (horizontal) ground normal
+        if ( bnc.terrainNormalDrive != 0f ) {
+            Vector3 nd = _bounceGroundNormal; nd.y = 0f;
+            if ( nd.sqrMagnitude > 1e-6f ) {
+                Vector3 d = nd.normalized * bnc.terrainNormalDrive;
+                velocity.x += d.x;
+                velocity.z += d.z;
+            }
+        }
+
+        // integrate, then resolve the surface bounce / slide
         position += velocity;
         BounceOnGround( bnc );
 
@@ -1341,7 +1438,10 @@ public class PreyController : MonoBehaviour
         transform.position = position;
     }
 
-    // Reflect off the ground once the bird has fallen onto it.
+    // Collide against the terrain: bounce off the surface by reflecting velocity about the hit NORMAL
+    // (restitution on the into-surface part, friction on the tangential part) so birds ricochet and
+    // slide downhill along slopes instead of being driven up them. Settles when overall speed is low
+    // (slopes keep speed up via gravity, so settling naturally happens on flatter ground).
     private void BounceOnGround( PreyBounceModule bnc )
     {
         const float castStart = 5f;
@@ -1350,48 +1450,116 @@ public class PreyController : MonoBehaviour
                                castStart + 10000f , bnc.groundLayers , QueryTriggerInteraction.Ignore ) )
             return;
 
+        _bounceGroundNormal = hit.normal;   // cached for the terrain-normal drive (read next frame)
+
         float groundY = hit.point.y + bnc.radius;
-        if ( position.y > groundY || velocity.y >= 0f ) return;   // above ground or already rising
+        if ( position.y > groundY ) return;   // still above the surface — keep falling
 
-        position.y = groundY;
-        float vy = -velocity.y * bnc.restitution;
+        position.y = groundY;                 // sit on the surface
 
-        if ( vy < bnc.settleSpeed ) {
-            if ( bnc.settle ) {
-                // bounce has decayed below the cutoff → settle in place where it landed (just a state:
-                // it perches right here). It holds for bounceSettleDuration, then relaunches.
-                velocity             = Vector3.zero;
-                bounceSettled        = true;
-                bounceSettleTimer    = 0f;
-                bounceSettleDuration = Mathf.Max( 0f , bnc.timeToRemainSettled
-                    + Random.Range( -bnc.timeToRemainSettledVariance , bnc.timeToRemainSettledVariance ) );
+        // split velocity into the part along the surface normal and the part tangent to the surface
+        Vector3 n        = hit.normal;
+        float   vn       = Vector3.Dot( velocity , n );   // negative when moving into the surface
+        Vector3 vNormal  = vn * n;
+        Vector3 vTangent = velocity - vNormal;
+
+        // bounce the into-surface part (restitution), keep sliding along the surface (friction)
+        if ( vn < 0f ) vNormal = -vNormal * bnc.restitution;
+        vTangent *= bnc.bounceFriction;
+        velocity  = vTangent + vNormal;
+
+        if ( velocity.magnitude < parameters.settle.settleSpeed ) {
+            if ( parameters.modules.settle ) {
+                // bounce decayed below the cutoff → land into the Settled state (pinned in place)
+                EnterSettled();
                 return;
             }
-            vy = bnc.settleSpeed;   // Settle off → keep it bouncing forever
+            // no Settle module → keep a minimum bounce off the surface so it never fully stops
+            velocity += n * parameters.settle.settleSpeed;
         }
-
-        velocity.y  = vy;
-        velocity.x *= bnc.bounceFriction;
-        velocity.z *= bnc.bounceFriction;
     }
 
-    // Pop out of a settle: upward kick + a horizontal kick along the current heading (scattered by
-    // relaunchForwardRandomness), then fall back into the bounce loop.
-    private void Relaunch( PreyBounceModule bnc )
+    // ── Settle / Relaunch (modules.settle / modules.relaunch) ──────────────────
+
+    // Land in place: pin here and start the settle timer. Distinct from Perched — no perch/takeoff params.
+    private void EnterSettled()
     {
+        state       = PreyState.Settled;
+        velocity    = Vector3.zero;
+        settleTimer = 0f;
+        var s       = parameters.settle;
+        settleDuration = Mathf.Max( 0f , s.timeToRemainSettled
+            + Random.Range( -s.timeToRemainSettledVariance , s.timeToRemainSettledVariance ) );
+    }
+
+    private void DoSettledPhysics()
+    {
+        velocity     = Vector3.zero;
+        currentSpeed = 0f;
+        flapValue    = Vector3.zero;
+        transform.position = position;   // pinned where it landed
+    }
+
+    // Launch out of a settle: upward kick + a horizontal kick along the current heading (scattered).
+    private void DoRelaunch()
+    {
+        var r = parameters.relaunch;
+
         Vector3 fwd = transform.forward;
         fwd.y = 0f;
         if ( fwd.sqrMagnitude < 1e-6f ) fwd = Vector3.forward;
         fwd.Normalize();
 
         // randomness: rotate the heading by up to ±180° around Y (0 = dead ahead, 1 = any direction)
-        float ang = Random.Range( -1f , 1f ) * bnc.relaunchForwardRandomness * 180f;
+        float ang = Random.Range( -1f , 1f ) * r.relaunchForwardRandomness * 180f;
         Vector3 dir = Quaternion.AngleAxis( ang , Vector3.up ) * fwd;
 
-        velocity   = dir * bnc.relaunchForwardVelocity;
-        velocity.y = bnc.relaunchForce;
+        // up-kick direction: straight up by default, or tilted toward the terrain normal under the bird
+        // so birds on a slope launch perpendicular to it (0 = world up → original behavior).
+        Vector3 up = Vector3.up;
+        if ( r.relaunchTerrainNormal > 0f && _bounceGroundNormal.sqrMagnitude > 1e-6f ) {
+            up = Vector3.Slerp( Vector3.up , _bounceGroundNormal.normalized , r.relaunchTerrainNormal );
+        }
 
-        bounceSettled = false;
+        velocity = dir * r.relaunchForwardVelocity + up * r.relaunchForce;
+
+        // horizontal push away from the wren (vectorToWren is prey→wren, so negate it)
+        if ( r.relaunchAwayFromWren != 0f ) {
+            Vector3 away = -vectorToWren; away.y = 0f;
+            if ( away.sqrMagnitude > 1e-6f ) {
+                velocity += away.normalized * r.relaunchAwayFromWren;
+            }
+        }
+    }
+
+    // Periodic upward "pop" impulse (modules.pop) — popcorn behavior. While within Ground Closeness of
+    // the surface below, every Time Between Pops (±variance) seconds the bird gets a Pop Force upward
+    // kick. Only fires in calm/ground states; pops a Settled bird back into Calm so the kick takes.
+    private void TickPop()
+    {
+        if ( !parameters.modules.pop ) return;
+        if ( state != PreyState.Calm && state != PreyState.Settled ) return;
+
+        var p = parameters.pop;
+
+        popTimer -= simDt;
+        if ( popTimer > 0f ) return;
+
+        // roll the next interval
+        popTimer = Mathf.Max( 0f , p.timeBetweenPops
+            + Random.Range( -p.timeBetweenPopsVariance , p.timeBetweenPopsVariance ) );
+
+        // only pop when within Ground Closeness of the surface below
+        if ( p.groundCloseness > 0f ) {
+            PreyProfiler.raycastCount++;
+            if ( !Physics.Raycast( position + Vector3.up * 0.1f , Vector3.down , out _ ,
+                                   p.groundCloseness + 0.1f , parameters.bounce.groundLayers ,
+                                   QueryTriggerInteraction.Ignore ) )
+                return; // too high above the ground → skip this pop
+        }
+
+        if ( state == PreyState.Settled ) EnterCalm(); // un-settle so the impulse takes effect
+        velocity.y += p.popForce;
     }
 
     // ── Searching ────────────────────────────────────────────────────────────
@@ -1407,7 +1575,7 @@ public class PreyController : MonoBehaviour
 
         AddAvoidanceForces();
 
-        if ( parameters.modules.drive ) AddForce( DriveForce()   , new Color( 0.6f , 1f , 0f ) , "drive" );
+        // drive is a CALM-only force (see DoCalmPhysics); not applied while searching
         if ( parameters.modules.cage  ) AddForce( CageForce()    , new Color( 1f , 0.8f , 0f ) , "cage"  );
         if ( parameters.modules.noise ) AddForce( NoiseForce()   , Color.yellow               , "noise" );
 
@@ -1539,7 +1707,7 @@ public class PreyController : MonoBehaviour
         if ( updraftState.activeTarget != null && updraftState.activeTarget.transform != null )
             AddForce( UpdraftForceFromPoint( updraftState.activeTarget ) , Color.green , "updraft" );
 
-        if ( parameters.modules.drive ) AddForce( DriveForce() , new Color( 0.6f , 1f , 0f ) , "drive" );
+        // drive is a CALM-only force (see DoCalmPhysics); not applied while updrafting
         if ( parameters.modules.noise ) AddForce( NoiseForce() , Color.yellow               , "noise" );
         if ( parameters.modules.cage  ) AddForce( CageForce()  , new Color( 1f , 0.8f , 0f ) , "cage"  );
 
@@ -1572,12 +1740,21 @@ public class PreyController : MonoBehaviour
         force = Vector3.zero;
 
         // pop up and push away from the wren; runs until far enough from the takeoff point (UpdateState)
-        force += Vector3.up * parameters.takeOff.upForce;
-        force += takeOffState.runDirection * parameters.takeOff.runForce;
+        AddForce( Vector3.up * parameters.takeOff.upForce , new Color( 0.3f , 1f , 0.6f ) , "takeoff up" );
+        AddForce( takeOffState.runDirection * parameters.takeOff.runForce , new Color( 1f , 0.5f , 0.2f ) , "run away" );
+
+        // startle (panic) takeoff: extra fling away from the wren, on top of the normal run push
+        if ( takeOffState.fromStartle && parameters.takeOff.startleAwayForce != 0f )
+            AddForce( takeOffState.runDirection * parameters.takeOff.startleAwayForce , new Color( 1f , 0.3f , 0.1f ) , "startle away" );
+
+        // launch along the surface normal the bird was sitting on (slope/wall kick), scaled by Up Force
+        if ( parameters.takeOff.colliderNormalForce != 0f )
+            AddForce( takeOffState.surfaceNormal * parameters.takeOff.upForce * parameters.takeOff.colliderNormalForce ,
+                      new Color( 0.2f , 0.8f , 1f ) , "collider normal" );
         AddForce( MoveAlongGroundAndTurnAwayFromObstacles() , new Color( 1f , 0.4f , 0.1f ) , "avoidance" );
 
-        if ( parameters.modules.cage )  force += CageForce();
-        if ( parameters.modules.drive ) AddForce( DriveForce() , new Color( 0.6f , 1f , 0f ) , "drive" );
+        // drive is a CALM-only force (see DoCalmPhysics); not applied during take-off
+        if ( parameters.modules.cage )  AddForce( CageForce() , new Color( 1f , 0.8f , 0f ) , "cage" );
 
         ApplyVelocity( parameters.movement.desiredSpeed , true );
 
@@ -1603,7 +1780,9 @@ public class PreyController : MonoBehaviour
             (parameters.run.startleRadius - distToWren) /
             Mathf.Max( parameters.run.startleRadius - parameters.run.fullRunRadius , 0.01f ) );
         var runDir = parameters.run.chaseInstead ? vectorToWren.normalized : -vectorToWren.normalized;
-        force += runDir * parameters.run.fleeForce * fleeMult;
+        AddForce( runDir * parameters.run.fleeForce * fleeMult ,
+                  parameters.run.chaseInstead ? new Color( 1f , 0.2f , 0.2f ) : new Color( 1f , 0.4f , 0.1f ) ,
+                  parameters.run.chaseInstead ? "chase" : "flee" );
 
         // juke — random lateral burst to make escape less predictable
         runState.jukeTimer += simDt;
@@ -1614,11 +1793,11 @@ public class PreyController : MonoBehaviour
                                * (Random.value > 0.5f ? 1f : -1f);
         }
 
-        force += runState.jukeDir * parameters.run.jukeAmount;
+        AddForce( runState.jukeDir * parameters.run.jukeAmount , new Color( 1f , 0.3f , 0.6f ) , "juke" );
 
-        force += MoveAlongGroundAndTurnAwayFromObstacles();
-        if ( parameters.modules.cage )  force += CageForce();
-        if ( parameters.modules.drive ) AddForce( DriveForce() , new Color( 0.6f , 1f , 0f ) , "drive" );
+        AddForce( MoveAlongGroundAndTurnAwayFromObstacles() , new Color( 1f , 0.4f , 0.1f ) , "avoidance" );
+        // drive is a CALM-only force (see DoCalmPhysics); not applied while disturbed
+        if ( parameters.modules.cage )  AddForce( CageForce() , new Color( 1f , 0.8f , 0f ) , "cage" );
 
         ApplyVelocity( parameters.movement.desiredSpeed * parameters.run.speedMultiplier , true );
 
@@ -2087,7 +2266,15 @@ public class PreyController : MonoBehaviour
     {
         climbRate = Mathf.Clamp( velocity.normalized.y , 0 , 1 );
 
-        if ( climbRate > 0.01f ) {
+        if ( parameters.flap.climbSpeedFlapMultiplier > 0f ) {
+            // forced direction-driven flapping: rate scales ~0.5x flapSpeed level/forward → ~4x straight
+            // up, blended in by climbSpeedFlapMultiplier. The bird MUST flap (no glide) to climb.
+            float dirMult = Mathf.Lerp( 0.5f , 4f , climbRate );
+            float mult    = Mathf.Lerp( 1f , dirMult , parameters.flap.climbSpeedFlapMultiplier );
+            positionInFlapCycle += parameters.flap.flapSpeed * _flapSpeedMult * mult;
+            ambientFlapsInBurst = 0;
+            ambientGlideTimer   = Random.Range( parameters.flap.glideTimeMin , parameters.flap.glideTimeMax );
+        } else if ( climbRate > 0.01f ) {
             // power-flap while climbing
             positionInFlapCycle += parameters.flap.flapSpeed * _flapSpeedMult * climbRate * climbRate;
             // reset so we glide briefly after levelling out before the next burst
@@ -2170,6 +2357,7 @@ public class PreyController : MonoBehaviour
         if ( spawning ) return;
 
         if ( vectorToWren.magnitude <= parameters.crystals.eatRadius ) {
+            despawnReason = "eaten";
             manager.PreyGotAte( this );
             spawning = true;
             StartCoroutine( DestroyCoroutine( parameters.animation.ateDieSpeed ) );
@@ -2180,6 +2368,26 @@ public class PreyController : MonoBehaviour
         // states are exempt so we don't kill a bird mid-landing / mid-takeoff / mid-updraft.
         if ( state == PreyState.Landing
              || state == PreyState.Updrafting || state == PreyState.TakingOff ) {
+            return;
+        }
+
+        // Despawn interest points act as passive kill-zones: any bird inside one's enter volume
+        // despawns immediately, regardless of state or whether it was searching toward it. This is
+        // what makes "fly into the despawn shape → despawn" work (a bird won't pick & arrive at a
+        // despawn point on its own, and avoidance would otherwise steer it around the collider).
+        if ( manager.interestPoints != null ) {
+            var pts = manager.interestPoints;
+            for ( int i = 0; i < pts.Length; i++ ) {
+                var ip = pts[i];
+                if ( ip == null || ip.type != InterestPointType.Despawn ) continue;
+                if ( ip.WithinEnter( position ) ) { ForceDespawn( $"hit despawn point '{ip.name}'" ); return; }
+            }
+        }
+
+        // Hard lifetime cap: once alive longer than maximumTimeAlive, despawn no matter what — the
+        // wren-distance / region tests below don't apply (0 = disabled).
+        if ( manager.maximumTimeAlive > 0f && Time.time - spawnTime > manager.maximumTimeAlive ) {
+            ForceDespawn( "max lifetime" );
             return;
         }
 
@@ -2201,14 +2409,18 @@ public class PreyController : MonoBehaviour
     // "Outside" test per the manager's despawn type (distance to wren / despawn collider / cage).
     private bool IsOutsideDespawnRegion()
     {
-        bool useWren = manager.despawnSubject == DespawnSubject.Wren;
+        // Subject: Wren tests only the (shared) wren position, Prey only this bird's, Both = either is
+        // outside. && short-circuits so the per-prey test only runs for Prey/Both (Wren stays cheap).
+        bool testWren = manager.despawnSubject != DespawnSubject.Prey;   // Wren or Both
+        bool testPrey = manager.despawnSubject != DespawnSubject.Wren;   // Prey or Both
+
         switch ( manager.despawnType ) {
             case DespawnType.Collider:
-                return useWren ? manager.wrenOutsideDespawnCollider
-                               : manager.IsOutsideDespawnCollider( position );
+                return (testWren && manager.wrenOutsideDespawnCollider)
+                    || (testPrey && manager.IsOutsideDespawnCollider( position ));
             case DespawnType.Region:
-                return useWren ? manager.wrenOutsideRegion
-                               : manager.IsOutsideRegion( position );
+                return (testWren && manager.wrenOutsideRegion)
+                    || (testPrey && manager.IsOutsideRegion( position ));
             case DespawnType.Distance:
             default:
                 return vectorToWren.magnitude > manager.distanceBeforeNotCaught;   // symmetric (prey↔wren)
@@ -2230,14 +2442,21 @@ public class PreyController : MonoBehaviour
     private void OnNotCaught()
     {
         if ( !spawning ) {
+            despawnReason = manager.despawnType switch {
+                DespawnType.Distance => "too far from wren",
+                DespawnType.Collider => "left despawn collider",
+                DespawnType.Region   => "left region",
+                _                    => "left area",
+            };
             spawning = true;
             StartCoroutine( DestroyCoroutine( parameters.animation.dieSpeed ) );
         }
     }
 
-    public void ForceDespawn()
+    public void ForceDespawn( string reason = "forced" )
     {
         if ( !spawning ) {
+            despawnReason = reason;
             spawning = true;
             StartCoroutine( DestroyCoroutine( parameters.animation.dieSpeed ) );
         }
@@ -2354,6 +2573,7 @@ public class PreyController : MonoBehaviour
             else if ( state == PreyState.Updrafting) stateColor = Color.green;
             else if ( state == PreyState.Perched   ) stateColor = new Color( 0.3f , 0.7f , 1f );
             else if ( state == PreyState.TakingOff ) stateColor = new Color( 1f , 0.6f , 0.1f );
+            else if ( state == PreyState.Settled   ) stateColor = new Color( 0.7f , 0.55f , 0.3f );
             else                                     stateColor = Color.white;
 
             string stateLabel = state.ToString();
@@ -2370,6 +2590,14 @@ public class PreyController : MonoBehaviour
             } else if ( state == PreyState.Updrafting && updraftState.activeTarget != null ) {
                 float remaining = updraftState.activeTarget.timeToRemainInterested - updraftState.remainTimer;
                 stateLabel += $"  ride {Mathf.Max( remaining , 0f ):F1}s";
+            } else if ( state == PreyState.TakingOff ) {
+                float traveled = Vector3.Distance( position , takeOffState.origin );
+                stateLabel += takeOffState.fromStartle ? "  (startled)" : "";
+                stateLabel += $"  {traveled:F0}/{parameters.takeOff.takeOffDistance:F0}m";
+            } else if ( state == PreyState.Settled ) {
+                stateLabel += parameters.modules.relaunch
+                    ? $"  relaunch in {Mathf.Max( settleDuration - settleTimer , 0f ):F1}s"
+                    : "  (resting)";
             }
 
             UnityEditor.Handles.Label( origin + Vector3.up * 2f , stateLabel , GizmoLabel( stateColor ) );
@@ -2494,7 +2722,7 @@ public class PreyController : MonoBehaviour
         if ( spawning ) {
             var   spawnColor = isDespawning ? Color.red : Color.green;
             string spawnLabel = isDespawning
-                ? $"Despawning  {life * 100f:F0}%"
+                ? $"Despawning ({despawnReason})  {life * 100f:F0}%"
                 : $"Spawning  {life * 100f:F0}%";
             UnityEditor.Handles.Label( origin + Vector3.up * 4f , spawnLabel , GizmoLabel( spawnColor ) );
         }
@@ -2557,8 +2785,6 @@ public class PreyController : MonoBehaviour
                         Gizmos.DrawWireCube( manager.regionCollider.bounds.center , manager.regionCollider.bounds.size );
                         Gizmos.DrawLine( wrenPos , manager.regionCollider.ClosestPoint( wrenPos ) );
                     }
-                    UnityEditor.Handles.Label( wrenPos + Vector3.up * 1f ,
-                        outside ? "wren OUTSIDE cage" : "wren inside cage" , GizmoLabel( col ) );
                     break;
                 }
             }

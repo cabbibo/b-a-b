@@ -27,8 +27,9 @@ public class PreyInterestPointConfigSOEditor : Editor
         Prop( "targetRandomness" , "Target Randomness" );
         Prop( "entranceShape" , "Entrance Shape" );
         if ( cfg.entranceShape == EntranceShape.Collider )
-            EditorGUILayout.HelpBox( "Collider entrance: the bird arrives when it enters a collider assigned on the " +
-                                     "PreyInterestPoint component (Enter Radius is ignored; Notice Radius still applies)." , MessageType.None );
+            EditorGUILayout.HelpBox( "Collider entrance: the bird arrives when it gets within Enter Radius of a collider " +
+                                     "assigned on the PreyInterestPoint component (Enter Radius = hit reach; 0 = must be " +
+                                     "strictly inside). Notice Radius still applies." , MessageType.None );
 
         // ── Type-specific ────────────────────────────────────────────────────
         switch ( cfg.type ) {
@@ -61,6 +62,7 @@ public class PreyInterestPointConfigSOEditor : Editor
                     Rel( s , "spacing" , "Spacing" );
                     Rel( s , "forwardFromVelocity" , "Forward From Velocity" );
                     Rel( s , "desireToBeClose" , "Desire To Be Close" );
+                    Rel( s , "upImportance" , "Up Importance" );
                     Rel( s , "castUp" , "Cast Up" );
                     Rel( s , "castHeightOffset" , "Cast Height Offset" );
                     Rel( s , "groundLayers" , "Ground Layers" );

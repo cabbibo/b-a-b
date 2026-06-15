@@ -6,5 +6,6 @@ public enum PreyState
     Perched,
     Updrafting,
     TakingOff,
-    Disturbed
+    Disturbed,
+    Settled      // landed in place via the Settle module (distinct from Perched; no perch/takeoff params)
 }

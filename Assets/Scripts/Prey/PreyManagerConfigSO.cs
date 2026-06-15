@@ -9,6 +9,8 @@ public class PreyManagerConfigSO : ScriptableObject
     [Header( "Spawn Timing" )]
     public float spawnInterval      = 3f;
     public int   preyPerCluster     = 1;
+    [Tooltip( "Radius (world units) the birds in a cluster scatter across around the spawn point. " +
+              "0 = all on the exact same spot (they stack). Tightened by Cluster Closeness." )]
     public float clusterRadius      = 0f;
     public bool  spawnMaxOnWrenEnter = false;
     public bool  wrenEnterOnEnabled  = false;
@@ -23,11 +25,36 @@ public class PreyManagerConfigSO : ScriptableObject
 
     [Header( "Spawn Placement" )]
     public SpawnType spawnType            = SpawnType.InsideBox;
+    [Tooltip( "Spawn birds already resting in the Settled state, on the ground straight below the spawn " +
+              "point (the placement decides X/Z; the bird drops to the ground). Ignored for On Point Of Interest." )]
+    public bool      spawnSettled         = false;
     public float     spawnRadius          = 5f;
     public float     spawnDistanceMin     = 80f;           // InDistance ring
     public float     spawnDistanceMax     = 150f;
     [Range( 0f , 1f )]
     public float     spawnClosenessToBird = 0f;
+    [Range( 0f , 1f )]
+    [Tooltip( "How tightly birds in a multi-bird cluster pack together. 0 = scattered across Cluster " +
+              "Radius; 1 = all on the same spot. (Only matters when Prey Per Cluster > 1.)" )]
+    public float     clusterCloseness     = 0f;
+    [Range( 0f , 1f )]
+    [Tooltip( "How strongly a new spawn is pulled toward another existing prey (flock cohesion). 0 = spawn " +
+              "at the placement spot; 1 = spawn right on a random existing prey." )]
+    public float     spawnNearBirdImportance = 0f;
+    [Tooltip( "Bias the spawn toward this distance from the wren (all non-POI spawn types). Pulls the " +
+              "spawn point onto a sphere of this radius around the wren, keeping its direction." )]
+    public float     spawnDesiredDistance           = 80f;
+    [Range( 0f , 1f )]
+    [Tooltip( "How strongly to pull the spawn to Desired Distance from the wren. 0 = ignore; " +
+              "1 = exactly at that distance." )]
+    public float     spawnDesiredDistanceImportance = 0f;
+    [Tooltip( "Never spawn below the ground: if a computed spawn point is under the terrain, lift it to the " +
+              "surface + clearance. (Does not apply to On Point Of Interest spawns, which place on surfaces.)" )]
+    public bool      spawnAboveGround     = true;
+    [Tooltip( "How far above the ground surface to place a spawn that would otherwise be underground." )]
+    public float     spawnGroundClearance = 0.5f;
+    [Tooltip( "What counts as ground for the spawn-above-ground check." )]
+    public LayerMask spawnGroundLayers    = ~0;
 
     [Tooltip( "OnPointOfInterest: ideal distance IN FRONT of the wren for a spawn point." )]
     public float     poiIdealDistance        = 80f;
@@ -52,6 +79,9 @@ public class PreyManagerConfigSO : ScriptableObject
     public DespawnSubject despawnSubject = DespawnSubject.Wren;
     public bool        despawnOnWrenExit        = true;
     public float       minimumTimeAlive         = 30f;
+    [Tooltip( "Hard lifetime cap: once a bird has been alive longer than this it despawns no matter what " +
+              "(ignores the wren-distance / region / collider tests). 0 = no cap." )]
+    public float       maximumTimeAlive         = 0f;
     public float       timeOutsideBeforeDespawn = 5f;       // grace period once "outside" before despawning
     public float       distanceBeforeNotCaught  = 100f;     // Distance type: wren distance that counts as outside
 
