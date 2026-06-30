@@ -80,6 +80,8 @@ public class PreyManager : MonoBehaviour
     [Header( "Config" )]
     public PreyConfigSO preyConfig; // the prey's params
 
+    public PreyVisualsConfigSO preyVisualsConfig; // the prey's look: scale / flap / bank + mesh
+
     public GameObject preyPrefab; // what to spawn
 
     [Header( "Scene Wiring" )]
@@ -532,6 +534,19 @@ public class PreyManager : MonoBehaviour
             default: spawnPos = SpawnInsideBox(); break;
         }
 
+        // desired distance: pull the spawn onto a sphere of `spawnDesiredDistance` around the wren,
+        // keeping its direction (0 = ignore the base placement's distance, 1 = exactly at that distance).
+        if ( spawnDesiredDistanceImportance > 0f ) {
+            var w = GetWrenPosition();
+            if ( w.HasValue ) {
+                Vector3 fromWren = spawnPos - w.Value;
+                float   d        = fromWren.magnitude;
+                Vector3 dir      = d > 0.001f ? fromWren / d : Random.onUnitSphere;
+                Vector3 atDesired = w.Value + dir * spawnDesiredDistance;
+                spawnPos = Vector3.Lerp( spawnPos , atDesired , spawnDesiredDistanceImportance );
+            }
+        }
+
         // flock cohesion: pull the spawn toward a random existing bird (0 = ignore, 1 = right on it)
         if ( spawnNearBirdImportance > 0f && _birds.Count > 0 ) {
             var other = _birds[ Random.Range( 0 , _birds.Count ) ];
@@ -548,7 +563,7 @@ public class PreyManager : MonoBehaviour
             var placePos = ClampAboveGround( clusterCenter + Random.insideUnitSphere * clusterScatter );   // never spawn under the terrain
 
             var newPrey = Instantiate( preyPrefab , placePos , Quaternion.identity ).GetComponent<PreyController>();
-            newPrey.Initialize( preyConfig , this );
+            newPrey.Initialize( preyConfig , preyVisualsConfig , this );
             newPrey.transform.parent = preyHolder;
 
             if ( spawnSettled ) newPrey.SpawnSettled();   // drop to the ground below and rest in the Settled state
@@ -985,7 +1000,7 @@ public class PreyManager : MonoBehaviour
         for ( int i = 0; i < preyPerCluster; i++ ) {
             var pos = POISpawnPosition( poi );
             var bird = Instantiate( preyPrefab , pos , Quaternion.identity ).GetComponent<PreyController>();
-            bird.Initialize( preyConfig , this );
+            bird.Initialize( preyConfig , preyVisualsConfig , this );
             bird.transform.parent = preyHolder;
 
             ApplyPOISpawnState( bird , poi );

@@ -10,10 +10,12 @@ public class PreyManagerEditor : Editor
     private bool _foldWiring     = true;
     private bool _foldRuntime    = false;
     private bool _foldPreyCfg    = true;   // embedded prey config expanded?
+    private bool _foldVisualsCfg = true;   // embedded visuals config expanded?
     private bool _foldManagerCfg = true;   // embedded manager config expanded?
 
-    private Editor _cfgEditor;       // inline embedded inspector for the manager config asset
-    private Editor _preyCfgEditor;   // inline embedded inspector for the prey config asset
+    private Editor _cfgEditor;        // inline embedded inspector for the manager config asset
+    private Editor _preyCfgEditor;    // inline embedded inspector for the prey config asset
+    private Editor _visualsCfgEditor; // inline embedded inspector for the visuals config asset
 
     public override void OnInspectorGUI()
     {
@@ -48,6 +50,24 @@ public class PreyManagerEditor : Editor
                     using ( new EditorGUILayout.VerticalScope( EditorStyles.helpBox ) ) {
                         CreateCachedEditor( mgr.preyConfig , null , ref _preyCfgEditor );
                         _preyCfgEditor.OnInspectorGUI();
+                    }
+                }
+            }
+
+            // ── Visuals config (the bird's look: scale / flap / bank + mesh) ──────────────────────
+            EditorGUILayout.Space( 4 );
+            EditorGUILayout.PropertyField( serializedObject.FindProperty( "preyVisualsConfig" ) );
+            if ( mgr.preyVisualsConfig == null ) {
+                EditorGUILayout.HelpBox( "No visuals config assigned — birds fall back to default scale/flap/" +
+                                         "bank and keep the prefab's mesh. Assign or create one to customize their look." , MessageType.Info );
+                if ( GUILayout.Button( "Create Visuals Config Asset" ) ) CreateVisualsConfig( mgr );
+            } else {
+                EditorGUILayout.Space( 4 );
+                _foldVisualsCfg = EditorGUILayout.Foldout( _foldVisualsCfg , "Visuals Config (asset)" , true , EditorStyles.foldoutHeader );
+                if ( _foldVisualsCfg ) {
+                    using ( new EditorGUILayout.VerticalScope( EditorStyles.helpBox ) ) {
+                        CreateCachedEditor( mgr.preyVisualsConfig , null , ref _visualsCfgEditor );
+                        _visualsCfgEditor.OnInspectorGUI();
                     }
                 }
             }
@@ -148,6 +168,20 @@ public class PreyManagerEditor : Editor
         AssetDatabase.CreateAsset( asset , path );
         AssetDatabase.SaveAssets();
         serializedObject.FindProperty( "preyConfig" ).objectReferenceValue = asset;
+        serializedObject.ApplyModifiedProperties();
+    }
+
+    private void CreateVisualsConfig( PreyManager mgr )
+    {
+        var asset = ScriptableObject.CreateInstance<PreyVisualsConfigSO>();
+        string path = EditorUtility.SaveFilePanelInProject(
+            "Create PreyVisualsConfigSO" , mgr.name + "VisualsConfig" , "asset" ,
+            "Choose where to save the visuals config asset" );
+        if ( string.IsNullOrEmpty( path ) ) { Object.DestroyImmediate( asset ); return; }
+
+        AssetDatabase.CreateAsset( asset , path );
+        AssetDatabase.SaveAssets();
+        serializedObject.FindProperty( "preyVisualsConfig" ).objectReferenceValue = asset;
         serializedObject.ApplyModifiedProperties();
     }
 

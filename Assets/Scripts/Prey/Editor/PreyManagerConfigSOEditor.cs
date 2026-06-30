@@ -75,6 +75,12 @@ public class PreyManagerConfigSOEditor : Editor
 
             EditorGUILayout.Space( 2 );
             Prop( "spawnNearBirdImportance" , "Spawn Near Other Prey Importance" );
+
+            if ( cfg.spawnType != SpawnType.OnPointOfInterest ) {
+                Prop( "spawnDesiredDistance" , "Desired Distance (from wren)" );
+                Prop( "spawnDesiredDistanceImportance" , "Desired Distance Importance" );
+            }
+
             if ( cfg.preyPerCluster > 1 ) {
                 Prop( "clusterRadius" , "Cluster Spacing" );
                 Prop( "clusterCloseness" , "Cluster Closeness" );

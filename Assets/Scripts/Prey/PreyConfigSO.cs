@@ -43,13 +43,7 @@ public class PreyModuleFlags
 
 // ─── Core settings ───────────────────────────────────────────────────────────
 
-[System.Serializable]
-public class PreyScaleSettings
-{
-    public float maxScaleStartLife = 1;
-    public float maxScaleEndLife   = 0;
-    public float maxScale          = .1f;
-}
+// PreyScaleSettings moved to PreyVisualsConfigSO (visuals are authored/reused separately).
 
 [System.Serializable]
 public class PreyMovementSettings
@@ -88,12 +82,7 @@ public class PreyPhysicsSettings
     public float physicsInfoLerpSpeed = .1f;
 }
 
-[System.Serializable]
-public class PreyTurningSettings
-{
-    public float bankStrength  = 5f;
-    public float bankSmoothing = 0.08f;
-}
+// PreyTurningSettings (bank) moved to PreyVisualsConfigSO.
 
 [System.Serializable]
 public class PreyAvoidanceModule
@@ -231,26 +220,7 @@ public class PreyCageModule
     public float borderTurnForce    = 2f;
 }
 
-[System.Serializable]
-public class PreyFlapSettings
-{
-    public float flapSpeed           = 1;
-    public float upBounceSize        = 1f;
-    public float forwardBounceSize   = .5f;
-    public float forwardBounceOffset = .5f;
-
-    [Range( 0f , 1f )]
-    [Tooltip( "Forces flapping based on climb direction. 0 = off (normal flap behavior). 1 = the bird MUST " +
-              "flap whenever it's moving, at a rate set by how steeply it climbs: ~4x flapSpeed going " +
-              "straight up, ~0.5x going level/forward. Makes launching birds flap hard to climb." )]
-    public float climbSpeedFlapMultiplier = 0f;
-
-    [Header( "Ambient Flapping" )]
-    public float defaultFlapRate   = 0f;   // 0 = disabled; matches flapSpeed units (radians/frame)
-    public float medianFlapCluster = 2f;   // average flaps per burst (geometric distribution)
-    public float glideTimeMin      = 0.5f; // seconds between bursts (min)
-    public float glideTimeMax      = 2.0f; // seconds between bursts (max)
-}
+// PreyFlapSettings moved to PreyVisualsConfigSO.
 
 [System.Serializable]
 public class PreyCrystalSettings
@@ -498,11 +468,9 @@ public class PreyConfigSO : ScriptableObject
     public PreyModuleFlags modules;
 
     // ── Core: fundamental movement / sensing / lifecycle ──────────────────────
+    // scale / flap / turning(bank) moved to PreyVisualsConfigSO (assigned on the PreyManager).
     [Header( "Core" )]
-    public PreyScaleSettings    scale;
     public PreyMovementSettings movement;
-    public PreyFlapSettings     flap;
-    public PreyTurningSettings  turning;
     public PreyPhysicsSettings  physics;
     public PreyDistanceSettings distance;
     public PreyCrystalSettings  crystals;

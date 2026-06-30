@@ -18,9 +18,11 @@ public struct PreyForce
 public class PreyController : MonoBehaviour
 {
     // ── References ────────────────────────────────────────────────────────────
-    public PreyManager  manager;
-    public PreyConfigSO parameters;
-    public float        spawnTime;
+    public PreyManager         manager;
+    public PreyConfigSO        parameters;
+    public PreyVisuals         visuals;        // owns the mesh + holds the visuals config
+    public PreyVisualsConfigSO visualsConfig;  // scale / flap / bank settings (read each frame)
+    public float               spawnTime;
     public Vector3      spawnPoint;
     public bool         spawning;
 
@@ -369,22 +371,38 @@ public class PreyController : MonoBehaviour
 
         if ( velocity.sqrMagnitude > 0.0001f ) {
             var fwd = velocity.normalized;
-            float targetBank = Vector3.Cross( oldVelocity.normalized , fwd ).y * parameters.turning.bankStrength;
-            currentBank = Mathf.Lerp( currentBank , targetBank , parameters.turning.bankSmoothing );
+            float targetBank = Vector3.Cross( oldVelocity.normalized , fwd ).y * visualsConfig.turning.bankStrength;
+            currentBank = Mathf.Lerp( currentBank , targetBank , visualsConfig.turning.bankSmoothing );
             var right = Vector3.Cross( Vector3.up , fwd ).normalized;
             var bankUp = (Vector3.up + right * currentBank).normalized;
             transform.LookAt( position + flapValue + fwd * 10 , bankUp );
         }
+
+        // Drive the visuals (wings) after the body has been positioned/oriented this tick.
+        if ( visuals != null ) visuals.Tick();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Initialization
     // ─────────────────────────────────────────────────────────────────────────
 
-    public void Initialize( PreyConfigSO config , PreyManager mgr )
+    public void Initialize( PreyConfigSO config , PreyVisualsConfigSO visualsCfg , PreyManager mgr )
     {
         parameters = config;
         manager    = mgr;
+
+        // Visuals: scale / flap / bank settings + the mesh now live on a separate config.
+        // Fall back to a default instance so a bird with no visuals config still flaps/scales
+        // instead of throwing every frame.
+        if ( visualsCfg == null ) {
+            Debug.LogWarning( $"[PreyController] {name} spawned with no PreyVisualsConfig — using defaults." );
+            visualsCfg = ScriptableObject.CreateInstance<PreyVisualsConfigSO>();
+        }
+        visualsConfig = visualsCfg;
+
+        if ( visuals == null ) visuals = GetComponent<PreyVisuals>();
+        if ( visuals == null ) visuals = gameObject.AddComponent<PreyVisuals>();
+        visuals.Initialize( visualsConfig , this );
 
         // seed per-instance randomness
         noiseOffset = Random.Range( 0f , 100f );
@@ -413,7 +431,7 @@ public class PreyController : MonoBehaviour
         isDespawning      = false;
         despawnReason     = "";
         ambientFlapsInBurst = 0;
-        ambientGlideTimer   = Random.Range( parameters.flap.glideTimeMin , parameters.flap.glideTimeMax );
+        ambientGlideTimer   = Random.Range( visualsConfig.flap.glideTimeMin , visualsConfig.flap.glideTimeMax );
         force             = Vector3.zero;
         smoothedForce     = Vector3.zero;
         frame = Random.Range( 0 , parameters.physics.physicsResolution );
@@ -1469,12 +1487,17 @@ public class PreyController : MonoBehaviour
         velocity  = vTangent + vNormal;
 
         if ( velocity.magnitude < parameters.settle.settleSpeed ) {
-            if ( parameters.modules.settle ) {
+            // Max Settle Height is a permission gate, not a trigger: even when slow, the bird may only
+            // settle while within that height of the ground (0 = no limit). It never forces a settle.
+            float maxH = parameters.settle.maxSettleHeight;
+            bool withinSettleHeight = maxH <= 0f || position.y - hit.point.y <= maxH;
+
+            if ( parameters.modules.settle && withinSettleHeight ) {
                 // bounce decayed below the cutoff → land into the Settled state (pinned in place)
                 EnterSettled();
                 return;
             }
-            // no Settle module → keep a minimum bounce off the surface so it never fully stops
+            // no Settle module (or too high to settle) → keep a minimum bounce so it never fully stops
             velocity += n * parameters.settle.settleSpeed;
         }
     }
@@ -2266,30 +2289,32 @@ public class PreyController : MonoBehaviour
     {
         climbRate = Mathf.Clamp( velocity.normalized.y , 0 , 1 );
 
-        if ( parameters.flap.climbSpeedFlapMultiplier > 0f ) {
+        var flapCfg = visualsConfig.flap;
+
+        if ( flapCfg.climbSpeedFlapMultiplier > 0f ) {
             // forced direction-driven flapping: rate scales ~0.5x flapSpeed level/forward → ~4x straight
             // up, blended in by climbSpeedFlapMultiplier. The bird MUST flap (no glide) to climb.
             float dirMult = Mathf.Lerp( 0.5f , 4f , climbRate );
-            float mult    = Mathf.Lerp( 1f , dirMult , parameters.flap.climbSpeedFlapMultiplier );
-            positionInFlapCycle += parameters.flap.flapSpeed * _flapSpeedMult * mult;
+            float mult    = Mathf.Lerp( 1f , dirMult , flapCfg.climbSpeedFlapMultiplier );
+            positionInFlapCycle += flapCfg.flapSpeed * _flapSpeedMult * mult;
             ambientFlapsInBurst = 0;
-            ambientGlideTimer   = Random.Range( parameters.flap.glideTimeMin , parameters.flap.glideTimeMax );
+            ambientGlideTimer   = Random.Range( flapCfg.glideTimeMin , flapCfg.glideTimeMax );
         } else if ( climbRate > 0.01f ) {
             // power-flap while climbing
-            positionInFlapCycle += parameters.flap.flapSpeed * _flapSpeedMult * climbRate * climbRate;
+            positionInFlapCycle += flapCfg.flapSpeed * _flapSpeedMult * climbRate * climbRate;
             // reset so we glide briefly after levelling out before the next burst
             ambientFlapsInBurst = 0;
-            ambientGlideTimer   = Random.Range( parameters.flap.glideTimeMin , parameters.flap.glideTimeMax );
-        } else if ( parameters.flap.defaultFlapRate > 0f ) {
+            ambientGlideTimer   = Random.Range( flapCfg.glideTimeMin , flapCfg.glideTimeMax );
+        } else if ( flapCfg.defaultFlapRate > 0f ) {
             // ambient burst/glide state machine
             if ( ambientFlapsInBurst > 0 ) {
                 float prev = positionInFlapCycle;
-                positionInFlapCycle += parameters.flap.defaultFlapRate * _flapSpeedMult;
+                positionInFlapCycle += flapCfg.defaultFlapRate * _flapSpeedMult;
                 int completed = (int)(positionInFlapCycle / (Mathf.PI * 2f)) - (int)(prev / (Mathf.PI * 2f));
                 if ( completed > 0 ) {
                     ambientFlapsInBurst = Mathf.Max( 0 , ambientFlapsInBurst - completed );
                     if ( ambientFlapsInBurst == 0 )
-                        ambientGlideTimer = Random.Range( parameters.flap.glideTimeMin , parameters.flap.glideTimeMax );
+                        ambientGlideTimer = Random.Range( flapCfg.glideTimeMin , flapCfg.glideTimeMax );
                 }
             } else {
                 // gliding — wings settle to mid-cycle rest pose
@@ -2297,7 +2322,7 @@ public class PreyController : MonoBehaviour
                 positionInFlapCycle = Mathf.Lerp( positionInFlapCycle , cycleFloor * Mathf.PI * 2f + Mathf.PI , 0.1f );
                 ambientGlideTimer -= simDt;
                 if ( ambientGlideTimer <= 0f )
-                    ambientFlapsInBurst = DrawFlapClusterSize( parameters.flap.medianFlapCluster );
+                    ambientFlapsInBurst = DrawFlapClusterSize( flapCfg.medianFlapCluster );
             }
         } else {
             // defaultFlapRate = 0: original behavior — wings settle when not climbing
@@ -2306,9 +2331,9 @@ public class PreyController : MonoBehaviour
             positionInFlapCycle = Mathf.Lerp( positionInFlapCycle , mid , .1f );
         }
 
-        flapValue = transform.up * Mathf.Sin( positionInFlapCycle ) * parameters.flap.upBounceSize
-                    + transform.forward * Mathf.Sin( positionInFlapCycle + parameters.flap.forwardBounceOffset ) *
-                    parameters.flap.forwardBounceSize;
+        flapValue = transform.up * Mathf.Sin( positionInFlapCycle ) * flapCfg.upBounceSize
+                    + transform.forward * Mathf.Sin( positionInFlapCycle + flapCfg.forwardBounceOffset ) *
+                    flapCfg.forwardBounceSize;
     }
 
     private static int DrawFlapClusterSize( float median )
@@ -2481,6 +2506,7 @@ public class PreyController : MonoBehaviour
         }
 
         life = 1;
+        WhileSpawning( 1f );   // snap to full scale (loop exits with life slightly under 1)
         spawning = false;
     }
 
@@ -2501,9 +2527,17 @@ public class PreyController : MonoBehaviour
 
     public virtual void WhileSpawning( float t )
     {
-        float s = Mathf.Clamp( 1 - (t - parameters.scale.maxScaleStartLife) , 0 , 1 );
-        s = Mathf.Min( Mathf.Clamp( 1 - (parameters.scale.maxScaleEndLife - t) , 0 , 1 ) , s );
-        transform.localScale = Vector3.one * parameters.scale.maxScale * s;
+        // t = fullness: 0 → 1 as the bird spawns in (and 1 → 0 as it despawns). Grow/shrink toward
+        // maxScale so birds scale UP as they spawn in instead of popping in at full size.
+        float grow = Mathf.Clamp01( t );
+
+        // optional life-window shaping: hold full scale between End Life and Start Life, ease out past
+        // that window. Kept for configs that use it; a no-op (1) with the default window.
+        float window = Mathf.Min(
+            Mathf.Clamp( 1 - (t - visualsConfig.scale.maxScaleStartLife) , 0 , 1 ),
+            Mathf.Clamp( 1 - (visualsConfig.scale.maxScaleEndLife - t) , 0 , 1 ) );
+
+        transform.localScale = Vector3.one * (visualsConfig.scale.maxScale * grow * window);
     }
 
     public void QuickKill()
