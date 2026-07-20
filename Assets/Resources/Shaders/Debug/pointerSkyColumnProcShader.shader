@@ -244,6 +244,14 @@ Shader "Debug/PointerSkyColumnProcShader1"
 
                 float  n       = noise( float3( 1 * v.uv.x , v.uv.y * 30 , _Time.x % 20 ) * 10 );
                 float3 typeCol = hsv( v.type * .1 + n * .02 , 1 , 1 );
+
+                // COLORED POINTERS — portal ( type 2, colored by scene ID ) and
+                // custom POI ( type 11 ) carry their color as HSV in extra data.
+                bool coloredPointer = ( v.type > 1.5 && v.type < 2.5 ) || ( v.type > 10.5 && v.type < 11.5 );
+                if ( coloredPointer )
+                {
+                    typeCol = hsv( v.extra.x + n * .02 , v.extra.y , v.extra.z );
+                }
                 float3 fCol    = 0; //hsv(v.type*.1,.5,1) * v.fade;
 
                 float baseY = saturate( v.uv.y * 20 );
@@ -256,7 +264,9 @@ Shader "Debug/PointerSkyColumnProcShader1"
                 {
                     //fCol = float3(0,0,1);
 
-                    for ( int i = 0; i < v.extra.x - .001; i++ )
+                    // Colored pointers repurpose extra.x as hue, so skip the
+                    // completion-ring loop ( which reads extra.x as a count ).
+                    for ( int i = 0; !coloredPointer && i < v.extra.x - .001; i++ )
                     {
 
 
@@ -304,7 +314,8 @@ Shader "Debug/PointerSkyColumnProcShader1"
 
                 fCol *= n;
 
-                if ( v.type > 9 )
+                // object of interest ( type 10 ) pulses; custom POI ( 11 ) stays steady.
+                if ( v.type > 9.5 && v.type < 10.5 )
                 {
                     fCol *= 10 * sin( _Time.y * 20 + v.uv.y * 30 );
                 }

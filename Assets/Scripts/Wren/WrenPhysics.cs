@@ -633,6 +633,13 @@ public class WrenPhysics : MonoBehaviour
 
         maxSpeed = Mathf.Lerp( noFeathersMaxSpeed , allFeathersMaxSpeed , wren.shards.bodyPercentage );
 
+        // Keep the hard velocity ceiling in sync with the live maxSpeed.
+        // It used to be set only in Reset() ( spawn / scene load ), so it froze
+        // at whatever maxSpeed was at that instant: boosting or tuck-diving hit a
+        // stale wall, and top speed varied depending on your feather count when
+        // you arrived at a place. Recompute it every frame so the ceiling tracks.
+        velocityLimiter = maxSpeed * 10;
+
 
         oTriangle = input.triangle > .5;
         oSquare = input.square > .5;

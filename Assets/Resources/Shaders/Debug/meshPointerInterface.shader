@@ -192,6 +192,11 @@ Shader "Debug/MeshPointerInterface"
                 {
                     sizeMultiplier = 10;
                 }
+                // custom POI
+                if ( intType == 11 )
+                {
+                    sizeMultiplier = 1;
+                }
 
 
                 // if we are close to the place we are going, connect completely ( longer )
@@ -312,6 +317,23 @@ Shader "Debug/MeshPointerInterface"
                 col            = dot( v.nor , float3( 0 , 1 , 0 ) );
                 float matchVal = pow( saturate( 1 - dot( normalize( v.eye ) , normalize( v.nor ) ) ) * .9 , 10 ) * 10;
 
+
+                // COLORED POINTERS — portal ( type 2, colored by scene ID ) and
+                // custom POI ( type 11 ). Both carry their color as HSV in extra
+                // data, skipping the type-hue + completion logic.
+                if ( ( v.type > 1.5 && v.type < 2.5 ) || ( v.type > 10.5 && v.type < 11.5 ) )
+                {
+                    float3 ccol = hsv( v.extra.x , v.extra.y , v.extra.z );
+                    ccol *= .06f * 40;
+
+                    if ( matchVal < .2 )
+                    {
+                        discard;
+                    }
+
+                    ccol *= 3 * v.fade;
+                    return float4( ccol , 1 );
+                }
 
                 col = hsv( v.type * .1 + ( ( v.viewMatch + 1 ) / 2 ) * .01 + matchVal * .01 - .02 , 1 , 1 );
 

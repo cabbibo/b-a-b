@@ -1,5 +1,5 @@
 # ============================================================
-# EDIT_TAG: 6845
+# EDIT_TAG: 6859
 # ^ bumped on every edit so you can verify a reload picked up the latest code.
 # ============================================================
 """
@@ -31,8 +31,9 @@ bl_info = {
 
 import bpy
 import numpy as np
+import os
 import time
-from mathutils import Matrix
+from mathutils import Matrix, Vector, kdtree as mu_kdtree
 
 # Optional Numba JIT. If installed (`pip install numba` into Blender's Python),
 # the `@njit`-decorated functions compile to native machine code on first call.
@@ -98,15 +99,15 @@ LOD_RING_SCHEDULE = [6, 4, 2, 2]
 
 
 def _lod_vert_multiplier(lod_index, n_lods, min_ratio):
-    """Quadratic ramp from 1.0 at LOD0 to `min_ratio` at the last LOD,
-    matching the same t^2 shape used by the tube_scale expansion.
-    Front-loaded: small drop early, large drop late."""
-    if n_lods <= 1:
-        return 1.0
-    if min_ratio >= 1.0:
+    """Geometric ramp from 1.0 at LOD0 down to `min_ratio` at the last LOD:
+    mult = min_ratio ** (i / (n_lods - 1)), so each LOD is a constant
+    fraction of the previous one. Examples for 4 LODs:
+      ratio 0.01 -> 100% / 21.5% / 4.6% / 1%
+      ratio 0.10 -> 100% / 46.4% / 21.5% / 10%"""
+    if n_lods <= 1 or min_ratio >= 1.0:
         return 1.0
     t = lod_index / (n_lods - 1)
-    return 1.0 - (1.0 - min_ratio) * (t * t)
+    return float(max(min_ratio, 1e-4) ** t)
 
 # Shared state for the modal bake-set, read by the sidebar panel for the
 # in-panel progress bar. Module-level so the panel can see it without needing
@@ -229,9 +230,19 @@ def _read_v3_drawing(drawing, color_attr_name):
     all_pos    = _bulk("position", 3, "vector")
     all_radius = _bulk("radius",   1, "value")
     all_color  = _bulk(color_attr_name, 4, "color") if color_attr_name else None
+    all_qnorm  = _bulk(QUILL_NORMAL_ATTR, 3, "vector")
+
+    # Per-curve Quill brush type (stamped by Fetch Quill Orientation).
+    brush_arr = None
+    try:
+        bdata = attrs[QUILL_BRUSH_ATTR].data
+        brush_arr = np.empty(len(bdata), dtype=np.int32)
+        bdata.foreach_get("value", brush_arr)
+    except (KeyError, AttributeError, TypeError):
+        brush_arr = None
 
     cursor = 0
-    for s in drawing.strokes:
+    for s_i, s in enumerate(drawing.strokes):
         n = len(s.points)
         if n < 2:
             cursor += n
@@ -261,7 +272,17 @@ def _read_v3_drawing(drawing, color_attr_name):
                 if vc is not None:
                     col[i] = [vc[0], vc[1], vc[2], vc[3]]
 
-        out.append({"pos": pos, "col": col, "thick": thick})
+        qnorm = None
+        if all_qnorm is not None:
+            qnorm = all_qnorm[cursor:cursor + n].astype(np.float64)
+            # All-zero normals mark strokes with no Quill match (added after
+            # import) - treat as "no data" so they use parallel transport.
+            if float(np.abs(qnorm).max()) < 1e-6:
+                qnorm = None
+        brush = int(brush_arr[s_i]) if brush_arr is not None and s_i < len(brush_arr) else 0
+
+        out.append({"pos": pos, "col": col, "thick": thick,
+                    "qnorm": qnorm, "brush": brush})
         cursor += n
 
     return out
@@ -342,7 +363,16 @@ def stroke_weights(pts, thick, curve_importance, thickness_delta_importance):
              + thickness_delta_importance * seg_dthick)
     cum_w = np.concatenate([[0.0], np.cumsum(seg_w)])
     arc_len = float(seg_len.sum())
-    return cum_w, cum_w[-1], arc_len
+    turn_total = float(turning.sum()) if turning.size else 0.0
+    # Thickness total-variation on a lightly smoothed profile, so per-point
+    # Quill jitter doesn't masquerade as real bulges/tapers.
+    if len(thick) >= 3:
+        t_s = thick.astype(np.float64).copy()
+        t_s[1:-1] = 0.25 * (thick[:-2] + 2.0 * thick[1:-1] + thick[2:])
+        tv_thick = float(np.abs(np.diff(t_s)).sum())
+    else:
+        tv_thick = float(seg_dthick.sum()) if seg_dthick.size else 0.0
+    return cum_w, cum_w[-1], arc_len, turn_total, tv_thick
 
 
 def compute_resample_keys(cum_w, n):
@@ -361,6 +391,588 @@ def interp_along(values, idx, t):
     if values.ndim == 1:
         return lo + t * (hi - lo)
     return lo + t[:, None] * (hi - lo)
+
+
+def _classify_brick(thick, turn_total, max_turn_rad):
+    """A stroke is 'brick-like' when it is nearly straight AND its body
+    thickness is nearly constant (Quill pressure tapers at the very ends are
+    ignored by sampling the middle 50%). Brick strokes bake as 2-spine-sample
+    square-profile boxes (8 verts, 6 quads) with flat ends at every LOD.
+    Returns (is_brick, body_thickness)."""
+    if max_turn_rad <= 0.0 or turn_total > max_turn_rad:
+        return False, 0.0
+    n = len(thick)
+    lo = n // 4
+    hi = max(lo + 1, (3 * n) // 4)
+    body = thick[lo:hi]
+    med = float(np.median(body))
+    if med <= 1e-9:
+        return False, 0.0
+    spread = float(np.percentile(body, 90) - np.percentile(body, 10))
+    if spread / med > 0.35:
+        return False, 0.0
+    return True, med
+
+
+def _mean_width_comp(R):
+    """Radius multiplier so an R-gon tube reads as wide as the round source
+    stroke. Cauchy's formula: mean silhouette width of a convex shape =
+    perimeter / pi. Circle of radius r: 2r. Inscribed R-gon: 2Rr*sin(pi/R)/pi.
+    Matching them gives pi / (R * sin(pi/R)) -> x1.047 for R=6, x1.111 for
+    R=4. A 2-vert ribbon degenerates to a segment (mean width 4r/pi) -> pi/2."""
+    if R >= 3:
+        return float(np.pi / (R * np.sin(np.pi / R)))
+    return float(np.pi / 2.0)
+
+
+def _resample_deviation(orig, new_pos, idx):
+    """Per-spine-sample silhouette loss from resampling: for each gap between
+    consecutive resampled points, the max distance from the skipped source
+    points to the resampled segment. Added back into the local tube radius so
+    the silhouette re-inflates exactly where corners were cut off, instead of
+    uniformly fattening the whole stroke. Returns (S,) array."""
+    S = len(new_pos)
+    dev = np.zeros(S)
+    for j in range(S - 1):
+        lo, hi = int(idx[j]) + 1, int(idx[j + 1]) + 1
+        if hi <= lo:
+            continue
+        P = orig[lo:hi]
+        A, B = new_pos[j], new_pos[j + 1]
+        AB = B - A
+        L2 = float(AB @ AB)
+        if L2 < 1e-18:
+            dists = np.linalg.norm(P - A, axis=1)
+        else:
+            tt = np.clip(((P - A) @ AB) / L2, 0.0, 1.0)
+            dists = np.linalg.norm(P - (A + tt[:, None] * AB), axis=1)
+        m = float(dists.max())
+        if m > dev[j]:
+            dev[j] = m
+        if m > dev[j + 1]:
+            dev[j + 1] = m
+    return dev
+
+
+# --------------------------------------------------------------------------- #
+# Quill orientation recovery                                                  #
+# --------------------------------------------------------------------------- #
+# The Quill file format stores per-vertex normals (ribbon orientation) and a
+# per-stroke brush type, both of which the GP importer discards. When a GP
+# object still has its Quill provenance (obj.quill.scene_path / layer_path,
+# written by the importer), we can read them straight back out of the .qbin
+# and stamp them onto the GP drawing as attributes. The tube builder then
+# constructs cross-sections in the painted orientation (flat ribbons that
+# twist like the original) instead of guessing with parallel transport.
+QUILL_NORMAL_ATTR = "quill_normal"
+QUILL_BRUSH_ATTR  = "quill_brush"
+
+QUILL_BRUSH_RIBBON   = 1
+QUILL_BRUSH_CYLINDER = 2
+QUILL_BRUSH_ELLIPSE  = 3
+QUILL_BRUSH_CUBE     = 4
+
+
+def _quill_find_layer(node, parts):
+    """Walk the raw Quill.json layer tree by name parts."""
+    if not parts:
+        return node
+    if node.get("Type") != "Group":
+        return None
+    for child in node.get("Implementation", {}).get("Children", []):
+        if child.get("Name") == parts[0]:
+            return _quill_find_layer(child, parts[1:])
+    return None
+
+
+def _quill_paint_layers_by_name(node, name, found=None):
+    """Collect every Paint layer with the given name anywhere in the tree.
+    Needed because the importer's stored layer_path is unreliable (it
+    accumulates one duplicate parent name per preceding sibling)."""
+    if found is None:
+        found = []
+    if node.get("Type") == "Paint" and node.get("Name") == name:
+        found.append(node)
+    if node.get("Type") == "Group":
+        for child in node.get("Implementation", {}).get("Children", []):
+            _quill_paint_layers_by_name(child, name, found)
+    return found
+
+
+def _quill_read_drawing_strokes(qbin_path, layer):
+    """Read every stroke of a Quill paint layer's first drawing. Seeks
+    straight to the drawing's byte range, so only that layer is parsed (the
+    qbin can be hundreds of MB). Returns a list of dicts
+    {brush, pos (N,3), normal (N,3), width (N,)}."""
+    import struct as _struct
+    drawings = layer.get("Implementation", {}).get("Drawings", [])
+    if not drawings:
+        raise RuntimeError(f"layer {layer.get('Name')!r} has no drawings")
+
+    # Stroke record layout (see the Quill add-on's model/paint.py):
+    # header = id u32, unknown u32, bbox 6*f32, brush i16, bool u8, pad u8,
+    # vertex count u32 (40 bytes). Then count vertices of 14 f32 each:
+    # position 3, normal 3, tangent 3, color 3, opacity 1, width 1.
+    strokes = []
+    with open(qbin_path, "rb") as qbin:
+        qbin.seek(int(drawings[0]["DataFileOffset"], 16))
+        (stroke_count,) = _struct.unpack("<I", qbin.read(4))
+        for _ in range(stroke_count):
+            head = qbin.read(40)
+            brush = _struct.unpack_from("<h", head, 32)[0]
+            (n_verts,) = _struct.unpack_from("<I", head, 36)
+            raw = np.frombuffer(qbin.read(n_verts * 56), dtype="<f4").reshape(n_verts, 14)
+            strokes.append({
+                "brush":  int(brush),
+                "pos":    raw[:, 0:3].astype(np.float64),
+                "normal": raw[:, 3:6].astype(np.float64),
+                "width":  raw[:, 13].astype(np.float64),
+            })
+    return strokes
+
+
+def _quill_read_layer_strokes(scene_dir, layer_path):
+    """Resolve a Quill paint layer and read its strokes. Tries the stored
+    layer_path first; falls back to searching the tree by the path's last
+    component (the layer name), returning candidates for structure matching.
+    Returns a list of stroke-list candidates (usually length 1)."""
+    import json as _json
+    scene_json = os.path.join(scene_dir, "Quill.json")
+    qbin_path  = os.path.join(scene_dir, "Quill.qbin")
+    if not (os.path.exists(scene_json) and os.path.exists(qbin_path)):
+        raise RuntimeError(f"Quill scene not found at {scene_dir!r}")
+    with open(scene_json, "r", encoding="utf8") as f:
+        root = _json.load(f)["Sequence"]["RootLayer"]
+
+    parts = [p for p in layer_path.split("/") if p]
+    name = parts[-1] if parts else ""
+
+    # Exact path walk (skip the root layer itself).
+    layer = _quill_find_layer(root, parts[1:])
+    if layer is not None and layer.get("Type") == "Paint":
+        candidates = [layer]
+    else:
+        candidates = _quill_paint_layers_by_name(root, name)
+    if not candidates:
+        raise RuntimeError(f"no Paint layer named {name!r} found in Quill.json")
+    return [_quill_read_drawing_strokes(qbin_path, c) for c in candidates]
+
+
+def _fetch_quill_orientation(gp_obj):
+    """Recover normals + brush types from the Quill source and store them as
+    attributes on the GP drawing. Returns the number of points stamped."""
+    q = getattr(gp_obj, "quill", None)
+    if q is None or not q.scene_path or not q.layer_path:
+        raise RuntimeError("no Quill provenance (scene_path/layer_path) on this object")
+    if gp_obj.type != 'GREASEPENCIL':
+        raise RuntimeError("only v3 GREASEPENCIL objects are supported")
+
+    candidates = _quill_read_layer_strokes(bpy.path.abspath(q.scene_path), q.layer_path)
+
+    drawings = []
+    for lay in gp_obj.data.layers:
+        fr = lay.current_frame()
+        if fr is not None:
+            drawings.append(fr.drawing)
+    if len(drawings) != 1:
+        raise RuntimeError(f"expected exactly 1 GP drawing, found {len(drawings)}")
+    drawing = drawings[0]
+    gp_strokes = drawing.strokes
+
+    # GP point positions (importer wrote Quill positions verbatim).
+    pos_attr = drawing.attributes["position"].data
+    gp_flat = np.empty(len(pos_attr) * 3, dtype=np.float32)
+    pos_attr.foreach_get("vector", gp_flat)
+    gp_pts = gp_flat.reshape(-1, 3)
+
+    # Per-stroke matching by point count + endpoint positions. This survives
+    # GPs that were edited after import: strokes still present in the Quill
+    # source get their painted orientation; strokes added in Blender get zero
+    # normals, which the reader treats as "no data" (parallel transport).
+    def _skey(n, p0, p1):
+        return (n, tuple(np.round(p0, 4)), tuple(np.round(p1, 4)))
+
+    gp_keys = []
+    pts_cursor = 0
+    for gs in gp_strokes:
+        n = len(gs.points)
+        gp_keys.append(_skey(n, gp_pts[pts_cursor], gp_pts[pts_cursor + n - 1]))
+        pts_cursor += n
+
+    best = None  # (n_matched, matches, candidate strokes)
+    for cand in candidates:
+        lut = {}
+        for qi, qs in enumerate(cand):
+            lut.setdefault(
+                _skey(len(qs["pos"]), qs["pos"][0], qs["pos"][-1]), []).append(qi)
+        matches = []
+        n_matched = 0
+        for key in gp_keys:
+            qis = lut.get(key)
+            if qis:
+                matches.append(qis.pop(0))
+                n_matched += 1
+            else:
+                matches.append(-1)
+        if best is None or n_matched > best[0]:
+            best = (n_matched, matches, cand)
+    n_matched, matches, q_cand = best
+    if n_matched == 0:
+        raise RuntimeError(
+            f"no strokes matched any Quill layer candidate "
+            f"({len(candidates)} candidate(s) named alike)")
+
+    normals_list = []
+    brushes = np.zeros(len(gp_strokes), dtype=np.int32)
+    for gi, (gs, qi) in enumerate(zip(gp_strokes, matches)):
+        if qi >= 0:
+            normals_list.append(q_cand[qi]["normal"])
+            brushes[gi] = q_cand[qi]["brush"]
+        else:
+            normals_list.append(np.zeros((len(gs.points), 3)))
+    normals_flat = np.concatenate(normals_list).astype(np.float32)
+    total = int(sum(len(q_cand[qi]["pos"]) for qi in matches if qi >= 0))
+    if n_matched < len(gp_strokes):
+        print(f"[gp_to_mesh_lod] {gp_obj.name}: {len(gp_strokes) - n_matched} "
+              f"stroke(s) not in the Quill source (added after import?) - "
+              f"they'll use parallel-transport orientation.")
+
+    attrs = drawing.attributes
+    for name in (QUILL_NORMAL_ATTR, QUILL_BRUSH_ATTR):
+        if name in attrs:
+            attrs.remove(attrs[name])
+    na = attrs.new(QUILL_NORMAL_ATTR, 'FLOAT_VECTOR', 'POINT')
+    na.data.foreach_set("vector", normals_flat.ravel())
+    ba = attrs.new(QUILL_BRUSH_ATTR, 'INT', 'CURVE')
+    ba.data.foreach_set("value", brushes)
+
+    from collections import Counter
+    hist = Counter(int(b) for b in brushes if b > 0)
+    names = {1: "ribbon", 2: "cylinder", 3: "ellipse", 4: "cube"}
+    hist_s = ", ".join(f"{names.get(k, k)}={v}" for k, v in sorted(hist.items()))
+    print(f"[gp_to_mesh_lod] {gp_obj.name}: quill orientation stored for "
+          f"{total} points across {n_matched}/{len(gp_strokes)} strokes ({hist_s})")
+    return total
+
+
+# --- Quill relink: matching that survives edit-mode moves ----------------- #
+# Separating GP strokes into new objects keeps the quill pointer, but moving
+# strokes in edit mode bakes the transform into the point coordinates, so
+# position-based matching dies. These helpers match strokes by properties an
+# edit-mode move CANNOT change - point count, arc length, segment-length
+# proportions, thickness values - then recover each stroke's rotation with a
+# rigid (Kabsch) fit so the painted normals can be carried into its current
+# pose.
+
+_QUILL_CACHE = {}  # scene_dir -> {root, qbin, strokes{offset}, luts{key}}
+
+
+def _quill_json_root(scene_dir):
+    """Cached parse of Quill.json. Returns (root layer dict, qbin path)."""
+    entry = _QUILL_CACHE.setdefault(scene_dir, {})
+    if "root" not in entry:
+        import json as _json
+        scene_json = os.path.join(scene_dir, "Quill.json")
+        qbin_path = os.path.join(scene_dir, "Quill.qbin")
+        if not (os.path.exists(scene_json) and os.path.exists(qbin_path)):
+            raise RuntimeError(f"Quill scene not found at {scene_dir!r}")
+        with open(scene_json, "r", encoding="utf8") as f:
+            entry["root"] = _json.load(f)["Sequence"]["RootLayer"]
+        entry["qbin"] = qbin_path
+    return entry["root"], entry["qbin"]
+
+
+def _quill_layer_strokes_cached(scene_dir, layer):
+    """Cached read of a paint layer's first-drawing strokes."""
+    entry = _QUILL_CACHE.setdefault(scene_dir, {})
+    drawings = layer.get("Implementation", {}).get("Drawings", [])
+    if not drawings:
+        raise RuntimeError(f"layer {layer.get('Name')!r} has no drawings")
+    off = drawings[0]["DataFileOffset"]
+    strokes_by_off = entry.setdefault("strokes", {})
+    if off not in strokes_by_off:
+        strokes_by_off[off] = _quill_read_drawing_strokes(entry["qbin"], layer)
+    return strokes_by_off[off]
+
+
+def _quill_all_paint_layers(node, found=None):
+    if found is None:
+        found = []
+    if node.get("Type") == "Paint":
+        found.append(node)
+    if node.get("Type") == "Group":
+        for child in node.get("Implementation", {}).get("Children", []):
+            _quill_all_paint_layers(child, found)
+    return found
+
+
+def _stroke_fingerprint(pos, thick):
+    """Rigid-transform-invariant fingerprint: (point count, segment-length
+    proportions, quantized arc length, quantized first thickness). Thickness
+    values are untouched by edit-mode moves, so they discriminate strongly.
+    Returns (key, arcQ, thickQ) or (None, 0, 0) for degenerate strokes;
+    query neighboring arcQ/thickQ grid cells to absorb rounding at
+    quantization boundaries."""
+    n = len(pos)
+    if n < 2:
+        return None, 0, 0
+    seg = np.linalg.norm(np.diff(pos, axis=0), axis=1)
+    arc = float(seg.sum())
+    if arc <= 1e-9:
+        return None, 0, 0
+    arcQ = int(round(arc * 100.0))
+    thickQ = int(round(float(thick[0]) * 1000.0))
+    profile = tuple(np.round(seg / arc, 2))
+    return (n, profile), arcQ, thickQ
+
+
+def _rigid_rotation(src, dst):
+    """Best rotation mapping src points onto dst (Kabsch), centering first.
+    See _rigid_rotation_centered for the fast path."""
+    return _rigid_rotation_centered(src - src.mean(0), dst - dst.mean(0))
+
+
+def _rigid_rotation_centered(A, B):
+    """Best rotation mapping centered A points onto centered B (Kabsch).
+    Falls back to a shortest-arc axis alignment for (near-)collinear strokes,
+    where the roll around the stroke axis is unobservable."""
+    U, S, Vt = np.linalg.svd(A.T @ B)
+    if len(S) > 1 and S[1] > 1e-8:
+        d = np.sign(np.linalg.det(Vt.T @ U.T))
+        return Vt.T @ np.diag([1.0, 1.0, d]) @ U.T
+    u = A[-1] - A[0]
+    v = B[-1] - B[0]
+    un, vn = np.linalg.norm(u), np.linalg.norm(v)
+    if un < 1e-12 or vn < 1e-12:
+        return np.eye(3)
+    u, v = u / un, v / vn
+    c = float(np.clip(u @ v, -1.0, 1.0))
+    axis = np.cross(u, v)
+    s = float(np.linalg.norm(axis))
+    if s < 1e-12:
+        if c > 0:
+            return np.eye(3)
+        p = np.cross(u, np.array([1.0, 0.0, 0.0]))
+        if np.linalg.norm(p) < 1e-6:
+            p = np.cross(u, np.array([0.0, 1.0, 0.0]))
+        p /= np.linalg.norm(p)
+        return 2.0 * np.outer(p, p) - np.eye(3)
+    axis /= s
+    K = np.array([[0.0, -axis[2], axis[1]],
+                  [axis[2], 0.0, -axis[0]],
+                  [-axis[1], axis[0], 0.0]])
+    return np.eye(3) + s * K + (1.0 - c) * (K @ K)
+
+
+def _quill_match_pool(scene_dir, layer_path):
+    """Candidate stroke pool + lookup tables for one GP object's provenance.
+    Cached per (scene, candidate layer set) so batch relinks don't rebuild."""
+    root, _qbin = _quill_json_root(scene_dir)
+    parts = [p for p in layer_path.split("/") if p]
+    name = parts[-1] if parts else ""
+    layer = _quill_find_layer(root, parts[1:])
+    cand_layers = []
+    if layer is not None and layer.get("Type") == "Paint":
+        cand_layers.append(layer)
+    for l in _quill_paint_layers_by_name(root, name):
+        if l not in cand_layers:
+            cand_layers.append(l)
+    if not cand_layers:
+        cand_layers = _quill_all_paint_layers(root)
+    if not cand_layers:
+        raise RuntimeError("no Paint layers found in Quill.json")
+
+    cache_key = tuple(sorted(
+        l.get("Implementation", {}).get("Drawings", [{}])[0].get("DataFileOffset", "?")
+        for l in cand_layers))
+    entry = _QUILL_CACHE.setdefault(scene_dir, {})
+    luts = entry.setdefault("luts", {})
+    if cache_key in luts:
+        return luts[cache_key]
+
+    pool = []
+    for lay in cand_layers:
+        try:
+            pool.extend(_quill_layer_strokes_cached(scene_dir, lay))
+        except RuntimeError:
+            pass
+    if not pool:
+        raise RuntimeError("no strokes readable from candidate Quill layers")
+
+    exact_lut = {}
+    fp_lut = {}
+    for qi, s in enumerate(pool):
+        p = s["pos"]
+        if len(p) < 2:
+            continue
+        # Pre-centered positions for the Kabsch hot loop.
+        s["pos_c"] = p - p.mean(0)
+        ekey = (len(p), tuple(np.round(p[0].astype(np.float32), 4)),
+                tuple(np.round(p[-1].astype(np.float32), 4)))
+        exact_lut.setdefault(ekey, []).append(qi)
+        fp, arcQ, thickQ = _stroke_fingerprint(p, s["width"])
+        if fp:
+            fp_lut.setdefault(fp + (arcQ, thickQ), []).append(qi)
+    result = (pool, exact_lut, fp_lut)
+    luts[cache_key] = result
+    return result
+
+
+def _relink_quill_orientation(gp_obj):
+    """Recover per-point normals + brush types from the Quill source for
+    every drawing of a GP object, surviving separation, reordering, and
+    edit-mode moves. Two-stage matching per stroke:
+      1. exact  - point count + endpoint positions (unmoved strokes),
+      2. rigid  - invariant fingerprint (count/arc/proportions), thickness
+                  verification, then a Kabsch fit; accepted only when the
+                  residual says the stroke really is a rigidly-moved copy.
+    The fitted rotation carries the painted normals into the stroke's
+    current pose. Unmatched strokes get zero normals (the reader treats
+    those as 'no data' and uses parallel transport).
+    Returns (points stamped, strokes matched, strokes total)."""
+    q = getattr(gp_obj, "quill", None)
+    if q is None or not q.scene_path or not q.layer_path:
+        raise RuntimeError("no Quill provenance (scene_path/layer_path) on this object")
+    if gp_obj.type != 'GREASEPENCIL':
+        raise RuntimeError("only v3 GREASEPENCIL objects are supported")
+    scene_dir = bpy.path.abspath(q.scene_path)
+    pool, exact_lut, fp_lut = _quill_match_pool(scene_dir, q.layer_path)
+
+    total_pts = total_matched = total_strokes = 0
+    for lay in gp_obj.data.layers:
+        fr = lay.current_frame()
+        if fr is None:
+            continue
+        drawing = fr.drawing
+        strokes = drawing.strokes
+        counts = [len(s.points) for s in strokes]
+        n_pts_total = int(sum(counts))
+        if n_pts_total == 0:
+            continue
+        pos_attr = drawing.attributes["position"].data
+        flat = np.empty(len(pos_attr) * 3, dtype=np.float32)
+        pos_attr.foreach_get("vector", flat)
+        pts = flat.reshape(-1, 3).astype(np.float64)
+        try:
+            rad_attr = drawing.attributes["radius"].data
+            radii = np.empty(len(rad_attr), dtype=np.float32)
+            rad_attr.foreach_get("value", radii)
+        except (KeyError, AttributeError):
+            radii = np.zeros(len(pts), dtype=np.float32)
+
+        offs = np.concatenate([[0], np.cumsum(counts)]).astype(int)
+        normals_out = np.zeros((n_pts_total, 3), dtype=np.float32)
+        brush_out = np.zeros(len(strokes), dtype=np.int32)
+        for i, n in enumerate(counts):
+            total_strokes += 1
+            if n < 2:
+                continue
+            gp_p = pts[offs[i]:offs[i + 1]]
+            gp_t = radii[offs[i]:offs[i + 1]].astype(np.float64)
+            hit = None
+            R = None
+            ekey = (n, tuple(np.round(gp_p[0].astype(np.float32), 4)),
+                    tuple(np.round(gp_p[-1].astype(np.float32), 4)))
+            hits = exact_lut.get(ekey)
+            if hits:
+                hit = hits[0]
+            if hit is None:
+                fp, arcQ, thickQ = _stroke_fingerprint(gp_p, gp_t)
+                if fp:
+                    arc = arcQ / 100.0
+                    tol = max(0.01, 0.005 * arc)
+                    B = gp_p - gp_p.mean(0)
+                    best_qi, best_R, best_resid = None, None, np.inf
+                    for da in (0, -1, 1):
+                        for dt in (0, -1, 1):
+                            for qi in fp_lut.get(fp + (arcQ + da, thickQ + dt), [])[:60]:
+                                qs = pool[qi]
+                                # Fast reject on thickness (raw compare - the
+                                # values are byte-identical after edit moves).
+                                dw = qs["width"] - gp_t
+                                if abs(float(dw.max())) > 2e-3 or abs(float(dw.min())) > 2e-3:
+                                    continue
+                                A = qs["pos_c"]
+                                Rc = _rigid_rotation_centered(A, B)
+                                resid = float(np.abs(B - A @ Rc.T).max())
+                                if resid < best_resid:
+                                    best_qi, best_R, best_resid = qi, Rc, resid
+                                    if resid < tol:
+                                        break  # duplicates are common; first fit wins
+                            if best_qi is not None and best_resid < tol:
+                                break
+                        if best_qi is not None and best_resid < tol:
+                            break
+                    if best_qi is not None and best_resid < tol:
+                        hit, R = best_qi, best_R
+            if hit is None:
+                continue
+            total_matched += 1
+            total_pts += n
+            qn = pool[hit]["normal"]
+            if R is not None:
+                qn = qn @ R.T
+            normals_out[offs[i]:offs[i + 1]] = qn.astype(np.float32)
+            brush_out[i] = pool[hit]["brush"]
+
+        attrs = drawing.attributes
+        for aname in (QUILL_NORMAL_ATTR, QUILL_BRUSH_ATTR):
+            if aname in attrs:
+                attrs.remove(attrs[aname])
+        na = attrs.new(QUILL_NORMAL_ATTR, 'FLOAT_VECTOR', 'POINT')
+        na.data.foreach_set("vector", normals_out.ravel())
+        ba = attrs.new(QUILL_BRUSH_ATTR, 'INT', 'CURVE')
+        ba.data.foreach_set("value", brush_out)
+
+    print(f"[gp_to_mesh_lod] {gp_obj.name}: quill relink matched "
+          f"{total_matched}/{total_strokes} strokes ({total_pts} points)")
+    if total_matched == 0:
+        raise RuntimeError(
+            f"no strokes matched the Quill source ({total_strokes} checked)")
+    return total_pts
+
+
+def _stroke_kind(d, use_quill):
+    """Cross-section kind for batching: the brick detector wins, then the
+    Quill brush type when orientation data has been fetched."""
+    if d.get("is_brick"):
+        return 'BRICK'
+    if not use_quill or d.get("qnorm") is None:
+        return 'ROUND'
+    b = d.get("brush", 0)
+    if b == QUILL_BRUSH_RIBBON:
+        return 'RIBBON'
+    if b == QUILL_BRUSH_ELLIPSE:
+        return 'ELLIPSE'
+    if b == QUILL_BRUSH_CUBE:
+        return 'CUBE'
+    return 'CYL'  # cylinder / unknown: round profile, oriented frames
+
+
+def _thickness_cell_average(pos, thick, idx, t):
+    """Anti-aliased thickness resampling. Each output sample takes the
+    arc-length-weighted AVERAGE of the source thickness over its own cell
+    (midpoint-to-midpoint between samples) instead of point-sampling.
+    Point-sampling a narrow fat bump onto sparse samples spreads its peak
+    across the whole span via lerp - the 'tent' artifact; cell-averaging is
+    the correct low-pass for downsampling, so a bump contributes only its
+    average over the cell no matter how few samples the stroke gets."""
+    seg = np.linalg.norm(np.diff(pos, axis=0), axis=1)
+    arc = np.concatenate([[0.0], np.cumsum(seg)])
+    total_len = float(arc[-1])
+    if total_len <= 1e-12:
+        return interp_along(thick, idx, t)
+    # Cumulative integral of thickness along arc (trapezoid).
+    seg_avg = 0.5 * (thick[:-1] + thick[1:])
+    cumint = np.concatenate([[0.0], np.cumsum(seg_avg * seg)])
+    s_arc = arc[idx] + t * (arc[idx + 1] - arc[idx])
+    bounds = np.empty(len(s_arc) + 1)
+    bounds[0] = 0.0
+    bounds[-1] = total_len
+    bounds[1:-1] = 0.5 * (s_arc[:-1] + s_arc[1:])
+    Ib = np.interp(bounds, arc, cumint)
+    widths = np.maximum(np.diff(bounds), 1e-12)
+    return np.diff(Ib) / widths
 
 
 def largest_remainder(weights, total, min_each=2):
@@ -592,19 +1204,58 @@ def _frames_along_batch(spine_batch, up_axis='Z'):
     return tangents, normals, binormals
 
 
-def build_tube_batch(spine_batch, radii_batch, R, thickness_ratio=1.0, up_axis='Z'):
+def build_tube_batch(spine_batch, radii_batch, R, thickness_ratio=1.0, up_axis='Z',
+                     profile='ROUND', qnorm_batch=None):
     """Batched tube builder. spine_batch (N,S,3) and radii_batch (N,S).
+    profile 'ROUND' places R ring verts on a circle; 'SQUARE' places 4 corner
+    verts at 45-degree offsets scaled by sqrt(2), so the flat faces sit at the
+    stroke's half-width - a box whose width matches the round tube's diameter,
+    aligned with the drawing plane via up_axis.
+    qnorm_batch (N,S,3), when given, holds per-sample Quill normals: frames
+    are built in the painted orientation (width direction = normal x tangent,
+    matching the Quill importer's compute_basis) instead of parallel
+    transport, so ribbons stay flat and twist exactly like the source.
     Returns:
       verts_flat: (N*S*R, 3)
       quads:      (N*Q_per, 4)  where Q_per = (S-1)*R for tubes, (S-1) for ribbons
       caps:       (N*2, R) for tubes, None for ribbons
     Vert k for stroke s, ring step r is at index s*S*R + k*R + r."""
     N, S, _ = spine_batch.shape
-    _, normals, binormals = _frames_along_batch(spine_batch, up_axis=up_axis)
+    if qnorm_batch is not None:
+        # Tangents (same averaging as _frames_along_batch).
+        deltas = np.diff(spine_batch, axis=1)
+        seg_t = deltas / np.maximum(np.linalg.norm(deltas, axis=-1, keepdims=True), 1e-12)
+        tangents = np.empty_like(spine_batch)
+        tangents[:, 0]  = seg_t[:, 0]
+        tangents[:, -1] = seg_t[:, -1]
+        if S > 2:
+            avg = seg_t[:, :-1] + seg_t[:, 1:]
+            tangents[:, 1:-1] = avg / np.maximum(
+                np.linalg.norm(avg, axis=-1, keepdims=True), 1e-12)
+        # Quill basis: width direction = stored normal x tangent.
+        wdir = np.cross(qnorm_batch, tangents)
+        wnrm = np.linalg.norm(wdir, axis=-1, keepdims=True)
+        # Degenerate (normal parallel to tangent): any perpendicular will do.
+        alt = np.cross(np.broadcast_to(np.array([0.0, 0.0, 1.0]), tangents.shape), tangents)
+        alt_nrm = np.linalg.norm(alt, axis=-1, keepdims=True)
+        alt2 = np.cross(np.broadcast_to(np.array([1.0, 0.0, 0.0]), tangents.shape), tangents)
+        alt2 = alt2 / np.maximum(np.linalg.norm(alt2, axis=-1, keepdims=True), 1e-12)
+        alt = np.where(alt_nrm > 1e-6, alt / np.maximum(alt_nrm, 1e-12), alt2)
+        normals = np.where(wnrm > 1e-8, wdir / np.maximum(wnrm, 1e-12), alt)
+        binormals = np.cross(tangents, normals)
+        binormals = binormals / np.maximum(
+            np.linalg.norm(binormals, axis=-1, keepdims=True), 1e-12)
+    else:
+        _, normals, binormals = _frames_along_batch(spine_batch, up_axis=up_axis)
 
-    angles = np.linspace(0.0, 2.0 * np.pi, R, endpoint=False)
-    cos_a = np.cos(angles)
-    sin_a = np.sin(angles) * float(thickness_ratio)
+    if profile == 'SQUARE':
+        angles = np.pi / 4.0 + np.linspace(0.0, 2.0 * np.pi, R, endpoint=False)
+        rad_mult = np.sqrt(2.0)
+    else:
+        angles = np.linspace(0.0, 2.0 * np.pi, R, endpoint=False)
+        rad_mult = 1.0
+    cos_a = np.cos(angles) * rad_mult
+    sin_a = np.sin(angles) * rad_mult * float(thickness_ratio)
 
     ring = (cos_a[None, None, :, None] * normals[:, :, None, :]
             + sin_a[None, None, :, None] * binormals[:, :, None, :])
@@ -700,11 +1351,13 @@ def run_conversion(*args, **kwargs):
         pass
 
 
-def _prepare_stroke_data(gp_obj, curve_importance, thickness_delta_importance):
+def _prepare_stroke_data(gp_obj, curve_importance, thickness_delta_importance,
+                         brick_detect_angle=10.0):
     """Read strokes, apply zero-thickness fallback, and compute per-stroke
-    weights/scores. Returns (enriched, stats). Independent of total_verts /
-    ring_verts / tube_scale / thickness_ratio / up_axis, so its output can be
-    cached across multiple LODs of the same GP."""
+    weights/scores. Also classifies near-straight constant-thickness strokes
+    as 'bricks' (see _classify_brick). Returns (enriched, stats). Independent
+    of total_verts / ring_verts / tube_scale / thickness_ratio / up_axis, so
+    its output can be cached across multiple LODs of the same GP."""
     t0 = time.time()
     raw, stats = gather_stroke_data_world(gp_obj)
     if not raw:
@@ -730,28 +1383,37 @@ def _prepare_stroke_data(gp_obj, curve_importance, thickness_delta_importance):
         print(f"[gp_to_mesh_lod] {fallback_count} stroke(s) had zero thickness "
               f"-> filled with median {fallback:.4f}")
 
-    # Enrich each stroke with cum_w, arc_len, score.
+    # Enrich each stroke with cum_w, arc_len, score, brick classification.
+    brick_max_turn_rad = np.deg2rad(max(0.0, float(brick_detect_angle)))
     enriched = []
     zero_weight = 0
     for d in raw:
         pos = d["pos"]
-        cum_w, tot_w, arc_len = stroke_weights(
+        cum_w, tot_w, arc_len, turn_total, tv_thick = stroke_weights(
             pos, d["thick"], curve_importance, thickness_delta_importance)
         if tot_w <= 0 or arc_len <= 0:
             zero_weight += 1
             continue
         mean_thick = float(np.mean(d["thick"])) if d["thick"].size else 0.0
+        peak_thick = float(np.max(d["thick"])) if d["thick"].size else 0.0
         score = arc_len * max(mean_thick, 1e-9)
+        is_brick, body_thick = _classify_brick(d["thick"], turn_total, brick_max_turn_rad)
         d.update({"cum_w": cum_w, "tot_w": tot_w, "arc_len": arc_len,
-                  "mean_thick": mean_thick, "score": score})
+                  "mean_thick": mean_thick, "peak_thick": peak_thick,
+                  "score": score,
+                  "turn_total": turn_total, "tv_thick": tv_thick,
+                  "is_brick": is_brick, "body_thick": body_thick})
         enriched.append(d)
     stats["zero_weight"] = zero_weight
     if not enriched:
         raise RuntimeError("All strokes had zero weight.")
+    n_bricks = sum(1 for d in enriched if d["is_brick"])
+    stats["bricks"] = n_bricks
 
     elapsed = time.time() - t0
     print(f"[gp_to_mesh_lod] prepare '{gp_obj.name}': "
-          f"{stats['strokes_total']} raw -> {len(enriched)} enriched in {elapsed:.2f}s")
+          f"{stats['strokes_total']} raw -> {len(enriched)} enriched "
+          f"({n_bricks} brick) in {elapsed:.2f}s")
     return enriched, stats
 
 
@@ -759,6 +1421,10 @@ def run_conversion_iter(gp_obj, total_verts, curve_importance, tube_scale, ring_
                         thickness_delta_importance, output_suffix="_LOD0",
                         thickness_ratio=1.0, up_axis='Z',
                         force_hard_ends=False,
+                        silhouette_comp=1.0, brick_detect_angle=10.0,
+                        detail_angle=8.0,
+                        absorb_dropped=True, absorb_max_scale=3.0,
+                        keep_all=False, use_quill_orient=True,
                         cached_enriched=None, cached_stats=None):
     """Generator yielding (step, total, message) where total == 100. Step
     advances ~5 times during setup, then once per CHUNK_SIZE strokes during
@@ -781,17 +1447,59 @@ def run_conversion_iter(gp_obj, total_verts, curve_importance, tube_scale, ring_
     else:
         yield 0, 100, "Reading strokes"
         enriched, stats = _prepare_stroke_data(
-            gp_obj, curve_importance, thickness_delta_importance)
+            gp_obj, curve_importance, thickness_delta_importance,
+            brick_detect_angle)
         yield 6, 100, "Enriched"
 
-    # Decide kept vs dropped by score. Min spine samples per stroke = 3.
-    max_n = max(1, spine_budget // 3)
+    # --- Keep/drop + spine allocation (need-based) ------------------------
+    # Each stroke's "need" is the sample count required to represent its
+    # curvature within this LOD's detail angle: a straight brick needs 2, a
+    # stroke that turns 360 degrees at a 45-degree error budget needs ~10.
+    # Strokes are kept in score order (arc_len * thickness = silhouette
+    # importance) and each kept stroke gets its full need up front - so big
+    # silhouette-defining strokes stay well-shaped at low LODs while small
+    # strokes drop out entirely, instead of every stroke degrading into a
+    # 3-sample diamond together. Leftover budget then tops kept strokes back
+    # up toward their source point counts (by arc length), which is what
+    # keeps LOD0 near-exact.
+    theta = np.deg2rad(max(0.5, float(detail_angle)))
+    # Thickness tolerance rides the same LOD ramp: at 8 deg detail angle a
+    # stroke gets a sample per ~10% thickness swing, at 45 deg per ~50%.
+    # Without this, a long straight stroke with a fat bulge gets 3 samples
+    # and the bulge lerps across the whole strip - the giant-tent artifact.
+    rel_tol = min(0.5, max(0.1, float(detail_angle) / 90.0))
     n_enriched = len(enriched)
-    if n_enriched > max_n:
-        scores = np.array([d["score"] for d in enriched])
-        keep_set = set(np.argsort(-scores)[:max_n].tolist())
-    else:
+    needs = np.empty(n_enriched, dtype=np.int64)
+    for i, d in enumerate(enriched):
+        if d.get("is_brick"):
+            needs[i] = 2
+        else:
+            need = 2 + int(np.ceil(d["turn_total"] / theta))
+            peak = d.get("peak_thick", 0.0)
+            tv = d.get("tv_thick", 0.0)
+            if peak > 1e-9 and tv > 0.0:
+                need += int(np.ceil(tv / (peak * rel_tol)))
+            needs[i] = max(3, min(need, len(d["pos"])))
+    scores = np.array([d["score"] for d in enriched])
+    if keep_all:
+        # LOD0 contract: NOTHING is ever dropped. Every stroke is kept; if
+        # the budget can't cover every stroke's need, allocations shrink
+        # proportionally below (strokes get simpler, never deleted).
         keep_set = set(range(n_enriched))
+        used = int(needs.sum())
+    else:
+        keep_set = set()
+        used = 0
+        for i in np.argsort(-scores):
+            cost = int(needs[i])
+            if used + cost > spine_budget:
+                continue
+            keep_set.add(int(i))
+            used += cost
+        if not keep_set:  # budget below the cheapest stroke - keep the best one
+            best = int(np.argmax(scores))
+            keep_set.add(best)
+            used = int(needs[best])
     dropped = n_enriched - len(keep_set)
     stats["dropped_by_budget"] = dropped
     stats["kept"] = len(keep_set)
@@ -801,28 +1509,114 @@ def run_conversion_iter(gp_obj, total_verts, curve_importance, tube_scale, ring_
           f"- {stats.get('strokes_short', '?')} short  "
           f"- {stats.get('zero_weight', '?')} zero-weight  "
           f"- {dropped} dropped by budget  "
-          f"= {len(keep_set)} kept.")
+          f"= {len(keep_set)} kept (detail angle {float(detail_angle):.1f} deg).")
 
+    dropped_strokes = [d for i, d in enumerate(enriched) if i not in keep_set]
+    spine_alloc = [int(needs[i]) for i in range(n_enriched) if i in keep_set]
     enriched = [d for i, d in enumerate(enriched) if i in keep_set]
+    n_bricks = sum(1 for d in enriched if d.get("is_brick"))
+    if n_bricks:
+        print(f"[gp_to_mesh_lod] {output_suffix}: {n_bricks} brick stroke(s) "
+              f"at 2 spine samples each.")
 
-    # Per-stroke allocation is by arc length ONLY. The importance values
-    # (curvature, thickness-delta) drive *where* samples land within each
-    # stroke via cum_w, but don't steal budget from neighbors.
-    spine_alloc = largest_remainder([d["arc_len"] for d in enriched], spine_budget, min_each=3)
+    # Budget overspend (keep_all path): every stroke stays. Two-phase squeeze:
+    # every round stroke gets a 3-sample base, then the remaining budget goes
+    # preferentially to strokes whose SHAPE needs it (weights = need - base).
+    # Straight constant-width strokes stay at 3 - they're already exact - so
+    # their verts flow to bulged/tapered/curvy strokes, which keeps the tent
+    # artifact away even under a tight budget. Anything left after shape
+    # needs are met falls through to the arc-length top-up below.
+    if used > spine_budget:
+        round_idx = [k for k, d in enumerate(enriched) if not d.get("is_brick")]
+        round_budget = max(0, spine_budget - 2 * (len(enriched) - len(round_idx)))
+        base = [min(3, len(enriched[k]["pos"])) for k in round_idx]
+        want = [max(0, spine_alloc[k] - b) for k, b in zip(round_idx, base)]
+        rem = round_budget - sum(base)
+        if rem > 0 and sum(want) > 0:
+            grant = largest_remainder(want, rem, min_each=0)
+        else:
+            grant = [0] * len(round_idx)
+        for k_r, k in enumerate(round_idx):
+            spine_alloc[k] = min(base[k_r] + min(int(grant[k_r]), want[k_r]),
+                                 len(enriched[k]["pos"]))
+        used = sum(spine_alloc)
+        print(f"[gp_to_mesh_lod] {output_suffix}: keep-all budget squeeze - "
+              f"3-sample base + shape-need priority ({used} spine verts total).")
 
-    # Hard cap: never allocate more spine samples than the GP stroke's source
-    # point count. When alloc == source, the loop below uses the source points
-    # directly with no resampling, so the tube spine is exactly the GP stroke.
-    capped = 0
-    for i_a, d in enumerate(enriched):
-        src_n = len(d["pos"])
-        if spine_alloc[i_a] > src_n:
-            spine_alloc[i_a] = src_n
-            capped += 1
-        if spine_alloc[i_a] < 2:
-            spine_alloc[i_a] = max(2, min(src_n, 2))
-    if capped:
-        print(f"[gp_to_mesh_lod] {capped} stroke(s) capped to source point count.")
+    # Top up with leftover budget, proportional to arc length, capped at each
+    # round stroke's source point count (bricks stay at 2). When alloc ==
+    # source the build loop uses the source points directly, so at LOD0 with
+    # a generous budget the tube spine is exactly the GP stroke.
+    leftover = spine_budget - used
+    if leftover > 0 and enriched:
+        room = np.array([0 if d.get("is_brick") else max(0, len(d["pos"]) - a)
+                         for d, a in zip(enriched, spine_alloc)], dtype=np.int64)
+        grant_total = min(leftover, int(room.sum()))
+        if grant_total > 0:
+            w = np.array([d["arc_len"] if r > 0 else 0.0
+                          for d, r in zip(enriched, room)])
+            ws = w.sum() or 1.0
+            grant = np.minimum(np.floor(grant_total * w / ws).astype(np.int64), room)
+            rem = grant_total - int(grant.sum())
+            if rem > 0:
+                for k in np.argsort(-w):
+                    if rem <= 0:
+                        break
+                    give = min(int(room[k] - grant[k]), rem)
+                    grant[k] += give
+                    rem -= give
+            for k in range(len(enriched)):
+                spine_alloc[k] += int(grant[k])
+
+    # --- Absorb dropped strokes into their nearest survivor ---------------
+    # A dropped stroke shouldn't just vanish: if it ran alongside a kept
+    # stroke (e.g. 40 thin strokes bundling into one ring), the survivor's
+    # tube inflates locally to cover the dropped stroke's footprint
+    # (distance to the survivor's spine + the dropped stroke's own radius).
+    # Capped at absorb_max_scale x the survivor's local radius, so strokes
+    # too far away or too big to credibly merge are simply dropped instead
+    # of ballooning the survivor.
+    absorb_r_list = None
+    if (absorb_dropped and dropped_strokes and enriched
+            and float(absorb_max_scale) > 1.0):
+        ts = float(tube_scale)
+        stride = 2
+        entries = []  # flat kd index -> (kept stroke k, source point i)
+        for k, d in enumerate(enriched):
+            for i in range(0, len(d["pos"]), stride):
+                entries.append((k, i))
+        kd = mu_kdtree.KDTree(len(entries))
+        for e_idx, (k, i) in enumerate(entries):
+            kd.insert(Vector(enriched[k]["pos"][i]), e_idx)
+        kd.balance()
+
+        absorb_r_list = [np.zeros(len(d["pos"])) for d in enriched]
+        n_absorbed = 0
+        for dd in dropped_strokes:
+            for p, r in zip(dd["pos"][::stride], dd["thick"][::stride]):
+                _co, e_idx, dist = kd.find(Vector(p))
+                if e_idx is None:
+                    continue
+                k, i = entries[e_idx]
+                base_r = float(enriched[k]["thick"][i]) * ts
+                required = float(dist) + float(r) * ts
+                if required <= base_r:
+                    continue  # already covered by the survivor
+                if base_r <= 0.0 or required > base_r * float(absorb_max_scale):
+                    continue  # too far / too big to credibly merge
+                if required > absorb_r_list[k][i]:
+                    absorb_r_list[k][i] = required
+                    n_absorbed += 1
+        # Dilate one sample each way so linear resampling can't halve an
+        # isolated inflation spike into invisibility.
+        for a in absorb_r_list:
+            if a.any():
+                a[1:]  = np.maximum(a[1:],  a[:-1])
+                a[:-1] = np.maximum(a[:-1], a[1:])
+        if n_absorbed:
+            print(f"[gp_to_mesh_lod] {output_suffix}: absorbed silhouette of "
+                  f"{len(dropped_strokes)} dropped stroke(s) into survivors "
+                  f"({n_absorbed} inflation points).")
 
     yield 8, 100, "Allocated; finding/creating output mesh"
 
@@ -862,43 +1656,114 @@ def run_conversion_iter(gp_obj, total_verts, curve_importance, tube_scale, ring_
     BUILD_LO, BUILD_HI = 10, 90
     t_build = time.time()
 
-    # Group stroke indices by their allocated spine count.
+    # Group stroke indices by (allocated spine count, cross-section kind).
+    # Kind comes from the brick detector and - when Fetch Quill Orientation
+    # has stamped the data - the Quill brush type: ribbons bake as flat
+    # oriented quad strips (R=2 at every LOD, like the Quill mesh importer),
+    # cubes as square tubes, ellipses as flattened tubes, cylinders as round
+    # tubes with painted orientation.
     groups = {}
     for j in range(n_strokes):
-        groups.setdefault(int(spine_alloc[j]), []).append(j)
+        key = (int(spine_alloc[j]), _stroke_kind(enriched[j], use_quill_orient))
+        groups.setdefault(key, []).append(j)
+
+    kind_counts = {}
+    for (_sg, kind), idxs in groups.items():
+        kind_counts[kind] = kind_counts.get(kind, 0) + len(idxs)
+    print(f"[gp_to_mesh_lod] {output_suffix}: cross-sections {kind_counts}")
 
     processed = 0
     group_order = sorted(groups.keys())
-    for S_group in group_order:
-        stroke_indices = groups[S_group]
+    for (S_group, kind) in group_order:
+        stroke_indices = groups[(S_group, kind)]
         N = len(stroke_indices)
+        grp_is_brick = (kind == 'BRICK')
+        if kind in ('BRICK', 'CUBE'):
+            R_grp, profile = 4, 'SQUARE'
+        elif kind == 'RIBBON':
+            R_grp, profile = 2, 'ROUND'  # R=2 -> flat quad strip, no caps
+        else:
+            R_grp, profile = R, 'ROUND'
+        # Ellipse brush: flattened cross-section (matches the Quill mesh
+        # importer's aspect for the ellipse brush).
+        aspect = thickness_ratio * (0.3 if kind == 'ELLIPSE' else 1.0)
+        # Mean-width compensation (Cauchy) only applies to round-ish
+        # profiles; ribbons/squares are exact by construction.
+        width_comp = _mean_width_comp(R_grp) if kind in ('ROUND', 'CYL', 'ELLIPSE') else 1.0
+        grp_use_qn = kind in ('RIBBON', 'ELLIPSE', 'CUBE', 'CYL')
 
         # Build per-group batch arrays (this loop is the remaining per-stroke
         # Python cost - resampling - but it's much lighter than build_tube was).
         spine_batch  = np.empty((N, S_group, 3), dtype=np.float64)
         thick_batch  = np.empty((N, S_group),    dtype=np.float64)
         colors_batch = np.empty((N, S_group, 4), dtype=np.float64)
+        dev_batch    = np.zeros((N, S_group),    dtype=np.float64)
+        absorb_batch = np.zeros((N, S_group),    dtype=np.float64)
+        qnorm_batch  = np.zeros((N, S_group, 3), dtype=np.float64) if grp_use_qn else None
         for k, j in enumerate(stroke_indices):
             d = enriched[j]
             n_spine = spine_alloc[j]
-            if n_spine >= len(d["pos"]):
+            a_src = absorb_r_list[j] if absorb_r_list is not None else None
+            has_absorb = a_src is not None and a_src.any()
+            qn_src = d.get("qnorm") if grp_use_qn else None
+            if grp_is_brick:
+                # Straight stroke: endpoints only, constant body thickness.
+                spine_batch[k, 0]  = d["pos"][0]
+                spine_batch[k, -1] = d["pos"][-1]
+                thick_batch[k]     = d["body_thick"]
+                colors_batch[k, 0]  = d["col"][0]
+                colors_batch[k, -1] = d["col"][-1]
+                if has_absorb:
+                    absorb_batch[k] = float(a_src.max())
+            elif n_spine >= len(d["pos"]):
                 spine_batch[k]  = d["pos"]
                 thick_batch[k]  = d["thick"]
                 colors_batch[k] = d["col"]
+                if has_absorb:
+                    absorb_batch[k] = a_src
+                if qn_src is not None:
+                    qnorm_batch[k] = qn_src
             else:
                 idx, t = compute_resample_keys(d["cum_w"], n_spine)
                 spine_batch[k]  = interp_along(d["pos"],   idx, t)
-                thick_batch[k]  = interp_along(d["thick"], idx, t)
+                thick_batch[k]  = _thickness_cell_average(d["pos"], d["thick"], idx, t)
                 colors_batch[k] = interp_along(d["col"],   idx, t)
+                if silhouette_comp > 0.0:
+                    dev_batch[k] = _resample_deviation(d["pos"], spine_batch[k], idx)
+                if has_absorb:
+                    absorb_batch[k] = interp_along(a_src, idx, t)
+                if qn_src is not None:
+                    qnorm_batch[k] = interp_along(qn_src, idx, t)
+        if qnorm_batch is not None:
+            # Renormalize lerped normals (unit in the source data).
+            qn_len = np.linalg.norm(qnorm_batch, axis=-1, keepdims=True)
+            qnorm_batch = qnorm_batch / np.maximum(qn_len, 1e-12)
 
-        radii_batch = thick_batch * float(tube_scale)
+        if grp_is_brick:
+            radii_batch = thick_batch * float(tube_scale)
+        else:
+            # Width compensation keeps the R-gon reading as wide as the source
+            # stroke; deviation compensation re-inflates the silhouette
+            # exactly where spine decimation cut corners off. The dev term is
+            # capped at 2x the stroke's true radius so a heavily-squeezed
+            # stroke can never balloon far past its painted width and occlude
+            # its neighbors.
+            base_radii = thick_batch * float(tube_scale) * width_comp
+            dev_add = np.minimum(dev_batch * float(silhouette_comp),
+                                 base_radii * 2.0)
+            radii_batch = base_radii + dev_add
+        # Absorption: survivor tubes locally inflate to cover the footprint
+        # of dropped neighbors (absorb_batch already holds world radii).
+        if absorb_r_list is not None:
+            radii_batch = np.maximum(radii_batch, absorb_batch)
 
-        # Force hard ends: (1) clamp the end-sample radius up to its neighbor
-        # so the tube doesn't taper to a point, then (2) extrude the first
-        # and last spine samples outward along the local tangent by half a
-        # radius. The extrusion matches how Blender's GP draws a flat cap -
-        # the visible square extends past the actual data endpoint by r/2.
-        if force_hard_ends and S_group >= 2:
+        # Hard flat ends - always for bricks, opt-in for round strokes:
+        # (1) clamp the end-sample radius up to its neighbor so the tube
+        # doesn't taper to a point, then (2) extrude the first and last spine
+        # samples outward along the local tangent by half a radius. The
+        # extrusion matches how Blender's GP draws a flat cap - the visible
+        # square extends past the actual data endpoint by r/2.
+        if (grp_is_brick or force_hard_ends) and S_group >= 2:
             radii_batch[:, 0]  = np.maximum(radii_batch[:, 0],  radii_batch[:, 1])
             radii_batch[:, -1] = np.maximum(radii_batch[:, -1], radii_batch[:, -2])
 
@@ -919,13 +1784,15 @@ def run_conversion_iter(gp_obj, total_verts, curve_importance, tube_scale, ring_
                                   + t_end * (radii_batch[:, -1:] * 0.5))
 
         verts_grp, quads_grp, caps_grp = build_tube_batch(
-            spine_batch, radii_batch, R,
-            thickness_ratio=thickness_ratio,
-            up_axis=up_axis)
+            spine_batch, radii_batch, R_grp,
+            thickness_ratio=aspect,
+            up_axis=up_axis,
+            profile=profile,
+            qnorm_batch=qnorm_batch)
 
         all_verts.append(verts_grp)
-        # Colors: spine-sample colors repeated R times each.
-        all_colors.append(np.repeat(colors_batch.reshape(N * S_group, 4), R, axis=0))
+        # Colors: spine-sample colors repeated R_grp times each.
+        all_colors.append(np.repeat(colors_batch.reshape(N * S_group, 4), R_grp, axis=0))
         all_quads.append(quads_grp + vbase)
         if caps_grp is not None:
             all_caps.append(caps_grp + vbase)
@@ -933,7 +1800,7 @@ def run_conversion_iter(gp_obj, total_verts, curve_importance, tube_scale, ring_
 
         processed += N
         prog = BUILD_LO + int((BUILD_HI - BUILD_LO) * processed / max(1, n_strokes))
-        yield prog, 100, f"Tubes {processed}/{n_strokes} (group S={S_group}, N={N})"
+        yield prog, 100, f"{kind.lower()}s {processed}/{n_strokes} (group S={S_group}, N={N})"
     t_build = time.time() - t_build
 
     yield 92, 100, "Writing mesh"
@@ -941,26 +1808,33 @@ def run_conversion_iter(gp_obj, total_verts, curve_importance, tube_scale, ring_
     verts_concat  = np.concatenate(all_verts,  axis=0)
     colors_concat = np.concatenate(all_colors, axis=0)
     quads_concat  = np.concatenate(all_quads,  axis=0) if all_quads else np.zeros((0, 4), dtype=np.int64)
-    # Caps are 2D arrays (n_caps_group, R) per group; concatenate along axis 0.
-    caps_concat = np.concatenate(all_caps, axis=0) if all_caps else np.zeros((0, R), dtype=np.int64)
-    n_caps = caps_concat.shape[0]
+    # Caps are 2D arrays (n_caps_group, R_grp) per group. Widths can differ
+    # between groups (4 for bricks vs R for round tubes), so they stay a list
+    # instead of one concatenated array.
+    n_caps    = sum(c.shape[0] for c in all_caps)
+    cap_loops = sum(c.size     for c in all_caps)
 
     n_verts  = verts_concat.shape[0]
     n_quads  = quads_concat.shape[0]
     n_polys  = n_quads + n_caps
-    n_loops  = n_quads * 4 + n_caps * R
+    n_loops  = n_quads * 4 + cap_loops
 
     fast_path_ok = False
     try:
         if n_verts and n_polys:
-            # Build flat loop indices: quads first (groups of 4), then caps (groups of R).
+            # Build flat loop indices: quads first (groups of 4), then caps
+            # (each group contributes rows of its own width).
             loop_idx = np.empty(n_loops, dtype=np.int32)
             loop_idx[:n_quads * 4] = quads_concat.ravel()
-            if n_caps:
-                loop_idx[n_quads * 4:] = caps_concat.ravel()
             poly_sizes = np.empty(n_polys, dtype=np.int32)
             poly_sizes[:n_quads] = 4
-            poly_sizes[n_quads:] = R
+            cur_loop = n_quads * 4
+            cur_poly = n_quads
+            for c in all_caps:
+                loop_idx[cur_loop:cur_loop + c.size] = c.ravel()
+                poly_sizes[cur_poly:cur_poly + c.shape[0]] = c.shape[1]
+                cur_loop += c.size
+                cur_poly += c.shape[0]
             poly_starts = np.zeros(n_polys, dtype=np.int32)
             poly_starts[1:] = np.cumsum(poly_sizes[:-1])
 
@@ -981,7 +1855,8 @@ def run_conversion_iter(gp_obj, total_verts, curve_importance, tube_scale, ring_
     if not fast_path_ok:
         # Slow fallback.
         all_faces = quads_concat.tolist()
-        all_faces.extend(c.tolist() for c in all_caps)
+        for c in all_caps:
+            all_faces.extend(c.tolist())  # each cap row is one n-gon face
         me.from_pydata(verts_concat.tolist(), [], all_faces)
         me.update()
     t_mesh = time.time() - t_w
@@ -1127,12 +2002,19 @@ SETTINGS_DEFAULTS = {
     "thickness_delta_importance":  10.0,
     "tube_scale":                   1.0,
     "ring_verts":                   6,
-    "lod_size_expansion":           2.0,
+    "lod_size_expansion":           1.0,
     "min_lod_ratio":                0.10,
     "thickness_ratio":              1.0,
     "cross_section_up_axis":        'Z',
     "force_hard_ends":              False,
     "min_ring_verts":               2,
+    "brick_detect_angle":           0.0,
+    "silhouette_compensation":      1.0,
+    "detail_angle_lod0":            8.0,
+    "detail_angle_min":            45.0,
+    "absorb_dropped":              True,
+    "absorb_max_scale":             3.0,
+    "use_quill_orientation":       True,
 }
 
 
@@ -1278,13 +2160,48 @@ class GPLODSettings(bpy.types.PropertyGroup):
     )
     lod_size_expansion: bpy.props.FloatProperty(
         name="Min LOD Size Multiplier",
-        default=2.0, min=1.0, soft_max=8.0,
-        description="Tube radius is scaled from 1x at LOD0 up to this value at the lowest LOD, to mask visual gaps when verts are sparse.",
+        default=1.0, min=1.0, soft_max=8.0,
+        description="Extra artistic radius multiplier ramped in at low LODs (1 = off). Silhouette Compensation now handles measured geometry loss automatically; use this only for additional stylistic chunkiness.",
+    )
+    brick_detect_angle: bpy.props.FloatProperty(
+        name="Brick Detect Angle",
+        default=0.0, min=0.0, soft_max=45.0, max=180.0,
+        description="Strokes whose total turning is under this many degrees (and whose body thickness is near-constant) bake as 8-vert square-profile 'bricks' with flat ends at every LOD. 0 (default) disables detection; ~10 is a good starting value when enabling.",
+    )
+    silhouette_compensation: bpy.props.FloatProperty(
+        name="Silhouette Compensation",
+        default=1.0, min=0.0, soft_max=2.0,
+        description="Re-inflate tube radius where spine decimation cut geometry away, by the measured deviation from the source stroke. 1.0 = exact compensation, 0 = off. Applies on top of the automatic ring-count width matching.",
+    )
+    detail_angle_lod0: bpy.props.FloatProperty(
+        name="LOD0 Detail Angle",
+        default=8.0, min=0.5, soft_max=45.0, max=90.0,
+        description="Angular error budget per spine segment at LOD0. Each stroke gets enough samples to represent its total curvature within this angle; important strokes are kept fully-shaped while small strokes are dropped when the vert budget runs out.",
+    )
+    detail_angle_min: bpy.props.FloatProperty(
+        name="Min LOD Detail Angle",
+        default=45.0, min=1.0, soft_max=90.0, max=180.0,
+        description="Angular error budget at the lowest LOD (intermediate LODs interpolate). Larger = big strokes simplify harder; smaller = big strokes hold their shape longer while more small strokes are dropped instead.",
+    )
+    absorb_dropped: bpy.props.BoolProperty(
+        name="Absorb Dropped Strokes",
+        default=True,
+        description="When a stroke is dropped at a low LOD, locally inflate the nearest surviving stroke's tube to cover its footprint - bundles of parallel strokes collapse into fewer, fatter tubes instead of leaving holes in the silhouette.",
+    )
+    absorb_max_scale: bpy.props.FloatProperty(
+        name="Max Absorb Scale",
+        default=3.0, min=1.0, soft_max=10.0,
+        description="Cap on absorption inflation, as a multiple of the survivor's own radius. Dropped strokes needing more than this to be covered are simply dropped.",
+    )
+    use_quill_orientation: bpy.props.BoolProperty(
+        name="Use Quill Orientation",
+        default=True,
+        description="When quill_normal/quill_brush attributes are present (run Fetch Quill Orientation first), build cross-sections in the painted orientation: ribbons bake as flat twisting quad strips, ellipses flattened, cubes square, cylinders round.",
     )
     min_lod_ratio: bpy.props.FloatProperty(
         name="Min LOD Vert Ratio",
-        default=0.10, min=0.01, max=1.0, soft_min=0.02, soft_max=0.5,
-        description="Spine vert count at the lowest LOD = (Total Stroke Verts) x (this ratio). Intermediate LODs interpolate geometrically.",
+        default=0.10, min=0.001, max=1.0, soft_min=0.005, soft_max=0.5,
+        description="Spine vert count at the lowest LOD = (Total Stroke Verts) x (this ratio). Intermediate LODs interpolate geometrically: 0.01 gives 100% / 21.5% / 4.6% / 1% across 4 LODs.",
     )
     thickness_ratio: bpy.props.FloatProperty(
         name="Thickness Ratio",
@@ -1346,7 +2263,14 @@ class OBJECT_OT_gp_to_mesh_lod_bake(bpy.types.Operator):
                                output_suffix="_LOD0",
                                thickness_ratio=s.thickness_ratio,
                                up_axis=s.cross_section_up_axis,
-                               force_hard_ends=s.force_hard_ends)
+                               force_hard_ends=s.force_hard_ends,
+                               silhouette_comp=0.0,  # LOD0: true widths only
+                               brick_detect_angle=s.brick_detect_angle,
+                               detail_angle=s.detail_angle_lod0,
+                               absorb_dropped=s.absorb_dropped,
+                               absorb_max_scale=s.absorb_max_scale,
+                               keep_all=True,
+                               use_quill_orient=s.use_quill_orientation)
             except RuntimeError as e:
                 self.report({'ERROR'}, f"{gp_obj.name}: {e}")
                 return {'CANCELLED'}
@@ -1366,6 +2290,7 @@ def _bake_set_iter(gp_names):
         gp_obj = bpy.data.objects.get(gp_name)
         if gp_obj is None or not _is_gp(gp_obj):
             continue
+        t_obj = time.time()
         s = gp_obj.gp_lod_settings
         total_verts = _verts_from_percentage(gp_obj, s.verts_percentage)
 
@@ -1380,7 +2305,8 @@ def _bake_set_iter(gp_names):
         # Read + enrich ONCE per GP, reuse across all LODs (4x read savings).
         try:
             cached_enriched, cached_stats = _prepare_stroke_data(
-                gp_obj, s.curve_importance, s.thickness_delta_importance)
+                gp_obj, s.curve_importance, s.thickness_delta_importance,
+                s.brick_detect_angle)
         except RuntimeError as e:
             print(f"[gp_to_mesh_lod] skip {gp_obj.name}: {e}")
             continue
@@ -1391,6 +2317,16 @@ def _bake_set_iter(gp_names):
             t = (i / (n_lods - 1)) if n_lods > 1 else 0.0
             expansion = 1.0 + (s.lod_size_expansion - 1.0) * (t * t)
             eff_tube_scale = s.tube_scale * expansion
+            # Detail angle ramps from the LOD0 value to the min-LOD value
+            # with the same t^2 shape as the other per-LOD ramps.
+            detail_angle_i = (s.detail_angle_lod0
+                              + (s.detail_angle_min - s.detail_angle_lod0) * (t * t))
+            # Deviation compensation ramps in with LOD depth: at LOD0 every
+            # stroke still exists, so inflating a resampled stroke only
+            # occludes its (still present) neighbors - strokes must render at
+            # true width. At low LODs neighbors are gone and inflation fills
+            # the gaps they left.
+            sil_comp_i = s.silhouette_compensation * t
             # Per-object floor on ring verts (clamps low LODs above their schedule default).
             eff_ring = max(int(ring), int(s.min_ring_verts))
             base = (obj_idx * n_lods + i) * 100
@@ -1400,6 +2336,13 @@ def _bake_set_iter(gp_names):
                 thickness_ratio=s.thickness_ratio,
                 up_axis=s.cross_section_up_axis,
                 force_hard_ends=s.force_hard_ends,
+                silhouette_comp=sil_comp_i,
+                brick_detect_angle=s.brick_detect_angle,
+                detail_angle=detail_angle_i,
+                absorb_dropped=s.absorb_dropped,
+                absorb_max_scale=s.absorb_max_scale,
+                keep_all=(i == 0),  # LOD0 never drops a stroke
+                use_quill_orient=s.use_quill_orientation,
                 cached_enriched=cached_enriched,
                 cached_stats=cached_stats,
             ):
@@ -1419,6 +2362,9 @@ def _bake_set_iter(gp_names):
                 bpy.data.objects.remove(o, do_unlink=True)
                 if mesh is not None and mesh.users == 0:
                     bpy.data.meshes.remove(mesh)
+
+        print(f"[gp_to_mesh_lod] '{gp_obj.name}': full LOD set baked in "
+              f"{time.time() - t_obj:.2f}s")
 
 
 class OBJECT_OT_gp_to_mesh_lod_bake_set(bpy.types.Operator):
@@ -1470,8 +2416,18 @@ class OBJECT_OT_gp_to_mesh_lod_bake_set(bpy.types.Operator):
             return {'CANCELLED'}
         if event.type != 'TIMER':
             return {'PASS_THROUGH'}
+        # Drain the generator for up to ~120ms per timer tick. One-step-per-
+        # tick (the old behavior) capped the bake at 20 steps/second, which
+        # turned seconds of compute into minutes of idle waiting between
+        # ticks. Draining keeps the bake compute-bound while the UI still
+        # redraws between ticks and ESC stays responsive.
+        deadline = time.time() + 0.12
+        step, total, msg = 0, 100, ""
         try:
-            step, total, msg = next(self._iter)
+            while True:
+                step, total, msg = next(self._iter)
+                if time.time() >= deadline:
+                    break
         except StopIteration:
             self.report({'INFO'},
                         f"Baked {len(LOD_RING_SCHEDULE)} LODs x "
@@ -1648,20 +2604,140 @@ class OBJECT_OT_gp_to_mesh_lod_override(bpy.types.Operator):
         for gp in _selected_gp_objects(context):
             if gp == active:
                 continue
-            d = gp.gp_lod_settings
-            d.verts_percentage           = src.verts_percentage
-            d.curve_importance           = src.curve_importance
-            d.thickness_delta_importance = src.thickness_delta_importance
-            d.tube_scale                 = src.tube_scale
-            d.ring_verts                 = src.ring_verts
-            d.lod_size_expansion         = src.lod_size_expansion
-            d.min_lod_ratio              = src.min_lod_ratio
-            d.thickness_ratio            = src.thickness_ratio
-            d.cross_section_up_axis      = src.cross_section_up_axis
-            d.force_hard_ends            = src.force_hard_ends
-            d.min_ring_verts             = src.min_ring_verts
+            # Copies every key in SETTINGS_DEFAULTS, so new settings are
+            # automatically included instead of silently drifting.
+            _copy_settings(src, gp.gp_lod_settings)
             n += 1
         self.report({'INFO'}, f"Copied '{active.name}' settings to {n} other GP(s).")
+        return {'FINISHED'}
+
+
+class OBJECT_OT_gp_quill_orient(bpy.types.Operator):
+    """Recover per-point normals and brush types from the original Quill
+    scene (via each object's import provenance) and store them as GP
+    attributes. Bakes then build cross-sections in the painted orientation -
+    flat ribbons that twist exactly like the Quill source."""
+    bl_idname = "object.gp_quill_fetch_orientation"
+    bl_label = "Fetch Quill Orientation"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return bool(_selected_gp_objects(context))
+
+    def execute(self, context):
+        n_ok = 0
+        for gp in _selected_gp_objects(context):
+            try:
+                n_pts = _relink_quill_orientation(gp)
+            except (RuntimeError, OSError, KeyError, ValueError) as e:
+                self.report({'WARNING'}, f"{gp.name}: {e}")
+                continue
+            n_ok += 1
+            self.report({'INFO'}, f"{gp.name}: stored orientation for {n_pts} points.")
+        return {'FINISHED'} if n_ok else {'CANCELLED'}
+
+
+def _unity_export_dir():
+    """Match the legacy GP LOD Helpers convention:
+    <parent of blend dir>/Resources/ISLANDS/<BlendName>/Models/"""
+    blend_path = bpy.data.filepath
+    if not blend_path:
+        raise RuntimeError("save the .blend first (export path derives from it)")
+    blend_dir = os.path.dirname(blend_path)
+    blend_name = os.path.splitext(os.path.basename(blend_path))[0]
+    d = os.path.join(os.path.dirname(blend_dir), "Resources", "ISLANDS",
+                     blend_name, "Models")
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def _export_lod_set_fbx(gp_obj, export_dir):
+    """Export one GP object's LOD set as <export_dir>/<name>.fbx.
+    Structure: a root node named exactly <name> carrying the GP object's
+    world transform, with <name>_LOD0..N as identity-local children - Unity
+    builds a LODGroup automatically from the _LODn naming, the import lands
+    at the authored world position, and the prefab can still be duplicated
+    and placed anywhere (the placement lives on the root, not in the verts).
+    Restores parenting/visibility afterward. Returns the file path."""
+    name = gp_obj.name
+    lods = sorted(_lod_outputs_for(gp_obj), key=lambda o: o.name)
+    if not lods:
+        return None
+
+    # Free the name so the FBX root node is named exactly <name>.
+    gp_obj.name = name + ".__gp_tmp"
+    root = bpy.data.objects.new(name, None)
+    bpy.context.scene.collection.objects.link(root)
+    root.matrix_world = gp_obj.matrix_world.copy()
+
+    restore = []
+    try:
+        for o in lods:
+            restore.append((o, o.parent, o.hide_viewport))
+            o.hide_viewport = False
+            try:
+                o.hide_set(False)
+            except RuntimeError:
+                pass
+            o.parent = root
+            o.matrix_parent_inverse = Matrix.Identity(4)
+            o.matrix_local = Matrix.Identity(4)
+
+        for ob in bpy.context.view_layer.objects:
+            try:
+                ob.select_set(False)
+            except RuntimeError:
+                pass
+        root.select_set(True)
+        for o in lods:
+            o.select_set(True)
+        bpy.context.view_layer.objects.active = root
+
+        path = os.path.join(export_dir, f"{name}.fbx")
+        bpy.ops.export_scene.fbx(
+            filepath=path,
+            use_selection=True,
+            object_types={'EMPTY', 'MESH'},
+            use_mesh_modifiers=True,
+            add_leaf_bones=False,
+            bake_space_transform=True,
+            path_mode='AUTO',
+        )
+        return path
+    finally:
+        for o, par, hv in restore:
+            o.parent = par
+            o.matrix_parent_inverse = Matrix.Identity(4)
+            o.matrix_local = Matrix.Identity(4)
+            o.hide_viewport = hv
+        bpy.data.objects.remove(root, do_unlink=True)
+        gp_obj.name = name
+
+
+class OBJECT_OT_gp_lod_export_unity(bpy.types.Operator):
+    """Export each selected GP object's LOD set as a Unity-ready FBX
+    (root at world transform + _LOD0..N children -> automatic LODGroup)"""
+    bl_idname = "object.gp_lod_export_unity"
+    bl_label = "Export LOD Sets (Unity)"
+    bl_options = {'REGISTER'}
+
+    @classmethod
+    def poll(cls, context):
+        return any(_lod_outputs_for(o) for o in _selected_gp_objects(context))
+
+    def execute(self, context):
+        try:
+            export_dir = _unity_export_dir()
+        except RuntimeError as e:
+            self.report({'ERROR'}, str(e))
+            return {'CANCELLED'}
+        n = 0
+        for gp in _selected_gp_objects(context):
+            path = _export_lod_set_fbx(gp, export_dir)
+            if path:
+                n += 1
+        self.report({'INFO'}, f"Exported {n} LOD set(s) to {export_dir}")
         return {'FINISHED'}
 
 
@@ -1751,6 +2827,17 @@ class VIEW3D_PT_gp_to_mesh_lod(bpy.types.Panel):
         col.prop(s, "min_ring_verts")
         col.prop(s, "lod_size_expansion")
         col.prop(s, "min_lod_ratio")
+        col.separator()
+        col.prop(s, "brick_detect_angle")
+        col.prop(s, "silhouette_compensation")
+        col.prop(s, "detail_angle_lod0")
+        col.prop(s, "detail_angle_min")
+        col.prop(s, "absorb_dropped")
+        col.prop(s, "absorb_max_scale")
+        col.separator()
+        col.prop(s, "use_quill_orientation")
+        col.operator(OBJECT_OT_gp_quill_orient.bl_idname, icon='IMPORT')
+        col.operator(OBJECT_OT_gp_lod_export_unity.bl_idname, icon='EXPORT')
 
         # Selection summary — show source point counts so the percentage makes sense.
         if gps:
@@ -1829,6 +2916,8 @@ classes = (
     OBJECT_OT_gp_to_mesh_lod_show_all,
     OBJECT_OT_gp_to_mesh_lod_preview,
     OBJECT_OT_gp_to_mesh_lod_override,
+    OBJECT_OT_gp_quill_orient,
+    OBJECT_OT_gp_lod_export_unity,
     OBJECT_OT_gp_to_mesh_lod_clear,
     VIEW3D_PT_gp_to_mesh_lod,
 )
@@ -1862,9 +2951,11 @@ def unregister():
             pass
 
 
-if __name__ == "__main__":
-    try:
-        unregister()
-    except Exception:
-        pass
-    register()
+# Register unconditionally: covers Run Script in the text editor (__main__),
+# exec() reloads from MCP, AND auto-run as an embedded text module on file
+# open (use_module=True, where __name__ is the text block name).
+try:
+    unregister()
+except Exception:
+    pass
+register()

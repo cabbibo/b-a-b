@@ -101,9 +101,9 @@ Material:
     - _TriplanarNormalWeight: 0.4
     - _TriplanarSharpness: 4
     - _UVSec: 0
-    - _WindAmount: 1
-    - _WindChangeSize: 1
-    - _WindChangeSpeed: 5
+    - _WindAmount: 0
+    - _WindChangeSize: 0
+    - _WindChangeSpeed: 0
     - _ZWrite: 1
     m_Colors:
     - _BackfaceColor: {r: 1, g: 1, b: 1, a: 1}

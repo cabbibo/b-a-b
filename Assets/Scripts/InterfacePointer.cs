@@ -77,6 +77,8 @@ public class InterfacePointer : MonoBehaviour
     6 = windTunnels
     7 = updrafts
     9 = tunnels
+    10 = object of interest ( render-buffer override )
+    11 = custom POI ( color from CustomPOI, HSV in extraData )
 
 
     */
@@ -561,6 +563,7 @@ public class InterfacePointer : MonoBehaviour
         AddAllActivities();
         AddAllPortals();
         AddAllBugs();
+        AddAllCustomPointsOfInterest();
 
     }
 
@@ -577,7 +580,24 @@ public class InterfacePointer : MonoBehaviour
     public void AddAllPortals()
     {
         var gameObjects = getAllOfTag( "Portal" );
-        foreach (var portal in gameObjects) AddPointer( portal.transform , 2 , new Vector4( 0 , 0 , 0 , 0 ) );
+        foreach (var portal in gameObjects) {
+            var p = portal.GetComponent<Portal>();
+            AddPointer( portal.transform , 2 , SceneIDToHSV( p != null ? p.sceneID : 0 ) );
+        }
+    }
+
+
+    // Turn a scene ID into a distinct HSV color for the portal pointer, packed
+    // as ( h, s, v, 0 ). Golden-ratio hue spacing keeps neighbouring scene IDs
+    // well separated. Tweak the multiplier / s / v to taste.
+    public Vector4 SceneIDToHSV( int sceneID )
+    {
+        float hue = ( sceneID * 0.61803398875f ) % 1f;
+        if ( hue < 0 ) {
+            hue += 1f;
+        }
+
+        return new Vector4( hue , 1f , 1f , 0 );
     }
 
     public void AddAllActivities()
@@ -604,6 +624,31 @@ public class InterfacePointer : MonoBehaviour
             AddPointer( bug.transform , 4 );
 
 
+    }
+
+
+    // Custom points of interest: any object tagged "CustomPOI" with a CustomPOI
+    // component. Its color rides through as HSV in the extraData channel.
+    public void AddAllCustomPointsOfInterest()
+    {
+        GameObject[] allCustom;
+
+        // Guard against the "CustomPOI" tag not existing yet, so a missing tag
+        // can't take down the rest of the pointer updates.
+        try {
+            allCustom = getAllOfTag( "CustomPOI" );
+        } catch {
+            return;
+        }
+
+        foreach (var obj in allCustom) {
+            var poi = obj.GetComponent<CustomPOI>();
+            if ( poi == null ) {
+                continue;
+            }
+
+            AddPointer( poi.transform , CustomPOI.PointerType , poi.GetPointerData() );
+        }
     }
 
 
